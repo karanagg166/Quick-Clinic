@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🚑 Quick Clinic — Next.js + Prisma + Neon + Upstash + Docker
 
-## Getting Started
+This project runs fully in Docker using Neon PostgreSQL and Upstash Redis. You do not need Node.js, PostgreSQL, or Redis installed locally. Only Docker Desktop and Git are required.
 
-First, run the development server:
+Clone the project:
+git clone <your-repo-url>
+cd quick-clinic
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Create your environment file:
+cp .env.example .env
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Fill your actual values inside `.env`:
+DATABASE_URL="your-neon-postgres-url"
+UPSTASH_REDIS_REST_URL="your-upstash-rest-url"
+UPSTASH_REDIS_REST_TOKEN="your-upstash-rest-token"
+REDIS_URL="your-upstash-redis-url"
+NODE_ENV="production"
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Build and start Docker for the first time:
+docker compose up --build -d
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Generate the Prisma client inside the container:
+docker compose exec app npx prisma generate
 
-## Learn More
+Apply migrations if they exist:
+docker compose exec app npx prisma migrate deploy
 
-To learn more about Next.js, take a look at the following resources:
+Run the project normally:
+docker compose up
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Stop the project:
+Ctrl + C
+or
+docker compose down
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Run the project anytime in the future:
+docker compose up
 
-## Deploy on Vercel
+Rebuild after installing new npm packages:
+docker compose up --build
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+If you edit the Prisma schema and need to sync:
+docker compose exec app npx prisma generate
+(optional for development)
+docker compose exec app npx prisma migrate dev
+or for production
+docker compose exec app npx prisma migrate deploy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If you want to push schema changes directly to the database (dev only):
+docker compose exec app npx prisma db push
+
+If you want to pull schema changes from the database:
+docker compose exec app npx prisma db pull
+
+Your entire workflow uses Docker only. No need for npm run dev on your machine.
