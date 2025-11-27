@@ -6,3 +6,11 @@ generator client {
 datasource db {
   provider = "postgresql"
 }
+model User{
+
+
+}
+enum Role {
+  Patient
+  Doctor
+  }
