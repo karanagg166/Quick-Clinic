@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    container_name: quick_clinic_app
+    ports:
+      - "3000:3000"
+    env_file: .env
+    restart: always
+   
