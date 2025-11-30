@@ -35,7 +35,7 @@ docker compose down
 
 Run the project anytime in the future:
 docker compose up
-
+hi
 Rebuild after installing new npm packages:
 docker compose up --build
 
