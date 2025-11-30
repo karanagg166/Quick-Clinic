@@ -1,6 +1,6 @@
 import {jwtVerify,SignJWT,JWTPayload} from "jose";
 const JWT_SECRET=process.env.JWT_SECRET;
-const EXP_TIME=60*60*24*7;
+
 
 if(!JWT_SECRET){
     throw new Error("missing jwt_secret");
