@@ -1,12 +1,16 @@
 # 🚑 Quick Clinic — Next.js + Prisma + Neon + Upstash + Docker
 
-This project runs fully in Docker using Neon PostgreSQL and Upstash Redis. You do not need Node.js, PostgreSQL, or Redis installed locally. Only Docker Desktop and Git are required.
+This project runs entirely inside Docker. You do NOT need Node.js, PostgreSQL, or Redis installed locally. Only Docker Desktop and Git are required.
 
-Clone the project:
+--------------------------------------------------------------------------------
+
+📥 1. Clone the Project
 git clone <your-repo-url>
 cd quick-clinic
 
-Create your environment file:
+--------------------------------------------------------------------------------
+
+📄 2. Create Environment File
 cp .env.example .env
 
 Fill your actual values inside `.env`:
@@ -16,40 +20,69 @@ UPSTASH_REDIS_REST_TOKEN="your-upstash-rest-token"
 REDIS_URL="your-upstash-redis-url"
 NODE_ENV="production"
 
-Build and start Docker for the first time:
+--------------------------------------------------------------------------------
+
+🐳 3. Build & Start Docker (First Time)
 docker compose up --build -d
 
-Generate the Prisma client inside the container:
+--------------------------------------------------------------------------------
+
+🛠 4. Generate Prisma Client (inside container)
 docker compose exec app npx prisma generate
 
-Apply migrations if they exist:
+--------------------------------------------------------------------------------
+
+🗄 5. Apply Migrations
+Production:
 docker compose exec app npx prisma migrate deploy
 
-Run the project normally:
+Development (optional):
+docker compose exec app npx prisma migrate dev
+
+--------------------------------------------------------------------------------
+
+▶️ 6. Start the Project
 docker compose up
 
-Stop the project:
-Ctrl + C
+Visit the app:
+http://localhost:3000
+
+--------------------------------------------------------------------------------
+
+🛑 7. Stop the Project
+Press Ctrl + C
 or
 docker compose down
 
-Run the project anytime in the future:
+--------------------------------------------------------------------------------
+
+🔁 8. Start the Project Anytime Later
 docker compose up
 
-Rebuild after installing new npm packages:
+--------------------------------------------------------------------------------
+
+📦 9. After Installing New npm Packages
 docker compose up --build
 
-If you edit the Prisma schema and need to sync:
-docker compose exec app npx prisma generate
-(optional for development)
-docker compose exec app npx prisma migrate dev
-or for production
-docker compose exec app npx prisma migrate deploy
+--------------------------------------------------------------------------------
 
-If you want to push schema changes directly to the database (dev only):
+🗂 10. Prisma Schema Commands
+
+Regenerate client:
+docker compose exec app npx prisma generate
+
+Push schema changes to DB (dev only):
 docker compose exec app npx prisma db push
 
-If you want to pull schema changes from the database:
+Pull schema changes from DB:
 docker compose exec app npx prisma db pull
 
-Your entire workflow uses Docker only. No need for npm run dev on your machine.
+Apply migrations (prod):
+docker compose exec app npx prisma migrate deploy
+
+Apply migrations (dev):
+docker compose exec app npx prisma migrate dev
+
+--------------------------------------------------------------------------------
+
+🎉 All development is done through Docker — no need to run npm install or npm run dev locally.
