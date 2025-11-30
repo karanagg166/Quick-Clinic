@@ -111,6 +111,17 @@
   --sidebar-ring: oklch(0.551 0.027 264.364);
 }
 
+.inputBox {
+  @apply w-full px-4 py-2 rounded-lg 
+         border-2 border-black      /* Always visible black outline */
+         bg-white text-black 
+         placeholder-gray-500 
+         focus:border-blue-600      /* Blue border on focus */
+         focus:ring-2 focus:ring-blue-300 
+         outline-none transition;
+}
+
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
