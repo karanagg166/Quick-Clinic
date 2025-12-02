@@ -1,29 +1,56 @@
-import { NextRequest,NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import {prisma} from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
+import { createToken } from "@/lib/auth";
 
-export const POST=async (req:NextRequest)=>{
-    try{
-        const {email,password}=await req.json();
-        const user=await prisma.user.findUniue({
-            where:{email}
-        });
-        if(!user){
-             return NextResponse.json({error:"Innvald Email No user"},{status:400});  
-        }
-        const isPasswordValid=await bcrypt.compare(password,user.password);
-        if(!isPasswordValid){
-            return NextResponse.json({error:"Invalid Password"},{status:400});
-        }
-        const res=NextResponse.json({message:"Login successful"},{status:200});
-        return res;
-       
-        
+export const POST = async (req: NextRequest) => {
+  try {
+    const { email, password } = await req.json();
 
+    // Check user
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      return NextResponse.json(
+        { error: "Invalid email. No user found." },
+        { status: 400 }
+      );
     }
-    catch(error:any){
-        return NextResponse.json({error:error?.message },{
-            status:500
-        });
+
+    // Check password
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { error: "Incorrect password" },
+        { status: 400 }
+      );
     }
-}
+
+    // JWT token
+    const token = await createToken({ email: user.email });
+
+    // Response
+    const res = NextResponse.json(
+      { message: "Login successful" },
+      { status: 200 }
+    );
+
+   
+    res.cookies.set("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+      maxAge: 60 * 60 * 24,
+    });
+
+    return res;
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+};
