@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 export default function Signup() {
   const router = useRouter();
 
-  const [Name, setName] = useState("");
+  const [Name, setName] = useState("karans");
   const [Email, setEmail] = useState("");
   const [Phone_no, setPhone_no] = useState("");
   const [Age, setAge] = useState("");
