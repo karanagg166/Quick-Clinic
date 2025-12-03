@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Signup from '../signup/page';
 
 export default function Home() {
   const router = useRouter();
-  const [Email, setEmail] = useState("");
+  const [Email, setEmail] = useState("a");
   const [Password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -90,7 +91,7 @@ export default function Home() {
           <span className="text-blue-600 font-medium cursor-pointer hover:underline"
           onClick={() => router.push("/user/signup")}
           >
-            Sign up
+          Signup
           </span>
         </p>
 
