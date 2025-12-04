@@ -98,12 +98,41 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phoneNo: 'phoneNo',
   name: 'name',
+  gender: 'gender',
   password: 'password',
   age: 'age',
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
   role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PatientScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  medicalHistory: 'medicalHistory',
+  allergies: 'allergies',
+  currentMedications: 'currentMedications',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DoctorScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  specialty: 'specialty',
+  experience: 'experience',
+  qualifications: 'qualifications',
+  fees: 'fees',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AdminScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -117,6 +146,72 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  BINARY: 'BINARY'
+};
+
+exports.Specialty = exports.$Enums.Specialty = {
+  CARDIOLOGIST: 'CARDIOLOGIST',
+  DERMATOLOGIST: 'DERMATOLOGIST',
+  PEDIATRICIAN: 'PEDIATRICIAN',
+  NEUROLOGIST: 'NEUROLOGIST',
+  NEPHROLOGIST: 'NEPHROLOGIST',
+  GASTROENTEROLOGIST: 'GASTROENTEROLOGIST',
+  ENDOCRINOLOGIST: 'ENDOCRINOLOGIST',
+  PULMONOLOGIST: 'PULMONOLOGIST',
+  ONCOLOGIST: 'ONCOLOGIST',
+  ORTHOPEDIC: 'ORTHOPEDIC',
+  OPHTHALMOLOGIST: 'OPHTHALMOLOGIST',
+  OTOLARYNGOLOGIST: 'OTOLARYNGOLOGIST',
+  UROLOGIST: 'UROLOGIST',
+  RHEUMATOLOGIST: 'RHEUMATOLOGIST',
+  PSYCHIATRIST: 'PSYCHIATRIST',
+  PSYCHOLOGIST: 'PSYCHOLOGIST',
+  GENERAL_PHYSICIAN: 'GENERAL_PHYSICIAN',
+  GENERAL_SURGEON: 'GENERAL_SURGEON',
+  RADIOLOGIST: 'RADIOLOGIST',
+  PATHOLOGIST: 'PATHOLOGIST',
+  HEMATOLOGIST: 'HEMATOLOGIST',
+  DENTIST: 'DENTIST',
+  GYNECOLOGIST: 'GYNECOLOGIST',
+  OBSTETRICIAN: 'OBSTETRICIAN',
+  PLASTIC_SURGEON: 'PLASTIC_SURGEON',
+  VASCULAR_SURGEON: 'VASCULAR_SURGEON',
+  CARDIOTHORACIC_SURGEON: 'CARDIOTHORACIC_SURGEON',
+  DERMATOSURGEON: 'DERMATOSURGEON',
+  INFECTIOUS_DISEASE_SPECIALIST: 'INFECTIOUS_DISEASE_SPECIALIST',
+  IMMUNOLOGIST: 'IMMUNOLOGIST',
+  ANESTHESIOLOGIST: 'ANESTHESIOLOGIST',
+  EMERGENCY_MEDICINE: 'EMERGENCY_MEDICINE',
+  SPORTS_MEDICINE: 'SPORTS_MEDICINE',
+  PAIN_MEDICINE: 'PAIN_MEDICINE',
+  CRITICAL_CARE: 'CRITICAL_CARE',
+  PHYSIOTHERAPIST: 'PHYSIOTHERAPIST',
+  NUTRITIONIST: 'NUTRITIONIST'
+};
+
+exports.Qualification = exports.$Enums.Qualification = {
+  MBBS: 'MBBS',
+  BDS: 'BDS',
+  BPT: 'BPT',
+  BHMS: 'BHMS',
+  BAMS: 'BAMS',
+  MD: 'MD',
+  MS: 'MS',
+  DNB: 'DNB',
+  MDS: 'MDS',
+  DM: 'DM',
+  MCH: 'MCH',
+  MPH: 'MPH',
+  MBA_HM: 'MBA_HM',
+  PHD: 'PHD',
+  DO: 'DO',
+  FELLOWSHIP: 'FELLOWSHIP',
+  PGD: 'PGD'
+};
+
 exports.Role = exports.$Enums.Role = {
   PATIENT: 'PATIENT',
   DOCTOR: 'DOCTOR',
@@ -124,7 +219,10 @@ exports.Role = exports.$Enums.Role = {
 };
 
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Patient: 'Patient',
+  Doctor: 'Doctor',
+  Admin: 'Admin'
 };
 /**
  * Create the Client
@@ -134,10 +232,10 @@ const config = {
   "clientVersion": "7.0.1",
   "engineVersion": "f09f2815f091dbba658cdcd2264306d88bb5bda6",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  phoneNo   String\n  name      String\n  password  String\n  age       Int\n  city      String\n  state     String\n  pinCode   Int\n  role      Role\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Role {\n  PATIENT\n  DOCTOR\n  ADMIN\n}\n"
+  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  phoneNo   String\n  name      String\n  gender    Gender   @default(MALE)\n  password  String\n  age       Int\n  city      String\n  state     String\n  pinCode   Int\n  role      Role     @default(PATIENT)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  patient Patient?\n  doctor  Doctor?\n  admin   Admin?\n}\n\nenum Gender {\n  MALE\n  FEMALE\n  BINARY\n}\n\nmodel Patient {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  medicalHistory     String @default(\"\")\n  allergies          String @default(\"\")\n  currentMedications String @default(\"\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Doctor {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  specialty      Specialty\n  experience     Int             @default(0)\n  qualifications Qualification[]\n  fees           Int             @default(0)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Specialty {\n  CARDIOLOGIST\n  DERMATOLOGIST\n  PEDIATRICIAN\n  NEUROLOGIST\n  NEPHROLOGIST\n  GASTROENTEROLOGIST\n  ENDOCRINOLOGIST\n  PULMONOLOGIST\n  ONCOLOGIST\n  ORTHOPEDIC\n  OPHTHALMOLOGIST\n  OTOLARYNGOLOGIST\n  UROLOGIST\n  RHEUMATOLOGIST\n  PSYCHIATRIST\n  PSYCHOLOGIST\n  GENERAL_PHYSICIAN\n  GENERAL_SURGEON\n  RADIOLOGIST\n  PATHOLOGIST\n  HEMATOLOGIST\n  DENTIST\n  GYNECOLOGIST\n  OBSTETRICIAN\n  PLASTIC_SURGEON\n  VASCULAR_SURGEON\n  CARDIOTHORACIC_SURGEON\n  DERMATOSURGEON\n  INFECTIOUS_DISEASE_SPECIALIST\n  IMMUNOLOGIST\n  ANESTHESIOLOGIST\n  EMERGENCY_MEDICINE\n  SPORTS_MEDICINE\n  PAIN_MEDICINE\n  CRITICAL_CARE\n  PHYSIOTHERAPIST\n  NUTRITIONIST\n}\n\nenum Qualification {\n  MBBS\n  BDS\n  BPT\n  BHMS\n  BAMS\n  MD\n  MS\n  DNB\n  MDS\n  DM\n  MCH\n  MPH\n  MBA_HM\n  PHD\n  DO\n  FELLOWSHIP\n  PGD\n}\n\nmodel Admin {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Role {\n  PATIENT\n  DOCTOR\n  ADMIN\n}\n"
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phoneNo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"age\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"state\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pinCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phoneNo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"age\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"state\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pinCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"Patient\",\"relationName\":\"PatientToUser\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToUser\"},{\"name\":\"admin\",\"kind\":\"object\",\"type\":\"Admin\",\"relationName\":\"AdminToUser\"}],\"dbName\":null},\"Patient\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientToUser\"},{\"name\":\"medicalHistory\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"allergies\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"currentMedications\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Doctor\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DoctorToUser\"},{\"name\":\"specialty\",\"kind\":\"enum\",\"type\":\"Specialty\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"qualifications\",\"kind\":\"enum\",\"type\":\"Qualification\"},{\"name\":\"fees\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Admin\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AdminToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.compilerWasm = {
       getRuntime: async () => require('./query_compiler_bg.js'),
