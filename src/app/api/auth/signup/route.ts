@@ -15,26 +15,14 @@ export const POST = async (req: NextRequest) => {
       pinCode,
       password,
       role,
+      gender
     } = await req.json();
 
-    // Basic validation
-    if (!role) {
-      return NextResponse.json(
-        { error: "Role is required" },
-        { status: 400 }
-      );
-    }
+    
 
     // Convert role to uppercase to match Prisma enum
     const normalizedRole = role.toUpperCase();
 
-    // Ensure valid enum
-    if (!["PATIENT", "DOCTOR", "ADMIN"].includes(normalizedRole)) {
-      return NextResponse.json(
-        { error: "Invalid role" },
-        { status: 400 }
-      );
-    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -62,7 +50,8 @@ export const POST = async (req: NextRequest) => {
         city,
         state,
         pinCode: Number(pinCode),
-        role: normalizedRole, // store enum
+        role: normalizedRole, 
+        gender:gender
       },
     });
 
