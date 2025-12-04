@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Signup from '../signup/page';
 
 export default function Home() {
   const router = useRouter();
