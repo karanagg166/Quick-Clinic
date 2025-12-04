@@ -13,12 +13,13 @@ export default function Signup() {
   const [state, setState] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState(""); // NEW
+  const [role, setRole] = useState("");
+  const [gender, setGender] = useState(""); // NEW
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -32,14 +33,15 @@ export default function Signup() {
           state,
           pinCode,
           password,
-          role, // NEW
+          role,
+          gender
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        router.push("about");
+        router.push("/about");
       } else {
         alert(data.error || "Signup failed");
       }
@@ -87,6 +89,22 @@ export default function Signup() {
             />
           </div>
 
+          {/* Gender */}
+          <div className="flex flex-col">
+            <label className="text-gray-700 font-medium mb-1">Gender</label>
+            <select
+              value={gender}
+              onChange={(e) => setGender(e.target.value)}
+              className="border border-black text-black rounded-md px-4 py-2 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
+              required
+            >
+              <option value="" disabled>Select gender</option>
+              <option value="MALE">Male</option>
+              <option value="FEMALE">Female</option>
+              <option value="OTHER">Other</option>
+            </select>
+          </div>
+
           <input
             type="email"
             placeholder="Email"
@@ -125,7 +143,7 @@ export default function Signup() {
             />
           </div>
 
-          {/* NEW ROLE SELECTION */}
+          {/* Role */}
           <div className="mt-2">
             <p className="text-sm font-medium text-gray-700 mb-2">Role</p>
             <div className="flex items-center gap-6">
@@ -160,7 +178,6 @@ export default function Signup() {
                 />
                 <span>Doctor</span>
               </label>
-
             </div>
           </div>
 
