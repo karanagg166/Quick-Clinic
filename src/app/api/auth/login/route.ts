@@ -9,7 +9,9 @@ export const POST = async (req: NextRequest) => {
 
     // Check user
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: { email:email
+            
+       },
     });
 
     if (!user) {
