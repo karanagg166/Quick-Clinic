@@ -125,12 +125,41 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phoneNo: 'phoneNo',
   name: 'name',
+  gender: 'gender',
   password: 'password',
   age: 'age',
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
   role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PatientScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  medicalHistory: 'medicalHistory',
+  allergies: 'allergies',
+  currentMedications: 'currentMedications',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DoctorScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  specialty: 'specialty',
+  experience: 'experience',
+  qualifications: 'qualifications',
+  fees: 'fees',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AdminScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -144,14 +173,83 @@ exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
 };
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  BINARY: 'BINARY'
+};
+
 exports.Role = exports.$Enums.Role = {
   PATIENT: 'PATIENT',
   DOCTOR: 'DOCTOR',
   ADMIN: 'ADMIN'
 };
 
+exports.Specialty = exports.$Enums.Specialty = {
+  CARDIOLOGIST: 'CARDIOLOGIST',
+  DERMATOLOGIST: 'DERMATOLOGIST',
+  PEDIATRICIAN: 'PEDIATRICIAN',
+  NEUROLOGIST: 'NEUROLOGIST',
+  NEPHROLOGIST: 'NEPHROLOGIST',
+  GASTROENTEROLOGIST: 'GASTROENTEROLOGIST',
+  ENDOCRINOLOGIST: 'ENDOCRINOLOGIST',
+  PULMONOLOGIST: 'PULMONOLOGIST',
+  ONCOLOGIST: 'ONCOLOGIST',
+  ORTHOPEDIC: 'ORTHOPEDIC',
+  OPHTHALMOLOGIST: 'OPHTHALMOLOGIST',
+  OTOLARYNGOLOGIST: 'OTOLARYNGOLOGIST',
+  UROLOGIST: 'UROLOGIST',
+  RHEUMATOLOGIST: 'RHEUMATOLOGIST',
+  PSYCHIATRIST: 'PSYCHIATRIST',
+  PSYCHOLOGIST: 'PSYCHOLOGIST',
+  GENERAL_PHYSICIAN: 'GENERAL_PHYSICIAN',
+  GENERAL_SURGEON: 'GENERAL_SURGEON',
+  RADIOLOGIST: 'RADIOLOGIST',
+  PATHOLOGIST: 'PATHOLOGIST',
+  HEMATOLOGIST: 'HEMATOLOGIST',
+  DENTIST: 'DENTIST',
+  GYNECOLOGIST: 'GYNECOLOGIST',
+  OBSTETRICIAN: 'OBSTETRICIAN',
+  PLASTIC_SURGEON: 'PLASTIC_SURGEON',
+  VASCULAR_SURGEON: 'VASCULAR_SURGEON',
+  CARDIOTHORACIC_SURGEON: 'CARDIOTHORACIC_SURGEON',
+  DERMATOSURGEON: 'DERMATOSURGEON',
+  INFECTIOUS_DISEASE_SPECIALIST: 'INFECTIOUS_DISEASE_SPECIALIST',
+  IMMUNOLOGIST: 'IMMUNOLOGIST',
+  ANESTHESIOLOGIST: 'ANESTHESIOLOGIST',
+  EMERGENCY_MEDICINE: 'EMERGENCY_MEDICINE',
+  SPORTS_MEDICINE: 'SPORTS_MEDICINE',
+  PAIN_MEDICINE: 'PAIN_MEDICINE',
+  CRITICAL_CARE: 'CRITICAL_CARE',
+  PHYSIOTHERAPIST: 'PHYSIOTHERAPIST',
+  NUTRITIONIST: 'NUTRITIONIST'
+};
+
+exports.Qualification = exports.$Enums.Qualification = {
+  MBBS: 'MBBS',
+  BDS: 'BDS',
+  BPT: 'BPT',
+  BHMS: 'BHMS',
+  BAMS: 'BAMS',
+  MD: 'MD',
+  MS: 'MS',
+  DNB: 'DNB',
+  MDS: 'MDS',
+  DM: 'DM',
+  MCH: 'MCH',
+  MPH: 'MPH',
+  MBA_HM: 'MBA_HM',
+  PHD: 'PHD',
+  DO: 'DO',
+  FELLOWSHIP: 'FELLOWSHIP',
+  PGD: 'PGD'
+};
+
 exports.Prisma.ModelName = {
-  User: 'User'
+  User: 'User',
+  Patient: 'Patient',
+  Doctor: 'Doctor',
+  Admin: 'Admin'
 };
 
 /**

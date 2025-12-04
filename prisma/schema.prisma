@@ -9,59 +9,130 @@ datasource db {
 }
 
 
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   phoneNo   String
   name      String
+  gender    Gender   @default(MALE)
   password  String
   age       Int
   city      String
   state     String
   pinCode   Int
-  role      Role
+  role      Role     @default(PATIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 
   patient Patient?
-  doctor Doctor?
-  admin Admin?
+  doctor  Doctor?
+  admin   Admin?
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  BINARY
+}
 
 model Patient {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  medicalHistory     String   @default("")
+  allergies          String   @default("")
+  currentMedications String   @default("")
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model Doctor {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id              String           @id @default(cuid())
+  userId          String           @unique
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  specialty       Specialty
+  experience      Int              @default(0)
+  qualifications  Qualification[]
+  fees            Int              @default(0)
+
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+}
+
+enum Specialty {
+  CARDIOLOGIST
+  DERMATOLOGIST
+  PEDIATRICIAN
+  NEUROLOGIST
+  NEPHROLOGIST
+  GASTROENTEROLOGIST
+  ENDOCRINOLOGIST
+  PULMONOLOGIST
+  ONCOLOGIST
+  ORTHOPEDIC
+  OPHTHALMOLOGIST
+  OTOLARYNGOLOGIST
+  UROLOGIST
+  RHEUMATOLOGIST
+  PSYCHIATRIST
+  PSYCHOLOGIST
+  GENERAL_PHYSICIAN
+  GENERAL_SURGEON
+  RADIOLOGIST
+  PATHOLOGIST
+  HEMATOLOGIST
+  DENTIST
+  GYNECOLOGIST
+  OBSTETRICIAN
+  PLASTIC_SURGEON
+  VASCULAR_SURGEON
+  CARDIOTHORACIC_SURGEON
+  DERMATOSURGEON
+  INFECTIOUS_DISEASE_SPECIALIST
+  IMMUNOLOGIST
+  ANESTHESIOLOGIST
+  EMERGENCY_MEDICINE
+  SPORTS_MEDICINE
+  PAIN_MEDICINE
+  CRITICAL_CARE
+  PHYSIOTHERAPIST
+  NUTRITIONIST
+}
+
+enum Qualification {
+  MBBS
+  BDS
+  BPT
+  BHMS
+  BAMS
+  MD
+  MS
+  DNB
+  MDS
+  DM
+  MCH
+  MPH
+  MBA_HM
+  PHD
+  DO
+  FELLOWSHIP
+  PGD
 }
 
 model Admin {
   id        String   @id @default(cuid())
   userId    String   @unique
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
-
 
 enum Role {
   PATIENT
   DOCTOR
   ADMIN
 }
-
