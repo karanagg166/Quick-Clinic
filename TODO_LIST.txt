@@ -1,4 +1,5 @@
 
 
 >> We Can Add OTP Authentication via email or phone No. in Future.
+>> Address info can be stored in different table.
 
