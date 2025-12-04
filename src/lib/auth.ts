@@ -26,6 +26,22 @@ export async function verifyToken(token: string){
     }
 };
 
+export async function getUserId(token: string) {
+  const result = await verifyToken(token);
+   // console.log(result);
+  if (!result.valid) {
+    return { valid: false, userId: null, error: result.error };
+  }
+    
+  const userId = (result.payload as any).id;
+  //console.log(userId);
+
+  return {
+    valid: true,
+    userId,
+  };
+}
+
 
 
 
