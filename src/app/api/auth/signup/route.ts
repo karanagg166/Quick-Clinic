@@ -1,13 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import bcrypt from "bcryptjs";   // better import
+import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
 
 export const POST = async (req: NextRequest) => {
   try {
-    const { name, email, phoneNo, age, city, state, pinCode, password } =
-      await req.json();
+    const {
+      name,
+      email,
+      phoneNo,
+      age,
+      city,
+      state,
+      pinCode,
+      password,
+      role,
+    } = await req.json();
 
+    // Basic validation
+    if (!role) {
+      return NextResponse.json(
+        { error: "Role is required" },
+        { status: 400 }
+      );
+    }
+
+    // Convert role to uppercase to match Prisma enum
+    const normalizedRole = role.toUpperCase();
+
+    // Ensure valid enum
+    if (!["PATIENT", "DOCTOR", "ADMIN"].includes(normalizedRole)) {
+      return NextResponse.json(
+        { error: "Invalid role" },
+        { status: 400 }
+      );
+    }
+
+    // Check if user exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -19,8 +48,10 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Create user
     await prisma.user.create({
       data: {
         name,
@@ -30,17 +61,20 @@ export const POST = async (req: NextRequest) => {
         age: Number(age),
         city,
         state,
-        pinCode,
+        pinCode: Number(pinCode),
+        role: normalizedRole, // store enum
       },
     });
 
-    const token = await createToken({ email });
+    // Optionally store role in token
+    const token = await createToken({ email, role: normalizedRole });
 
     const res = NextResponse.json(
       { message: "User Signup successfully" },
       { status: 200 }
     );
 
+    // Set cookie
     res.cookies.set("token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -50,7 +84,10 @@ export const POST = async (req: NextRequest) => {
     });
 
     return res;
+
   } catch (error: any) {
+    console.error("Signup Error:", error);
+
     return NextResponse.json(
       { error: error?.message ?? "Server error" },
       { status: 500 }

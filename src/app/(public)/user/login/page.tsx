@@ -6,28 +6,29 @@ import Signup from '../signup/page';
 
 export default function Home() {
   const router = useRouter();
-  const [Email, setEmail] = useState("a");
-  const [Password, setPassword] = useState("");
+
+  const [email, setEmail] = useState("a");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/auth", {
+      const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          Email,
-          Password,
+          email,
+          password,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        router.push("/dashboard");
+        router.push("/about");
       } else {
         alert(data.error || "Login failed");
       }
@@ -38,10 +39,8 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-
       <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
         
-        {/* Title */}
         <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
           Welcome Back
         </h2>
@@ -49,16 +48,15 @@ export default function Home() {
           Please login to continue
         </p>
 
-        {/* Form */}
         <form onSubmit={handleLogin} className="flex flex-col gap-5">
 
-          {/* Username */}
+          {/* Email */}
           <div className="flex flex-col">
             <label className="text-gray-700 font-medium mb-1">Email</label>
             <input
               type="email"
               placeholder="Enter your email"
-              value={Email}
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="border border-black text-black placeholder-gray-400 rounded-md px-4 py-2 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
@@ -70,7 +68,7 @@ export default function Home() {
             <input
               type="password"
               placeholder="Enter your password"
-              value={Password}
+              value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="border border-black text-black placeholder-gray-400 rounded-md px-4 py-2 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
             />
@@ -85,16 +83,15 @@ export default function Home() {
           </button>
         </form>
 
-        {/* Footer */}
         <p className="text-center mt-5 text-sm text-gray-600">
           Don’t have an account?{" "}
-          <span className="text-blue-600 font-medium cursor-pointer hover:underline"
-          onClick={() => router.push("/user/signup")}
+          <span
+            className="text-blue-600 font-medium cursor-pointer hover:underline"
+            onClick={() => router.push("/user/signup")}
           >
-          Signup
+            Signup
           </span>
         </p>
-
       </div>
     </div>
   );
