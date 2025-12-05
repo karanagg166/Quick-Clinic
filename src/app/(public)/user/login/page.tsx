@@ -33,6 +33,7 @@ export default function Home() {
         } else if (data.role === "PATIENT") {
           router.push("/patient/info");
         }
+        
       } else {
         alert(data.error || "Login failed");
       }
