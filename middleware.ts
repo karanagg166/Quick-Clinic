@@ -1,24 +1,38 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { verifyToken } from './src/lib/auth';
 
-export function middleware(request: NextRequest) {
-  // TODO: Add authentication checks here
-  // TODO: Add role-based route protection here
-  // TODO: Add redirect logic here
-  
+const ROLE_ROUTES: Record<string, RegExp[]> = {
+  admin: [/^\/admin/],
+  doctor: [/^\/doctor/],
+  patient: [/^\/patient/],
+};
+
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const token = request.cookies.get('Authtoken')?.value;
+
+  if (!token) {
+    return NextResponse.redirect(new URL('/user/login', request.url));
+  }
+
+  const result = await verifyToken(token);
+  if (!result.valid) {
+    return NextResponse.redirect(new URL('/user/login', request.url));
+  }
+
+  const role = (result.payload as any).role;
+
+  if (role && ROLE_ROUTES[role]) {
+    const hasAccess = ROLE_ROUTES[role].some(pattern => pattern.test(pathname));
+    if (!hasAccess) {
+      return NextResponse.redirect(new URL('/unauthorized', request.url));
+    }
+  }
+
   return NextResponse.next();
 }
 
-// Configure which routes use this middleware
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
-  ],
+  matcher: ['/(admin|doctor|patient)/:path*'],
 };
