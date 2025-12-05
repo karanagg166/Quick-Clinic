@@ -31,8 +31,13 @@ export async function GET(req: NextRequest) {
         { status: 404 }
       );
     }
-
-    return NextResponse.json(doctor, { status: 200 });
+const res= NextResponse.json(doctor, { status: 201 });
+    res.cookies.set("doctorId", doctor.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    return res;
 
   } catch (err: any) {
     console.error("GET Doctor Error:", err);

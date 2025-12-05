@@ -1,0 +1,74 @@
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
+// ========================================================
+// POST → CREATE or UPDATE Doctor Schedule (UPSERT)
+// ========================================================
+export async function POST(req: NextRequest) {
+  try {
+    const doctorId = req.cookies.get("doctorId")?.value;
+
+    if (!doctorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { weeklySchedule } = await req.json();
+
+    if (!weeklySchedule) {
+      return NextResponse.json(
+        { error: "Missing weeklySchedule" },
+        { status: 400 }
+      );
+    }
+
+    // UPSERT — create if not exists, update if exists
+    const schedule = await prisma.doctorSchedule.upsert({
+      where: { doctorId },
+      update: { weeklySchedule },
+      create: {
+        doctorId,
+        weeklySchedule,
+      },
+    });
+
+    return NextResponse.json(schedule, { status: 201 });
+  } catch (err: any) {
+    console.error("POST Schedule Error:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// ========================================================
+// GET → Get doctor schedule
+// ========================================================
+export async function GET(req: NextRequest) {
+  try {
+    const doctorId = req.cookies.get("doctorId")?.value;
+
+    if (!doctorId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const schedule = await prisma.doctorSchedule.findUnique({
+      where: { doctorId },
+    });
+
+    if (!schedule) {
+      return NextResponse.json(
+        { error: "No schedule found for this doctor" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json(schedule, { status: 200 });
+  } catch (err: any) {
+    console.error("GET Schedule Error:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
