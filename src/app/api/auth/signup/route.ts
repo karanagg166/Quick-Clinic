@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-import { createToken } from "@/lib/auth";
+
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -12,17 +12,13 @@ export const POST = async (req: NextRequest) => {
       age,
       city,
       state,
-      pinCode,
+      pinCode, 
       password,
       role,
       gender
     } = await req.json();
 
-    
-
-    // Convert role to uppercase to match Prisma enum
     const normalizedRole = role.toUpperCase();
-
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -36,11 +32,9 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
-    const user=await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         name,
         email,
@@ -55,24 +49,10 @@ export const POST = async (req: NextRequest) => {
       },
     });
 
-    // Optionally store role in token
-    const token = await createToken({ id: user.id,email: user.email,
-       role: normalizedRole 
-      });
-
     const res = NextResponse.json(
-      { message: "User Signup successfully" },
-      { status: 200 }
+      { message: "User created successfully" },
+      { status: 201 }
     );
-
-    // Set cookie
-    res.cookies.set("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      sameSite: "strict",
-      maxAge: 60 * 60 * 24,
-    });
 
     return res;
 

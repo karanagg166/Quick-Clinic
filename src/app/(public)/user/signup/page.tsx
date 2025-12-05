@@ -41,13 +41,7 @@ export default function Signup() {
       const data = await response.json();
 
       if (response.ok) {
-       if(role==="DOCTOR"){
-router.push("/doctor/info");
-       }
-       else if(role==="PATIENT"){
-router.push("/patient/info");
-       }
-        
+       router.push("/user/login");
       } else {
         alert(data.error || "Signup failed");
       }
