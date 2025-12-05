@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { Specialty } from "@/generated/prisma";
 
 export async function GET() {
   try {
-    const specializations = Object.keys(prisma.Specialty);
+    const specialties = Object.keys(Specialty);
 
     return NextResponse.json(
-      { specializations },
+      { specialties },
       { status: 200 }
     );
 
