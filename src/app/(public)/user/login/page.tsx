@@ -2,12 +2,22 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/userStore";
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+  gender: string;
+  age: number;
+}
 
 
 export default function Home() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("a");
+  const [email, setEmail] = useState("priyanshu@gmail.com");
   const [password, setPassword] = useState("");
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -27,11 +37,16 @@ export default function Home() {
 
       const data = await response.json();
 
+      const {user} = data;
+
       if (response.ok) {
-        if (data.role === "DOCTOR") {
-          router.push("/doctor/info");
-        } else if (data.role === "PATIENT") {
-          router.push("/patient/info");
+
+        useUserStore.getState().setUser(data.user);
+
+        if (user.role === "DOCTOR") {
+          router.push("/doctorDashboard");
+        } else if (user.role === "PATIENT") {
+          router.push("/patientDashboard");
         }
         
       } else {
