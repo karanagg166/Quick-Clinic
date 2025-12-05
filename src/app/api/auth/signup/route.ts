@@ -40,7 +40,7 @@ export const POST = async (req: NextRequest) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    await prisma.user.create({
+    const user=await prisma.user.create({
       data: {
         name,
         email,
@@ -56,7 +56,9 @@ export const POST = async (req: NextRequest) => {
     });
 
     // Optionally store role in token
-    const token = await createToken({ email, role: normalizedRole });
+    const token = await createToken({ id: user.id,email: user.email,
+       role: normalizedRole 
+      });
 
     const res = NextResponse.json(
       { message: "User Signup successfully" },
