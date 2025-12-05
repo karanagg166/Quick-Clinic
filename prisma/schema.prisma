@@ -84,7 +84,7 @@ model Leave {
   
   doctorId  String
   doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
+  reason    String   
   startDate DateTime
   endDate   DateTime
 
