@@ -28,7 +28,11 @@ export default function Home() {
       const data = await response.json();
 
       if (response.ok) {
-        router.push("/about");
+        if (data.role === "DOCTOR") {
+          router.push("/doctor/info");
+        } else if (data.role === "PATIENT") {
+          router.push("/patient/info");
+        }
       } else {
         alert(data.error || "Login failed");
       }
