@@ -20,7 +20,7 @@ export default function Home() {
 
         {/* Title */}
         <h1 className="text-3xl font-bold text-gray-800 mb-3">
-          Welcome
+          Welcome to QuickClinic
         </h1>
         <p className="text-gray-600 mb-8">
           Login or Signup to continue
