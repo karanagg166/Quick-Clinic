@@ -3,35 +3,31 @@
 import { useState, useEffect } from "react";
 
 export default function PatientInfo() {
-
   const [loading, setLoading] = useState(false);
   const [medicalHistory, setMedicalHistory] = useState("");
   const [allergies, setAllergies] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
   const [existingPatient, setExistingPatient] = useState(false);
 
-  // GET PATIENT INFO ON LOAD   
+  // GET PATIENT INFO ON LOAD
   useEffect(() => {
     const handleGetInfo = async () => {
       try {
         setLoading(true);
 
-        const response = await fetch("/api/patient/info", {
-          method: "GET",
-        });
-
+        const response = await fetch("/api/patient/info");
         const data = await response.json();
-
-        if (response.ok) {
+        
+        if (response.ok && data.patient) {
           setExistingPatient(true);
-          setMedicalHistory(data.medicalHistory);
-          setAllergies(data.allergies);
-          setCurrentMedications(data.currentMedications);
+          setMedicalHistory(data.patient.medicalHistory || "");
+          setAllergies(data.patient.allergies || "");
+          setCurrentMedications(data.patient.currentMedications || "");
         } else {
           setExistingPatient(false);
         }
-      } catch (err) {
-        console.error("Patient not created.");
+      } catch (err: any) {
+        console.error("Fetch Error:", err);
         setExistingPatient(false);
       } finally {
         setLoading(false);
@@ -62,10 +58,12 @@ export default function PatientInfo() {
 
       if (response.ok) {
         alert("Patient Info Updated Successfully");
+      } else {
+        alert(data.error || "Update failed");
       }
+
     } catch (err: any) {
       console.error("Update Error:", err);
-      alert("Failed to update Patient Info");
     } finally {
       setLoading(false);
     }
@@ -93,10 +91,12 @@ export default function PatientInfo() {
       if (response.ok) {
         setExistingPatient(true);
         alert("Patient Info Created Successfully");
+      } else {
+        alert(data.error || "Creation failed");
       }
+
     } catch (err: any) {
       console.error("Create Error:", err);
-      alert("Failed to create Patient Info");
     } finally {
       setLoading(false);
     }
@@ -108,14 +108,12 @@ export default function PatientInfo() {
         Patient Medical Information
       </h2>
 
-      {/* Loading Indicator */}
       {loading && (
         <p className="text-blue-600 text-center font-semibold mb-2">
           Loading...
         </p>
       )}
 
-      {/* Medical History Input */}
       <label className="block font-semibold mt-3">Medical History:</label>
       <textarea
         value={medicalHistory}
@@ -125,7 +123,6 @@ export default function PatientInfo() {
         placeholder="Enter medical history"
       />
 
-      {/* Allergies Input */}
       <label className="block font-semibold mt-3">Allergies:</label>
       <textarea
         value={allergies}
@@ -135,17 +132,15 @@ export default function PatientInfo() {
         placeholder="Enter allergies"
       />
 
-      {/* Current Medications Input */}
       <label className="block font-semibold mt-3">Current Medications:</label>
       <textarea
         value={currentMedications}
         onChange={(e) => setCurrentMedications(e.target.value)}
         className="w-full border p-2 rounded mt-1"
         rows={2}
-        placeholder="Enter current medications"
+        placeholder="Enter medications"
       />
 
-      {/* Buttons */}
       <div className="mt-6 flex justify-between">
         {!existingPatient ? (
           <button
