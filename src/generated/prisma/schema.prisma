@@ -56,8 +56,37 @@ model Doctor {
   qualifications Qualification[]
   fees           Int             @default(0)
 
+  // ✅ Doctor → Schedule (1 to 1)
+  schedule Schedule?
+
+  // ✅ Doctor → Leave (1 to many)
+  leaves Leave[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Schedule {
+  id       String @id @default(cuid())
+  doctorId String @unique
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  weeklySchedule Json
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Leave {
+  id String @id @default(cuid())
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime
+
+  applyAt DateTime @default(now())
 }
 
 enum Specialty {
