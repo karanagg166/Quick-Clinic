@@ -1,13 +1,13 @@
 services:
   app:
-    build: .
-    container_name: quick_clinic_app
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: quick_clinic_dev
     ports:
       - "3000:3000"
     env_file: .env
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
     restart: always
-   
