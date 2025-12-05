@@ -1,0 +1,21 @@
+FROM node:24.11.1-bookworm-slim
+
+WORKDIR /app
+
+# Required by Prisma
+RUN apt-get update && apt-get install -y openssl
+
+# Copy package files & install dependencies
+COPY package*.json ./
+RUN npm install
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client so Next.js can import it
+RUN npx prisma generate
+
+EXPOSE 3000
+
+# Use Next.js dev mode (hot reload)
+CMD ["npm", "run", "dev"]
