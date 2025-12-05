@@ -25,7 +25,3 @@ export async function verifyToken(token: string){
         return {valid: false, error: err?.message ?? String(err) };
     }
 };
-
-
-
-
