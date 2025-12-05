@@ -52,25 +52,33 @@ model Doctor {
   id              String           @id @default(cuid())
   userId          String           @unique
   user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  
   specialty       Specialty
   experience      Int              @default(0)
   qualifications  Qualification[]
   fees            Int              @default(0)
 
+  // ✅ Doctor → Schedule (1 to 1)
+  schedule        Schedule?
+
+  // ✅ Doctor → Leave (1 to many)
+  leaves          Leave[]
+
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
+
 model Schedule {
   id             String   @id @default(cuid())
   doctorId       String   @unique
   doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 
-  weeklySchedule Json     // JSON schedule for Monday–Sunday
+  weeklySchedule Json
 
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 }
+
 model Leave {
   id        String    @id @default(cuid())
   
@@ -82,7 +90,6 @@ model Leave {
 
   applyAt   DateTime  @default(now())
 }
-
 
 
 enum Specialty {
