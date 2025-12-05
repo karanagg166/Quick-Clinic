@@ -2,13 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
+import { use } from "react";
+
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+  gender: string;
+  age: number;
+}
+
+
 
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
     const user = await prisma.user.findUnique({
-      where: { email },
+      where: {
+         email:email    
+       },
     });
 
     if (!user) {
@@ -23,16 +38,30 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const token = await createToken({
+    // JWT token
+    const token = await createToken({ 
+      id: user.id,
+      email: user.email,
+      role: user.role 
+    });
+
+    const userDetails: User = {
       id: user.id,
       email: user.email,
       role: user.role,
-    });
+      name: user.name,
+      gender: user.gender,
+      age: user.age,
+    };
+    
 
+    
+
+    // Response
     const res = NextResponse.json(
       {
         message: "Login successful",
-        role: user.role,
+        user: userDetails,
       },
       { status: 200 }
     );
