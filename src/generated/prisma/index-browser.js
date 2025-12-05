@@ -157,6 +157,22 @@ exports.Prisma.DoctorScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.ScheduleScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  weeklySchedule: 'weeklySchedule',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeaveScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  applyAt: 'applyAt'
+};
+
 exports.Prisma.AdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -169,9 +185,19 @@ exports.Prisma.SortOrder = {
   desc: 'desc'
 };
 
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -249,6 +275,8 @@ exports.Prisma.ModelName = {
   User: 'User',
   Patient: 'Patient',
   Doctor: 'Doctor',
+  Schedule: 'Schedule',
+  Leave: 'Leave',
   Admin: 'Admin'
 };
 
