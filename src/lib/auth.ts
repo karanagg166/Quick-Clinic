@@ -8,6 +8,7 @@ if(!JWT_SECRET){
 
 const secret_key=new TextEncoder().encode(JWT_SECRET);
 
+
 export async function createToken(payload: Record<string,any>){
     return await new SignJWT(payload)
     .setProtectedHeader({alg: "HS256"})
@@ -18,23 +19,24 @@ export async function createToken(payload: Record<string,any>){
 
 export async function verifyToken(token: string){
     try{
-        const {payload}=await jwtVerify(token, secret_key);
+        const {payload}= await jwtVerify(token, secret_key);
         return {valid: true, payload:payload as JWTPayload};
     }catch(err:any){
-
         return {valid: false, error: err?.message ?? String(err) };
     }
 };
 
 export async function getUserId(token: string) {
   const result = await verifyToken(token);
-   // console.log(result);
+
   if (!result.valid) {
-    return { valid: false, userId: null, error: result.error };
+    return { valid: false, 
+            userId: null, 
+            error: result.error 
+          };
   }
     
   const userId = (result.payload as any).id;
-  //console.log(userId);
 
   return {
     valid: true,
