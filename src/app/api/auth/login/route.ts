@@ -1,27 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
 
-export const POST = async (req: NextRequest) => {
+export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
 
-    // Check user
     const user = await prisma.user.findUnique({
-      where: { email:email
-            
-       },
+      where: { email },
     });
 
     if (!user) {
-      return NextResponse.json(
-        { error: "Invalid email. No user found." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    // Check password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(
@@ -30,35 +23,41 @@ export const POST = async (req: NextRequest) => {
       );
     }
 
-    // JWT token
-    const token = await createToken({ id: user.id,email: user.email,
-      role: user.role 
+    const token = await createToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
     });
-    
 
-    // Response
     const res = NextResponse.json(
-      { message: "Login successful" ,
-        role: user.role
-
+      {
+        message: "Login successful",
+        role: user.role,
       },
       { status: 200 }
     );
 
-   
-    res.cookies.set("Authtoken", token, {
+    res.cookies.set("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      secure: false,
+      sameSite: "lax",
       path: "/",
-      maxAge: 60 * 60 * 24,
+      maxAge: 60 * 60 * 24 * 7,
     });
+    res.cookies.set("role", user.role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",});
+    
+  
+
 
     return res;
   } catch (error: any) {
+    console.error("LOGIN ERROR:", error);
     return NextResponse.json(
       { error: error?.message ?? "Server error" },
       { status: 500 }
     );
   }
-};
+}
