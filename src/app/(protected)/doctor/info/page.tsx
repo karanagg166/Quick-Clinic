@@ -31,7 +31,7 @@ export default function DoctorInfo() {
           setSpecialization(data.specialization);
           setQualification(data.qualifications);
         }
-      } catch (err) {
+      } catch (err:any) {
         console.error("Doctor not created yet.");
       } finally {
         setLoading(false);
@@ -85,7 +85,7 @@ export default function DoctorInfo() {
       } else {
         alert("Error updating doctor info: " + data.error);
       }
-    } catch (err) {
+    } catch (err:any) {
       alert("Error updating doctor info: " + err.message);
     } finally {
       setLoading(false);
