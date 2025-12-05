@@ -31,8 +31,13 @@ export async function GET(req: NextRequest) {
         { status: 404 }
       );
     }
-
-    return NextResponse.json(doctor, { status: 200 });
+const res= NextResponse.json(doctor, { status: 201 });
+    res.cookies.set("doctorId", doctor.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+    return res;
 
   } catch (err: any) {
     console.error("GET Doctor Error:", err);
@@ -62,7 +67,7 @@ export async function POST(req: NextRequest) {
     const {
       specialty,
       experience,
-      qualifications,
+      qualification,
       fees,
     } = await req.json();
 
@@ -82,7 +87,7 @@ export async function POST(req: NextRequest) {
         userId,
         specialty,
         experience: Number(experience) || 0,
-        qualifications: qualifications || [],
+        qualifications: qualification || [],
         fees: Number(fees) || 0,
       },
     });
@@ -117,7 +122,7 @@ export async function PUT(req: NextRequest) {
     const {
       specialty,
       experience,
-      qualifications,
+      qualification,
       fees,
     } = await req.json();
 
@@ -137,7 +142,7 @@ export async function PUT(req: NextRequest) {
       data: {
         specialty,
         experience: Number(experience) ,
-        qualifications: qualifications ,
+        qualifications: qualification ,
         fees: Number(fees) ,
       },
     });

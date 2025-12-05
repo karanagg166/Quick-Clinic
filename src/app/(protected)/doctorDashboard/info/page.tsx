@@ -6,11 +6,19 @@ export default function DoctorInfo() {
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
 
-  const [specialization, setSpecialization] = useState(""); // selected
-  const [specializations, setSpecializations] = useState<string[]>([]); // list
+  const [specialty, setSpecialty] = useState(""); // selected
+  const [specialties, setSpecialties] = useState<string[]>([]); // list
 
   const [qualification, setQualification] = useState<string[]>([]); // selected
   const [qualifications, setQualifications] = useState<string[]>([]); // list
+
+  const toggleQualification = (value: string) => {
+    setQualification((prev) =>
+      prev.includes(value)
+        ? prev.filter((item) => item !== value) // remove
+        : [...prev, value] // add
+    );
+  };
 
   const [existingDoctor, setExistingDoctor] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -28,7 +36,7 @@ export default function DoctorInfo() {
           setExistingDoctor(true);
           setFees(data.fees);
           setExperience(data.experience);
-          setSpecialization(data.specialization);
+          setSpecialty(data.specialty);
           setQualification(data.qualifications);
         }
       } catch (err:any) {
@@ -47,7 +55,7 @@ export default function DoctorInfo() {
       try {
         const sp = await fetch("/api/doctor/specializations");
         const spData = await sp.json();
-        if (sp.ok) setSpecializations(spData.specializations);
+        if (sp.ok) setSpecialties(spData.specialties);
 
         const q = await fetch("/api/doctor/qualifications");
         const qData = await q.json();
@@ -72,7 +80,7 @@ export default function DoctorInfo() {
         },
         body: JSON.stringify({
           fees,
-          specialization,
+          specialty,
           experience,
           qualifications: qualification,
         }),
@@ -104,7 +112,7 @@ export default function DoctorInfo() {
         },
         body: JSON.stringify({
           fees,
-          specialization,
+          specialty,
           experience,
           qualifications: qualification,
         }),
@@ -152,15 +160,15 @@ export default function DoctorInfo() {
         className="w-full border p-2 rounded"
       />
 
-      {/* SPECIALIZATION — SINGLE SELECT */}
-      <label className="block font-semibold mt-3">Specialization:</label>
+      {/* SPECIALITY — SINGLE SELECT */}
+      <label className="block font-semibold mt-3">Specialty:</label>
       <select
-        value={specialization}
-        onChange={(e) => setSpecialization(e.target.value)}
+        value={specialty}
+        onChange={(e) => setSpecialty(e.target.value)}
         className="w-full border p-2 rounded"
       >
-        <option value="">Select specialization</option>
-        {specializations.map((sp: string) => (
+        <option value="">Select specialty</option>
+        {specialties.map((sp: string) => (
           <option key={sp} value={sp}>
             {sp}
           </option>
@@ -168,26 +176,28 @@ export default function DoctorInfo() {
       </select>
 
       {/* QUALIFICATIONS — MULTIPLE SELECT */}
-      <label className="block font-semibold mt-3">Qualifications:</label>
-     <select
-  multiple
-  value={qualification}
-  onChange={(e) =>
-    setQualification(
-      Array.from(
-        (e.target as HTMLSelectElement).selectedOptions,
-        (option) => option.value
-      )
-    )
-  }
-  className="w-full border p-2 rounded h-32"
->
-  {qualifications.map((q: string) => (
-    <option key={q} value={q}>
-      {q}
-    </option>
-  ))}
-</select>
+      <label className="block font-semibold mt-4">Qualifications:</label>
+
+      <div className="border p-3 rounded max-h-48 overflow-y-auto space-y-2 bg-gray-50">
+        {qualifications.map((q: string) => (
+          <label key={q} className="flex items-center gap-2 cursor-pointer text-sm">
+            
+            <input
+              type="checkbox"
+              value={q}
+              checked={qualification.includes(q)}
+              onChange={() => toggleQualification(q)}
+              className="h-4 w-4"
+            />
+
+            <span>{q}</span>
+          </label>
+        ))}
+
+        {qualifications.length === 0 && (
+          <p className="text-gray-500 text-sm">Loading...</p>
+        )}
+      </div>
 
 
       {/* BUTTONS */}

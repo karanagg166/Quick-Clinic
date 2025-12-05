@@ -39,12 +39,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.0.1
- * Query Engine version: f09f2815f091dbba658cdcd2264306d88bb5bda6
+ * Prisma Client JS version: 7.1.0
+ * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
  */
 Prisma.prismaVersion = {
-  client: "7.0.1",
-  engine: "f09f2815f091dbba658cdcd2264306d88bb5bda6"
+  client: "7.1.0",
+  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
 }
 
 Prisma.PrismaClientKnownRequestError = PrismaClientKnownRequestError;
@@ -257,8 +257,8 @@ exports.Prisma.ModelName = {
  */
 const config = {
   "previewFeatures": [],
-  "clientVersion": "7.0.1",
-  "engineVersion": "f09f2815f091dbba658cdcd2264306d88bb5bda6",
+  "clientVersion": "7.1.0",
+  "engineVersion": "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba",
   "activeProvider": "postgresql",
   "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  phoneNo   String\n  name      String\n  gender    Gender   @default(MALE)\n  password  String\n  age       Int\n  city      String\n  state     String\n  pinCode   Int\n  role      Role     @default(PATIENT)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  patient Patient?\n  doctor  Doctor?\n  admin   Admin?\n}\n\nenum Gender {\n  MALE\n  FEMALE\n  BINARY\n}\n\nmodel Patient {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  medicalHistory     String @default(\"\")\n  allergies          String @default(\"\")\n  currentMedications String @default(\"\")\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Doctor {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  specialty      Specialty\n  experience     Int             @default(0)\n  qualifications Qualification[]\n  fees           Int             @default(0)\n\n  // ✅ Doctor → Schedule (1 to 1)\n  schedule Schedule?\n\n  // ✅ Doctor → Leave (1 to many)\n  leaves Leave[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Schedule {\n  id       String @id @default(cuid())\n  doctorId String @unique\n  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n\n  weeklySchedule Json\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Leave {\n  id String @id @default(cuid())\n\n  doctorId String\n  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n\n  startDate DateTime\n  endDate   DateTime\n\n  applyAt DateTime @default(now())\n}\n\nenum Specialty {\n  CARDIOLOGIST\n  DERMATOLOGIST\n  PEDIATRICIAN\n  NEUROLOGIST\n  NEPHROLOGIST\n  GASTROENTEROLOGIST\n  ENDOCRINOLOGIST\n  PULMONOLOGIST\n  ONCOLOGIST\n  ORTHOPEDIC\n  OPHTHALMOLOGIST\n  OTOLARYNGOLOGIST\n  UROLOGIST\n  RHEUMATOLOGIST\n  PSYCHIATRIST\n  PSYCHOLOGIST\n  GENERAL_PHYSICIAN\n  GENERAL_SURGEON\n  RADIOLOGIST\n  PATHOLOGIST\n  HEMATOLOGIST\n  DENTIST\n  GYNECOLOGIST\n  OBSTETRICIAN\n  PLASTIC_SURGEON\n  VASCULAR_SURGEON\n  CARDIOTHORACIC_SURGEON\n  DERMATOSURGEON\n  INFECTIOUS_DISEASE_SPECIALIST\n  IMMUNOLOGIST\n  ANESTHESIOLOGIST\n  EMERGENCY_MEDICINE\n  SPORTS_MEDICINE\n  PAIN_MEDICINE\n  CRITICAL_CARE\n  PHYSIOTHERAPIST\n  NUTRITIONIST\n}\n\nenum Qualification {\n  MBBS\n  BDS\n  BPT\n  BHMS\n  BAMS\n  MD\n  MS\n  DNB\n  MDS\n  DM\n  MCH\n  MPH\n  MBA_HM\n  PHD\n  DO\n  FELLOWSHIP\n  PGD\n}\n\nmodel Admin {\n  id     String @id @default(cuid())\n  userId String @unique\n  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nenum Role {\n  PATIENT\n  DOCTOR\n  ADMIN\n}\n"
 }

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { Qualification } from "@/generated/prisma";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
-    const qualifications = Object.keys(prisma.Qualification);
+    const qualifications = Object.keys(Qualification);
 
     return NextResponse.json(
       { qualifications },
