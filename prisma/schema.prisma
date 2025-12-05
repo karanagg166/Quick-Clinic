@@ -61,6 +61,29 @@ model Doctor {
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
 }
+model Schedule {
+  id             String   @id @default(cuid())
+  doctorId       String   @unique
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  weeklySchedule Json     // JSON schedule for Monday–Sunday
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Leave {
+  id        String    @id @default(cuid())
+  
+  doctorId  String
+  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  startDate DateTime
+  endDate   DateTime
+
+  applyAt   DateTime  @default(now())
+}
+
+
 
 enum Specialty {
   CARDIOLOGIST
@@ -136,3 +159,5 @@ enum Role {
   DOCTOR
   ADMIN
 }
+
+
