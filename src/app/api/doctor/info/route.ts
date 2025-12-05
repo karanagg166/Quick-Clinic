@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
     const {
       specialty,
       experience,
-      qualifications,
+      qualification,
       fees,
     } = await req.json();
 
@@ -87,7 +87,7 @@ export async function POST(req: NextRequest) {
         userId,
         specialty,
         experience: Number(experience) || 0,
-        qualifications: qualifications || [],
+        qualifications: qualification || [],
         fees: Number(fees) || 0,
       },
     });
@@ -122,7 +122,7 @@ export async function PUT(req: NextRequest) {
     const {
       specialty,
       experience,
-      qualifications,
+      qualification,
       fees,
     } = await req.json();
 
@@ -142,7 +142,7 @@ export async function PUT(req: NextRequest) {
       data: {
         specialty,
         experience: Number(experience) ,
-        qualifications: qualifications ,
+        qualifications: qualification ,
         fees: Number(fees) ,
       },
     });
