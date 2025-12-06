@@ -127,21 +127,19 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   password: 'password',
   age: 'age',
+  gender: 'gender',
+  role: 'role',
+  address: 'address',
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
-  role: 'role',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  gender: 'gender'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.PatientScalarFieldEnum = {
+exports.Prisma.AdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  medicalHistory: 'medicalHistory',
-  allergies: 'allergies',
-  currentMedications: 'currentMedications',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -157,10 +155,12 @@ exports.Prisma.DoctorScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.ScheduleScalarFieldEnum = {
+exports.Prisma.PatientScalarFieldEnum = {
   id: 'id',
-  doctorId: 'doctorId',
-  weeklySchedule: 'weeklySchedule',
+  userId: 'userId',
+  medicalHistory: 'medicalHistory',
+  allergies: 'allergies',
+  currentMedications: 'currentMedications',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -174,11 +174,44 @@ exports.Prisma.LeaveScalarFieldEnum = {
   applyAt: 'applyAt'
 };
 
-exports.Prisma.AdminScalarFieldEnum = {
+exports.Prisma.ScheduleScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
+  doctorId: 'doctorId',
+  weeklySchedule: 'weeklySchedule',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AppointmentScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  appointmentDateTime: 'appointmentDateTime',
+  bookedAt: 'bookedAt'
+};
+
+exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccessLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  targetId: 'targetId',
+  action: 'action',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -187,6 +220,11 @@ exports.Prisma.SortOrder = {
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -200,16 +238,21 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-exports.Role = exports.$Enums.Role = {
-  PATIENT: 'PATIENT',
-  DOCTOR: 'DOCTOR',
-  ADMIN: 'ADMIN'
-};
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
   FEMALE: 'FEMALE',
   BINARY: 'BINARY'
+};
+
+exports.Role = exports.$Enums.Role = {
+  PATIENT: 'PATIENT',
+  DOCTOR: 'DOCTOR',
+  ADMIN: 'ADMIN'
 };
 
 exports.Specialty = exports.$Enums.Specialty = {
@@ -274,11 +317,15 @@ exports.Qualification = exports.$Enums.Qualification = {
 
 exports.Prisma.ModelName = {
   User: 'User',
-  Patient: 'Patient',
+  Admin: 'Admin',
   Doctor: 'Doctor',
-  Schedule: 'Schedule',
+  Patient: 'Patient',
   Leave: 'Leave',
-  Admin: 'Admin'
+  Schedule: 'Schedule',
+  Appointment: 'Appointment',
+  DoctorPatientRelation: 'DoctorPatientRelation',
+  AccessLog: 'AccessLog',
+  AuditLog: 'AuditLog'
 };
 
 /**
