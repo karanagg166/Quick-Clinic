@@ -48,7 +48,7 @@ export default function PatientInfo() {
   // CREATE
   const createInfo = async () => {
     try {
-      if (!user?.id) {
+      if (!user?.userId) {
         alert("User ID not found");
         return;
       }
@@ -60,7 +60,7 @@ export default function PatientInfo() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.id,
+          userId: user.userId,
           medicalHistory,
           allergies,
           currentMedications,

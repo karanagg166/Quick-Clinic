@@ -121,7 +121,7 @@ export default function DoctorInfo() {
   // CREATE DOCTOR INFO
   const handleCreateInfo = async () => {
     try {
-      if (!user?.id) {
+      if (!user?.userId) {
         alert("User ID not found");
         return;
       }
@@ -134,7 +134,7 @@ export default function DoctorInfo() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          userId: user.id,
+          userId: user.userId,
           fees: Number(fees),
           specialty,
           experience: Number(experience),
