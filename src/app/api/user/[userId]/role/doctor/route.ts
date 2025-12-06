@@ -2,11 +2,16 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export const POST = async (req: NextRequest) => {
+export const POST = async (
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
+) => {
   try {
-    const userId = req.nextUrl.searchParams.get("userId");
+    const { userId } = await params;
+    const fallbackUserId = req.nextUrl.searchParams.get("userId");
+    const resolvedUserId = userId ?? fallbackUserId;
 
-    if (!userId) {
+    if (!resolvedUserId) {
       return NextResponse.json({ error: "User Not Logined or userId not valid" }, { status: 400 });
     }
 
@@ -21,19 +26,19 @@ export const POST = async (req: NextRequest) => {
     }
 
     
-    const user = await prisma.user.findUnique({ where: { id: userId } });
+    const user = await prisma.user.findUnique({ where: { id: resolvedUserId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const existing = await prisma.doctor.findUnique({ where: { userId } });
+    const existing = await prisma.doctor.findUnique({ where: { userId: resolvedUserId } });
     if (existing) {
       return NextResponse.json({ error: "Doctor profile already exists for this user" }, { status: 409 });
     }
 
     const created = await prisma.doctor.create({
       data: {
-        userId,
+        userId: resolvedUserId,
         specialty,
         experience,
         qualifications,

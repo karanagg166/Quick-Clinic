@@ -4,12 +4,15 @@ import { prisma } from "@/lib/prisma";
 // ========================================================
 // POST → CREATE or UPDATE Doctor Schedule (UPSERT)
 // ========================================================
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
   try {
-    const doctorId = req.cookies.get("doctorId")?.value;
+    const { doctorId } = await params;
 
     if (!doctorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
     const { weeklySchedule } = await req.json();
@@ -44,12 +47,15 @@ export async function POST(req: NextRequest) {
 // ========================================================
 // GET → Get doctor schedule
 // ========================================================
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
   try {
-    const doctorId = req.cookies.get("doctorId")?.value;
+    const { doctorId } = await params;
 
     if (!doctorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
     const schedule = await prisma.schedule.findUnique({

@@ -4,10 +4,10 @@ import { prisma } from "@/lib/prisma";
 
 export const POST = async (
   req: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) => {
   try {
-    const { userId } = params;
+    const { userId } = await params;
     if (!userId) {
       return NextResponse.json({ error: "Missing userId in params" }, { status: 400 });
     }
