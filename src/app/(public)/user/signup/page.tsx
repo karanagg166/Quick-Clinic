@@ -5,19 +5,21 @@ import { useRouter } from "next/navigation";
 export default function Signup() {
   const router = useRouter();
 
-  const [name, setName] = useState("karan");
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phoneNo, setPhoneNo] = useState("");
   const [age, setAge] = useState("");
+  const [address, setAddress] = useState(""); // ✅ NEW
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [pinCode, setPinCode] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("");
-  const [gender, setGender] = useState(""); // NEW
+  const [gender, setGender] = useState(""); 
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
       const response = await fetch("/api/auth/signup", {
         method: "POST",
@@ -30,19 +32,20 @@ export default function Signup() {
           email,
           phoneNo,
           age,
+          address,   // ✅ NEW FIELD SENT TO BACKEND
           city,
           state,
           pinCode,
           password,
           role,
-          gender
+          gender,
         }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-       router.push("/user/login");
+        router.push("/user/login");
       } else {
         alert(data.error || "Signup failed");
       }
@@ -70,22 +73,41 @@ export default function Signup() {
             required
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="Age"
-              className="inputBox"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              required
-            />
+          <input
+            type="text"
+            placeholder="Age"
+            className="inputBox"
+            value={age}
+            onChange={(e) => setAge(e.target.value)}
+            required
+          />
 
+          {/* ADDRESS FIELD */}
+          <input
+            type="text"
+            placeholder="Full Address"
+            className="inputBox"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-4">
             <input
               type="text"
               placeholder="City"
               className="inputBox"
               value={city}
               onChange={(e) => setCity(e.target.value)}
+              required
+            />
+
+            <input
+              type="text"
+              placeholder="State"
+              className="inputBox"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
               required
             />
           </div>
@@ -102,7 +124,7 @@ export default function Signup() {
               <option value="" disabled>Select gender</option>
               <option value="MALE">Male</option>
               <option value="FEMALE">Female</option>
-              <option value="OTHER">Other</option>
+              <option value="BINARY">Binary</option>
             </select>
           </div>
 
@@ -124,25 +146,14 @@ export default function Signup() {
             required
           />
 
-          <div className="grid grid-cols-2 gap-4">
-            <input
-              type="text"
-              placeholder="State"
-              className="inputBox"
-              value={state}
-              onChange={(e) => setState(e.target.value)}
-              required
-            />
-
-            <input
-              type="text"
-              placeholder="Pincode"
-              className="inputBox"
-              value={pinCode}
-              onChange={(e) => setPinCode(e.target.value)}
-              required
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Pincode"
+            className="inputBox"
+            value={pinCode}
+            onChange={(e) => setPinCode(e.target.value)}
+            required
+          />
 
           {/* Role */}
           <div className="mt-2">
@@ -198,6 +209,7 @@ export default function Signup() {
           >
             Create Account
           </button>
+
         </form>
 
         <p className="text-center mt-5 text-sm text-gray-600">
