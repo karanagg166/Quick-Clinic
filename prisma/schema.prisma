@@ -9,6 +9,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  // url = env("DATABASE_URL")
 }
 
 // ======================================================
@@ -87,6 +88,23 @@ enum Qualification {
   PGD
 }
 
+enum SlotStatus {
+  AVAILABLE
+  HELD
+  BOOKED
+  UNAVAILABLE
+  CANCELLED
+}
+
+enum AppointmentStatus {
+  PENDING       // created, not yet confirmed by doctor/patient
+  CONFIRMED     // both sides confirmed
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+  RESCHEDULED
+}
+
 // ======================================================
 // USER, ADMIN, DOCTOR, PATIENT MODELS
 // ======================================================
@@ -113,6 +131,7 @@ model User {
 
   accessLogs AccessLog[]
   auditLogs  AuditLog[]
+  notifications Notification[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -131,21 +150,23 @@ model Admin {
 }
 
 model Doctor {
-  id             String          @id @default(cuid())
-  userId         String          @unique
-  specialty      Specialty
-  experience     Int             @default(0)
-  qualifications Qualification[]
-  fees           Int             @default(0)
+  id               String                @id @default(cuid())
+  userId           String                @unique
+  specialty        Specialty
+  experience       Int                   @default(0)
+  qualifications   Qualification[]
+  fees             Int                   @default(0) // store in smallest currency unit (e.g., cents) or use Decimal
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leaves         Leave[]
-  schedule       Schedule?
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaves           Leave[]
+  schedule         Schedule?
   patientRelations DoctorPatientRelation[]
-  appointments   Appointment[]   // REQUIRED BACK-RELATION
+  appointments     Appointment[]         // back-relation
+  availabilities   DoctorAvailability[]  // availability by date
+  slots            Slot[]                // convenience back-relation
 
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model Patient {
@@ -158,14 +179,14 @@ model Patient {
 
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorRelations    DoctorPatientRelation[]
-  appointments       Appointment[]  // REQUIRED BACK-RELATION
+  appointments       Appointment[]  // back-relation
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
 
 // ======================================================
-// DOCTOR MODULE (Leave, Schedule, Appointment)
+// DOCTOR MODULE (Leave, Schedule, Availability, Slot, Appointment)
 // ======================================================
 
 model Leave {
@@ -180,8 +201,19 @@ model Leave {
   applyAt   DateTime @default(now())
 
   @@unique([doctorId, startDate, endDate])
+  @@index([doctorId])
+  @@index([startDate, endDate])
 }
 
+/**
+ * Weekly schedule JSON is the canonical repeating schedule (e.g. working hours per weekday).
+ * Use this for generating DoctorAvailability & Slots for upcoming days.
+ * Example format:
+ * {
+ *   "monday": [{ "start": "09:00", "end": "13:00" }, { "start": "15:00", "end": "18:00" }],
+ *   ...
+ * }
+ */
 model Schedule {
   id             String   @id @default(cuid())
   doctorId       String   @unique
@@ -193,20 +225,88 @@ model Schedule {
   updatedAt      DateTime @updatedAt
 }
 
-model Appointment {
-  id                  String   @id @default(cuid())
+/**
+ * DoctorAvailability = availability record for a specific date (date only).
+ * Holds meta information and a list of slots for that day.
+ */
+model DoctorAvailability {
+  id              String    @id @default(cuid())
+  doctorId        String
+  // store date-only; use @db.Date for postgres date type
+  date            DateTime  @db.Date
+  isAvailable     Boolean   @default(true)
+  notes           String?
 
+  doctor          Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  slots           Slot[]
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([doctorId, date])
+  @@index([doctorId, date])
+  @@index([date, isAvailable])
+}
+
+/**
+ * Slot = a discrete time window on a given DoctorAvailability (bookable)
+ * - startTime/endTime are full timestamps in UTC
+ * - status: AVAILABLE / HELD / BOOKED / etc
+ */
+model Slot {
+  id                    String              @id @default(cuid())
+  doctorAvailabilityId  String
+  startTime             DateTime
+  endTime               DateTime
+  status                SlotStatus          @default(AVAILABLE)
+  heldByPatientId       String?             // temporary hold
+  heldAt                DateTime?
+  // link to appointment if booked (one-to-one)
+  appointmentId         String?             @unique
+  appointment           Appointment?        @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  doctorAvailability    DoctorAvailability  @relation(fields: [doctorAvailabilityId], references: [id], onDelete: Cascade)
+  // convenience relation to doctor through availability
+  // createdAt/updatedAt for auditing
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@unique([doctorAvailabilityId, startTime])
+  @@index([doctorAvailabilityId, status])
+  @@index([startTime, status])
+  @@index([heldByPatientId])
+}
+
+/**
+ * Appointment = finalized booking of a patient with a doctor.
+ * - slotId is optional if you allow free-form datetime bookings (but in the Slot approach usually slotId is present)
+ * - appointmentDateTime duplicated for quick queries/search (should match slot startTime if slot used)
+ */
+model Appointment {
+  id                  String            @id @default(cuid())
+  slotId              String?           // optional (if booked against a Slot)
   doctorId            String
   patientId           String
+  status              AppointmentStatus @default(PENDING)
+  notes               String?
+  cancelReason        String?
+  cancelledAt         DateTime?
+  appointmentDateTime DateTime          // canonical appointment time (start)
+  durationMinutes     Int               @default(30) // you can adjust default
+  bookedAt            DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
-  doctor              Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  slot                Slot?             @relation(fields: [slotId], references: [id], onDelete: SetNull)
+  doctor              Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient             Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  appointmentDateTime DateTime
-  bookedAt            DateTime @default(now())
+  // optional links to payment/prescription
+  payment             Payment?
+  prescription        Prescription?
 
-  @@unique([doctorId, appointmentDateTime])
+  @@unique([doctorId, appointmentDateTime]) // prevents two appointments at same time for same doctor
   @@index([doctorId, patientId])
+  @@index([status])
   @@index([appointmentDateTime])
 }
 
