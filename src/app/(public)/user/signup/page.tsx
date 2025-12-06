@@ -2,7 +2,17 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store";
+interface User {
+  userId: string;
+  email: string;
+  role: string;   
 
+  name: string;
+  gender: string;
+  age: number;
+  doctorId?: string | null;
+  patientId?: string | null;
+}
 export default function Signup() {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
@@ -45,14 +55,25 @@ export default function Signup() {
       });
 
       const data = await response.json();
-      setUser(data.userDetails);
+      const userDetails: User = {
+        userId: data.user.userId,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name,
+        gender: data.user.gender,
+        age: data.user.age,
+       
+        
+        
+        };
+      setUser(userDetails);
       console.log("Signup Response:", data);
       if (response.ok) {
         if(role==="PATIENT"){
-          router.push(`/user/${data.userDetails.id}/register-role/patient`);
+          router.push(`/user/${data.user.userId}/role/patient`);
         }
         else if(role==="DOCTOR"){
-         router.push(`/user/${data.userDetails.id}/register-role/doctor`);
+         router.push(`/user/${data.user.userId}/role/doctor`);
         }
       } else {
         alert(data.error || "Signup failed");

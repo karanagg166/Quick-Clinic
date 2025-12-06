@@ -1,19 +1,24 @@
 "use client";
 
 import { useState } from "react";
-
+import { useUserStore } from "@/store/index";
+import { useRouter } from "next/navigation";
 export default function PatientDetails() {
   const [loading, setLoading] = useState(false);
+  
   const [medicalHistory, setMedicalHistory] = useState("");
   const [allergies, setAllergies] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
 
+  const updateUser = useUserStore((state) => state.updateUser);
+  const getUser= useUserStore((state) => state.user);
+  const router = useRouter();
   // CREATE
   const createInfo = async () => {
     try {
       setLoading(true); // START LOADING
 
-      const response = await fetch("/api/patient/info", {
+      const response = await fetch(`/api/user/${getUser?.userId}/role/patient`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -32,7 +37,9 @@ export default function PatientDetails() {
         console.log("JSON RESPONSE:", data);
 
         if (response.ok) {
+          updateUser({ patientId: data.patient.id });
           alert("Information saved successfully!");
+          router.push(`/patient/${data.userId}/dashboard`);
         } else {
           alert(data.error || "Something went wrong");
         }
