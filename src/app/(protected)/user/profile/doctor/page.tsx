@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-
+import { useRouter} from "next/navigation";
+import { useUserStore } from "@/store/userStore";
 export default function DoctorDetails() {
   const router = useRouter();
-  const { userId } = useParams();
+  const userId = useUserStore((state) => state.user?.userId);
+   const setDoctorId = useUserStore((state) => state.setDoctorId);
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
   
@@ -18,9 +19,9 @@ export default function DoctorDetails() {
 
   const [loading, setLoading] = useState(false); // button loading
   const [enumLoading, setEnumLoading] = useState(true); // loading enums
-  const updateUser = useUserStore((state) => state.updateUser);
+  
   const getUser = useUserStore((state) => state.user);
-  const router = useRouter();
+  
    
   // Toggle qualification
   const toggleQualification = (value: string) => {
@@ -91,9 +92,10 @@ export default function DoctorDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        updateUser({ doctorId: data.doctor.id });
+        setDoctorId(data.doctor.id);
+       
         alert("Doctor info created successfully.");
-        router.push(`/user/login`);
+        router.push(`/doctor`);
       } else {
         alert("Error creating doctor info: " + data.error);
       }

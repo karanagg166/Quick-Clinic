@@ -118,44 +118,7 @@ export default function DoctorInfo() {
     }
   };
 
-  // CREATE DOCTOR INFO
-  const handleCreateInfo = async () => {
-    try {
-      if (!user?.userId) {
-        alert("User ID not found");
-        return;
-      }
-
-      setLoading(true);
-
-      const response = await fetch("/api/doctors", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          userId: user.userId,
-          fees: Number(fees),
-          specialty,
-          experience: Number(experience),
-          qualifications: qualification,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setExistingDoctor(true);
-        alert("Doctor info created successfully.");
-      } else {
-        alert("Error creating doctor info: " + data.error);
-      }
-    } catch (err:any) {
-      alert("Create error: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+ 
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
@@ -226,21 +189,14 @@ export default function DoctorInfo() {
 
       {/* BUTTONS */}
       <div className="mt-6 flex justify-between">
-        {!existingDoctor ? (
-          <button
-            className="px-4 py-2 bg-green-600 text-white rounded"
-            onClick={handleCreateInfo}
-          >
-            Create Info
-          </button>
-        ) : (
+      
           <button
             className="px-4 py-2 bg-blue-600 text-white rounded"
             onClick={handleUpdateInfo}
           >
             Update Info
           </button>
-        )}
+        
       </div>
     </div>
   );
