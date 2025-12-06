@@ -1,17 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
-  const doctorId = req.cookies.get("doctorId")?.value;
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  const { doctorId } = await params;
 
   if (!doctorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
   }
 
   try {
-    const { startDate, endDate, reason, startTime, endTime } = await req.json();
+    const { startDate, endDate, reason } = await req.json();
 
-    if (!startDate || !endDate || !reason || !startTime || !endTime) {
+    if (!startDate || !endDate || !reason) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -22,13 +25,10 @@ export async function POST(req: NextRequest) {
       startDate,
       endDate,
       reason,
-      startTime,
-      endTime,
     });
 
-    // Combine date + time
-    const startDateTime = new Date(`${startDate}T${startTime}:00`);
-    const endDateTime = new Date(`${endDate}T${endTime}:00`);
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
 
     console.log("Parsed DateTimes:", { startDateTime, endDateTime });
 
@@ -51,22 +51,17 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function GET(req: NextRequest) {
-  const doctorId = req.cookies.get("doctorId")?.value;
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  const { doctorId } = await params;
 
   if (!doctorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
   }
 
   try {
-    const params=req.nextUrl.searchParams;
-    const startDate=params.get("startDate");
-    const endDate=params.get("endDate");
-    const reason=params.get("reason");
-    const startTime=params.get("startTime");
-    const endTime=params.get("endTime");
-    
-
     const leaves = await prisma.leave.findMany({
       where: { doctorId },
       orderBy: { startDate: "desc" },

@@ -66,15 +66,32 @@ export async function POST(req: NextRequest) {
       doctorId: user.doctor.id,
       patientId: user.patient.id,
     };
-    
 
-    console.log("USER DETAILS:", userDetails);
+    // Fetch linked doctor/patient ids
+    let doctorId: string | null = null;
+    let patientId: string | null = null;
+
+    if (user.role === "DOCTOR") {
+      const doctor = await prisma.doctor.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      doctorId = doctor?.id ?? null;
+    } else if (user.role === "PATIENT") {
+      const patient = await prisma.patient.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      patientId = patient?.id ?? null;
+    }
 
     // Response
     const res = NextResponse.json(
       {
         message: "Login successful",
         user: userDetails,
+        doctorId,
+        patientId,
       },
       { status: 200 }
     );

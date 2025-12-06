@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/store/index";
+import { useUserStore } from "@/store/userStore";
 
 interface User {
   userId: string;
@@ -28,7 +28,7 @@ export default function Home() {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await fetch("/api/user/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,33 +41,27 @@ export default function Home() {
       });
 
       const data = await response.json();
-      const user: User = {
-        userId: data.user.userId,
-        email: data.user.email,
-        role: data.user.role,
-        name: data.user.name,
-        gender: data.user.gender,
-        age: data.user.age,
-        doctorId: data.user.doctorId,
-        patientId: data.user.patientId,
-      };
-      
-      
+
+      const { user, patientId, doctorId } = data;
+
       if (response.ok) {
-
-       setUser(user);
-
+        // Set user in store with patientId or doctorId based on role
         if (user.role === "DOCTOR") {
-          router.push("/doctor");
+          setUser(user, undefined, doctorId);
+          router.push("/doctorDashboard");
         } else if (user.role === "PATIENT") {
+          setUser(user, patientId, undefined);
           router.push("/patientDashboard");
+        } else if (user.role === "ADMIN") {
+          setUser(user);
+          router.push("/admin");
         }
-        
       } else {
         alert(data.error || "Login failed");
       }
     } catch (err: any) {
       console.error("Login Error:", err.message);
+      alert("Login error: " + err.message);
     }
   };
 
