@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // UPSERT — create if not exists, update if exists
-    const schedule = await prisma.doctorSchedule.upsert({
+    const schedule = await prisma.Schedule.upsert({
       where: { doctorId },
       update: { weeklySchedule },
       create: {
