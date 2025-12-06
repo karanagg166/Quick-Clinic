@@ -4,7 +4,7 @@ import { persist, PersistStorage } from 'zustand/middleware';
 type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   phoneNo?: string;
   name?: string;

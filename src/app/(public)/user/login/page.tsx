@@ -5,12 +5,15 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId?: string | null;
+  patientId?: string | null;
+
 }
 
 

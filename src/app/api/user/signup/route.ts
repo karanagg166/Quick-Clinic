@@ -5,12 +5,14 @@ import bcrypt from "bcryptjs";
 
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId: string | null;
+  patientId: string | null;
 }
 export const POST = async (req: NextRequest) => {
   try {
@@ -61,16 +63,18 @@ export const POST = async (req: NextRequest) => {
       
     });
 const userDetails: User = {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
       gender: user.gender,
       age: user.age,
+      doctorId: null,
+      patientId: null,
     };
     const res = NextResponse.json(
       
-      { message: "User created successfully",userDetails },
+      { message: "User created successfully",user:userDetails },
       { status: 201 }
     );
 

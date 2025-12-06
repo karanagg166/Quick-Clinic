@@ -8,6 +8,7 @@ export default function DoctorDetails() {
   const { userId } = useParams();
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
+  
 
   const [specialty, setSpecialty] = useState("");
   const [specialties, setSpecialties] = useState<string[]>([]);
@@ -17,7 +18,10 @@ export default function DoctorDetails() {
 
   const [loading, setLoading] = useState(false); // button loading
   const [enumLoading, setEnumLoading] = useState(true); // loading enums
-
+  const updateUser = useUserStore((state) => state.updateUser);
+  const getUser = useUserStore((state) => state.user);
+  const router = useRouter();
+   
   // Toggle qualification
   const toggleQualification = (value: string) => {
     setQualification((prev) =>
@@ -70,6 +74,7 @@ export default function DoctorDetails() {
 
     try {
       setLoading(true);
+      console.log("user context api",getUser);
 
       const response = await fetch("/api/doctors", {
         method: "POST",
@@ -86,6 +91,7 @@ export default function DoctorDetails() {
       const data = await response.json();
 
       if (response.ok) {
+        updateUser({ doctorId: data.doctor.id });
         alert("Doctor info created successfully.");
         router.push(`/user/login`);
       } else {
