@@ -14,16 +14,16 @@ model User {
   name      String
   password  String
   age       Int
-  city      String
-  state     String
-  pinCode   Int
   role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  
   gender    Gender   @default(MALE)
   admin     Admin?
   doctor    Doctor?
   patient   Patient?
+  useraddress   UserAddress?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Patient {
@@ -35,6 +35,7 @@ model Patient {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
   user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorRelations    DoctorPatientRelation[]
 }
 
 model Doctor {
@@ -49,6 +50,37 @@ model Doctor {
   user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves         Leave[]
   schedule       Schedule?
+  patientRelations DoctorPatientRelation[]
+}
+
+model UserAddress {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  address   String
+  city      String
+  state     String
+  pinCode   Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+}
+
+model DoctorPatientRelation {
+  id        String   @id @default(cuid())
+  doctorId  String
+  patientId String
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, patientId])
+  @@index([doctorId])
+  @@index([patientId])
 }
 
 model Schedule {
