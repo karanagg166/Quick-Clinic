@@ -3,12 +3,14 @@ import { create } from 'zustand';
 type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: UserRole | string;
   name?: string;
   gender?: string;
   age?: number;
+  doctorId?: string | null;
+  patientId?: string | null;
 }
 
 interface UserState {
