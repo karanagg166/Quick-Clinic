@@ -8,10 +8,14 @@ export default function PatientDetails() {
   const { userId } = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  
   const [medicalHistory, setMedicalHistory] = useState("");
   const [allergies, setAllergies] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
 
+  const updateUser = useUserStore((state) => state.updateUser);
+  const getUser= useUserStore((state) => state.user);
+  const router = useRouter();
   // CREATE
   const createInfo = async () => {
     if (!userId || Array.isArray(userId)) {

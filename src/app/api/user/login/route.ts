@@ -2,16 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
+import { Select } from "react-day-picker";
 
 
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId: string | null;
+  patientId: string | null;
 }
 
 
@@ -24,6 +27,14 @@ export async function POST(req: NextRequest) {
       where: {
          email:email    
        },
+       include:{
+        doctor:{
+          select:{ id:true}
+        }
+        ,patient:{
+          select:{ id:true}
+        }
+       }
     });
 
     if (!user) {
@@ -46,12 +57,14 @@ export async function POST(req: NextRequest) {
     });
 
     const userDetails: User = {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
       gender: user.gender,
       age: user.age,
+      doctorId: user.doctor.id,
+      patientId: user.patient.id,
     };
 
     // Fetch linked doctor/patient ids
