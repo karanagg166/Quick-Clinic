@@ -14,6 +14,7 @@ export const POST = async (req: NextRequest) => {
       state,
       pinCode, 
       password,
+      address,
       role,
       gender
     } = await req.json();
@@ -42,6 +43,7 @@ export const POST = async (req: NextRequest) => {
         password: hashedPassword,
         age: Number(age),
         city,
+        address,
         state,
         pinCode: Number(pinCode),
         role: normalizedRole, 
