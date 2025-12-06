@@ -12,7 +12,6 @@ model User {
   email     String   @unique
   phoneNo   String
   name      String
-  gender    Gender   @default(MALE)
   password  String
   age       Int
   city      String
@@ -21,72 +20,68 @@ model User {
   role      Role     @default(PATIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  gender    Gender   @default(MALE)
+  admin     Admin?
+  doctor    Doctor?
+  patient   Patient?
+}
 
-  patient Patient?
-  doctor  Doctor?
-  admin   Admin?
+model Patient {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  medicalHistory     String   @default("")
+  allergies          String   @default("")
+  currentMedications String   @default("")
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Doctor {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  specialty      Specialty
+  experience     Int             @default(0)
+  qualifications Qualification[]
+  fees           Int             @default(0)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaves         Leave[]
+  schedule       Schedule?
+}
+
+model Schedule {
+  id             String   @id @default(cuid())
+  doctorId       String   @unique
+  weeklySchedule Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model Leave {
+  id        String   @id @default(cuid())
+  doctorId  String
+  startDate DateTime
+  endDate   DateTime
+  applyAt   DateTime @default(now())
+  reason    String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 enum Gender {
   MALE
   FEMALE
   BINARY
-}
-
-model Patient {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  medicalHistory     String @default("")
-  allergies          String @default("")
-  currentMedications String @default("")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Doctor {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  specialty      Specialty
-  experience     Int             @default(0)
-  qualifications Qualification[]
-  fees           Int             @default(0)
-
-  // ✅ Doctor → Schedule (1 to 1)
-  schedule Schedule?
-
-  // ✅ Doctor → Leave (1 to many)
-  leaves Leave[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Schedule {
-  id       String @id @default(cuid())
-  doctorId String @unique
-  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
-  weeklySchedule Json
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Leave {
-  id String @id @default(cuid())
-
-  doctorId String
-  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
-  startDate DateTime
-  endDate   DateTime
-
-  applyAt DateTime @default(now())
 }
 
 enum Specialty {
@@ -147,15 +142,6 @@ enum Qualification {
   DO
   FELLOWSHIP
   PGD
-}
-
-model Admin {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum Role {
