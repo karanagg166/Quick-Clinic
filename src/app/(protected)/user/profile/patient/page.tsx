@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
 
+import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store/userStore";
 export default function PatientDetails() {
-  const { userId } = useParams();
-  const router = useRouter();
+  const userId = useUserStore((state) => state.user?.userId);
+  const setPatientId = useUserStore((state) => state.setPatientId);
+
   const [loading, setLoading] = useState(false);
   
   const [medicalHistory, setMedicalHistory] = useState("");
@@ -14,7 +15,7 @@ export default function PatientDetails() {
   const [currentMedications, setCurrentMedications] = useState("");
 
   const updateUser = useUserStore((state) => state.updateUser);
-  const getUser= useUserStore((state) => state.user);
+ 
   const router = useRouter();
   // CREATE
   const createInfo = async () => {
@@ -41,8 +42,9 @@ export default function PatientDetails() {
       const data = await response.json();
 
       if (response.ok) {
+        setPatientId(data.patient.id);
         alert("Patient info saved successfully.");
-        router.push(`/user/login`);
+        router.push(`/patient`);
       } else {
         alert(data.error || "Failed to save info.");
       }
