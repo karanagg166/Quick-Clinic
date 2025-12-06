@@ -67,21 +67,33 @@ docker compose up --build
 --------------------------------------------------------------------------------
 
 🗂 10. Prisma Schema Commands
+# Format schema (clean formatting + imports)
+docker compose exec app npx prisma format
 
-Regenerate client:
+# Validate schema (check if everything is correct)
+docker compose exec app npx prisma validate
+
+# Generate Prisma Client (required after changes)
 docker compose exec app npx prisma generate
 
-Push schema changes to DB (dev only):
+# Dev: push schema directly to DB (no migration history)
 docker compose exec app npx prisma db push
 
-Pull schema changes from DB:
+# Pull DB schema into Prisma (reverse from DB)
 docker compose exec app npx prisma db pull
 
-Apply migrations (prod):
+# Dev: create + apply migrations
+docker compose exec app npx prisma migrate dev
+
+# Dev: create named migration
+docker compose exec app npx prisma migrate dev --name <name>
+
+# Prod: apply existing migrations only
 docker compose exec app npx prisma migrate deploy
 
-Apply migrations (dev):
-docker compose exec app npx prisma migrate dev
+# Open Prisma Studio (DB GUI)
+docker compose exec app npx prisma studio
+
 
 --------------------------------------------------------------------------------
 
