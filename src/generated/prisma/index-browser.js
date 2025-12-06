@@ -24,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.1.0
- * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
+ * Prisma Client JS version: 7.0.1
+ * Query Engine version: f09f2815f091dbba658cdcd2264306d88bb5bda6
  */
 Prisma.prismaVersion = {
-  client: "7.1.0",
-  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
+  client: "7.0.1",
+  engine: "f09f2815f091dbba658cdcd2264306d88bb5bda6"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -125,7 +125,6 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phoneNo: 'phoneNo',
   name: 'name',
-  gender: 'gender',
   password: 'password',
   age: 'age',
   city: 'city',
@@ -133,7 +132,8 @@ exports.Prisma.UserScalarFieldEnum = {
   pinCode: 'pinCode',
   role: 'role',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  gender: 'gender'
 };
 
 exports.Prisma.PatientScalarFieldEnum = {
@@ -170,7 +170,8 @@ exports.Prisma.LeaveScalarFieldEnum = {
   doctorId: 'doctorId',
   startDate: 'startDate',
   endDate: 'endDate',
-  applyAt: 'applyAt'
+  applyAt: 'applyAt',
+  reason: 'reason'
 };
 
 exports.Prisma.AdminScalarFieldEnum = {
@@ -199,16 +200,16 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-exports.Gender = exports.$Enums.Gender = {
-  MALE: 'MALE',
-  FEMALE: 'FEMALE',
-  BINARY: 'BINARY'
-};
-
 exports.Role = exports.$Enums.Role = {
   PATIENT: 'PATIENT',
   DOCTOR: 'DOCTOR',
   ADMIN: 'ADMIN'
+};
+
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  BINARY: 'BINARY'
 };
 
 exports.Specialty = exports.$Enums.Specialty = {
