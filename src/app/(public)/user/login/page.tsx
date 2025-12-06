@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { usePatientStore } from "@/store/patientStore";
+import { useDoctorStore } from "@/store/doctorStore";
 
 interface User {
   id: string;
@@ -14,9 +16,10 @@ interface User {
 }
 
 
+
 export default function Home() {
   const router = useRouter();
-
+ const setUser = useUserStore((state) => state.setUser);
   const [email, setEmail] = useState("priyanshu@gmail.com");
   const [password, setPassword] = useState("");
 
@@ -42,10 +45,10 @@ export default function Home() {
 
       if (response.ok) {
 
-        useUserStore.getState().setUser(data.user);
+       setUser(user);
 
         if (user.role === "DOCTOR") {
-          router.push("/doctorDashboard");
+          router.push("/doctor");
         } else if (user.role === "PATIENT") {
           router.push("/patientDashboard");
         }
