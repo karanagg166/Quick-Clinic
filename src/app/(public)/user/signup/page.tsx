@@ -72,10 +72,10 @@ export default function Signup() {
       console.log("Signup Response:", data);
       if (response.ok) {
         if(role==="PATIENT"){
-          router.push(`/user/${data.user.userId}/role/patient`);
+          router.push(`/user/profile/patient`);
         }
         else if(role==="DOCTOR"){
-         router.push(`/user/${data.user.userId}/role/doctor`);
+         router.push(`/user/profile/doctor`);
         }
       } else {
         alert(data.error || "Signup failed");
