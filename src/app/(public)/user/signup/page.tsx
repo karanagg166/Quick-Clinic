@@ -1,9 +1,11 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useUserStore } from "@/store";
 
 export default function Signup() {
   const router = useRouter();
+  const setUser = useUserStore((state) => state.setUser);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -21,7 +23,7 @@ export default function Signup() {
     e.preventDefault();
 
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/user/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,13 +45,14 @@ export default function Signup() {
       });
 
       const data = await response.json();
-
+      setUser(data.userDetails);
+      console.log("Signup Response:", data);
       if (response.ok) {
         if(role==="PATIENT"){
-          router.push("/user/patient/details");
+          router.push(`/user/${data.userDetails.id}/register-role/patient`);
         }
         else if(role==="DOCTOR"){
-          router.push("/user/doctor/details");
+         router.push(`/user/${data.userDetails.id}/register-role/doctor`);
         }
       } else {
         alert(data.error || "Signup failed");

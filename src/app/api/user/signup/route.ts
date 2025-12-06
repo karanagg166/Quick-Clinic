@@ -3,6 +3,15 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 
 
+
+interface User {
+  id: string;
+  email: string;
+  role: string;
+  name: string;
+  gender: string;
+  age: number;
+}
 export const POST = async (req: NextRequest) => {
   try {
     const {
@@ -49,10 +58,19 @@ export const POST = async (req: NextRequest) => {
         role: normalizedRole, 
         gender:gender
       },
+      
     });
-
+const userDetails: User = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      name: user.name,
+      gender: user.gender,
+      age: user.age,
+    };
     const res = NextResponse.json(
-      { message: "User created successfully" },
+      
+      { message: "User created successfully",userDetails },
       { status: 201 }
     );
 
