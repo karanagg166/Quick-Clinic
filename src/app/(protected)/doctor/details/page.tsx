@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function DoctorInfo() {
+export default function DoctorDetails() {
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
 

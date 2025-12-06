@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-export default function PatientInfo() {
+export default function PatientDetails() {
   const [loading, setLoading] = useState(false);
   const [medicalHistory, setMedicalHistory] = useState("");
   const [allergies, setAllergies] = useState("");
