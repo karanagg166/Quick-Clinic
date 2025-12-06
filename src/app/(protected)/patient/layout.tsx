@@ -3,8 +3,8 @@
 
 import React from 'react';
 import { useState } from 'react';
-import PatientNavbar from '@/components/patient/patientNavbar';
-import PatientSidebar from '@/components/patient/patientSidebar';
+import PatientNavbar from '@/components/patient/navbar';
+import PatientSidebar from '@/components/patient/sidebar';
 
 export default function RootLayout({children}: Readonly<{children: React.ReactNode}>) {
 
