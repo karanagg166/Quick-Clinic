@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export default function PatientDetails() {
+  const { userId } = useParams();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [medicalHistory, setMedicalHistory] = useState("");
   const [allergies, setAllergies] = useState("");
@@ -10,36 +14,36 @@ export default function PatientDetails() {
 
   // CREATE
   const createInfo = async () => {
+    if (!userId || Array.isArray(userId)) {
+      alert("Missing user id from URL.");
+      return;
+    }
+
     try {
       setLoading(true); // START LOADING
 
-      const response = await fetch("/api/patient/info", {
+      const response = await fetch("/api/patients", {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          userId,
           medicalHistory,
           allergies,
           currentMedications,
         }),
       });
 
-      const text = await response.text();
-      console.log("RAW RESPONSE:", text);
+      const data = await response.json();
 
-      try {
-        const data = JSON.parse(text);
-        console.log("JSON RESPONSE:", data);
-
-        if (response.ok) {
-          alert("Information saved successfully!");
-        } else {
-          alert(data.error || "Something went wrong");
-        }
-      } catch (err) {
-        console.error("NOT JSON:", err);
-        alert("Server returned invalid response.");
+      if (response.ok) {
+        alert("Patient info saved successfully.");
+        router.push(`/user/login`);
+      } else {
+        alert(data.error || "Failed to save info.");
       }
+
+      
     } catch (error) {
       console.error("Error:", error);
       alert("Failed to save info.");

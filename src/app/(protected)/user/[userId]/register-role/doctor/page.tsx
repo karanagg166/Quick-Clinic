@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter, useParams } from "next/navigation";
 
 export default function DoctorDetails() {
+  const router = useRouter();
+  const { userId } = useParams();
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
 
@@ -54,6 +57,11 @@ export default function DoctorDetails() {
   //  CREATE Doctor Info (POST)
   // ============================
   const handleCreateInfo = async () => {
+    if (!userId || Array.isArray(userId)) {
+      alert("Missing user id from URL.");
+      return;
+    }
+
     // Basic Validation
     if (!fees || !experience || !specialty) {
       alert("Please fill all required fields.");
@@ -63,10 +71,11 @@ export default function DoctorDetails() {
     try {
       setLoading(true);
 
-      const response = await fetch("/api/doctor/info", {
+      const response = await fetch("/api/doctors", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          userId,
           fees: Number(fees),
           specialty,
           experience: Number(experience),
@@ -78,6 +87,7 @@ export default function DoctorDetails() {
 
       if (response.ok) {
         alert("Doctor info created successfully.");
+        router.push(`/user/login`);
       } else {
         alert("Error creating doctor info: " + data.error);
       }
