@@ -24,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.1.0
- * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
+ * Prisma Client JS version: 7.0.1
+ * Query Engine version: f09f2815f091dbba658cdcd2264306d88bb5bda6
  */
 Prisma.prismaVersion = {
-  client: "7.1.0",
-  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
+  client: "7.0.1",
+  engine: "f09f2815f091dbba658cdcd2264306d88bb5bda6"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -128,10 +128,18 @@ exports.Prisma.UserScalarFieldEnum = {
   gender: 'gender',
   password: 'password',
   age: 'age',
+  role: 'role',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.UserAddressScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  address: 'address',
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
-  role: 'role',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -157,6 +165,23 @@ exports.Prisma.DoctorScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChatMessageScalarFieldEnum = {
+  id: 'id',
+  relationId: 'relationId',
+  sender: 'sender',
+  content: 'content',
+  sentAt: 'sentAt',
+  readAt: 'readAt'
+};
+
 exports.Prisma.ScheduleScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
@@ -168,6 +193,7 @@ exports.Prisma.ScheduleScalarFieldEnum = {
 exports.Prisma.LeaveScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
+  reason: 'reason',
   startDate: 'startDate',
   endDate: 'endDate',
   applyAt: 'applyAt'
@@ -192,6 +218,11 @@ exports.Prisma.JsonNullValueInput = {
 exports.Prisma.QueryMode = {
   default: 'default',
   insensitive: 'insensitive'
+};
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
 };
 
 exports.Prisma.JsonNullValueFilter = {
@@ -271,10 +302,18 @@ exports.Qualification = exports.$Enums.Qualification = {
   PGD: 'PGD'
 };
 
+exports.ChatSender = exports.$Enums.ChatSender = {
+  DOCTOR: 'DOCTOR',
+  PATIENT: 'PATIENT'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
+  UserAddress: 'UserAddress',
   Patient: 'Patient',
   Doctor: 'Doctor',
+  DoctorPatientRelation: 'DoctorPatientRelation',
+  ChatMessage: 'ChatMessage',
   Schedule: 'Schedule',
   Leave: 'Leave',
   Admin: 'Admin'

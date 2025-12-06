@@ -15,16 +15,28 @@ model User {
   gender    Gender   @default(MALE)
   password  String
   age       Int
-  city      String
-  state     String
-  pinCode   Int
   role      Role     @default(PATIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  patient Patient?
-  doctor  Doctor?
-  admin   Admin?
+  patient     Patient?
+  doctor      Doctor?
+  admin       Admin?
+  userAddress UserAddress?
+}
+
+model UserAddress {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  address String
+  city    String
+  state   String
+  pinCode Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum Gender {
@@ -41,6 +53,8 @@ model Patient {
   medicalHistory     String @default("")
   allergies          String @default("")
   currentMedications String @default("")
+
+  doctorRelations DoctorPatientRelation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -62,8 +76,45 @@ model Doctor {
   // ✅ Doctor → Leave (1 to many)
   leaves Leave[]
 
+  patientRelations DoctorPatientRelation[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model DoctorPatientRelation {
+  id String @id @default(cuid())
+
+  doctorId  String
+  patientId String
+
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  messages ChatMessage[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, patientId])
+}
+
+model ChatMessage {
+  id         String                @id @default(cuid())
+  relationId String
+  relation   DoctorPatientRelation @relation(fields: [relationId], references: [id], onDelete: Cascade)
+
+  sender  ChatSender
+  content String
+  sentAt  DateTime   @default(now())
+  readAt  DateTime?
+
+  @@index([relationId])
+}
+
+enum ChatSender {
+  DOCTOR
+  PATIENT
 }
 
 model Schedule {
@@ -80,9 +131,9 @@ model Schedule {
 model Leave {
   id String @id @default(cuid())
 
-  doctorId String
-  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  reason    String
   startDate DateTime
   endDate   DateTime
 
