@@ -10,7 +10,7 @@ const ROLE_ROUTES: Record<string, RegExp[]> = {
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
-  const token = request.cookies.get('Authtoken')?.value;
+  const token = request.cookies.get('token')?.value;
 
   if (!token) {
     return NextResponse.redirect(new URL('/user/login', request.url));
