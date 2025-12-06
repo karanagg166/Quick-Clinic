@@ -61,13 +61,15 @@ model Schedule {
 }
 
 model Leave {
-  id        String   @id @default(cuid())
-  doctorId  String
+  id       String @id @default(cuid())
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  reason    String
   startDate DateTime
   endDate   DateTime
-  applyAt   DateTime @default(now())
-  reason    String
-  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  applyAt DateTime @default(now())
 }
 
 model Admin {
