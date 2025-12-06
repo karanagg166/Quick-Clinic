@@ -97,7 +97,6 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phoneNo: 'phoneNo',
   name: 'name',
-  gender: 'gender',
   password: 'password',
   age: 'age',
   role: 'role',
@@ -113,7 +112,8 @@ exports.Prisma.UserAddressScalarFieldEnum = {
   state: 'state',
   pinCode: 'pinCode',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  gender: 'gender'
 };
 
 exports.Prisma.PatientScalarFieldEnum = {
@@ -168,7 +168,8 @@ exports.Prisma.LeaveScalarFieldEnum = {
   reason: 'reason',
   startDate: 'startDate',
   endDate: 'endDate',
-  applyAt: 'applyAt'
+  applyAt: 'applyAt',
+  reason: 'reason'
 };
 
 exports.Prisma.AdminScalarFieldEnum = {

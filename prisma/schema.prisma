@@ -1,5 +1,3 @@
-
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -9,13 +7,11 @@ datasource db {
   provider = "postgresql"
 }
 
-
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
   phoneNo   String
   name      String
-  gender    Gender   @default(MALE)
   password  String
   age       Int
   role      Role     @default(PATIENT)
@@ -51,8 +47,6 @@ enum Gender {
 model Patient {
   id                 String   @id @default(cuid())
   userId             String   @unique
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
   medicalHistory     String   @default("")
   allergies          String   @default("")
   currentMedications String   @default("")
@@ -61,6 +55,7 @@ model Patient {
 
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Doctor {
@@ -123,25 +118,23 @@ enum ChatSender {
 model Schedule {
   id             String   @id @default(cuid())
   doctorId       String   @unique
-  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
   weeklySchedule Json
-
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 }
 
 
 model Leave {
-  id        String    @id @default(cuid())
-  
+  id        String   @id @default(cuid())
   doctorId  String
-  doctor    Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  reason    String   
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  reason    String
   startDate DateTime
   endDate   DateTime
 
-  applyAt   DateTime  @default(now())
+  applyAt   DateTime @default(now())
 }
 
 enum Specialty {
@@ -202,15 +195,6 @@ enum Qualification {
   DO
   FELLOWSHIP
   PGD
-}
-
-model Admin {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum Role {

@@ -12,7 +12,6 @@ model User {
   email     String   @unique
   phoneNo   String
   name      String
-  gender    Gender   @default(MALE)
   password  String
   age       Int
   role      Role     @default(PATIENT)
@@ -61,10 +60,8 @@ model Patient {
 }
 
 model Doctor {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
+  id             String          @id @default(cuid())
+  userId         String          @unique
   specialty      Specialty
   experience     Int             @default(0)
   qualifications Qualification[]
@@ -118,14 +115,12 @@ enum ChatSender {
 }
 
 model Schedule {
-  id       String @id @default(cuid())
-  doctorId String @unique
-  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
+  id             String   @id @default(cuid())
+  doctorId       String   @unique
   weeklySchedule Json
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
 }
 
 model Leave {
@@ -136,8 +131,23 @@ model Leave {
   reason    String
   startDate DateTime
   endDate   DateTime
+  applyAt   DateTime @default(now())
+  reason    String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
 
-  applyAt DateTime @default(now())
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  BINARY
 }
 
 enum Specialty {
@@ -198,15 +208,6 @@ enum Qualification {
   DO
   FELLOWSHIP
   PGD
-}
-
-model Admin {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 enum Role {

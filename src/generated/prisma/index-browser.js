@@ -125,7 +125,6 @@ exports.Prisma.UserScalarFieldEnum = {
   email: 'email',
   phoneNo: 'phoneNo',
   name: 'name',
-  gender: 'gender',
   password: 'password',
   age: 'age',
   role: 'role',
@@ -141,7 +140,8 @@ exports.Prisma.UserAddressScalarFieldEnum = {
   state: 'state',
   pinCode: 'pinCode',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  gender: 'gender'
 };
 
 exports.Prisma.PatientScalarFieldEnum = {
@@ -196,7 +196,8 @@ exports.Prisma.LeaveScalarFieldEnum = {
   reason: 'reason',
   startDate: 'startDate',
   endDate: 'endDate',
-  applyAt: 'applyAt'
+  applyAt: 'applyAt',
+  reason: 'reason'
 };
 
 exports.Prisma.AdminScalarFieldEnum = {
@@ -230,16 +231,16 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
-exports.Gender = exports.$Enums.Gender = {
-  MALE: 'MALE',
-  FEMALE: 'FEMALE',
-  BINARY: 'BINARY'
-};
-
 exports.Role = exports.$Enums.Role = {
   PATIENT: 'PATIENT',
   DOCTOR: 'DOCTOR',
   ADMIN: 'ADMIN'
+};
+
+exports.Gender = exports.$Enums.Gender = {
+  MALE: 'MALE',
+  FEMALE: 'FEMALE',
+  BINARY: 'BINARY'
 };
 
 exports.Specialty = exports.$Enums.Specialty = {

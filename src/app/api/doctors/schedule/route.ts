@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     // UPSERT — create if not exists, update if exists
-    const schedule = await prisma.doctorSchedule.upsert({
+    const schedule = await prisma.schedule.upsert({
       where: { doctorId },
       update: { weeklySchedule },
       create: {
@@ -52,7 +52,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const schedule = await prisma.doctorSchedule.findUnique({
+    const schedule = await prisma.schedule.findUnique({
       where: { doctorId },
     });
 
