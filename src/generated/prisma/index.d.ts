@@ -6022,28 +6022,28 @@ export namespace Prisma {
   export type LeaveMinAggregateOutputType = {
     id: string | null
     doctorId: string | null
+    reason: string | null
     startDate: Date | null
     endDate: Date | null
     applyAt: Date | null
-    reason: string | null
   }
 
   export type LeaveMaxAggregateOutputType = {
     id: string | null
     doctorId: string | null
+    reason: string | null
     startDate: Date | null
     endDate: Date | null
     applyAt: Date | null
-    reason: string | null
   }
 
   export type LeaveCountAggregateOutputType = {
     id: number
     doctorId: number
+    reason: number
     startDate: number
     endDate: number
     applyAt: number
-    reason: number
     _all: number
   }
 
@@ -6051,28 +6051,28 @@ export namespace Prisma {
   export type LeaveMinAggregateInputType = {
     id?: true
     doctorId?: true
+    reason?: true
     startDate?: true
     endDate?: true
     applyAt?: true
-    reason?: true
   }
 
   export type LeaveMaxAggregateInputType = {
     id?: true
     doctorId?: true
+    reason?: true
     startDate?: true
     endDate?: true
     applyAt?: true
-    reason?: true
   }
 
   export type LeaveCountAggregateInputType = {
     id?: true
     doctorId?: true
+    reason?: true
     startDate?: true
     endDate?: true
     applyAt?: true
-    reason?: true
     _all?: true
   }
 
@@ -6151,10 +6151,10 @@ export namespace Prisma {
   export type LeaveGroupByOutputType = {
     id: string
     doctorId: string
+    reason: string
     startDate: Date
     endDate: Date
     applyAt: Date
-    reason: string
     _count: LeaveCountAggregateOutputType | null
     _min: LeaveMinAggregateOutputType | null
     _max: LeaveMaxAggregateOutputType | null
@@ -6177,43 +6177,43 @@ export namespace Prisma {
   export type LeaveSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
+    reason?: boolean
     startDate?: boolean
     endDate?: boolean
     applyAt?: boolean
-    reason?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["leave"]>
 
   export type LeaveSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
+    reason?: boolean
     startDate?: boolean
     endDate?: boolean
     applyAt?: boolean
-    reason?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["leave"]>
 
   export type LeaveSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
+    reason?: boolean
     startDate?: boolean
     endDate?: boolean
     applyAt?: boolean
-    reason?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["leave"]>
 
   export type LeaveSelectScalar = {
     id?: boolean
     doctorId?: boolean
+    reason?: boolean
     startDate?: boolean
     endDate?: boolean
     applyAt?: boolean
-    reason?: boolean
   }
 
-  export type LeaveOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "startDate" | "endDate" | "applyAt" | "reason", ExtArgs["result"]["leave"]>
+  export type LeaveOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "reason" | "startDate" | "endDate" | "applyAt", ExtArgs["result"]["leave"]>
   export type LeaveInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
   }
@@ -6232,10 +6232,10 @@ export namespace Prisma {
     scalars: $Extensions.GetPayloadResult<{
       id: string
       doctorId: string
+      reason: string
       startDate: Date
       endDate: Date
       applyAt: Date
-      reason: string
     }, ExtArgs["result"]["leave"]>
     composites: {}
   }
@@ -6662,10 +6662,10 @@ export namespace Prisma {
   interface LeaveFieldRefs {
     readonly id: FieldRef<"Leave", 'String'>
     readonly doctorId: FieldRef<"Leave", 'String'>
+    readonly reason: FieldRef<"Leave", 'String'>
     readonly startDate: FieldRef<"Leave", 'DateTime'>
     readonly endDate: FieldRef<"Leave", 'DateTime'>
     readonly applyAt: FieldRef<"Leave", 'DateTime'>
-    readonly reason: FieldRef<"Leave", 'String'>
   }
     
 
@@ -8199,10 +8199,10 @@ export namespace Prisma {
   export const LeaveScalarFieldEnum: {
     id: 'id',
     doctorId: 'doctorId',
+    reason: 'reason',
     startDate: 'startDate',
     endDate: 'endDate',
-    applyAt: 'applyAt',
-    reason: 'reason'
+    applyAt: 'applyAt'
   };
 
   export type LeaveScalarFieldEnum = (typeof LeaveScalarFieldEnum)[keyof typeof LeaveScalarFieldEnum]
@@ -8691,20 +8691,20 @@ export namespace Prisma {
     NOT?: LeaveWhereInput | LeaveWhereInput[]
     id?: StringFilter<"Leave"> | string
     doctorId?: StringFilter<"Leave"> | string
+    reason?: StringFilter<"Leave"> | string
     startDate?: DateTimeFilter<"Leave"> | Date | string
     endDate?: DateTimeFilter<"Leave"> | Date | string
     applyAt?: DateTimeFilter<"Leave"> | Date | string
-    reason?: StringFilter<"Leave"> | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
   }
 
   export type LeaveOrderByWithRelationInput = {
     id?: SortOrder
     doctorId?: SortOrder
+    reason?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     applyAt?: SortOrder
-    reason?: SortOrder
     doctor?: DoctorOrderByWithRelationInput
   }
 
@@ -8714,20 +8714,20 @@ export namespace Prisma {
     OR?: LeaveWhereInput[]
     NOT?: LeaveWhereInput | LeaveWhereInput[]
     doctorId?: StringFilter<"Leave"> | string
+    reason?: StringFilter<"Leave"> | string
     startDate?: DateTimeFilter<"Leave"> | Date | string
     endDate?: DateTimeFilter<"Leave"> | Date | string
     applyAt?: DateTimeFilter<"Leave"> | Date | string
-    reason?: StringFilter<"Leave"> | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
   }, "id">
 
   export type LeaveOrderByWithAggregationInput = {
     id?: SortOrder
     doctorId?: SortOrder
+    reason?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     applyAt?: SortOrder
-    reason?: SortOrder
     _count?: LeaveCountOrderByAggregateInput
     _max?: LeaveMaxOrderByAggregateInput
     _min?: LeaveMinOrderByAggregateInput
@@ -8739,10 +8739,10 @@ export namespace Prisma {
     NOT?: LeaveScalarWhereWithAggregatesInput | LeaveScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Leave"> | string
     doctorId?: StringWithAggregatesFilter<"Leave"> | string
+    reason?: StringWithAggregatesFilter<"Leave"> | string
     startDate?: DateTimeWithAggregatesFilter<"Leave"> | Date | string
     endDate?: DateTimeWithAggregatesFilter<"Leave"> | Date | string
     applyAt?: DateTimeWithAggregatesFilter<"Leave"> | Date | string
-    reason?: StringWithAggregatesFilter<"Leave"> | string
   }
 
   export type AdminWhereInput = {
@@ -9129,64 +9129,64 @@ export namespace Prisma {
 
   export type LeaveCreateInput = {
     id?: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
     doctor: DoctorCreateNestedOneWithoutLeavesInput
   }
 
   export type LeaveUncheckedCreateInput = {
     id?: string
     doctorId: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
   }
 
   export type LeaveUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
     doctor?: DoctorUpdateOneRequiredWithoutLeavesNestedInput
   }
 
   export type LeaveUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
   export type LeaveCreateManyInput = {
     id?: string
     doctorId: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
   }
 
   export type LeaveUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
   export type LeaveUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
   export type AdminCreateInput = {
@@ -9624,28 +9624,28 @@ export namespace Prisma {
   export type LeaveCountOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
+    reason?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     applyAt?: SortOrder
-    reason?: SortOrder
   }
 
   export type LeaveMaxOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
+    reason?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     applyAt?: SortOrder
-    reason?: SortOrder
   }
 
   export type LeaveMinOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
+    reason?: SortOrder
     startDate?: SortOrder
     endDate?: SortOrder
     applyAt?: SortOrder
-    reason?: SortOrder
   }
 
   export type AdminCountOrderByAggregateInput = {
@@ -10401,18 +10401,18 @@ export namespace Prisma {
 
   export type LeaveCreateWithoutDoctorInput = {
     id?: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
   }
 
   export type LeaveUncheckedCreateWithoutDoctorInput = {
     id?: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
   }
 
   export type LeaveCreateOrConnectWithoutDoctorInput = {
@@ -10513,10 +10513,10 @@ export namespace Prisma {
     NOT?: LeaveScalarWhereInput | LeaveScalarWhereInput[]
     id?: StringFilter<"Leave"> | string
     doctorId?: StringFilter<"Leave"> | string
+    reason?: StringFilter<"Leave"> | string
     startDate?: DateTimeFilter<"Leave"> | Date | string
     endDate?: DateTimeFilter<"Leave"> | Date | string
     applyAt?: DateTimeFilter<"Leave"> | Date | string
-    reason?: StringFilter<"Leave"> | string
   }
 
   export type ScheduleUpsertWithoutDoctorInput = {
@@ -10762,34 +10762,34 @@ export namespace Prisma {
 
   export type LeaveCreateManyDoctorInput = {
     id?: string
+    reason: string
     startDate: Date | string
     endDate: Date | string
     applyAt?: Date | string
-    reason: string
   }
 
   export type LeaveUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
   export type LeaveUncheckedUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
   export type LeaveUncheckedUpdateManyWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
     startDate?: DateTimeFieldUpdateOperationsInput | Date | string
     endDate?: DateTimeFieldUpdateOperationsInput | Date | string
     applyAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reason?: StringFieldUpdateOperationsInput | string
   }
 
 

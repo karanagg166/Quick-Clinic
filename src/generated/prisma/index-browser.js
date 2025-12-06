@@ -168,10 +168,10 @@ exports.Prisma.ScheduleScalarFieldEnum = {
 exports.Prisma.LeaveScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
+  reason: 'reason',
   startDate: 'startDate',
   endDate: 'endDate',
-  applyAt: 'applyAt',
-  reason: 'reason'
+  applyAt: 'applyAt'
 };
 
 exports.Prisma.AdminScalarFieldEnum = {
