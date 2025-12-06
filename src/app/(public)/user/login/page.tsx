@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/store/userStore";
-import { usePatientStore } from "@/store/patientStore";
-import { useDoctorStore } from "@/store/doctorStore";
+import { useUserStore } from "@/store/index";
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId?: string | null;
+  patientId?: string | null;
+
 }
 
 
@@ -40,9 +41,18 @@ export default function Home() {
       });
 
       const data = await response.json();
-
-      const {user} = data;
-
+      const user: User = {
+        userId: data.user.userId,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name,
+        gender: data.user.gender,
+        age: data.user.age,
+        doctorId: data.user.doctorId,
+        patientId: data.user.patientId,
+      };
+      
+      
       if (response.ok) {
 
        setUser(user);

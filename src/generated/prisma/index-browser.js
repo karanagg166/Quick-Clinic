@@ -182,12 +182,42 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DoctorAvailabilityScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  date: 'date',
+  isAvailable: 'isAvailable',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.SlotScalarFieldEnum = {
+  id: 'id',
+  doctorAvailabilityId: 'doctorAvailabilityId',
+  startTime: 'startTime',
+  endTime: 'endTime',
+  status: 'status',
+  heldByPatientId: 'heldByPatientId',
+  heldAt: 'heldAt',
+  appointmentId: 'appointmentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  doctorId: 'doctorId'
+};
+
 exports.Prisma.AppointmentScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
   patientId: 'patientId',
+  status: 'status',
+  notes: 'notes',
+  cancelReason: 'cancelReason',
+  cancelledAt: 'cancelledAt',
   appointmentDateTime: 'appointmentDateTime',
-  bookedAt: 'bookedAt'
+  durationMinutes: 'durationMinutes',
+  bookedAt: 'bookedAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
@@ -315,6 +345,23 @@ exports.Qualification = exports.$Enums.Qualification = {
   PGD: 'PGD'
 };
 
+exports.SlotStatus = exports.$Enums.SlotStatus = {
+  AVAILABLE: 'AVAILABLE',
+  HELD: 'HELD',
+  BOOKED: 'BOOKED',
+  UNAVAILABLE: 'UNAVAILABLE',
+  CANCELLED: 'CANCELLED'
+};
+
+exports.AppointmentStatus = exports.$Enums.AppointmentStatus = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  COMPLETED: 'COMPLETED',
+  CANCELLED: 'CANCELLED',
+  NO_SHOW: 'NO_SHOW',
+  RESCHEDULED: 'RESCHEDULED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Admin: 'Admin',
@@ -322,6 +369,8 @@ exports.Prisma.ModelName = {
   Patient: 'Patient',
   Leave: 'Leave',
   Schedule: 'Schedule',
+  DoctorAvailability: 'DoctorAvailability',
+  Slot: 'Slot',
   Appointment: 'Appointment',
   DoctorPatientRelation: 'DoctorPatientRelation',
   AccessLog: 'AccessLog',
