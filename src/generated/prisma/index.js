@@ -100,21 +100,19 @@ exports.Prisma.UserScalarFieldEnum = {
   name: 'name',
   password: 'password',
   age: 'age',
+  gender: 'gender',
+  role: 'role',
+  address: 'address',
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
-  role: 'role',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  gender: 'gender'
+  updatedAt: 'updatedAt'
 };
 
-exports.Prisma.PatientScalarFieldEnum = {
+exports.Prisma.AdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
-  medicalHistory: 'medicalHistory',
-  allergies: 'allergies',
-  currentMedications: 'currentMedications',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -130,6 +128,25 @@ exports.Prisma.DoctorScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PatientScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  medicalHistory: 'medicalHistory',
+  allergies: 'allergies',
+  currentMedications: 'currentMedications',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.LeaveScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  reason: 'reason',
+  startDate: 'startDate',
+  endDate: 'endDate',
+  applyAt: 'applyAt'
+};
+
 exports.Prisma.ScheduleScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
@@ -138,20 +155,36 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.LeaveScalarFieldEnum = {
+exports.Prisma.AppointmentScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
-  startDate: 'startDate',
-  endDate: 'endDate',
-  applyAt: 'applyAt',
-  reason: 'reason'
+  patientId: 'patientId',
+  appointmentDateTime: 'appointmentDateTime',
+  bookedAt: 'bookedAt'
 };
 
-exports.Prisma.AdminScalarFieldEnum = {
+exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
   id: 'id',
-  userId: 'userId',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.AccessLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  targetId: 'targetId',
+  action: 'action',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AuditLogScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  action: 'action',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -160,6 +193,11 @@ exports.Prisma.SortOrder = {
 };
 
 exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull
 };
 
@@ -173,10 +211,21 @@ exports.Prisma.JsonNullValueFilter = {
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
 };
+
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
   FEMALE: 'FEMALE',
   BINARY: 'BINARY'
+};
+
+exports.Role = exports.$Enums.Role = {
+  PATIENT: 'PATIENT',
+  DOCTOR: 'DOCTOR',
+  ADMIN: 'ADMIN'
 };
 
 exports.Specialty = exports.$Enums.Specialty = {
@@ -239,19 +288,17 @@ exports.Qualification = exports.$Enums.Qualification = {
   PGD: 'PGD'
 };
 
-exports.Role = exports.$Enums.Role = {
-  PATIENT: 'PATIENT',
-  DOCTOR: 'DOCTOR',
-  ADMIN: 'ADMIN'
-};
-
 exports.Prisma.ModelName = {
   User: 'User',
-  Patient: 'Patient',
+  Admin: 'Admin',
   Doctor: 'Doctor',
-  Schedule: 'Schedule',
+  Patient: 'Patient',
   Leave: 'Leave',
-  Admin: 'Admin'
+  Schedule: 'Schedule',
+  Appointment: 'Appointment',
+  DoctorPatientRelation: 'DoctorPatientRelation',
+  AccessLog: 'AccessLog',
+  AuditLog: 'AuditLog'
 };
 /**
  * Create the Client
@@ -261,10 +308,10 @@ const config = {
   "clientVersion": "7.0.1",
   "engineVersion": "f09f2815f091dbba658cdcd2264306d88bb5bda6",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(cuid())\n  email     String   @unique\n  phoneNo   String\n  name      String\n  password  String\n  age       Int\n  city      String\n  state     String\n  pinCode   Int\n  role      Role     @default(PATIENT)\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  gender    Gender   @default(MALE)\n  admin     Admin?\n  doctor    Doctor?\n  patient   Patient?\n}\n\nmodel Patient {\n  id                 String   @id @default(cuid())\n  userId             String   @unique\n  medicalHistory     String   @default(\"\")\n  allergies          String   @default(\"\")\n  currentMedications String   @default(\"\")\n  createdAt          DateTime @default(now())\n  updatedAt          DateTime @updatedAt\n  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nmodel Doctor {\n  id             String          @id @default(cuid())\n  userId         String          @unique\n  specialty      Specialty\n  experience     Int             @default(0)\n  qualifications Qualification[]\n  fees           Int             @default(0)\n  createdAt      DateTime        @default(now())\n  updatedAt      DateTime        @updatedAt\n  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)\n  leaves         Leave[]\n  schedule       Schedule?\n}\n\nmodel Schedule {\n  id             String   @id @default(cuid())\n  doctorId       String   @unique\n  weeklySchedule Json\n  createdAt      DateTime @default(now())\n  updatedAt      DateTime @updatedAt\n  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n}\n\nmodel Leave {\n  id        String   @id @default(cuid())\n  doctorId  String\n  startDate DateTime\n  endDate   DateTime\n  applyAt   DateTime @default(now())\n  reason    String\n  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n}\n\nmodel Admin {\n  id        String   @id @default(cuid())\n  userId    String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)\n}\n\nenum Gender {\n  MALE\n  FEMALE\n  BINARY\n}\n\nenum Specialty {\n  CARDIOLOGIST\n  DERMATOLOGIST\n  PEDIATRICIAN\n  NEUROLOGIST\n  NEPHROLOGIST\n  GASTROENTEROLOGIST\n  ENDOCRINOLOGIST\n  PULMONOLOGIST\n  ONCOLOGIST\n  ORTHOPEDIC\n  OPHTHALMOLOGIST\n  OTOLARYNGOLOGIST\n  UROLOGIST\n  RHEUMATOLOGIST\n  PSYCHIATRIST\n  PSYCHOLOGIST\n  GENERAL_PHYSICIAN\n  GENERAL_SURGEON\n  RADIOLOGIST\n  PATHOLOGIST\n  HEMATOLOGIST\n  DENTIST\n  GYNECOLOGIST\n  OBSTETRICIAN\n  PLASTIC_SURGEON\n  VASCULAR_SURGEON\n  CARDIOTHORACIC_SURGEON\n  DERMATOSURGEON\n  INFECTIOUS_DISEASE_SPECIALIST\n  IMMUNOLOGIST\n  ANESTHESIOLOGIST\n  EMERGENCY_MEDICINE\n  SPORTS_MEDICINE\n  PAIN_MEDICINE\n  CRITICAL_CARE\n  PHYSIOTHERAPIST\n  NUTRITIONIST\n}\n\nenum Qualification {\n  MBBS\n  BDS\n  BPT\n  BHMS\n  BAMS\n  MD\n  MS\n  DNB\n  MDS\n  DM\n  MCH\n  MPH\n  MBA_HM\n  PHD\n  DO\n  FELLOWSHIP\n  PGD\n}\n\nenum Role {\n  PATIENT\n  DOCTOR\n  ADMIN\n}\n"
+  "inlineSchema": "// ======================================================\n// ROOT PRISMA SETUP (Prisma 7 compatible)\n// ======================================================\n\ngenerator client {\n  provider = \"prisma-client-js\"\n  output   = \"../src/generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\n// ======================================================\n// ENUMS\n// ======================================================\n\nenum Gender {\n  MALE\n  FEMALE\n  BINARY\n}\n\nenum Role {\n  PATIENT\n  DOCTOR\n  ADMIN\n}\n\nenum Specialty {\n  CARDIOLOGIST\n  DERMATOLOGIST\n  PEDIATRICIAN\n  NEUROLOGIST\n  NEPHROLOGIST\n  GASTROENTEROLOGIST\n  ENDOCRINOLOGIST\n  PULMONOLOGIST\n  ONCOLOGIST\n  ORTHOPEDIC\n  OPHTHALMOLOGIST\n  OTOLARYNGOLOGIST\n  UROLOGIST\n  RHEUMATOLOGIST\n  PSYCHIATRIST\n  PSYCHOLOGIST\n  GENERAL_PHYSICIAN\n  GENERAL_SURGEON\n  RADIOLOGIST\n  PATHOLOGIST\n  HEMATOLOGIST\n  DENTIST\n  GYNECOLOGIST\n  OBSTETRICIAN\n  PLASTIC_SURGEON\n  VASCULAR_SURGEON\n  CARDIOTHORACIC_SURGEON\n  DERMATOSURGEON\n  INFECTIOUS_DISEASE_SPECIALIST\n  IMMUNOLOGIST\n  ANESTHESIOLOGIST\n  EMERGENCY_MEDICINE\n  SPORTS_MEDICINE\n  PAIN_MEDICINE\n  CRITICAL_CARE\n  PHYSIOTHERAPIST\n  NUTRITIONIST\n}\n\nenum Qualification {\n  MBBS\n  BDS\n  BPT\n  BHMS\n  BAMS\n  MD\n  MS\n  DNB\n  MDS\n  DM\n  MCH\n  MPH\n  MBA_HM\n  PHD\n  DO\n  FELLOWSHIP\n  PGD\n}\n\n// ======================================================\n// USER, ADMIN, DOCTOR, PATIENT MODELS\n// ======================================================\n\nmodel User {\n  id       String @id @default(cuid())\n  email    String @unique\n  phoneNo  String\n  name     String\n  password String\n  age      Int\n\n  gender Gender @default(MALE)\n  role   Role   @default(PATIENT)\n\n  address String\n  city    String\n  state   String\n  pinCode Int\n\n  admin   Admin?\n  doctor  Doctor?\n  patient Patient?\n\n  accessLogs AccessLog[]\n  auditLogs  AuditLog[]\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Admin {\n  id     String @id @default(cuid())\n  userId String @unique\n\n  user User @relation(fields: [userId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@index([userId])\n}\n\nmodel Doctor {\n  id             String          @id @default(cuid())\n  userId         String          @unique\n  specialty      Specialty\n  experience     Int             @default(0)\n  qualifications Qualification[]\n  fees           Int             @default(0)\n\n  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  leaves           Leave[]\n  schedule         Schedule?\n  patientRelations DoctorPatientRelation[]\n  appointments     Appointment[] // REQUIRED BACK-RELATION\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Patient {\n  id     String @id @default(cuid())\n  userId String @unique\n\n  medicalHistory     String @default(\"\")\n  allergies          String @default(\"\")\n  currentMedications String @default(\"\")\n\n  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)\n  doctorRelations DoctorPatientRelation[]\n  appointments    Appointment[] // REQUIRED BACK-RELATION\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\n// ======================================================\n// DOCTOR MODULE (Leave, Schedule, Appointment)\n// ======================================================\n\nmodel Leave {\n  id       String @id @default(cuid())\n  doctorId String\n\n  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n\n  reason    String\n  startDate DateTime\n  endDate   DateTime\n  applyAt   DateTime @default(now())\n\n  @@unique([doctorId, startDate, endDate])\n}\n\nmodel Schedule {\n  id             String @id @default(cuid())\n  doctorId       String @unique\n  weeklySchedule Json\n\n  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n}\n\nmodel Appointment {\n  id String @id @default(cuid())\n\n  doctorId  String\n  patientId String\n\n  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)\n\n  appointmentDateTime DateTime\n  bookedAt            DateTime @default(now())\n\n  @@unique([doctorId, appointmentDateTime])\n  @@index([doctorId, patientId])\n  @@index([appointmentDateTime])\n}\n\n// ======================================================\n// DOCTOR–PATIENT RELATION MODEL\n// ======================================================\n\nmodel DoctorPatientRelation {\n  id        String @id @default(cuid())\n  doctorId  String\n  patientId String\n\n  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)\n  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)\n\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@unique([doctorId, patientId])\n  @@index([patientId])\n  @@index([doctorId])\n}\n\n// ======================================================\n// LOG MODELS\n// ======================================================\n\nmodel AccessLog {\n  id       String  @id @default(cuid())\n  userId   String?\n  targetId String?\n  action   String\n\n  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)\n\n  createdAt DateTime @default(now())\n}\n\nmodel AuditLog {\n  id       String  @id @default(cuid())\n  userId   String?\n  action   String\n  metadata Json?\n\n  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)\n\n  createdAt DateTime @default(now())\n}\n"
 }
 
-config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phoneNo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"age\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"state\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pinCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"admin\",\"kind\":\"object\",\"type\":\"Admin\",\"relationName\":\"AdminToUser\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToUser\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"Patient\",\"relationName\":\"PatientToUser\"}],\"dbName\":null},\"Patient\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"medicalHistory\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"allergies\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"currentMedications\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientToUser\"}],\"dbName\":null},\"Doctor\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"specialty\",\"kind\":\"enum\",\"type\":\"Specialty\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"qualifications\",\"kind\":\"enum\",\"type\":\"Qualification\"},{\"name\":\"fees\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DoctorToUser\"},{\"name\":\"leaves\",\"kind\":\"object\",\"type\":\"Leave\",\"relationName\":\"DoctorToLeave\"},{\"name\":\"schedule\",\"kind\":\"object\",\"type\":\"Schedule\",\"relationName\":\"DoctorToSchedule\"}],\"dbName\":null},\"Schedule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weeklySchedule\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToSchedule\"}],\"dbName\":null},\"Leave\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"applyAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"reason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToLeave\"}],\"dbName\":null},\"Admin\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AdminToUser\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
+config.runtimeDataModel = JSON.parse("{\"models\":{\"User\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"email\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"phoneNo\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"name\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"password\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"age\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"gender\",\"kind\":\"enum\",\"type\":\"Gender\"},{\"name\":\"role\",\"kind\":\"enum\",\"type\":\"Role\"},{\"name\":\"address\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"city\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"state\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"pinCode\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"admin\",\"kind\":\"object\",\"type\":\"Admin\",\"relationName\":\"AdminToUser\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToUser\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"Patient\",\"relationName\":\"PatientToUser\"},{\"name\":\"accessLogs\",\"kind\":\"object\",\"type\":\"AccessLog\",\"relationName\":\"AccessLogToUser\"},{\"name\":\"auditLogs\",\"kind\":\"object\",\"type\":\"AuditLog\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Admin\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AdminToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Doctor\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"specialty\",\"kind\":\"enum\",\"type\":\"Specialty\"},{\"name\":\"experience\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"qualifications\",\"kind\":\"enum\",\"type\":\"Qualification\"},{\"name\":\"fees\",\"kind\":\"scalar\",\"type\":\"Int\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"DoctorToUser\"},{\"name\":\"leaves\",\"kind\":\"object\",\"type\":\"Leave\",\"relationName\":\"DoctorToLeave\"},{\"name\":\"schedule\",\"kind\":\"object\",\"type\":\"Schedule\",\"relationName\":\"DoctorToSchedule\"},{\"name\":\"patientRelations\",\"kind\":\"object\",\"type\":\"DoctorPatientRelation\",\"relationName\":\"DoctorToDoctorPatientRelation\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Patient\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"medicalHistory\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"allergies\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"currentMedications\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"PatientToUser\"},{\"name\":\"doctorRelations\",\"kind\":\"object\",\"type\":\"DoctorPatientRelation\",\"relationName\":\"DoctorPatientRelationToPatient\"},{\"name\":\"appointments\",\"kind\":\"object\",\"type\":\"Appointment\",\"relationName\":\"AppointmentToPatient\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Leave\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToLeave\"},{\"name\":\"reason\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"startDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"endDate\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"applyAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Schedule\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"weeklySchedule\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToSchedule\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"Appointment\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"AppointmentToDoctor\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"Patient\",\"relationName\":\"AppointmentToPatient\"},{\"name\":\"appointmentDateTime\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"bookedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"DoctorPatientRelation\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctorId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"patientId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"doctor\",\"kind\":\"object\",\"type\":\"Doctor\",\"relationName\":\"DoctorToDoctorPatientRelation\"},{\"name\":\"patient\",\"kind\":\"object\",\"type\":\"Patient\",\"relationName\":\"DoctorPatientRelationToPatient\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"},{\"name\":\"updatedAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AccessLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"targetId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AccessLogToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null},\"AuditLog\":{\"fields\":[{\"name\":\"id\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"userId\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"action\",\"kind\":\"scalar\",\"type\":\"String\"},{\"name\":\"metadata\",\"kind\":\"scalar\",\"type\":\"Json\"},{\"name\":\"user\",\"kind\":\"object\",\"type\":\"User\",\"relationName\":\"AuditLogToUser\"},{\"name\":\"createdAt\",\"kind\":\"scalar\",\"type\":\"DateTime\"}],\"dbName\":null}},\"enums\":{},\"types\":{}}")
 defineDmmfProperty(exports.Prisma, config.runtimeDataModel)
 config.compilerWasm = {
       getRuntime: async () => require('./query_compiler_bg.js'),

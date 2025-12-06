@@ -1,3 +1,7 @@
+// ======================================================
+// ROOT PRISMA SETUP (Prisma 7 compatible)
+// ======================================================
+
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -7,83 +11,20 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  phoneNo   String
-  name      String
-  password  String
-  age       Int
-  city      String
-  state     String
-  pinCode   Int
-  role      Role     @default(PATIENT)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  gender    Gender   @default(MALE)
-  admin     Admin?
-  doctor    Doctor?
-  patient   Patient?
-}
-
-model Patient {
-  id                 String   @id @default(cuid())
-  userId             String   @unique
-  medicalHistory     String   @default("")
-  allergies          String   @default("")
-  currentMedications String   @default("")
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
-  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
-
-model Doctor {
-  id             String          @id @default(cuid())
-  userId         String          @unique
-  specialty      Specialty
-  experience     Int             @default(0)
-  qualifications Qualification[]
-  fees           Int             @default(0)
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leaves         Leave[]
-  schedule       Schedule?
-}
-
-model Schedule {
-  id             String   @id @default(cuid())
-  doctorId       String   @unique
-  weeklySchedule Json
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-}
-
-model Leave {
-  id        String   @id @default(cuid())
-  doctorId  String
-  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-
-  reason    String
-  startDate DateTime
-  endDate   DateTime
-
-  applyAt   DateTime @default(now())
-}
-
-model Admin {
-  id        String   @id @default(cuid())
-  userId    String   @unique
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-}
+// ======================================================
+// ENUMS
+// ======================================================
 
 enum Gender {
   MALE
   FEMALE
   BINARY
+}
+
+enum Role {
+  PATIENT
+  DOCTOR
+  ADMIN
 }
 
 enum Specialty {
@@ -146,8 +87,171 @@ enum Qualification {
   PGD
 }
 
-enum Role {
-  PATIENT
-  DOCTOR
-  ADMIN
+// ======================================================
+// USER, ADMIN, DOCTOR, PATIENT MODELS
+// ======================================================
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phoneNo   String
+  name      String
+  password  String
+  age       Int
+
+  gender    Gender   @default(MALE)
+  role      Role     @default(PATIENT)
+
+  address   String
+  city      String
+  state     String
+  pinCode   Int
+
+  admin     Admin?
+  doctor    Doctor?
+  patient   Patient?
+
+  accessLogs AccessLog[]
+  auditLogs  AuditLog[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Doctor {
+  id             String          @id @default(cuid())
+  userId         String          @unique
+  specialty      Specialty
+  experience     Int             @default(0)
+  qualifications Qualification[]
+  fees           Int             @default(0)
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaves         Leave[]
+  schedule       Schedule?
+  patientRelations DoctorPatientRelation[]
+  appointments   Appointment[]   // REQUIRED BACK-RELATION
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Patient {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+
+  medicalHistory     String   @default("")
+  allergies          String   @default("")
+  currentMedications String   @default("")
+
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorRelations    DoctorPatientRelation[]
+  appointments       Appointment[]  // REQUIRED BACK-RELATION
+
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+// ======================================================
+// DOCTOR MODULE (Leave, Schedule, Appointment)
+// ======================================================
+
+model Leave {
+  id        String   @id @default(cuid())
+  doctorId  String
+
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  reason    String
+  startDate DateTime
+  endDate   DateTime
+  applyAt   DateTime @default(now())
+
+  @@unique([doctorId, startDate, endDate])
+}
+
+model Schedule {
+  id             String   @id @default(cuid())
+  doctorId       String   @unique
+  weeklySchedule Json
+
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Appointment {
+  id                  String   @id @default(cuid())
+
+  doctorId            String
+  patientId           String
+
+  doctor              Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient             Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  appointmentDateTime DateTime
+  bookedAt            DateTime @default(now())
+
+  @@unique([doctorId, appointmentDateTime])
+  @@index([doctorId, patientId])
+  @@index([appointmentDateTime])
+}
+
+// ======================================================
+// DOCTOR–PATIENT RELATION MODEL
+// ======================================================
+
+model DoctorPatientRelation {
+  id        String   @id @default(cuid())
+  doctorId  String
+  patientId String
+
+  doctor    Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, patientId])
+  @@index([patientId])
+  @@index([doctorId])
+}
+
+// ======================================================
+// LOG MODELS
+// ======================================================
+
+model AccessLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  targetId  String?
+  action    String
+
+  user      User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  Json?
+
+  user      User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
 }
