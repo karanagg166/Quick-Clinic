@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-
+import { createToken } from "@/lib/auth";
 
 
 interface User {
@@ -77,7 +77,23 @@ const userDetails: User = {
       { message: "User created successfully",user:userDetails },
       { status: 201 }
     );
-
+ const token = await createToken({ 
+      id: user.id,
+      email: user.email,
+      role: user.role 
+    });
+     res.cookies.set("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    res.cookies.set("role", user.role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",});
+    
     return res;
 
   } catch (error: any) {

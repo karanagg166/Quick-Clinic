@@ -1,195 +1,142 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import ScheduleDaySection from "./components/ScheduleDaySection";
 
-export default function DoctorSchedule() {
-  const { doctorId } = useUserStore();
+interface Slot {
+  slotNo: number;
+  start: string;
+  end: string;
+}
+
+export default function DoctorSchedulePage() {
+ 
+const doctorId = useUserStore((s) => s.doctorId);
+
   const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
 
-  // Default empty schedule
-  const defaultSchedule = days.map(() => ({
-    morningStart: "",
-    morningEnd: "",
-    eveningStart: "",
-    eveningEnd: "",
-  }));
+  const [schedule, setSchedule] = useState(
+    days.map((day) => ({ day, slots: [] as Slot[] }))
+  );
 
-  const [schedule, setSchedule] = useState(defaultSchedule);
   const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
 
-  // --------------------------------------------------
-  // GET Existing schedule on load
-  // --------------------------------------------------
+  // Fetch existing schedule
+  const fetchSchedule = async () => {
+
+    try {
+      const res = await fetch(`/api/doctors/${doctorId}/schedule`);
+      const data = await res.json();
+
+      if (!data?.weeklySchedule) return;
+
+      setSchedule(data.weeklySchedule);
+    } catch (err) {
+      console.error("Fetch error:", err);
+    }
+  };
+
   useEffect(() => {
-    const loadSchedule = async () => {
-      try {
-        if (!doctorId) return;
-
-        setLoading(true);
-
-        const res = await fetch(`/api/doctors/${doctorId}/schedule`, {
-          method: "GET",
-          credentials: "include",
-        });
-
-        if (!res.ok) return; // no schedule yet
-
-        const data = await res.json();
-
-        // If backend saved schedule, update state
-        if (data.schedule?.weeklySchedule) {
-          setSchedule(data.schedule.weeklySchedule);
-        }
-
-      } catch (err) {
-        console.error("Fetch schedule error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadSchedule();
+    console.log("Fetching schedule for doctorId:", doctorId);
+    fetchSchedule();
   }, [doctorId]);
 
-
-  // --------------------------------------------------
-  // Update single field in table
-  // --------------------------------------------------
-  const updateField = (dayIndex: number, field: keyof typeof schedule[0], value: string) => {
+  // Add empty slot
+  const appendSlot = (dayIndex: number) => {
     setSchedule((prev) => {
       const updated = [...prev];
-      updated[dayIndex] = { ...updated[dayIndex], [field]: value };
+      updated[dayIndex].slots.push({
+        slotNo: updated[dayIndex].slots.length + 1,
+        start: "",
+        end: "",
+      });
       return updated;
     });
   };
 
-
-  // --------------------------------------------------
-  // SAVE schedule (POST)
-  // --------------------------------------------------
-  const saveSchedule = async () => {
-    try {
-      if (!doctorId) {
-        alert("Doctor ID not found");
-        return;
-      }
-
-      setSaving(true);
-
-      const res = await fetch(`/api/doctors/${doctorId}/schedule`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weeklySchedule: schedule }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to save schedule");
-      }
-
-      alert("Schedule saved successfully!");
-
-    } catch (err: any) {
-      alert(err.message || "Save failed");
-      console.error("Save Schedule Error:", err);
-    } finally {
-      setSaving(false);
-    }
+  // Update slot
+  const updateSlot = (
+    dayIndex: number,
+    slotIndex: number,
+    field: "start" | "end",
+    value: string
+  ) => {
+    setSchedule((prev) => {
+      const updated = [...prev];
+      updated[dayIndex].slots[slotIndex][field] = value;
+      return updated;
+    });
   };
 
+  // Save slot validation
+  const saveSlot = (dayIndex: number, slotIndex: number) => {
+    const slot = schedule[dayIndex].slots[slotIndex];
 
-  // --------------------------------------------------
-  // RENDER UI
-  // --------------------------------------------------
+    if (!slot.start || !slot.end || slot.start >= slot.end) {
+      alert("Invalid slot time");
+      return;
+    }
+
+    alert("Slot saved!");
+  };
+
+  // Delete slot
+  const deleteSlot = (dayIndex: number, slotIndex: number) => {
+    setSchedule((prev) => {
+      const updated = [...prev];
+      updated[dayIndex].slots.splice(slotIndex, 1);
+      return updated;
+    });
+  };
+
+  // Submit full schedule
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+   
+
+    setLoading(true);
+    await fetch(`/api/doctors/${doctorId}/schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ weeklySchedule: schedule }),
+    });
+    setLoading(false);
+
+    alert("Saved!");
+  };
+
   return (
-    <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-semibold mb-4">Doctor Weekly Schedule</h1>
 
-      <h2 className="text-2xl font-bold text-center mb-6">
-        Weekly Availability
-      </h2>
+      <form onSubmit={handleSubmit}>
+        <div className="space-y-6">
+          {schedule.map((d, dayIndex) => (
+            <ScheduleDaySection
+              key={d.day}
+              day={d.day}
+              dayIndex={dayIndex}
+              slots={d.slots}
+              appendSlot={() => appendSlot(dayIndex)}
+              deleteSlot={(slotIndex) => deleteSlot(dayIndex, slotIndex)}
+              saveSlot={(slotIndex) => saveSlot(dayIndex, slotIndex)}
+              updateSlot={(slotIndex, field, value) =>
+                updateSlot(dayIndex, slotIndex, field, value)
+              }
+            />
+          ))}
+        </div>
 
-      {loading && (
-        <p className="text-blue-600 mb-4 text-center">Loading schedule...</p>
-      )}
-
-      <div className="overflow-x-auto">
-        <table className="w-full border border-gray-300 text-sm">
-          <thead>
-            <tr className="bg-gray-100">
-              <th className="border p-2">Day</th>
-              <th className="border p-2">Morning Start</th>
-              <th className="border p-2">Morning End</th>
-              <th className="border p-2">Evening Start</th>
-              <th className="border p-2">Evening End</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {days.map((day, index) => (
-              <tr key={day}>
-                <td className="border p-2 font-semibold">{day}</td>
-
-                <td className="border p-2">
-                  <input
-                    type="time"
-                    value={schedule[index].morningStart}
-                    onChange={(e) =>
-                      updateField(index, "morningStart", e.target.value)
-                    }
-                    className="border rounded p-1 w-full"
-                  />
-                </td>
-
-                <td className="border p-2">
-                  <input
-                    type="time"
-                    value={schedule[index].morningEnd}
-                    onChange={(e) =>
-                      updateField(index, "morningEnd", e.target.value)
-                    }
-                    className="border rounded p-1 w-full"
-                  />
-                </td>
-
-                <td className="border p-2">
-                  <input
-                    type="time"
-                    value={schedule[index].eveningStart}
-                    onChange={(e) =>
-                      updateField(index, "eveningStart", e.target.value)
-                    }
-                    className="border rounded p-1 w-full"
-                  />
-                </td>
-
-                <td className="border p-2">
-                  <input
-                    type="time"
-                    value={schedule[index].eveningEnd}
-                    onChange={(e) =>
-                      updateField(index, "eveningEnd", e.target.value)
-                    }
-                    className="border rounded p-1 w-full"
-                  />
-                </td>
-
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      <button
-        onClick={saveSchedule}
-        disabled={saving}
-        className="mt-6 w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {saving ? "Saving..." : "Save Schedule"}
-      </button>
+        <button
+          type="submit"
+          className="mt-6 bg-green-600 text-white px-4 py-2 rounded"
+          disabled={loading}
+        >
+          {loading ? "Saving..." : "Save schedule"}
+        </button>
+      </form>
     </div>
   );
 }

@@ -26,9 +26,9 @@ export default function DoctorLeaveSearch() {
       // Build query params
       const params = new URLSearchParams();
 
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
-      if (reason) params.append("reason", reason);
+       params.append("startDate", startDate);
+      params.append("endDate", endDate);
+      params.append("reason", reason);
 
       const response = await fetch(`/api/doctors/${doctorId}/leave?${params.toString()}`, {
         method: "GET",
