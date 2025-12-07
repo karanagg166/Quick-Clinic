@@ -63,8 +63,8 @@ export async function POST(req: NextRequest) {
       name: user.name,
       gender: user.gender,
       age: user.age,
-      doctorId: user.doctor.id,
-      patientId: user.patient.id,
+      doctorId: user.doctor?.id,
+      patientId: user.patient?.id,
     };
 
     // Fetch linked doctor/patient ids
