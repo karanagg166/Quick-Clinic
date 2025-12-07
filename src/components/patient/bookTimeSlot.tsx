@@ -22,8 +22,7 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
     const router = useRouter();
     const { patientId } = useUserStore();
     const [date, setDate] = useState<string>('');
-    const [morningSlots, setMorningSlots] = useState<Slot[]>([]);
-    const [eveningSlots, setEveningSlots] = useState<Slot[]>([]);
+    const [slots, setSlots] = useState<Slot[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [booking, setBooking] = useState(false);
@@ -48,10 +47,10 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
                 });
                 if (res.ok) {
                     const data = await res.json();
-                    setMorningSlots(data.morning || []);
-                    setEveningSlots(data.evening || []);
+                    setSlots(data.slots || []);
                 } else {
                     console.error("Failed to fetch slots");
+                    console.log(res);
                 }
             } catch (error) {
                 console.error("Error fetching slots:", error);
@@ -96,10 +95,7 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
             if (res.ok) {
                 alert("Slot booked successfully!");
                 // Refresh slots by updating the state
-                setMorningSlots(prev => prev.map(slot => 
-                    slot.id === slotId ? { ...slot, status: 'BOOKED' as const } : slot
-                ));
-                setEveningSlots(prev => prev.map(slot => 
+                setSlots(prev => prev.map(slot => 
                     slot.id === slotId ? { ...slot, status: 'BOOKED' as const } : slot
                 ));
                 setSelectedSlot(null);
@@ -115,8 +111,7 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
         }
     };
 
-    const allSlots = [...morningSlots, ...eveningSlots];
-    const totalSlots = allSlots.length;
+    const totalSlots = slots.length;
 
     return (
         <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
@@ -158,63 +153,30 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
                 </div>
             ) : (
                 <div className="space-y-6">
-                    {/* Morning Session */}
-                    {morningSlots.length > 0 && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center">
-                                <span className="mr-2">🌅</span> Morning Session
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                {morningSlots.map((slot) => (
-                                    <button
-                                        key={slot.id}
-                                        onClick={() => setSelectedSlot(slot.id)}
-                                        disabled={slot.status !== 'AVAILABLE'}
-                                        className={`
-                                            py-3 px-4 rounded-lg border-2 transition-all duration-200 font-medium
-                                            ${slot.status === 'AVAILABLE' 
-                                                ? selectedSlot === slot.id
-                                                    ? 'border-blue-600 bg-blue-600 text-white shadow-lg'
-                                                    : 'border-green-300 bg-green-50 text-green-700 hover:border-green-500 hover:bg-green-100'
-                                                : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            }
-                                        `}
-                                    >
-                                        {formatTime(slot.startTime)}
-                                    </button>
-                                ))}
-                            </div>
+                    {/* All Available Slots */}
+                    <div>
+                        <h3 className="text-xl font-semibold text-gray-700 mb-3">Available Time Slots</h3>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {slots.map((slot) => (
+                                <button
+                                    key={slot.id}
+                                    onClick={() => setSelectedSlot(slot.id)}
+                                    disabled={slot.status !== 'AVAILABLE'}
+                                    className={`
+                                        py-3 px-4 rounded-lg border-2 transition-all duration-200 font-medium
+                                        ${slot.status === 'AVAILABLE' 
+                                            ? selectedSlot === slot.id
+                                                ? 'border-blue-600 bg-blue-600 text-white shadow-lg'
+                                                : 'border-green-300 bg-green-50 text-green-700 hover:border-green-500 hover:bg-green-100'
+                                            : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        }
+                                    `}
+                                >
+                                    {formatTime(slot.startTime)}
+                                </button>
+                            ))}
                         </div>
-                    )}
-
-                    {/* Evening Session */}
-                    {eveningSlots.length > 0 && (
-                        <div>
-                            <h3 className="text-xl font-semibold text-gray-700 mb-3 flex items-center">
-                                <span className="mr-2">🌆</span> Evening Session
-                            </h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                                {eveningSlots.map((slot) => (
-                                    <button
-                                        key={slot.id}
-                                        onClick={() => setSelectedSlot(slot.id)}
-                                        disabled={slot.status !== 'AVAILABLE'}
-                                        className={`
-                                            py-3 px-4 rounded-lg border-2 transition-all duration-200 font-medium
-                                            ${slot.status === 'AVAILABLE' 
-                                                ? selectedSlot === slot.id
-                                                    ? 'border-blue-600 bg-blue-600 text-white shadow-lg'
-                                                    : 'border-green-300 bg-green-50 text-green-700 hover:border-green-500 hover:bg-green-100'
-                                                : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                            }
-                                        `}
-                                    >
-                                        {formatTime(slot.startTime)}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                    </div>
 
                     {/* Book Button */}
                     {selectedSlot && (
@@ -223,7 +185,7 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
                                 <div>
                                     <p className="text-gray-600">Selected Time:</p>
                                     <p className="text-xl font-semibold text-gray-800">
-                                        {formatTime(allSlots.find((s: Slot) => s.id === selectedSlot)?.startTime || '')}
+                                        {formatTime(slots.find((s) => s.id === selectedSlot)?.startTime || '')}
                                     </p>
                                 </div>
                                 <button
