@@ -52,3 +52,55 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+
+export async function GET(req: NextRequest) {
+  try {
+    const { searchParams } = req.nextUrl;
+    const location = searchParams.get("location");
+    const specialization = searchParams.get("specialization");
+
+    // Build filter conditions
+    const where: any = {};
+
+    // Filter by specialization if provided
+    if (specialization && specialization.trim()) {
+      where.specialty = specialization;
+    }
+
+    // Filter by location (city/state) if provided
+    if (location && location.trim()) {
+      where.user = {
+        OR: [
+          { city: { contains: location, mode: "insensitive" } },
+          { state: { contains: location, mode: "insensitive" } },
+        ],
+      };
+    }
+
+    // Fetch doctors with applied filters
+    const doctors = await prisma.doctor.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phoneNo: true,
+            city: true,
+            state: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(doctors, { status: 200 });
+  } catch (err: any) {
+    console.error("doctors-get-error", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
