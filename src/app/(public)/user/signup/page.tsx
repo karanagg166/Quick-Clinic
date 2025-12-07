@@ -19,16 +19,16 @@ export default function Signup() {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNo, setPhoneNo] = useState("");
-  const [age, setAge] = useState("");
-  const [address, setAddress] = useState(""); // ✅ NEW
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [pinCode, setPinCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [name, setName] = useState("doc");
+  const [email, setEmail] = useState("doc@gmail.com");
+  const [phoneNo, setPhoneNo] = useState("7869551545");
+  const [age, setAge] = useState("45");
+  const [address, setAddress] = useState("Dumna road"); // ✅ NEW
+  const [city, setCity] = useState("Jabalpur");
+  const [state, setState] = useState("Madhya Pradesh");
+  const [pinCode, setPinCode] = useState("482003");
+  const [password, setPassword] = useState("12345");
+  const [role, setRole] = useState("DOCTOR");
   const [gender, setGender] = useState(""); 
 
   const handleSignup = async (e: React.FormEvent) => {

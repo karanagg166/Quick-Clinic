@@ -161,7 +161,6 @@ model Doctor {
   schedule         Schedule?
   patientRelations DoctorPatientRelation[]
   appointments     Appointment[] // back-relation
-  availabilities   DoctorAvailability[] // availability by date
   slots            Slot[] // convenience back-relation
 
   createdAt DateTime @default(now())
@@ -206,7 +205,7 @@ model Leave {
 
 /**
  * Weekly schedule JSON is the canonical repeating schedule (e.g. working hours per weekday).
- * Use this for generating DoctorAvailability & Slots for upcoming days.
+ * Use this for generating Slots for upcoming days.
  * Example format:
  * {
  * "monday": [{ "start": "09:00", "end": "13:00" }, { "start": "15:00", "end": "18:00" }],
@@ -225,30 +224,7 @@ model Schedule {
 }
 
 /**
- * DoctorAvailability = availability record for a specific date (date only).
- * Holds meta information and a list of slots for that day.
- */
-model DoctorAvailability {
-  id          String   @id @default(cuid())
-  doctorId    String
-  // store date-only; use @db.Date for postgres date type
-  date        DateTime @db.Date
-  isAvailable Boolean  @default(true)
-  notes       String?
-
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  slots  Slot[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([doctorId, date])
-  @@index([doctorId, date])
-  @@index([date, isAvailable])
-}
-
-/**
- * Slot = a discrete time window on a given DoctorAvailability (bookable)
+ * Slot = a discrete time window for a doctor (bookable)
  * - startTime/endTime are full timestamps in UTC
  * - status: AVAILABLE / HELD / BOOKED / etc
  * Slot is the defining side of the one-to-one relation to Appointment:
@@ -257,27 +233,24 @@ model DoctorAvailability {
  * Appointment will not declare scalar fields for this relation (Prisma infers inverse).
  */
 model Slot {
-  id                   String       @id @default(cuid())
-  doctorAvailabilityId String
-  startTime            DateTime
-  endTime              DateTime
-  status               SlotStatus   @default(AVAILABLE)
-  heldByPatientId      String? // temporary hold
-  heldAt               DateTime?
+  id              String       @id @default(cuid())
+  doctorId        String
+  date            DateTime     @db.Date // slot date
+  startTime       DateTime
+  endTime         DateTime
+  status          SlotStatus   @default(AVAILABLE)
+  heldByPatientId String? // temporary hold
+  heldAt          DateTime?
   // link to appointment if booked (one-to-one) — this is the defining side
-  appointmentId        String?      @unique
-  appointment          Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  appointmentId   String?      @unique
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
-  doctorAvailability DoctorAvailability @relation(fields: [doctorAvailabilityId], references: [id], onDelete: Cascade)
-  // convenience relation to doctor through availability
-  // createdAt/updatedAt for auditing
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  doctor             Doctor?            @relation(fields: [doctorId], references: [id])
-  doctorId           String?
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  @@unique([doctorAvailabilityId, startTime])
-  @@index([doctorAvailabilityId, status])
+  @@unique([doctorId, date, startTime])
+  @@index([doctorId, date, status])
   @@index([startTime, status])
   @@index([heldByPatientId])
 }

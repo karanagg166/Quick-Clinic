@@ -6,7 +6,8 @@ import { useUserStore } from "@/store/userStore";
 export default function DoctorDetails() {
   const router = useRouter();
   const userId = useUserStore((state) => state.user?.userId);
-   const setDoctorId = useUserStore((state) => state.setDoctorId);
+  const user = useUserStore((state) => state.user);
+  const setUser = useUserStore((state) => state.setUser);
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
   
@@ -92,8 +93,10 @@ export default function DoctorDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        setDoctorId(data.doctor.id);
-       
+        // Update store with doctorId
+        if (user) {
+          setUser(user, undefined, data.doctor.id);
+        }
         alert("Doctor info created successfully.");
         router.push(`/doctor`);
       } else {

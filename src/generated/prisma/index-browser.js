@@ -182,19 +182,10 @@ exports.Prisma.ScheduleScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
-exports.Prisma.DoctorAvailabilityScalarFieldEnum = {
+exports.Prisma.SlotScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
   date: 'date',
-  isAvailable: 'isAvailable',
-  notes: 'notes',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
-};
-
-exports.Prisma.SlotScalarFieldEnum = {
-  id: 'id',
-  doctorAvailabilityId: 'doctorAvailabilityId',
   startTime: 'startTime',
   endTime: 'endTime',
   status: 'status',
@@ -202,8 +193,7 @@ exports.Prisma.SlotScalarFieldEnum = {
   heldAt: 'heldAt',
   appointmentId: 'appointmentId',
   createdAt: 'createdAt',
-  updatedAt: 'updatedAt',
-  doctorId: 'doctorId'
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.AppointmentScalarFieldEnum = {
@@ -369,7 +359,6 @@ exports.Prisma.ModelName = {
   Patient: 'Patient',
   Leave: 'Leave',
   Schedule: 'Schedule',
-  DoctorAvailability: 'DoctorAvailability',
   Slot: 'Slot',
   Appointment: 'Appointment',
   DoctorPatientRelation: 'DoctorPatientRelation',
