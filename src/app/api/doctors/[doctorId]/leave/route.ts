@@ -66,6 +66,7 @@ export async function GET(
       where: { doctorId },
       orderBy: { startDate: "desc" },
     });
+    
 
     return NextResponse.json(leaves, { status: 200 });
   } catch (err: any) {
