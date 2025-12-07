@@ -46,7 +46,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                         Appointments
                     </Link>
                     <Link 
-                        href="/patient/doctors" 
+                        href="/patient/findDoctors" 
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
                         Find Doctors
