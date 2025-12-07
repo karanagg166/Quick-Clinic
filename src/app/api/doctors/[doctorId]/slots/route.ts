@@ -27,10 +27,13 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
+  console.log("Slots API called");
   try {
     const { doctorId } = await params;
     const { searchParams } = req.nextUrl;
     const dateStr = searchParams.get("date");
+    
+    console.log("DoctorId:", doctorId, "Date:", dateStr);
 
     if (!doctorId) {
       return NextResponse.json(
@@ -59,20 +62,7 @@ export async function GET(
     });
 
     if (existingSlots.length > 0) {
-      // Segregate existing slots by session
-      const morning: any[] = [];
-      const evening: any[] = [];
-
-      existingSlots.forEach((slot: any) => {
-        const hour = new Date(slot.startTime).getHours();
-        if (hour < 14) {
-          morning.push(slot);
-        } else {
-          evening.push(slot);
-        }
-      });
-
-      return NextResponse.json({ morning, evening }, { status: 200 });
+      return NextResponse.json({ slots: existingSlots }, { status: 200 });
     }
 
     // Fetch doctor's schedule
@@ -91,78 +81,53 @@ export async function GET(
     // Get day name
     const dayName = getDayName(date);
 
-    // Get schedule for this day
-    const weeklySchedule = schedule.weeklySchedule as any;
-    const daySchedule = weeklySchedule[dayName];
+    // Get schedule for this day - schedule is an array format
+    const weeklySchedule = schedule.weeklySchedule as Array<{
+      day: string;
+      slots: Array<{ slotNo: number; start: string; end: string }>;
+    }>;
 
-    if (!daySchedule) {
+    const daySchedule = weeklySchedule.find((d) => d.day === dayName);
+
+    if (!daySchedule || !daySchedule.slots || daySchedule.slots.length === 0) {
       return NextResponse.json(
-        { error: `No schedule found for ${dayName}` },
-        { status: 404 }
+        { slots: [] },
+        { status: 200 }
       );
     }
 
-    // If all times are empty, doctor is not available
-    if (
-      !daySchedule.morningStart ||
-      !daySchedule.morningEnd ||
-      !daySchedule.eveningStart ||
-      !daySchedule.eveningEnd
-    ) {
-      return NextResponse.json({ slots: [] }, { status: 200 });
+    // Generate slots for each time slot in the schedule
+    const generatedSlots = [];
+
+    for (const timeSlot of daySchedule.slots) {
+      if (!timeSlot.start || !timeSlot.end) continue;
+
+      const startMin = timeStringToMinutes(timeSlot.start);
+      const endMin = timeStringToMinutes(timeSlot.end);
+
+      // Generate 10-minute slots within this time range
+      for (let min = startMin; min < endMin; min += SLOT_DURATION_MINUTES) {
+        const startTime = new Date(date);
+        startTime.setHours(Math.floor(min / 60), min % 60, 0, 0);
+
+        const endTime = new Date(startTime);
+        endTime.setMinutes(endTime.getMinutes() + SLOT_DURATION_MINUTES);
+
+        const slot = await prisma.slot.create({
+          data: {
+            doctorId,
+            date,
+            startTime,
+            endTime,
+            status: "AVAILABLE",
+          },
+        });
+
+        generatedSlots.push(slot);
+      }
     }
 
-    // Generate slots for morning and evening
-    const morningSlots = [];
-    const eveningSlots = [];
-
-    // Morning slots
-    const morningStartMin = timeStringToMinutes(daySchedule.morningStart);
-    const morningEndMin = timeStringToMinutes(daySchedule.morningEnd);
-
-    for (let min = morningStartMin; min < morningEndMin; min += SLOT_DURATION_MINUTES) {
-      const startTime = new Date(date);
-      startTime.setHours(Math.floor(min / 60), min % 60, 0, 0);
-
-      const endTime = new Date(startTime);
-      endTime.setMinutes(endTime.getMinutes() + SLOT_DURATION_MINUTES);
-
-      const slot = await prisma.slot.create({
-        data: {
-          doctorId,
-          date,
-          startTime,
-          endTime,
-          status: "AVAILABLE",
-        },
-      });
-      morningSlots.push(slot);
-    }
-
-    // Evening slots
-    const eveningStartMin = timeStringToMinutes(daySchedule.eveningStart);
-    const eveningEndMin = timeStringToMinutes(daySchedule.eveningEnd);
-
-    for (let min = eveningStartMin; min < eveningEndMin; min += SLOT_DURATION_MINUTES) {
-      const startTime = new Date(date);
-      startTime.setHours(Math.floor(min / 60), min % 60, 0, 0);
-
-      const endTime = new Date(startTime);
-      endTime.setMinutes(endTime.getMinutes() + SLOT_DURATION_MINUTES);
-
-      const slot = await prisma.slot.create({
-        data: {
-          doctorId,
-          date,
-          startTime,
-          endTime,
-          status: "AVAILABLE",
-        },
-      });
-      eveningSlots.push(slot);
-    }
-
-    return NextResponse.json({ morning: morningSlots, evening: eveningSlots }, { status: 201 });
+    return NextResponse.json({ slots: generatedSlots }, { status: 201 });
   } catch (err: any) {
     console.error("GET Slots Error:", err);
     return NextResponse.json(
