@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 export default function PatientDetails() {
   const userId = useUserStore((state) => state.user?.userId);
-  const setPatientId = useUserStore((state) => state.setPatientId);
 
   const [loading, setLoading] = useState(false);
   
@@ -14,8 +13,6 @@ export default function PatientDetails() {
   const [allergies, setAllergies] = useState("");
   const [currentMedications, setCurrentMedications] = useState("");
 
-  const updateUser = useUserStore((state) => state.updateUser);
- 
   const router = useRouter();
   // CREATE
   const createInfo = async () => {
@@ -42,7 +39,6 @@ export default function PatientDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        setPatientId(data.patient.id);
         alert("Patient info saved successfully.");
         router.push(`/patient`);
       } else {

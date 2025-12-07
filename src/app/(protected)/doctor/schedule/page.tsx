@@ -24,14 +24,24 @@ const doctorId = useUserStore((s) => s.doctorId);
 
   // Fetch existing schedule
   const fetchSchedule = async () => {
+    if (!doctorId) return;
 
     try {
       const res = await fetch(`/api/doctors/${doctorId}/schedule`);
+      
+      if (!res.ok) {
+        console.log("No existing schedule found");
+        return;
+      }
+
       const data = await res.json();
 
       if (!data?.weeklySchedule) return;
 
-      setSchedule(data.weeklySchedule);
+      // Ensure the schedule is an array format
+      if (Array.isArray(data.weeklySchedule)) {
+        setSchedule(data.weeklySchedule);
+      }
     } catch (err) {
       console.error("Fetch error:", err);
     }
@@ -94,17 +104,47 @@ const doctorId = useUserStore((s) => s.doctorId);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-   
+    if (!doctorId) {
+      alert("Doctor ID not found. Please login again.");
+      return;
+    }
+
+    // Validate that at least one day has slots
+    const hasSlots = schedule.some((day) => day.slots.length > 0);
+    if (!hasSlots) {
+      alert("Please add at least one time slot to your schedule.");
+      return;
+    }
+
+    // Renumber slots for each day
+    const normalizedSchedule = schedule.map((day) => ({
+      ...day,
+      slots: day.slots.map((slot, index) => ({
+        ...slot,
+        slotNo: index + 1,
+      })),
+    }));
 
     setLoading(true);
-    await fetch(`/api/doctors/${doctorId}/schedule`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ weeklySchedule: schedule }),
-    });
-    setLoading(false);
+    try {
+      const res = await fetch(`/api/doctors/${doctorId}/schedule`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ weeklySchedule: normalizedSchedule }),
+      });
 
-    alert("Saved!");
+      if (res.ok) {
+        alert("Schedule saved successfully!");
+      } else {
+        const error = await res.json();
+        alert(`Failed to save: ${error.error || "Unknown error"}`);
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+      alert("Failed to save schedule. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

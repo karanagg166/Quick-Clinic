@@ -22,7 +22,7 @@ export const GET = async (
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ doctor }, { status: 200 });
+    return NextResponse.json(doctor, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);
     return NextResponse.json(
