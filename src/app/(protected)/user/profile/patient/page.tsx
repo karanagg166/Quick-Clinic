@@ -6,7 +6,8 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 export default function PatientDetails() {
   const userId = useUserStore((state) => state.user?.userId);
-
+  const setUser = useUserStore((state) => state.setUser);
+  const user=useUserStore((state) => state.user);
   const [loading, setLoading] = useState(false);
   
   const [medicalHistory, setMedicalHistory] = useState("");
@@ -40,6 +41,10 @@ export default function PatientDetails() {
 
       if (response.ok) {
         alert("Patient info saved successfully.");
+        if(user){
+setUser(user, data.patient.id, undefined);
+        }
+        
         router.push(`/patient`);
       } else {
         alert(data.error || "Failed to save info.");

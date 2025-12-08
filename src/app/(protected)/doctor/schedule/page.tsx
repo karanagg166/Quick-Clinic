@@ -40,6 +40,7 @@ const doctorId = useUserStore((s) => s.doctorId);
 
       // Ensure the schedule is an array format
       if (Array.isArray(data.weeklySchedule)) {
+        console.log(data.weeklySchedule);
         setSchedule(data.weeklySchedule);
       }
     } catch (err) {

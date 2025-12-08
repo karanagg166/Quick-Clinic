@@ -16,7 +16,7 @@ export async function POST(
     }
   
     const { weeklySchedule } = await req.json();
-    console.log(weeklySchedule)
+    console.log(weeklySchedule);
 
     if (!weeklySchedule) {
       return NextResponse.json(

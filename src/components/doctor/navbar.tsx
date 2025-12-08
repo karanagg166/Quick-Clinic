@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
+import { useUserStore } from '@/store/userStore';
 
 interface DoctorNavbarProps {
   isSidebarOpen: boolean;
@@ -9,6 +11,19 @@ interface DoctorNavbarProps {
 }
 
 export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNavbarProps) {
+  const router = useRouter();
+  const logout = useUserStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/user/logout', { method: 'POST', credentials: 'include' });
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+    logout();
+    router.push('/user/login');
+  };
+
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
 
@@ -36,14 +51,14 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         <div className="hidden md:flex items-center gap-6">
 
           <Link
-            href="/doctorDashboard"
+            href="/doctor"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <CalendarDays className="w-4 h-4" /> Dashboard
           </Link>
 
           <Link
-            href="/doctorDashboard/schedule"
+            href="/doctor/schedule"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <ClipboardList className="w-4 h-4" /> Schedule
@@ -95,7 +110,11 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </div>
 
         {/* Logout */}
-        <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+        <button
+          onClick={handleLogout}
+          className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+          title="Logout"
+        >
           <LogOut className="w-5 h-5" />
         </button>
 
