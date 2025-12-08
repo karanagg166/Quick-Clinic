@@ -120,7 +120,7 @@ export default function DoctorLeaveSearch() {
             type="time"
             className="w-full border p-2 rounded"
             value={endTime}
-            onChange={(e) => setEndDate(e.target.value)}
+            onChange={(e) => setEndTime(e.target.value)}
           />
         </div>
         <div>
