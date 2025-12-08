@@ -21,6 +21,8 @@ interface UserState {
 
   // Actions
   setUser: (user: User, patientId?: string, doctorId?: string) => void;
+  setPatientId: (patientId: string | null) => void;
+  setDoctorId: (doctorId: string | null) => void;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
   setLoading: (loading: boolean) => void;
@@ -43,6 +45,12 @@ export const useUserStore = create<
           patientId: patientId || null,
           doctorId: doctorId || null,
         }),
+
+      setPatientId: (patientId: string | null) =>
+        set({ patientId }),
+
+      setDoctorId: (doctorId: string | null) =>
+        set({ doctorId }),
 
       logout: () =>
         set({

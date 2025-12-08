@@ -9,7 +9,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url = env("DATABASE_URL")
 }
 
 // ======================================================
@@ -97,8 +96,8 @@ enum SlotStatus {
 }
 
 enum AppointmentStatus {
-  PENDING // created, not yet confirmed by doctor/patient
-  CONFIRMED // both sides confirmed
+  PENDING
+  CONFIRMED
   COMPLETED
   CANCELLED
   NO_SHOW
@@ -154,14 +153,14 @@ model Doctor {
   specialty      Specialty
   experience     Int             @default(0)
   qualifications Qualification[]
-  fees           Int             @default(0) // store in smallest currency unit (e.g., cents) or use Decimal
+  fees           Int             @default(0)
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
   schedule         Schedule?
   patientRelations DoctorPatientRelation[]
-  appointments     Appointment[] // back-relation
-  slots            Slot[] // convenience back-relation
+  appointments     Appointment[]
+  slots            Slot[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -177,7 +176,7 @@ model Patient {
 
   user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorRelations DoctorPatientRelation[]
-  appointments    Appointment[] // back-relation
+  appointments    Appointment[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -219,15 +218,6 @@ model Leave {
   @@index([startDate, endDate])
 }
 
-/**
- * Weekly schedule JSON is the canonical repeating schedule (e.g. working hours per weekday).
- * Use this for generating Slots for upcoming days.
- * Example format:
- * {
- * "monday": [{ "start": "09:00", "end": "13:00" }, { "start": "15:00", "end": "18:00" }],
- * ...
- * }
- */
 model Schedule {
   id             String @id @default(cuid())
   doctorId       String @unique
@@ -239,27 +229,15 @@ model Schedule {
   updatedAt DateTime @updatedAt
 }
 
-
-
-/**
- * Slot = a discrete time window for a doctor (bookable)
- * - startTime/endTime are full timestamps in UTC
- * - status: AVAILABLE / HELD / BOOKED / etc
- * Slot is the defining side of the one-to-one relation to Appointment:
- * - appointmentId is the scalar FK (unique)
- * - appointment relation uses @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
- * Appointment will not declare scalar fields for this relation (Prisma infers inverse).
- */
 model Slot {
   id              String       @id @default(cuid())
   doctorId        String
-  date            DateTime     @db.Date // slot date
+  date            DateTime     @db.Date
   startTime       DateTime
   endTime         DateTime
   status          SlotStatus   @default(AVAILABLE)
-  heldByPatientId String? // temporary hold
+  heldByPatientId String?
   heldAt          DateTime?
-  // link to appointment if booked (one-to-one) — this is the defining side
   appointmentId   String?      @unique
   appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
@@ -273,33 +251,24 @@ model Slot {
   @@index([heldByPatientId])
 }
 
-/**
- * Appointment = finalized booking of a patient with a doctor.
- * NOTE: removed the scalar field `slotId` (it was duplicating the relation).
- * The inverse relation `slot` is declared without @relation attributes; Prisma will infer it.
- */
 model Appointment {
   id                  String            @id @default(cuid())
-  // slotId removed — Slot.appointmentId is the defining scalar FK
   doctorId            String
   patientId           String
   status              AppointmentStatus @default(PENDING)
   notes               String?
   cancelReason        String?
   cancelledAt         DateTime?
-  appointmentDateTime DateTime // canonical appointment time (start)
-  durationMinutes     Int               @default(30) // you can adjust default
+  appointmentDateTime DateTime
+  durationMinutes     Int               @default(30)
   bookedAt            DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
 
-  // inverse relation — no scalar / fields specified here
   slot    Slot?
   doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  // optional links to payment/prescription (removed per request)
-
-  @@unique([doctorId, appointmentDateTime]) // prevents two appointments at same time for same doctor
+  @@unique([doctorId, appointmentDateTime])
   @@index([doctorId, patientId])
   @@index([status])
   @@index([appointmentDateTime])

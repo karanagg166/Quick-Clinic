@@ -48,10 +48,10 @@ export default function Home() {
         // Set user in store with patientId or doctorId based on role
         if (user.role === "DOCTOR") {
           setUser(user, undefined, doctorId);
-          router.push("/doctorDashboard");
+          router.push("/doctor");
         } else if (user.role === "PATIENT") {
           setUser(user, patientId, undefined);
-          router.push("/patientDashboard");
+          router.push("/patient");
         } else if (user.role === "ADMIN") {
           setUser(user);
           router.push("/admin");

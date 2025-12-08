@@ -1,23 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+
 export default function DoctorLeave() {
-  // safer selector form
   const doctorId = useUserStore((s) => s.doctorId);
 
   const [reason, setReason] = useState("");
   const [startDate, setStartDate] = useState("");
-  const [startTime, setStartTime] = useState(""); // NEW
+  const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
-  const [endTime, setEndTime] = useState(""); // NEW
+  const [endTime, setEndTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const todayDate = new Date().toISOString().split("T")[0];
-  const todayTime = new Date().toTimeString().slice(0, 5); // "HH:mm"
+
+  // client-only computed today values (avoid SSR mismatch)
+  const [mounted, setMounted] = useState(false);
+  const [todayDate, setTodayDate] = useState("");
+  const [todayTime, setTodayTime] = useState("");
+
+  useEffect(() => {
+    // compute local date/time so it matches user's timezone
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // adjust to local for ISO
+    setTodayDate(now.toISOString().slice(0, 10)); // "YYYY-MM-DD"
+    setTodayTime(now.toISOString().slice(11, 16)); // "HH:MM"
+    setMounted(true);
+  }, []);
+
   const combineDateTime = (date: string, time: string) => {
-    // date expected "YYYY-MM-DD", time "HH:mm"
     if (!date || !time) return null;
-    // create ISO string in local timezone
+    // using new Date(`${date}T${time}`) produces a Date in local timezone
     const iso = new Date(`${date}T${time}`);
     if (isNaN(iso.getTime())) return null;
     return iso;
@@ -93,6 +105,16 @@ export default function DoctorLeave() {
     }
   };
 
+  // Helper: only enforce time min when selected date equals today
+  const timeMinForDate = (date: string) => {
+    if (!mounted) return undefined; // don't set min during SSR / initial render
+    return date === todayDate ? todayTime : undefined;
+  };
+
+  // End date min: can't be earlier than startDate (or today if no start selected)
+  const computedEndDateMin = mounted ? (startDate || todayDate) : undefined;
+  const computedStartDateMin = mounted ? todayDate : undefined;
+
   return (
     <div className="max-w-lg mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold text-center mb-6">Doctor Leave Request</h2>
@@ -114,11 +136,12 @@ export default function DoctorLeave() {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className="block font-semibold mb-1">Start Date</label>
+            {/* leave min undefined during SSR to avoid mismatch */}
             <input
               type="date"
               className="w-full border p-2 rounded"
               value={startDate}
-              min={startDate}
+              min={computedStartDateMin}
               onChange={(e) => setStartDate(e.target.value)}
               required
             />
@@ -130,7 +153,7 @@ export default function DoctorLeave() {
               type="time"
               className="w-full border p-2 rounded"
               value={startTime}
-              min={todayTime}
+              min={timeMinForDate(startDate)}
               onChange={(e) => setStartTime(e.target.value)}
               required
             />
@@ -145,7 +168,7 @@ export default function DoctorLeave() {
               type="date"
               className="w-full border p-2 rounded"
               value={endDate}
-              min={todayDate}
+              min={computedEndDateMin}
               onChange={(e) => setEndDate(e.target.value)}
               required
             />
@@ -157,7 +180,7 @@ export default function DoctorLeave() {
               type="time"
               className="w-full border p-2 rounded"
               value={endTime}
-              min={todayTime}
+              min={timeMinForDate(endDate)}
               onChange={(e) => setEndTime(e.target.value)}
               required
             />
