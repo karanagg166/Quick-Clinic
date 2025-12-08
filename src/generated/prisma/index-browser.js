@@ -24,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.1.0
- * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
+ * Prisma Client JS version: 7.0.1
+ * Query Engine version: f09f2815f091dbba658cdcd2264306d88bb5bda6
  */
 Prisma.prismaVersion = {
-  client: "7.1.0",
-  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
+  client: "7.0.1",
+  engine: "f09f2815f091dbba658cdcd2264306d88bb5bda6"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -165,6 +165,16 @@ exports.Prisma.PatientScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.NotificationScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  message: 'message',
+  isRead: 'isRead',
+  status: 'status',
+  readAt: 'readAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.LeaveScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
@@ -253,15 +263,15 @@ exports.Prisma.QueryMode = {
   insensitive: 'insensitive'
 };
 
+exports.Prisma.NullsOrder = {
+  first: 'first',
+  last: 'last'
+};
+
 exports.Prisma.JsonNullValueFilter = {
   DbNull: Prisma.DbNull,
   JsonNull: Prisma.JsonNull,
   AnyNull: Prisma.AnyNull
-};
-
-exports.Prisma.NullsOrder = {
-  first: 'first',
-  last: 'last'
 };
 exports.Gender = exports.$Enums.Gender = {
   MALE: 'MALE',
@@ -357,6 +367,7 @@ exports.Prisma.ModelName = {
   Admin: 'Admin',
   Doctor: 'Doctor',
   Patient: 'Patient',
+  Notification: 'Notification',
   Leave: 'Leave',
   Schedule: 'Schedule',
   Slot: 'Slot',
