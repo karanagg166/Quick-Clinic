@@ -9,12 +9,187 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  // url = env("DATABASE_URL")
 }
 
-// ======================================================
-// ENUMS
-// ======================================================
+model User {
+  id         String      @id @default(cuid())
+  email      String      @unique
+  phoneNo    String
+  name       String
+  password   String
+  age        Int
+  gender     Gender      @default(MALE)
+  role       Role        @default(PATIENT)
+  address    String
+  city       String
+  state      String
+  pinCode    Int
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  accessLogs AccessLog[]
+  admin      Admin?
+  auditLogs  AuditLog[]
+  doctor     Doctor?
+  patient    Patient?
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Doctor {
+  id               String                  @id @default(cuid())
+  userId           String                  @unique
+  specialty        Specialty
+  experience       Int                     @default(0)
+  qualifications   Qualification[]
+  fees             Int                     @default(0)
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  appointments     Appointment[]
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patientRelations DoctorPatientRelation[]
+  leaves           Leave[]
+  schedule         Schedule?
+  slots            Slot[]
+}
+
+model Patient {
+  id                 String                  @id @default(cuid())
+  userId             String                  @unique
+  medicalHistory     String                  @default("")
+  allergies          String                  @default("")
+  currentMedications String                  @default("")
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  appointments       Appointment[]
+  doctorRelations    DoctorPatientRelation[]
+  user               User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Leave {
+  id        String   @id @default(cuid())
+  doctorId  String
+  reason    String
+  startDate DateTime
+  endDate   DateTime
+  applyAt   DateTime @default(now())
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, startDate, endDate])
+  @@index([doctorId])
+  @@index([startDate, endDate])
+}
+
+/// *
+///  * Weekly schedule JSON is the canonical repeating schedule (e.g. working hours per weekday).
+///  * Use this for generating Slots for upcoming days.
+///  * Example format:
+///  * {
+///  * "monday": [{ "start": "09:00", "end": "13:00" }, { "start": "15:00", "end": "18:00" }],
+///  * ...
+///  * }
+model Schedule {
+  id             String   @id @default(cuid())
+  doctorId       String   @unique
+  weeklySchedule Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  doctor         Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+}
+
+/// *
+///  * Slot = a discrete time window for a doctor (bookable)
+///  * - startTime/endTime are full timestamps in UTC
+///  * - status: AVAILABLE / HELD / BOOKED / etc
+///  * Slot is the defining side of the one-to-one relation to Appointment:
+///  * - appointmentId is the scalar FK (unique)
+///  * - appointment relation uses @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+///  * Appointment will not declare scalar fields for this relation (Prisma infers inverse).
+model Slot {
+  id              String       @id @default(cuid())
+  doctorId        String
+  date            DateTime     @db.Date
+  startTime       DateTime
+  endTime         DateTime
+  status          SlotStatus   @default(AVAILABLE)
+  heldByPatientId String?
+  heldAt          DateTime?
+  appointmentId   String?      @unique
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+  doctor          Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, date, startTime])
+  @@index([doctorId, date, status])
+  @@index([startTime, status])
+  @@index([heldByPatientId])
+}
+
+/// *
+///  * Appointment = finalized booking of a patient with a doctor.
+///  * NOTE: removed the scalar field `slotId` (it was duplicating the relation).
+///  * The inverse relation `slot` is declared without @relation attributes; Prisma will infer it.
+model Appointment {
+  id                  String            @id @default(cuid())
+  doctorId            String
+  patientId           String
+  status              AppointmentStatus @default(PENDING)
+  notes               String?
+  cancelReason        String?
+  cancelledAt         DateTime?
+  appointmentDateTime DateTime
+  durationMinutes     Int               @default(30)
+  bookedAt            DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  doctor              Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient             Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  slot                Slot?
+
+  @@unique([doctorId, appointmentDateTime])
+  @@index([doctorId, patientId])
+  @@index([status])
+  @@index([appointmentDateTime])
+}
+
+model DoctorPatientRelation {
+  id        String   @id @default(cuid())
+  doctorId  String
+  patientId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, patientId])
+  @@index([patientId])
+  @@index([doctorId])
+}
+
+model AccessLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  targetId  String?
+  action    String
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+}
 
 enum Gender {
   MALE
@@ -97,8 +272,8 @@ enum SlotStatus {
 }
 
 enum AppointmentStatus {
-  PENDING // created, not yet confirmed by doctor/patient
-  CONFIRMED // both sides confirmed
+  PENDING
+  CONFIRMED
   COMPLETED
   CANCELLED
   NO_SHOW
