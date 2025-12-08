@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { Doctor } from "@/types/doctor";
 
 // GET - Fetch doctor by ID
 export const GET = async (
@@ -13,15 +14,47 @@ export const GET = async (
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const doctor = await prisma.doctor.findUnique({
+    const d = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      include: { user: true },
+      select: {
+        id: true,
+        specialty: true,
+        qualifications: true,
+        fees: true,
+        experience: true,
+        user: {
+          select: {
+            name: true,
+            gender:true,
+            age:true,
+            email:true,
+            city: true,
+            state: true,
+          },
+        },  
+      }
     });
+    const doctor: Doctor = {
+       id: String(d.id),
+       
+        name: d.user?.name ?? "",
+        gender: d.user?.gender ?? "",
+        age: d.user?.age ?? 0,
+        specialty: d.specialty ?? "",
+        experience: d.experience ?? 0,
+        fees: d.fees ?? 0,
+        email:d.user?.email ?? "",
+        qualifications: Array.isArray(d.qualifications) ? d.qualifications : (d.qualifications ? [d.qualifications] : []),
+       
+        city: d.user?.city ?? undefined,
+        state: d.user?.state ?? undefined,
 
-    if (!doctor) {
-      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
+    if (!d || !doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+console.log("Fetched doctor:", doctor);
     return NextResponse.json(doctor, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);

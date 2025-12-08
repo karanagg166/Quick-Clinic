@@ -2,18 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
-
-
-interface User {
-  userId: string;
-  email: string;
-  role: string;
-  name: string;
-  gender: string;
-  age: number;
-  doctorId: string | null;
-  patientId: string | null;
-}
+import { User } from "@/types/common";
 export const POST = async (req: NextRequest) => {
   try {
     const {

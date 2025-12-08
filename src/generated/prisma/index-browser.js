@@ -201,7 +201,6 @@ exports.Prisma.SlotScalarFieldEnum = {
   status: 'status',
   heldByPatientId: 'heldByPatientId',
   heldAt: 'heldAt',
-  appointmentId: 'appointmentId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -210,12 +209,10 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
   patientId: 'patientId',
+  slotId: 'slotId',
   status: 'status',
+  paymentMethod: 'paymentMethod',
   notes: 'notes',
-  cancelReason: 'cancelReason',
-  cancelledAt: 'cancelledAt',
-  appointmentDateTime: 'appointmentDateTime',
-  durationMinutes: 'durationMinutes',
   bookedAt: 'bookedAt',
   updatedAt: 'updatedAt'
 };
@@ -360,6 +357,11 @@ exports.AppointmentStatus = exports.$Enums.AppointmentStatus = {
   CANCELLED: 'CANCELLED',
   NO_SHOW: 'NO_SHOW',
   RESCHEDULED: 'RESCHEDULED'
+};
+
+exports.PaymentMethod = exports.$Enums.PaymentMethod = {
+  OFFLINE: 'OFFLINE',
+  ONLINE: 'ONLINE'
 };
 
 exports.Prisma.ModelName = {
