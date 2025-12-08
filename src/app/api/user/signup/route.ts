@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
-
+import { createToken } from "@/lib/auth";
 
 
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId: string | null;
+  patientId: string | null;
 }
 export const POST = async (req: NextRequest) => {
   try {
@@ -61,19 +63,37 @@ export const POST = async (req: NextRequest) => {
       
     });
 const userDetails: User = {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
       gender: user.gender,
       age: user.age,
+      doctorId: null,
+      patientId: null,
     };
     const res = NextResponse.json(
       
-      { message: "User created successfully",userDetails },
+      { message: "User created successfully",user:userDetails },
       { status: 201 }
     );
-
+ const token = await createToken({ 
+      id: user.id,
+      email: user.email,
+      role: user.role 
+    });
+     res.cookies.set("token", token, {
+      httpOnly: true,
+      secure: false,
+      sameSite: "lax",
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+    res.cookies.set("role", user.role, {
+    httpOnly: false,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",});
+    
     return res;
 
   } catch (error: any) {

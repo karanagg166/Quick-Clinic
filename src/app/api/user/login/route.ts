@@ -5,13 +5,16 @@ import { createToken } from "@/lib/auth";
 
 
 
+
 interface User {
-  id: string;
+  userId: string;
   email: string;
   role: string;
   name: string;
   gender: string;
   age: number;
+  doctorId: string | null;
+  patientId: string | null;
 }
 
 
@@ -24,6 +27,14 @@ export async function POST(req: NextRequest) {
       where: {
          email:email    
        },
+       include:{
+        doctor:{
+          select:{ id:true}
+        }
+        ,patient:{
+          select:{ id:true}
+        }
+       }
     });
 
     if (!user) {
@@ -46,22 +57,41 @@ export async function POST(req: NextRequest) {
     });
 
     const userDetails: User = {
-      id: user.id,
+      userId: user.id,
       email: user.email,
       role: user.role,
       name: user.name,
       gender: user.gender,
       age: user.age,
+      doctorId: user.doctor?.id,
+      patientId: user.patient?.id,
     };
-    
 
-    
+    // Fetch linked doctor/patient ids
+    let doctorId: string | null = null;
+    let patientId: string | null = null;
+
+    if (user.role === "DOCTOR") {
+      const doctor = await prisma.doctor.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      doctorId = doctor?.id ?? null;
+    } else if (user.role === "PATIENT") {
+      const patient = await prisma.patient.findUnique({
+        where: { userId: user.id },
+        select: { id: true },
+      });
+      patientId = patient?.id ?? null;
+    }
 
     // Response
     const res = NextResponse.json(
       {
         message: "Login successful",
         user: userDetails,
+        doctorId,
+        patientId,
       },
       { status: 200 }
     );

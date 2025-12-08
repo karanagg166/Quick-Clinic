@@ -3,20 +3,32 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store";
 
+type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
+
+interface User {
+  userId: string;
+  email: string;
+  role: UserRole;
+  name: string;
+  gender: string;
+  age: number;
+  doctorId?: string | null;
+  patientId?: string | null;
+}
 export default function Signup() {
   const router = useRouter();
   const setUser = useUserStore((state) => state.setUser);
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [phoneNo, setPhoneNo] = useState("");
-  const [age, setAge] = useState("");
-  const [address, setAddress] = useState(""); // ✅ NEW
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [pinCode, setPinCode] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
+  const [name, setName] = useState("doc");
+  const [email, setEmail] = useState("doc@gmail.com");
+  const [phoneNo, setPhoneNo] = useState("7869551545");
+  const [age, setAge] = useState("45");
+  const [address, setAddress] = useState("Dumna road"); // ✅ NEW
+  const [city, setCity] = useState("Jabalpur");
+  const [state, setState] = useState("Madhya Pradesh");
+  const [pinCode, setPinCode] = useState("482003");
+  const [password, setPassword] = useState("12345");
+  const [role, setRole] = useState("DOCTOR");
   const [gender, setGender] = useState(""); 
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -45,14 +57,25 @@ export default function Signup() {
       });
 
       const data = await response.json();
-      setUser(data.userDetails);
+      const userDetails: User = {
+        userId: data.user.userId,
+        email: data.user.email,
+        role: data.user.role,
+        name: data.user.name,
+        gender: data.user.gender,
+        age: data.user.age,
+       
+        
+        
+        };
+      setUser(userDetails);
       console.log("Signup Response:", data);
       if (response.ok) {
         if(role==="PATIENT"){
-          router.push(`/user/${data.userDetails.id}/register-role/patient`);
+          router.push(`/user/profile/patient`);
         }
         else if(role==="DOCTOR"){
-         router.push(`/user/${data.userDetails.id}/register-role/doctor`);
+         router.push(`/user/profile/doctor`);
         }
       } else {
         alert(data.error || "Signup failed");
@@ -63,7 +86,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-blue-100 px-4">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
 
         <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
