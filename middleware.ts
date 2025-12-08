@@ -9,6 +9,8 @@ const ROLE_ROUTES: Record<string, RegExp[]> = {
 };
 
 export async function middleware(request: NextRequest) {
+
+  console.log("MIDDLEWARE TRIGGERED!!");
   const pathname = request.nextUrl.pathname;
   const token = request.cookies.get('token')?.value;
 
