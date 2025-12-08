@@ -1,37 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: NextRequest) {
-  const doctorId = req.cookies.get("doctorId")?.value;
+/**
+ * NOTE:
+ * The second argument shape coming from Next may make `params` a Promise.
+ * To be safe, `await params` before accessing doctorId.
+ */
 
-  if (!doctorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+/* POST - create a leave request for doctorId */
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> } // keep as Promise
+) {
   try {
-    const { startDate, endDate, reason, startTime, endTime } = await req.json();
-
-    if (!startDate || !endDate || !reason || !startTime || !endTime) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
+    const { doctorId } = await params;
+    if (!doctorId) {
+      return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
-    console.log("Received leave request:", {
-      startDate,
-      endDate,
-      reason,
-      startTime,
-      endTime,
-    });
+    const body = await req.json().catch(() => ({}));
+    const { startDate, endDate, reason } = body || {};
 
-    // Combine date + time
-    const startDateTime = new Date(`${startDate}T${startTime}:00`);
-    const endDateTime = new Date(`${endDate}T${endTime}:00`);
+    if (!startDate || !endDate || !reason) {
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
 
-    console.log("Parsed DateTimes:", { startDateTime, endDateTime });
+    const startDateTime = new Date(startDate);
+    const endDateTime = new Date(endDate);
+    if (isNaN(startDateTime.getTime()) || isNaN(endDateTime.getTime())) {
+      return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+    }
+    const checkLeaveConflict = await prisma.leave.findFirst({
+ where:{
+  doctorId,
+  OR:[
+{startDate:{
+    gte:startDateTime,
+    lte:endDateTime
+  }}
+  ,{endDate:{
+    gte:startDateTime,
+    lte:endDateTime
+  }}
+  ]
+  
+ }
 
+
+    })
+     if(checkLeaveConflict){
+  return NextResponse.json({error:"Leave request conflicts with existing leave"}, {status:409}) }
+
+    // create the leave
     const leaveRequest = await prisma.leave.create({
       data: {
         doctorId,
@@ -43,41 +63,61 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(leaveRequest, { status: 201 });
   } catch (err: any) {
-    console.error("Doctor Leave Error:", err);
-    return NextResponse.json(
-      { error: err?.message ?? "Server error" },
-      { status: 500 }
-    );
+    console.error("Doctor Leave POST Error:", err);
+    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
   }
 }
 
-export async function GET(req: NextRequest) {
-  const doctorId = req.cookies.get("doctorId")?.value;
-
-  if (!doctorId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+/* GET - list leaves for doctorId with optional filters */
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> } // keep as Promise
+) {
   try {
-    const params=req.nextUrl.searchParams;
-    const startDate=params.get("startDate");
-    const endDate=params.get("endDate");
-    const reason=params.get("reason");
-    const startTime=params.get("startTime");
-    const endTime=params.get("endTime");
-    
+    const { doctorId } = await params;
+    if (!doctorId) {
+      return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    }
+
+    console.log("Fetching leaves for doctorId:", doctorId);
+
+    const { searchParams } = req.nextUrl;
+    const where: any = { doctorId };
+
+    const startDateParam = searchParams.get("startDate") ?? undefined;
+    const endDateParam = searchParams.get("endDate") ?? undefined;
+    const reason = searchParams.get("reason") ?? undefined;
+
+    if (startDateParam) {
+      const d = new Date(startDateParam);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json({ error: "Invalid startDate" }, { status: 400 });
+      }
+      // find leaves that start on/after this date
+      where.startDate = { ...(where.startDate ?? {}), gte: d };
+    }
+
+    if (endDateParam) {
+      const d = new Date(endDateParam);
+      if (isNaN(d.getTime())) {
+        return NextResponse.json({ error: "Invalid endDate" }, { status: 400 });
+      }
+      // find leaves that start on/before this date
+      where.startDate = { ...(where.startDate ?? {}), lte: d };
+    }
+
+    if (reason) {
+      where.reason = { contains: reason, mode: "insensitive" };
+    }
 
     const leaves = await prisma.leave.findMany({
-      where: { doctorId },
+      where,
       orderBy: { startDate: "desc" },
     });
 
-    return NextResponse.json(leaves, { status: 200 });
+    return NextResponse.json({ leaves }, { status: 200 });
   } catch (err: any) {
     console.error("Get Leave Error:", err);
-    return NextResponse.json(
-      { error: err?.message ?? "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
   }
 }
