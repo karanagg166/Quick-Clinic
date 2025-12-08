@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
+import { useUserStore } from '@/store/userStore';
 
 interface DoctorNavbarProps {
   isSidebarOpen: boolean;
@@ -9,6 +11,19 @@ interface DoctorNavbarProps {
 }
 
 export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNavbarProps) {
+  const router = useRouter();
+  const logout = useUserStore((state) => state.logout);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/user/logout', { method: 'POST', credentials: 'include' });
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+    logout();
+    router.push('/user/login');
+  };
+
   return (
     <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
 
@@ -95,7 +110,11 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </div>
 
         {/* Logout */}
-        <button className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors">
+        <button
+          onClick={handleLogout}
+          className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+          title="Logout"
+        >
           <LogOut className="w-5 h-5" />
         </button>
 
