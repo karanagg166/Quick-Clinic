@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
@@ -91,3 +92,50 @@ console.log("doctors-raw", raw);
     );
   }
 }
+
+export const POST = async (
+  req: NextRequest,
+ 
+) => {
+  try {
+    const { userId,specialty, experience, qualifications, fees } = await req.json();
+   if(!userId){
+    return NextResponse.json({ error: "User Not Logined or userId not valid" }, { status: 400 });
+   }
+    // console.log("create-doctor-payload", { userId,specialty, experience, qualifications, fees });
+
+
+   
+    if (!specialty|| !experience || !qualifications || !fees ) {
+      return NextResponse.json({ error: "specialty is required" }, { status: 400 });
+    }
+
+    
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+console.log("user-found", user);
+    const existing = await prisma.doctor.findUnique({ where: { userId: userId } });
+    if (existing) {
+      return NextResponse.json({ error: "Doctor profile already exists for this user" }, { status: 409 });
+    }
+
+    const created = await prisma.doctor.create({
+      data: {
+        userId,
+        specialty,
+        experience,
+        qualifications,
+        fees,
+      },
+    });
+
+    return NextResponse.json({ doctor: created }, { status: 201 });
+  } catch (err: any) {
+    console.error("create-doctor-error:", err);
+    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
+  }
+};
+
+

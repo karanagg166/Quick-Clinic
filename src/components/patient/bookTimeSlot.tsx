@@ -2,13 +2,11 @@
 
 'use client';
 import { useEffect, useState } from 'react';
-<<<<<<< HEAD
-import { useRouter } from 'next/navigation';
-import { useUserStore } from '@/store/userStore';
-import { set } from 'date-fns';
->>>>>>>>> Temporary merge branch 2
 
 import { useUserStore } from '@/store/userStore';
+
+
+
 import type { Slot } from '@/types/common';
 // this component will take doctorId as prop
 interface BookTimeSlotProps {
