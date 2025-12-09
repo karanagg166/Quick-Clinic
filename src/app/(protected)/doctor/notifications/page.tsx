@@ -19,6 +19,10 @@ export default function NotificationsPage(){
         setLoading(true);
 
         const response = await fetch(`/api/user/${userId}/notifications`);
+        if (!response.ok) {
+            setLoading(false);
+            return; 
+        }
         const data = await response.json();
 
         setNotifications(data);
