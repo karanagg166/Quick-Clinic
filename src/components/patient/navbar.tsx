@@ -77,13 +77,14 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
             {/* Right Section - Actions */}
             <div className="flex items-center gap-4">
                 {/* Notifications */}
-                <button 
-                    className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                >
-                    <Bell className="w-5 h-5 text-gray-600" />
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
-
+                <Link href="/notifications">
+                    <button 
+                        className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <Bell className="w-5 h-5 text-gray-600" />
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                    </button>
+                </Link>
                 {/* Profile Section */}
                 <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
                     <button className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">

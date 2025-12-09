@@ -7,7 +7,13 @@ export default function NotificationsPage(){
     const userId = useUserStore((state) => state.userId);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
+    const [showAll, setShowAll] = useState(false);
     
+    // Decide visible items:
+    const visibleNotifications = showAll
+        ? notifications
+        : notifications.slice(0, 4);
+
     // fetch notifications
     const fetchNotifications = async () => {
         setLoading(true);
@@ -58,7 +64,7 @@ export default function NotificationsPage(){
             )}
 
             <div className="space-y-3">
-                {notifications.map((n) => (
+                {visibleNotifications.map((n) => (
                 <div
                     key={n.id}
                     className={`p-3 border rounded ${
@@ -93,6 +99,27 @@ export default function NotificationsPage(){
                 </div>
                 ))}
             </div>
+
+            {/*"More..." button:*/}
+            {!showAll && notifications.length > 4 && (
+                <button
+                    onClick={() => setShowAll(true)}
+                    className="text-blue-600 text-sm mt-4"
+                >
+                    More...
+                </button>
+            )}
+
+            {/*"show less..." button:*/}
+            {showAll && notifications.length > 4 && (
+                <button
+                    onClick={() => setShowAll(false)}
+                    className="text-blue-600 text-sm mt-4"
+                >
+                    Show Less
+                </button>
+            )}
+            
         </div>
     );
 }
