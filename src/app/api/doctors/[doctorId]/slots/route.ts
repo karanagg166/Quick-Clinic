@@ -73,7 +73,7 @@ export async function GET(
 
     if (!schedule) {
       return NextResponse.json(
-        { error: "No schedule found for doctor" },
+        { error: "Doctors Schedule Doesnt Exist" },
         { status: 404 }
       );
     }
