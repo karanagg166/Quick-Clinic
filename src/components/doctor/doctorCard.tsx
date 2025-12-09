@@ -50,7 +50,7 @@ export default function DoctorCard({ doctor }: { doctor: Doctor }) {
 
       <p className="mb-1">
         <Star className="inline mr-2" />
-        Qualifications: {doctor.qualifications.join(", ")}
+        Qualifications: {doctor.qualifications?.join(", ") ?? "No qualifications listed"}
       </p>
 
       <Link
