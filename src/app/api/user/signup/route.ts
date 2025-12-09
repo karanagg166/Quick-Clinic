@@ -47,10 +47,11 @@ export const POST = async (req: NextRequest) => {
         state,
         pinCode: Number(pinCode),
         role: normalizedRole, 
-        gender:gender
+        gender
       },
       
     });
+    console.log("New User Created:", user);
 const userDetails: User = {
       userId: user.id,
       email: user.email,

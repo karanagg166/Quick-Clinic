@@ -19,10 +19,11 @@ appointmentTime:string;
 bookedAt:string;
 status:'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 }
+type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
 export interface User {
   userId: string;
   email: string;
-  role: string;
+  role: UserRole;
   name: string;
   gender: string;
   age: number;
