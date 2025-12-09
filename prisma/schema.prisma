@@ -271,8 +271,7 @@ model Appointment {
 
   @@index([doctorId, patientId])
   @@index([status])
-  
-}
+  }
 
 
 // ======================================================

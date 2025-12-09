@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 
 
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
@@ -137,5 +138,33 @@ console.log("user-found", user);
     return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
   }
 };
+export const PATCH=async(req:NextRequest)=>{
+  try {
+     const { doctorId,specialty, experience, qualifications, fees } = await req.json();
+    if(!doctorId){
+     return NextResponse.json({ error: "Doctor not exist yet" }, { status: 400 });
+    }
+      const existing = await prisma.doctor.findUnique({ where: { id: doctorId } }); 
+      if (!existing) {
+        return NextResponse.json({ error: "Doctor profile not found" }, { status: 404 });
+      }
+  
+      const updated = await prisma.doctor.update({
+        where: { id: doctorId },
+        data: {
+          specialty: specialty ?? existing.specialty,
+          experience: experience ?? existing.experience,
+          qualifications: qualifications ?? existing.qualifications,
+          fees: fees ?? existing.fees,
+        },
+      });
+  
+      return NextResponse.json({ doctor: updated }, { status: 200 });
+  }
+  catch(err:any){
+    console.error("update-doctor-error:", err);
+    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
+  }
+}
 
 
