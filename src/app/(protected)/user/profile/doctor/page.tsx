@@ -98,7 +98,7 @@ export default function DoctorDetails() {
           setUser(user, undefined, data.doctor.id);
         }
         alert("Doctor info created successfully.");
-        router.push(`/doctor`);
+        router.push(`/doctor/schedule`);
       } else {
         alert("Error creating doctor info: " + data.error);
       }
