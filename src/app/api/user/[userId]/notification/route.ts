@@ -3,10 +3,10 @@ import { NextResponse } from "next/server";
 
 export async function GET(
   req: Request,
-  { params }: { params: Promise<{ userId: string }> }
+  { params }: { params: { userId: string } }
 ) {
   try {
-    const { userId } = await params;
+    const { userId } = params;
 
     if (!userId || typeof userId !== "string") {
       return NextResponse.json(
@@ -29,3 +29,4 @@ export async function GET(
     );
   }
 }
+
