@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET(req: NextRequest, { params }: any) {
-  const doctorId = params.doctorId;
-  
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  const { doctorId } = await params;
+
   if (!doctorId) {
     return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
   }
@@ -30,10 +33,14 @@ export async function GET(req: NextRequest, { params }: any) {
       status: "COMPLETED",
     };
 
-    if (startDate || startTime) {
+    if (startDate || endDate) {
       filter.appointmentDateTime = {
-        ...(startDate && { gte: new Date(startDate + "T" + (startTime || "00:00")) }),
-        ...(endDate && { lte: new Date(endDate + "T" + (endTime || "23:59")) }),
+        ...(startDate && {
+          gte: new Date(`${startDate}T${startTime || "00:00"}`),
+        }),
+        ...(endDate && {
+          lte: new Date(`${endDate}T${endTime || "23:59"}`),
+        }),
       };
     }
 
@@ -51,20 +58,20 @@ export async function GET(req: NextRequest, { params }: any) {
       },
     });
 
-    const earnings = appointments.map((a) => ({
+    // Fix: Add type to `a`
+    const earnings = appointments.map((a: any) => ({
       id: a.id,
       earned: doctor.fees,
       patientName: a.patient?.user?.name || "Unknown",
       appointmentDateTime: a.appointmentDateTime,
     }));
 
-    const total = earnings.reduce((sum, e) => sum + e.earned, 0);
+    const total = earnings.reduce((sum: number, e: any) => sum + e.earned, 0);
 
     return NextResponse.json(
       { total, count: earnings.length, earnings },
       { status: 200 }
     );
-
   } catch (err: any) {
     console.error("Earnings GET Error:", err);
     return NextResponse.json(
