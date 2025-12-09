@@ -276,13 +276,15 @@ model Appointment {
 
 
 // ======================================================
-// DOCTOR–PATIENT RELATION MODEL
+// DOCTOR–PATIENT RELATION MODEL / CHAT MODEL
 // ======================================================
 
 model DoctorPatientRelation {
   id        String @id @default(cuid())
   doctorId  String
   patientId String
+
+  chatMessages ChatMessages[]
 
   doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -293,6 +295,23 @@ model DoctorPatientRelation {
   @@unique([doctorId, patientId])
   @@index([patientId])
   @@index([doctorId])
+}
+
+model ChatMessages {
+  id   String @id @default(cuid())
+
+  doctorPatientRelationId String
+  doctorPatientRelation   DoctorPatientRelation @relation(fields: [doctorPatientRelationId], references: [id], onDelete: Cascade)
+
+  text      String
+  senderId  String
+  sender    User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([doctorPatientRelationId, createdAt])
+  @@index([senderId])
 }
 
 // ======================================================
