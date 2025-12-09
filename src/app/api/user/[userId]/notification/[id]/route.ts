@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma";
+import {prisma} from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function PUT(
@@ -7,7 +7,9 @@ export async function PUT(
 ) {
   try {
     const updated = await prisma.notification.update({
-      where: { id: params.id },
+      where: { id: params.id,
+        userId: params.userId,
+      },
       data: {
         isRead: true,
         status: "READ",
@@ -31,7 +33,9 @@ export async function DELETE(
 ) {
   try {
     await prisma.notification.delete({
-      where: { id: params.id },
+      where: { id: params.id,
+        userId: params.userId,
+      },
     });
 
     return NextResponse.json({ message: "Notification deleted" });
