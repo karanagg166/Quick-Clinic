@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { jwtVerify } from "jose";
+import {verifyToken} from "@/lib/auth";
 
 const ROLE_ROUTES: Record<string, RegExp[]> = { 
   admin: [/^\/admin/],
@@ -11,14 +11,6 @@ const ROLE_ROUTES: Record<string, RegExp[]> = {
 // IMPORTANT: MUST BE global variable, not inside a function
 const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
-async function verifyToken(token: string) {
-  try {
-    const { payload } = await jwtVerify(token, secret);
-    return { valid: true, payload };
-  } catch (err) {
-    return { valid: false, payload: null };
-  }
-}
 
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
