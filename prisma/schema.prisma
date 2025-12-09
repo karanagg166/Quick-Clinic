@@ -103,6 +103,10 @@ enum AppointmentStatus {
   NO_SHOW
   RESCHEDULED
 }
+enum PaymentMethod{
+  OFFLINE
+  ONLINE
+}
 
 // ======================================================
 // USER, ADMIN, DOCTOR, PATIENT MODELS
@@ -238,8 +242,8 @@ model Slot {
   status          SlotStatus   @default(AVAILABLE)
   heldByPatientId String?
   heldAt          DateTime?
-  appointmentId   String?      @unique
-  appointment     Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  
+  appointment     Appointment? 
 
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -255,24 +259,21 @@ model Appointment {
   id                  String            @id @default(cuid())
   doctorId            String
   patientId           String
+  slotId              String          @unique   // <— FK lives here
   status              AppointmentStatus @default(PENDING)
+  paymentMethod       PaymentMethod     @default(OFFLINE)
   notes               String?
-  cancelReason        String?
-  cancelledAt         DateTime?
-  appointmentDateTime DateTime
-  durationMinutes     Int               @default(30)
   bookedAt            DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
-
-  slot    Slot?
+  slot                Slot             @relation(fields: [slotId], references: [id])
   doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  @@unique([doctorId, appointmentDateTime])
   @@index([doctorId, patientId])
   @@index([status])
-  @@index([appointmentDateTime])
+  
 }
+
 
 // ======================================================
 // DOCTOR–PATIENT RELATION MODEL
