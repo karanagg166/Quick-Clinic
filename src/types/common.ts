@@ -7,7 +7,6 @@ export interface Slot {
     date: string;
 }
 export interface Appointment{
-
 id:string;
 doctorId:string;
 patientId:string;
@@ -19,6 +18,7 @@ appointmentTime:string;
 bookedAt:string;
 status:'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 }
+
 type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
 export interface User {
   userId: string;
