@@ -14,7 +14,8 @@ COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
-
+ENV NODE_ENV=production
+RUN npm run builds
 EXPOSE 3000
 
 # Start Next.js in dev mode (hot reload)
