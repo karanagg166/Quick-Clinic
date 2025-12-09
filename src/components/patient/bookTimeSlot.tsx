@@ -6,8 +6,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
 import { set } from 'date-fns';
-=======
->>>>>>> 2a5ce95b6f24cbb307dbe49aee7c632ea4ac6e07
+>>>>>>>>> Temporary merge branch 2
 
 import { useUserStore } from '@/store/userStore';
 import type { Slot } from '@/types/common';
