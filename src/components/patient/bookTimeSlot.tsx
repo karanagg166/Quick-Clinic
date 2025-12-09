@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
+import { set } from 'date-fns';
 
 // this component will take doctorId as prop
 interface BookTimeSlotProps {
@@ -26,6 +27,7 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
     const [loading, setLoading] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
     const [booking, setBooking] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
     // Initialize date to today
     useEffect(() => {
@@ -41,25 +43,29 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
 
             try {
                 setLoading(true);
-                const res = await fetch(`/api/doctors/${doctorId}/slots?date=${date}`, {
+                const data = await fetch(`/api/doctors/${doctorId}/slots?date=${date}`, {
                     method: 'GET',
                     credentials: 'include',
                 });
-                if (res.ok) {
-                    const data = await res.json();
-                    setSlots(data.slots || []);
+                const res = await data.json();
+
+                if (data.ok) {
+                    setSlots(res.slots || []);
                 } else {
                     console.error("Failed to fetch slots");
                     console.log(res);
+                    setError("Error: " + res.error);
                 }
             } catch (error) {
                 console.error("Error fetching slots:", error);
+                setError("Error: "+ (error instanceof Error ? error.message : String(error)));
             } finally {
                 setLoading(false);
             }
         };
 
         if (doctorId && date) {
+            setError(null);
             fetchSlots();
         }
     }, [doctorId, date]);
@@ -219,6 +225,12 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
                             </div>
                         </div>
                     </div>
+                </div>
+            )}
+
+            {error && (
+                <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                    {error}
                 </div>
             )}
         </div>
