@@ -79,7 +79,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
           </Link>
 
           <Link
-            href="/doctorDashboard/earnings"
+            href="/doctor/earnings"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <Wallet className="w-4 h-4" /> Earnings
@@ -91,11 +91,12 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
       {/* RIGHT SECTION — Notifications + Profile + Logout */}
       <div className="flex items-center gap-4">
 
-        {/* Notifications */}
-        <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <Bell className="w-5 h-5 text-gray-600" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-        </button>
+        <Link href="/notifications">
+          <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+            <Bell className="w-5 h-5 text-gray-600" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+          </button>
+        </Link>
 
         {/* Profile */}
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
