@@ -6,21 +6,17 @@ import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
 import { set } from 'date-fns';
 
+import { useUserStore } from '@/store/userStore';
+import type { Slot } from '@/types/common';
 // this component will take doctorId as prop
 interface BookTimeSlotProps {
     doctorId: string;
 }
 
-interface Slot {
-    id: string;
-    startTime: string;
-    endTime: string;
-    status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED';
-    date: string;
-}
+
 
 export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
-    const router = useRouter();
+    
     const { patientId } = useUserStore();
     const [date, setDate] = useState<string>('');
     const [slots, setSlots] = useState<Slot[]>([]);
@@ -84,37 +80,62 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
             alert("Please login to book a slot");
             return;
         }
-
+        if(!date){
+            alert("Please select a date");
+            return;
+        }
+        if(!slotId){
+            alert("Please select a slot");
+            return;
+        }
+        if(!doctorId){
+            alert("Invalid doctor");
+            return;
+        }
+        
         try {
-            setBooking(true);
-            const res = await fetch(`/api/appointments`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    slotId,
+          const bookingData= await fetch('/api/appointments',{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json',
+                },
+                body:JSON.stringify({
                     doctorId,
                     patientId,
+                    slotId,
+                    
                 }),
+                credentials:'include',
             });
+       if(bookingData.ok){
+            const data= await bookingData.json();
+            alert("Slot booked successfully");
+            // Optionally, you can redirect the user to another page or update the UI
+            // For now, we'll just reset the selected slot
+            setSelectedSlot(null);
+            // Refresh slots to reflect the booked status
+            setSlots((prevSlots) =>
+                prevSlots.map((slot) =>
+                    slot.id === slotId ? { ...slot, status: 'BOOKED' } : slot
+                )
+            );
+       }
+       else{
+        const errorData= await bookingData.json();
+        throw new Error(errorData.message || "Failed to book slot");
+       }
 
-            if (res.ok) {
-                alert("Slot booked successfully!");
-                // Refresh slots by updating the state
-                setSlots(prev => prev.map(slot => 
-                    slot.id === slotId ? { ...slot, status: 'BOOKED' as const } : slot
-                ));
-                setSelectedSlot(null);
-            } else {
-                const error = await res.json();
-                alert(error.message || "Failed to book slot");
-            }
-        } catch (error) {
-            console.error("Error booking slot:", error);
-            alert("Failed to book slot");
-        } finally {
+
+        }
+        catch(err:any){
+           alert(err.message || "Failed to book slot");
+           console.error("Error booking slot:",err);
+        }
+        finally{
             setBooking(false);
         }
+
+      
     };
 
     const totalSlots = slots.length;
