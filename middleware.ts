@@ -1,41 +1,71 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { verifyToken } from './src/lib/auth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { jwtVerify } from "jose";
 
-const ROLE_ROUTES: Record<string, RegExp[]> = {
+const ROLE_ROUTES: Record<string, RegExp[]> = { 
   admin: [/^\/admin/],
-  doctor: [/^\/doctor/],
-  patient: [/^\/patient/],
-};
+   doctor: [/^\/doctor/],
+    patient: [/^\/patient/],
+   };
+
+// IMPORTANT: MUST BE global variable, not inside a function
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
+
+async function verifyToken(token: string) {
+  try {
+    const { payload } = await jwtVerify(token, secret);
+    return { valid: true, payload };
+  } catch (err) {
+    return { valid: false, payload: null };
+  }
+}
 
 export async function middleware(request: NextRequest) {
-
-  console.log("MIDDLEWARE TRIGGERED!!");
   const pathname = request.nextUrl.pathname;
-  const token = request.cookies.get('token')?.value;
 
-  if (!token) {
-    return NextResponse.redirect(new URL('/user/login', request.url));
+  // 1. Public free paths
+  if (
+    pathname.startsWith("/user/login") ||
+    pathname.startsWith("/user/signup") ||
+    pathname.startsWith("/public") ||
+    pathname.startsWith("/api/auth")
+  ) {
+    return NextResponse.next();
   }
 
+  // 2. Skip for API routes
+  if (pathname.startsWith("/api")) {
+    return NextResponse.next();
+  }
+
+  // 3. Get token
+  const token = request.cookies.get("token")?.value;
+
+  if (!token) {
+    return NextResponse.redirect(new URL("/user/login", request.url));
+  }
+
+  // 4. Verify token
   const result = await verifyToken(token);
+
   if (!result.valid) {
-    return NextResponse.redirect(new URL('/user/login', request.url));
+    return NextResponse.redirect(new URL("/user/login", request.url));
   }
 
   const role = (result.payload as any).role;
 
-  if (role && ROLE_ROUTES[role]) {
-    const hasAccess = ROLE_ROUTES[role].some(pattern => pattern.test(pathname));
-    if (!hasAccess) {
-      return NextResponse.redirect(new URL('/unauthorized', request.url));
-    }
+  // 5. Role route check
+  const allowedRoutes = ROLE_ROUTES[role] || [];
+
+  const hasAccess = allowedRoutes.some((regex) => regex.test(pathname));
+
+  if (!hasAccess) {
+    return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 
   return NextResponse.next();
 }
 
-// Configure which routes use this middleware
 export const config = {
-  matcher: ['/(admin|doctor|patient)/:path*'],
+  matcher: ["/admin/:path*", "/doctor/:path*", "/patient/:path*"],
 };
