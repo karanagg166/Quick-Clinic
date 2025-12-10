@@ -1,14 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 export async function GET(
-  req: NextRequest,
+  req: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
     const { userId } = await params;
 
-    if (!userId) {
+    if (!userId || typeof userId !== "string") {
       return NextResponse.json(
         { error: "userId is required" },
         { status: 400 }
