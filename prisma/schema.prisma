@@ -232,6 +232,7 @@ model Schedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  @@index([doctorId])
 }
 
 model Slot {
@@ -272,8 +273,7 @@ model Appointment {
 
   @@index([doctorId, patientId])
   @@index([status])
-  
-}
+  }
 
 
 // ======================================================

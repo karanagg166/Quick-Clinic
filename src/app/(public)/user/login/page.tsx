@@ -4,17 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 
-interface User {
-  userId: string;
-  email: string;
-  role: string;
-  name: string;
-  gender: string;
-  age: number;
-  doctorId?: string | null;
-  patientId?: string | null;
 
-}
 
 
 
@@ -43,7 +33,7 @@ export default function Home() {
       const data = await response.json();
 
       const { user, patientId, doctorId } = data;
-
+      console.log("Login Response:", data);
       if (response.ok) {
         // Set user in store with patientId or doctorId based on role
         if (user.role === "DOCTOR") {
