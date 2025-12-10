@@ -1,24 +1,31 @@
-import {prisma} from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
-  req: Request,
-  { params }: { params: { userId: string } }
+  req: NextRequest,
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const { userId } = await params;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "userId is required" },
+        { status: 400 }
+      );
+    }
+
     const notifications = await prisma.notification.findMany({
-      where: { userId: params.userId },
+      where: { userId },
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json(notifications);
-  } catch (err) {
-    console.log(err);
+    return NextResponse.json(notifications, { status: 200 });
+  } catch (err: any) {
+    console.error("notification-get-error", err);
     return NextResponse.json(
-      { error: "Failed to fetch notifications" },
+      { error: err?.message ?? "Failed to fetch notifications" },
       { status: 500 }
     );
   }
 }
-
-

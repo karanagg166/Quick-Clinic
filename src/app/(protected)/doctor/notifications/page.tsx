@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 
 export default function NotificationsPage(){
-    const userId = useUserStore((state) => state.userId);
+    const userId = useUserStore((state) => state.user?.userId);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
