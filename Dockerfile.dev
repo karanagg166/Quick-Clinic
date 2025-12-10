@@ -1,6 +1,11 @@
+# Base image
 FROM node:24.11.1-alpine
 
 WORKDIR /app
+
+# Accept a build-time argument
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
 
 # Prisma needs openssl
 RUN apk add --no-cache openssl
@@ -14,9 +19,11 @@ COPY . .
 
 # Generate Prisma Client
 RUN npx prisma generate
-ENV NODE_ENV=production
-RUN npm run builds
+
+# 👉 Run build ONLY in production
+RUN if [ "$NODE_ENV" = "production" ] ; then npm run build ; fi
+
 EXPOSE 3000
 
-# Start Next.js in dev mode (hot reload)
+# Start dev mode by default
 CMD ["npm", "run", "dev"]

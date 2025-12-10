@@ -1,4 +1,5 @@
 export interface Doctor {
+
   id: string;
   userId?: string;
   name?: string;
@@ -12,4 +13,16 @@ export interface Doctor {
   city?:string;
   state?:string;
   
+}
+export interface DoctorAppointment{
+id:string;
+patientName:string;
+patientString:string;
+gender:string;
+appointmentDate:string;
+appointmentTime:string;
+status:string;
+city:string;
+age:Number;
+paymentMethod:string;
 }
