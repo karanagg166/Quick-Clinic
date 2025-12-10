@@ -219,8 +219,17 @@ exports.Prisma.AppointmentScalarFieldEnum = {
 
 exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
   id: 'id',
-  doctorId: 'doctorId',
-  patientId: 'patientId',
+  doctorsUserId: 'doctorsUserId',
+  patientsUserId: 'patientsUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.ChatMessagesScalarFieldEnum = {
+  id: 'id',
+  doctorPatientRelationId: 'doctorPatientRelationId',
+  text: 'text',
+  senderId: 'senderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -375,6 +384,7 @@ exports.Prisma.ModelName = {
   Slot: 'Slot',
   Appointment: 'Appointment',
   DoctorPatientRelation: 'DoctorPatientRelation',
+  ChatMessages: 'ChatMessages',
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog'
 };

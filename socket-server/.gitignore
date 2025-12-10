@@ -1,0 +1,16 @@
+# Socket Server .gitignore
+
+# Dependencies
+node_modules/
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Runtime
+.DS_Store

@@ -64,6 +64,11 @@ export type Appointment = $Result.DefaultSelection<Prisma.$AppointmentPayload>
  */
 export type DoctorPatientRelation = $Result.DefaultSelection<Prisma.$DoctorPatientRelationPayload>
 /**
+ * Model ChatMessages
+ * 
+ */
+export type ChatMessages = $Result.DefaultSelection<Prisma.$ChatMessagesPayload>
+/**
  * Model AccessLog
  * 
  */
@@ -438,6 +443,16 @@ export class PrismaClient<
     * ```
     */
   get doctorPatientRelation(): Prisma.DoctorPatientRelationDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.chatMessages`: Exposes CRUD operations for the **ChatMessages** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more ChatMessages
+    * const chatMessages = await prisma.chatMessages.findMany()
+    * ```
+    */
+  get chatMessages(): Prisma.ChatMessagesDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.accessLog`: Exposes CRUD operations for the **AccessLog** model.
@@ -902,6 +917,7 @@ export namespace Prisma {
     Slot: 'Slot',
     Appointment: 'Appointment',
     DoctorPatientRelation: 'DoctorPatientRelation',
+    ChatMessages: 'ChatMessages',
     AccessLog: 'AccessLog',
     AuditLog: 'AuditLog'
   };
@@ -919,7 +935,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "admin" | "doctor" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "accessLog" | "auditLog"
+      modelProps: "user" | "admin" | "doctor" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "accessLog" | "auditLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1663,6 +1679,80 @@ export namespace Prisma {
           }
         }
       }
+      ChatMessages: {
+        payload: Prisma.$ChatMessagesPayload<ExtArgs>
+        fields: Prisma.ChatMessagesFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.ChatMessagesFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.ChatMessagesFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          findFirst: {
+            args: Prisma.ChatMessagesFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.ChatMessagesFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          findMany: {
+            args: Prisma.ChatMessagesFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>[]
+          }
+          create: {
+            args: Prisma.ChatMessagesCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          createMany: {
+            args: Prisma.ChatMessagesCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.ChatMessagesCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>[]
+          }
+          delete: {
+            args: Prisma.ChatMessagesDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          update: {
+            args: Prisma.ChatMessagesUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          deleteMany: {
+            args: Prisma.ChatMessagesDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.ChatMessagesUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.ChatMessagesUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>[]
+          }
+          upsert: {
+            args: Prisma.ChatMessagesUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$ChatMessagesPayload>
+          }
+          aggregate: {
+            args: Prisma.ChatMessagesAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateChatMessages>
+          }
+          groupBy: {
+            args: Prisma.ChatMessagesGroupByArgs<ExtArgs>
+            result: $Utils.Optional<ChatMessagesGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.ChatMessagesCountArgs<ExtArgs>
+            result: $Utils.Optional<ChatMessagesCountAggregateOutputType> | number
+          }
+        }
+      }
       AccessLog: {
         payload: Prisma.$AccessLogPayload<ExtArgs>
         fields: Prisma.AccessLogFieldRefs
@@ -1913,6 +2003,7 @@ export namespace Prisma {
     slot?: SlotOmit
     appointment?: AppointmentOmit
     doctorPatientRelation?: DoctorPatientRelationOmit
+    chatMessages?: ChatMessagesOmit
     accessLog?: AccessLogOmit
     auditLog?: AuditLogOmit
   }
@@ -1997,11 +2088,13 @@ export namespace Prisma {
   export type UserCountOutputType = {
     accessLogs: number
     auditLogs: number
+    chatMessages: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     accessLogs?: boolean | UserCountOutputTypeCountAccessLogsArgs
     auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+    chatMessages?: boolean | UserCountOutputTypeCountChatMessagesArgs
   }
 
   // Custom InputTypes
@@ -2027,6 +2120,13 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AuditLogWhereInput
+  }
+
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatMessagesWhereInput
   }
 
 
@@ -2125,6 +2225,37 @@ export namespace Prisma {
    */
   export type PatientCountOutputTypeCountAppointmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AppointmentWhereInput
+  }
+
+
+  /**
+   * Count Type DoctorPatientRelationCountOutputType
+   */
+
+  export type DoctorPatientRelationCountOutputType = {
+    chatMessages: number
+  }
+
+  export type DoctorPatientRelationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    chatMessages?: boolean | DoctorPatientRelationCountOutputTypeCountChatMessagesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * DoctorPatientRelationCountOutputType without action
+   */
+  export type DoctorPatientRelationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorPatientRelationCountOutputType
+     */
+    select?: DoctorPatientRelationCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * DoctorPatientRelationCountOutputType without action
+   */
+  export type DoctorPatientRelationCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatMessagesWhereInput
   }
 
 
@@ -2411,6 +2542,7 @@ export namespace Prisma {
     patient?: boolean | User$patientArgs<ExtArgs>
     accessLogs?: boolean | User$accessLogsArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
+    chatMessages?: boolean | User$chatMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -2472,6 +2604,7 @@ export namespace Prisma {
     patient?: boolean | User$patientArgs<ExtArgs>
     accessLogs?: boolean | User$accessLogsArgs<ExtArgs>
     auditLogs?: boolean | User$auditLogsArgs<ExtArgs>
+    chatMessages?: boolean | User$chatMessagesArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
@@ -2485,6 +2618,7 @@ export namespace Prisma {
       patient: Prisma.$PatientPayload<ExtArgs> | null
       accessLogs: Prisma.$AccessLogPayload<ExtArgs>[]
       auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+      chatMessages: Prisma.$ChatMessagesPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -2900,6 +3034,7 @@ export namespace Prisma {
     patient<T extends User$patientArgs<ExtArgs> = {}>(args?: Subset<T, User$patientArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     accessLogs<T extends User$accessLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$accessLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AccessLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     auditLogs<T extends User$auditLogsArgs<ExtArgs> = {}>(args?: Subset<T, User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    chatMessages<T extends User$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3433,6 +3568,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AuditLogScalarFieldEnum | AuditLogScalarFieldEnum[]
+  }
+
+  /**
+   * User.chatMessages
+   */
+  export type User$chatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    where?: ChatMessagesWhereInput
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    cursor?: ChatMessagesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatMessagesScalarFieldEnum | ChatMessagesScalarFieldEnum[]
   }
 
   /**
@@ -12339,24 +12498,24 @@ export namespace Prisma {
 
   export type DoctorPatientRelationMinAggregateOutputType = {
     id: string | null
-    doctorId: string | null
-    patientId: string | null
+    doctorsUserId: string | null
+    patientsUserId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
 
   export type DoctorPatientRelationMaxAggregateOutputType = {
     id: string | null
-    doctorId: string | null
-    patientId: string | null
+    doctorsUserId: string | null
+    patientsUserId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
 
   export type DoctorPatientRelationCountAggregateOutputType = {
     id: number
-    doctorId: number
-    patientId: number
+    doctorsUserId: number
+    patientsUserId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -12365,24 +12524,24 @@ export namespace Prisma {
 
   export type DoctorPatientRelationMinAggregateInputType = {
     id?: true
-    doctorId?: true
-    patientId?: true
+    doctorsUserId?: true
+    patientsUserId?: true
     createdAt?: true
     updatedAt?: true
   }
 
   export type DoctorPatientRelationMaxAggregateInputType = {
     id?: true
-    doctorId?: true
-    patientId?: true
+    doctorsUserId?: true
+    patientsUserId?: true
     createdAt?: true
     updatedAt?: true
   }
 
   export type DoctorPatientRelationCountAggregateInputType = {
     id?: true
-    doctorId?: true
-    patientId?: true
+    doctorsUserId?: true
+    patientsUserId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -12462,8 +12621,8 @@ export namespace Prisma {
 
   export type DoctorPatientRelationGroupByOutputType = {
     id: string
-    doctorId: string
-    patientId: string
+    doctorsUserId: string
+    patientsUserId: string
     createdAt: Date
     updatedAt: Date
     _count: DoctorPatientRelationCountAggregateOutputType | null
@@ -12487,18 +12646,20 @@ export namespace Prisma {
 
   export type DoctorPatientRelationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
+    doctorsUserId?: boolean
+    patientsUserId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    chatMessages?: boolean | DoctorPatientRelation$chatMessagesArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
+    _count?: boolean | DoctorPatientRelationCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["doctorPatientRelation"]>
 
   export type DoctorPatientRelationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
+    doctorsUserId?: boolean
+    patientsUserId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -12507,8 +12668,8 @@ export namespace Prisma {
 
   export type DoctorPatientRelationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
+    doctorsUserId?: boolean
+    patientsUserId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -12517,16 +12678,18 @@ export namespace Prisma {
 
   export type DoctorPatientRelationSelectScalar = {
     id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
+    doctorsUserId?: boolean
+    patientsUserId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DoctorPatientRelationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "createdAt" | "updatedAt", ExtArgs["result"]["doctorPatientRelation"]>
+  export type DoctorPatientRelationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorsUserId" | "patientsUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["doctorPatientRelation"]>
   export type DoctorPatientRelationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    chatMessages?: boolean | DoctorPatientRelation$chatMessagesArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
+    _count?: boolean | DoctorPatientRelationCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DoctorPatientRelationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -12540,13 +12703,14 @@ export namespace Prisma {
   export type $DoctorPatientRelationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "DoctorPatientRelation"
     objects: {
+      chatMessages: Prisma.$ChatMessagesPayload<ExtArgs>[]
       doctor: Prisma.$DoctorPayload<ExtArgs>
       patient: Prisma.$PatientPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      doctorId: string
-      patientId: string
+      doctorsUserId: string
+      patientsUserId: string
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["doctorPatientRelation"]>
@@ -12943,6 +13107,7 @@ export namespace Prisma {
    */
   export interface Prisma__DoctorPatientRelationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    chatMessages<T extends DoctorPatientRelation$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, DoctorPatientRelation$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -12975,8 +13140,8 @@ export namespace Prisma {
    */
   interface DoctorPatientRelationFieldRefs {
     readonly id: FieldRef<"DoctorPatientRelation", 'String'>
-    readonly doctorId: FieldRef<"DoctorPatientRelation", 'String'>
-    readonly patientId: FieldRef<"DoctorPatientRelation", 'String'>
+    readonly doctorsUserId: FieldRef<"DoctorPatientRelation", 'String'>
+    readonly patientsUserId: FieldRef<"DoctorPatientRelation", 'String'>
     readonly createdAt: FieldRef<"DoctorPatientRelation", 'DateTime'>
     readonly updatedAt: FieldRef<"DoctorPatientRelation", 'DateTime'>
   }
@@ -13375,6 +13540,30 @@ export namespace Prisma {
   }
 
   /**
+   * DoctorPatientRelation.chatMessages
+   */
+  export type DoctorPatientRelation$chatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    where?: ChatMessagesWhereInput
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    cursor?: ChatMessagesWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: ChatMessagesScalarFieldEnum | ChatMessagesScalarFieldEnum[]
+  }
+
+  /**
    * DoctorPatientRelation without action
    */
   export type DoctorPatientRelationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -13390,6 +13579,1085 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DoctorPatientRelationInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model ChatMessages
+   */
+
+  export type AggregateChatMessages = {
+    _count: ChatMessagesCountAggregateOutputType | null
+    _min: ChatMessagesMinAggregateOutputType | null
+    _max: ChatMessagesMaxAggregateOutputType | null
+  }
+
+  export type ChatMessagesMinAggregateOutputType = {
+    id: string | null
+    doctorPatientRelationId: string | null
+    text: string | null
+    senderId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChatMessagesMaxAggregateOutputType = {
+    id: string | null
+    doctorPatientRelationId: string | null
+    text: string | null
+    senderId: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type ChatMessagesCountAggregateOutputType = {
+    id: number
+    doctorPatientRelationId: number
+    text: number
+    senderId: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type ChatMessagesMinAggregateInputType = {
+    id?: true
+    doctorPatientRelationId?: true
+    text?: true
+    senderId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChatMessagesMaxAggregateInputType = {
+    id?: true
+    doctorPatientRelationId?: true
+    text?: true
+    senderId?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type ChatMessagesCountAggregateInputType = {
+    id?: true
+    doctorPatientRelationId?: true
+    text?: true
+    senderId?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type ChatMessagesAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatMessages to aggregate.
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: ChatMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned ChatMessages
+    **/
+    _count?: true | ChatMessagesCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: ChatMessagesMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: ChatMessagesMaxAggregateInputType
+  }
+
+  export type GetChatMessagesAggregateType<T extends ChatMessagesAggregateArgs> = {
+        [P in keyof T & keyof AggregateChatMessages]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateChatMessages[P]>
+      : GetScalarType<T[P], AggregateChatMessages[P]>
+  }
+
+
+
+
+  export type ChatMessagesGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: ChatMessagesWhereInput
+    orderBy?: ChatMessagesOrderByWithAggregationInput | ChatMessagesOrderByWithAggregationInput[]
+    by: ChatMessagesScalarFieldEnum[] | ChatMessagesScalarFieldEnum
+    having?: ChatMessagesScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: ChatMessagesCountAggregateInputType | true
+    _min?: ChatMessagesMinAggregateInputType
+    _max?: ChatMessagesMaxAggregateInputType
+  }
+
+  export type ChatMessagesGroupByOutputType = {
+    id: string
+    doctorPatientRelationId: string
+    text: string
+    senderId: string
+    createdAt: Date
+    updatedAt: Date
+    _count: ChatMessagesCountAggregateOutputType | null
+    _min: ChatMessagesMinAggregateOutputType | null
+    _max: ChatMessagesMaxAggregateOutputType | null
+  }
+
+  type GetChatMessagesGroupByPayload<T extends ChatMessagesGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<ChatMessagesGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof ChatMessagesGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], ChatMessagesGroupByOutputType[P]>
+            : GetScalarType<T[P], ChatMessagesGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type ChatMessagesSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorPatientRelationId?: boolean
+    text?: boolean
+    senderId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessages"]>
+
+  export type ChatMessagesSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorPatientRelationId?: boolean
+    text?: boolean
+    senderId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessages"]>
+
+  export type ChatMessagesSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorPatientRelationId?: boolean
+    text?: boolean
+    senderId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["chatMessages"]>
+
+  export type ChatMessagesSelectScalar = {
+    id?: boolean
+    doctorPatientRelationId?: boolean
+    text?: boolean
+    senderId?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type ChatMessagesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorPatientRelationId" | "text" | "senderId" | "createdAt" | "updatedAt", ExtArgs["result"]["chatMessages"]>
+  export type ChatMessagesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ChatMessagesIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type ChatMessagesIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
+    sender?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $ChatMessagesPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "ChatMessages"
+    objects: {
+      doctorPatientRelation: Prisma.$DoctorPatientRelationPayload<ExtArgs>
+      sender: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      doctorPatientRelationId: string
+      text: string
+      senderId: string
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["chatMessages"]>
+    composites: {}
+  }
+
+  type ChatMessagesGetPayload<S extends boolean | null | undefined | ChatMessagesDefaultArgs> = $Result.GetResult<Prisma.$ChatMessagesPayload, S>
+
+  type ChatMessagesCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<ChatMessagesFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: ChatMessagesCountAggregateInputType | true
+    }
+
+  export interface ChatMessagesDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['ChatMessages'], meta: { name: 'ChatMessages' } }
+    /**
+     * Find zero or one ChatMessages that matches the filter.
+     * @param {ChatMessagesFindUniqueArgs} args - Arguments to find a ChatMessages
+     * @example
+     * // Get one ChatMessages
+     * const chatMessages = await prisma.chatMessages.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends ChatMessagesFindUniqueArgs>(args: SelectSubset<T, ChatMessagesFindUniqueArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one ChatMessages that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {ChatMessagesFindUniqueOrThrowArgs} args - Arguments to find a ChatMessages
+     * @example
+     * // Get one ChatMessages
+     * const chatMessages = await prisma.chatMessages.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends ChatMessagesFindUniqueOrThrowArgs>(args: SelectSubset<T, ChatMessagesFindUniqueOrThrowArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesFindFirstArgs} args - Arguments to find a ChatMessages
+     * @example
+     * // Get one ChatMessages
+     * const chatMessages = await prisma.chatMessages.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends ChatMessagesFindFirstArgs>(args?: SelectSubset<T, ChatMessagesFindFirstArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first ChatMessages that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesFindFirstOrThrowArgs} args - Arguments to find a ChatMessages
+     * @example
+     * // Get one ChatMessages
+     * const chatMessages = await prisma.chatMessages.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends ChatMessagesFindFirstOrThrowArgs>(args?: SelectSubset<T, ChatMessagesFindFirstOrThrowArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more ChatMessages that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all ChatMessages
+     * const chatMessages = await prisma.chatMessages.findMany()
+     * 
+     * // Get first 10 ChatMessages
+     * const chatMessages = await prisma.chatMessages.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const chatMessagesWithIdOnly = await prisma.chatMessages.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends ChatMessagesFindManyArgs>(args?: SelectSubset<T, ChatMessagesFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a ChatMessages.
+     * @param {ChatMessagesCreateArgs} args - Arguments to create a ChatMessages.
+     * @example
+     * // Create one ChatMessages
+     * const ChatMessages = await prisma.chatMessages.create({
+     *   data: {
+     *     // ... data to create a ChatMessages
+     *   }
+     * })
+     * 
+     */
+    create<T extends ChatMessagesCreateArgs>(args: SelectSubset<T, ChatMessagesCreateArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many ChatMessages.
+     * @param {ChatMessagesCreateManyArgs} args - Arguments to create many ChatMessages.
+     * @example
+     * // Create many ChatMessages
+     * const chatMessages = await prisma.chatMessages.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends ChatMessagesCreateManyArgs>(args?: SelectSubset<T, ChatMessagesCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many ChatMessages and returns the data saved in the database.
+     * @param {ChatMessagesCreateManyAndReturnArgs} args - Arguments to create many ChatMessages.
+     * @example
+     * // Create many ChatMessages
+     * const chatMessages = await prisma.chatMessages.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many ChatMessages and only return the `id`
+     * const chatMessagesWithIdOnly = await prisma.chatMessages.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends ChatMessagesCreateManyAndReturnArgs>(args?: SelectSubset<T, ChatMessagesCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a ChatMessages.
+     * @param {ChatMessagesDeleteArgs} args - Arguments to delete one ChatMessages.
+     * @example
+     * // Delete one ChatMessages
+     * const ChatMessages = await prisma.chatMessages.delete({
+     *   where: {
+     *     // ... filter to delete one ChatMessages
+     *   }
+     * })
+     * 
+     */
+    delete<T extends ChatMessagesDeleteArgs>(args: SelectSubset<T, ChatMessagesDeleteArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one ChatMessages.
+     * @param {ChatMessagesUpdateArgs} args - Arguments to update one ChatMessages.
+     * @example
+     * // Update one ChatMessages
+     * const chatMessages = await prisma.chatMessages.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends ChatMessagesUpdateArgs>(args: SelectSubset<T, ChatMessagesUpdateArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more ChatMessages.
+     * @param {ChatMessagesDeleteManyArgs} args - Arguments to filter ChatMessages to delete.
+     * @example
+     * // Delete a few ChatMessages
+     * const { count } = await prisma.chatMessages.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends ChatMessagesDeleteManyArgs>(args?: SelectSubset<T, ChatMessagesDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many ChatMessages
+     * const chatMessages = await prisma.chatMessages.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends ChatMessagesUpdateManyArgs>(args: SelectSubset<T, ChatMessagesUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more ChatMessages and returns the data updated in the database.
+     * @param {ChatMessagesUpdateManyAndReturnArgs} args - Arguments to update many ChatMessages.
+     * @example
+     * // Update many ChatMessages
+     * const chatMessages = await prisma.chatMessages.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more ChatMessages and only return the `id`
+     * const chatMessagesWithIdOnly = await prisma.chatMessages.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends ChatMessagesUpdateManyAndReturnArgs>(args: SelectSubset<T, ChatMessagesUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one ChatMessages.
+     * @param {ChatMessagesUpsertArgs} args - Arguments to update or create a ChatMessages.
+     * @example
+     * // Update or create a ChatMessages
+     * const chatMessages = await prisma.chatMessages.upsert({
+     *   create: {
+     *     // ... data to create a ChatMessages
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the ChatMessages we want to update
+     *   }
+     * })
+     */
+    upsert<T extends ChatMessagesUpsertArgs>(args: SelectSubset<T, ChatMessagesUpsertArgs<ExtArgs>>): Prisma__ChatMessagesClient<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesCountArgs} args - Arguments to filter ChatMessages to count.
+     * @example
+     * // Count the number of ChatMessages
+     * const count = await prisma.chatMessages.count({
+     *   where: {
+     *     // ... the filter for the ChatMessages we want to count
+     *   }
+     * })
+    **/
+    count<T extends ChatMessagesCountArgs>(
+      args?: Subset<T, ChatMessagesCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], ChatMessagesCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends ChatMessagesAggregateArgs>(args: Subset<T, ChatMessagesAggregateArgs>): Prisma.PrismaPromise<GetChatMessagesAggregateType<T>>
+
+    /**
+     * Group by ChatMessages.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {ChatMessagesGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends ChatMessagesGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: ChatMessagesGroupByArgs['orderBy'] }
+        : { orderBy?: ChatMessagesGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, ChatMessagesGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetChatMessagesGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the ChatMessages model
+   */
+  readonly fields: ChatMessagesFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for ChatMessages.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__ChatMessagesClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    doctorPatientRelation<T extends DoctorPatientRelationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorPatientRelationDefaultArgs<ExtArgs>>): Prisma__DoctorPatientRelationClient<$Result.GetResult<Prisma.$DoctorPatientRelationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    sender<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the ChatMessages model
+   */
+  interface ChatMessagesFieldRefs {
+    readonly id: FieldRef<"ChatMessages", 'String'>
+    readonly doctorPatientRelationId: FieldRef<"ChatMessages", 'String'>
+    readonly text: FieldRef<"ChatMessages", 'String'>
+    readonly senderId: FieldRef<"ChatMessages", 'String'>
+    readonly createdAt: FieldRef<"ChatMessages", 'DateTime'>
+    readonly updatedAt: FieldRef<"ChatMessages", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * ChatMessages findUnique
+   */
+  export type ChatMessagesFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where: ChatMessagesWhereUniqueInput
+  }
+
+  /**
+   * ChatMessages findUniqueOrThrow
+   */
+  export type ChatMessagesFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where: ChatMessagesWhereUniqueInput
+  }
+
+  /**
+   * ChatMessages findFirst
+   */
+  export type ChatMessagesFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatMessages.
+     */
+    cursor?: ChatMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatMessages.
+     */
+    distinct?: ChatMessagesScalarFieldEnum | ChatMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessages findFirstOrThrow
+   */
+  export type ChatMessagesFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for ChatMessages.
+     */
+    cursor?: ChatMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of ChatMessages.
+     */
+    distinct?: ChatMessagesScalarFieldEnum | ChatMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessages findMany
+   */
+  export type ChatMessagesFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter, which ChatMessages to fetch.
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of ChatMessages to fetch.
+     */
+    orderBy?: ChatMessagesOrderByWithRelationInput | ChatMessagesOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing ChatMessages.
+     */
+    cursor?: ChatMessagesWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` ChatMessages from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` ChatMessages.
+     */
+    skip?: number
+    distinct?: ChatMessagesScalarFieldEnum | ChatMessagesScalarFieldEnum[]
+  }
+
+  /**
+   * ChatMessages create
+   */
+  export type ChatMessagesCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * The data needed to create a ChatMessages.
+     */
+    data: XOR<ChatMessagesCreateInput, ChatMessagesUncheckedCreateInput>
+  }
+
+  /**
+   * ChatMessages createMany
+   */
+  export type ChatMessagesCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many ChatMessages.
+     */
+    data: ChatMessagesCreateManyInput | ChatMessagesCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * ChatMessages createManyAndReturn
+   */
+  export type ChatMessagesCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * The data used to create many ChatMessages.
+     */
+    data: ChatMessagesCreateManyInput | ChatMessagesCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatMessages update
+   */
+  export type ChatMessagesUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * The data needed to update a ChatMessages.
+     */
+    data: XOR<ChatMessagesUpdateInput, ChatMessagesUncheckedUpdateInput>
+    /**
+     * Choose, which ChatMessages to update.
+     */
+    where: ChatMessagesWhereUniqueInput
+  }
+
+  /**
+   * ChatMessages updateMany
+   */
+  export type ChatMessagesUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update ChatMessages.
+     */
+    data: XOR<ChatMessagesUpdateManyMutationInput, ChatMessagesUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatMessages to update
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * Limit how many ChatMessages to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatMessages updateManyAndReturn
+   */
+  export type ChatMessagesUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * The data used to update ChatMessages.
+     */
+    data: XOR<ChatMessagesUpdateManyMutationInput, ChatMessagesUncheckedUpdateManyInput>
+    /**
+     * Filter which ChatMessages to update
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * Limit how many ChatMessages to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * ChatMessages upsert
+   */
+  export type ChatMessagesUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * The filter to search for the ChatMessages to update in case it exists.
+     */
+    where: ChatMessagesWhereUniqueInput
+    /**
+     * In case the ChatMessages found by the `where` argument doesn't exist, create a new ChatMessages with this data.
+     */
+    create: XOR<ChatMessagesCreateInput, ChatMessagesUncheckedCreateInput>
+    /**
+     * In case the ChatMessages was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<ChatMessagesUpdateInput, ChatMessagesUncheckedUpdateInput>
+  }
+
+  /**
+   * ChatMessages delete
+   */
+  export type ChatMessagesDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
+    /**
+     * Filter which ChatMessages to delete.
+     */
+    where: ChatMessagesWhereUniqueInput
+  }
+
+  /**
+   * ChatMessages deleteMany
+   */
+  export type ChatMessagesDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which ChatMessages to delete
+     */
+    where?: ChatMessagesWhereInput
+    /**
+     * Limit how many ChatMessages to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * ChatMessages without action
+   */
+  export type ChatMessagesDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the ChatMessages
+     */
+    select?: ChatMessagesSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the ChatMessages
+     */
+    omit?: ChatMessagesOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: ChatMessagesInclude<ExtArgs> | null
   }
 
 
@@ -15683,13 +16951,25 @@ export namespace Prisma {
 
   export const DoctorPatientRelationScalarFieldEnum: {
     id: 'id',
-    doctorId: 'doctorId',
-    patientId: 'patientId',
+    doctorsUserId: 'doctorsUserId',
+    patientsUserId: 'patientsUserId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type DoctorPatientRelationScalarFieldEnum = (typeof DoctorPatientRelationScalarFieldEnum)[keyof typeof DoctorPatientRelationScalarFieldEnum]
+
+
+  export const ChatMessagesScalarFieldEnum: {
+    id: 'id',
+    doctorPatientRelationId: 'doctorPatientRelationId',
+    text: 'text',
+    senderId: 'senderId',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type ChatMessagesScalarFieldEnum = (typeof ChatMessagesScalarFieldEnum)[keyof typeof ChatMessagesScalarFieldEnum]
 
 
   export const AccessLogScalarFieldEnum: {
@@ -15968,6 +17248,7 @@ export namespace Prisma {
     patient?: XOR<PatientNullableScalarRelationFilter, PatientWhereInput> | null
     accessLogs?: AccessLogListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    chatMessages?: ChatMessagesListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -15990,6 +17271,7 @@ export namespace Prisma {
     patient?: PatientOrderByWithRelationInput
     accessLogs?: AccessLogOrderByRelationAggregateInput
     auditLogs?: AuditLogOrderByRelationAggregateInput
+    chatMessages?: ChatMessagesOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -16015,6 +17297,7 @@ export namespace Prisma {
     patient?: XOR<PatientNullableScalarRelationFilter, PatientWhereInput> | null
     accessLogs?: AccessLogListRelationFilter
     auditLogs?: AuditLogListRelationFilter
+    chatMessages?: ChatMessagesListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -16615,42 +17898,45 @@ export namespace Prisma {
     OR?: DoctorPatientRelationWhereInput[]
     NOT?: DoctorPatientRelationWhereInput | DoctorPatientRelationWhereInput[]
     id?: StringFilter<"DoctorPatientRelation"> | string
-    doctorId?: StringFilter<"DoctorPatientRelation"> | string
-    patientId?: StringFilter<"DoctorPatientRelation"> | string
+    doctorsUserId?: StringFilter<"DoctorPatientRelation"> | string
+    patientsUserId?: StringFilter<"DoctorPatientRelation"> | string
     createdAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
     updatedAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
+    chatMessages?: ChatMessagesListRelationFilter
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
 
   export type DoctorPatientRelationOrderByWithRelationInput = {
     id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
+    doctorsUserId?: SortOrder
+    patientsUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    chatMessages?: ChatMessagesOrderByRelationAggregateInput
     doctor?: DoctorOrderByWithRelationInput
     patient?: PatientOrderByWithRelationInput
   }
 
   export type DoctorPatientRelationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    doctorId_patientId?: DoctorPatientRelationDoctorIdPatientIdCompoundUniqueInput
+    doctorsUserId_patientsUserId?: DoctorPatientRelationDoctorsUserIdPatientsUserIdCompoundUniqueInput
     AND?: DoctorPatientRelationWhereInput | DoctorPatientRelationWhereInput[]
     OR?: DoctorPatientRelationWhereInput[]
     NOT?: DoctorPatientRelationWhereInput | DoctorPatientRelationWhereInput[]
-    doctorId?: StringFilter<"DoctorPatientRelation"> | string
-    patientId?: StringFilter<"DoctorPatientRelation"> | string
+    doctorsUserId?: StringFilter<"DoctorPatientRelation"> | string
+    patientsUserId?: StringFilter<"DoctorPatientRelation"> | string
     createdAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
     updatedAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
+    chatMessages?: ChatMessagesListRelationFilter
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
-  }, "id" | "doctorId_patientId">
+  }, "id" | "doctorsUserId_patientsUserId">
 
   export type DoctorPatientRelationOrderByWithAggregationInput = {
     id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
+    doctorsUserId?: SortOrder
+    patientsUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DoctorPatientRelationCountOrderByAggregateInput
@@ -16663,10 +17949,73 @@ export namespace Prisma {
     OR?: DoctorPatientRelationScalarWhereWithAggregatesInput[]
     NOT?: DoctorPatientRelationScalarWhereWithAggregatesInput | DoctorPatientRelationScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"DoctorPatientRelation"> | string
-    doctorId?: StringWithAggregatesFilter<"DoctorPatientRelation"> | string
-    patientId?: StringWithAggregatesFilter<"DoctorPatientRelation"> | string
+    doctorsUserId?: StringWithAggregatesFilter<"DoctorPatientRelation"> | string
+    patientsUserId?: StringWithAggregatesFilter<"DoctorPatientRelation"> | string
     createdAt?: DateTimeWithAggregatesFilter<"DoctorPatientRelation"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"DoctorPatientRelation"> | Date | string
+  }
+
+  export type ChatMessagesWhereInput = {
+    AND?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
+    OR?: ChatMessagesWhereInput[]
+    NOT?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
+    id?: StringFilter<"ChatMessages"> | string
+    doctorPatientRelationId?: StringFilter<"ChatMessages"> | string
+    text?: StringFilter<"ChatMessages"> | string
+    senderId?: StringFilter<"ChatMessages"> | string
+    createdAt?: DateTimeFilter<"ChatMessages"> | Date | string
+    updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
+    doctorPatientRelation?: XOR<DoctorPatientRelationScalarRelationFilter, DoctorPatientRelationWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type ChatMessagesOrderByWithRelationInput = {
+    id?: SortOrder
+    doctorPatientRelationId?: SortOrder
+    text?: SortOrder
+    senderId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    doctorPatientRelation?: DoctorPatientRelationOrderByWithRelationInput
+    sender?: UserOrderByWithRelationInput
+  }
+
+  export type ChatMessagesWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
+    OR?: ChatMessagesWhereInput[]
+    NOT?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
+    doctorPatientRelationId?: StringFilter<"ChatMessages"> | string
+    text?: StringFilter<"ChatMessages"> | string
+    senderId?: StringFilter<"ChatMessages"> | string
+    createdAt?: DateTimeFilter<"ChatMessages"> | Date | string
+    updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
+    doctorPatientRelation?: XOR<DoctorPatientRelationScalarRelationFilter, DoctorPatientRelationWhereInput>
+    sender?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id">
+
+  export type ChatMessagesOrderByWithAggregationInput = {
+    id?: SortOrder
+    doctorPatientRelationId?: SortOrder
+    text?: SortOrder
+    senderId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: ChatMessagesCountOrderByAggregateInput
+    _max?: ChatMessagesMaxOrderByAggregateInput
+    _min?: ChatMessagesMinOrderByAggregateInput
+  }
+
+  export type ChatMessagesScalarWhereWithAggregatesInput = {
+    AND?: ChatMessagesScalarWhereWithAggregatesInput | ChatMessagesScalarWhereWithAggregatesInput[]
+    OR?: ChatMessagesScalarWhereWithAggregatesInput[]
+    NOT?: ChatMessagesScalarWhereWithAggregatesInput | ChatMessagesScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"ChatMessages"> | string
+    doctorPatientRelationId?: StringWithAggregatesFilter<"ChatMessages"> | string
+    text?: StringWithAggregatesFilter<"ChatMessages"> | string
+    senderId?: StringWithAggregatesFilter<"ChatMessages"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"ChatMessages"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"ChatMessages"> | Date | string
   }
 
   export type AccessLogWhereInput = {
@@ -16799,6 +18148,7 @@ export namespace Prisma {
     patient?: PatientCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -16821,6 +18171,7 @@ export namespace Prisma {
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserUpdateInput = {
@@ -16843,6 +18194,7 @@ export namespace Prisma {
     patient?: PatientUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -16865,6 +18217,7 @@ export namespace Prisma {
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -17505,38 +18858,42 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesCreateNestedManyWithoutDoctorPatientRelationInput
     doctor: DoctorCreateNestedOneWithoutPatientRelationsInput
     patient: PatientCreateNestedOneWithoutDoctorRelationsInput
   }
 
   export type DoctorPatientRelationUncheckedCreateInput = {
     id?: string
-    doctorId: string
-    patientId: string
+    doctorsUserId: string
+    patientsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutDoctorPatientRelationInput
   }
 
   export type DoctorPatientRelationUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUpdateManyWithoutDoctorPatientRelationNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutPatientRelationsNestedInput
     patient?: PatientUpdateOneRequiredWithoutDoctorRelationsNestedInput
   }
 
   export type DoctorPatientRelationUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
+    doctorsUserId?: StringFieldUpdateOperationsInput | string
+    patientsUserId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationNestedInput
   }
 
   export type DoctorPatientRelationCreateManyInput = {
     id?: string
-    doctorId: string
-    patientId: string
+    doctorsUserId: string
+    patientsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -17549,8 +18906,69 @@ export namespace Prisma {
 
   export type DoctorPatientRelationUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
+    doctorsUserId?: StringFieldUpdateOperationsInput | string
+    patientsUserId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesCreateInput = {
+    id?: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctorPatientRelation: DoctorPatientRelationCreateNestedOneWithoutChatMessagesInput
+    sender: UserCreateNestedOneWithoutChatMessagesInput
+  }
+
+  export type ChatMessagesUncheckedCreateInput = {
+    id?: string
+    doctorPatientRelationId: string
+    text: string
+    senderId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessagesUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctorPatientRelation?: DoctorPatientRelationUpdateOneRequiredWithoutChatMessagesNestedInput
+    sender?: UserUpdateOneRequiredWithoutChatMessagesNestedInput
+  }
+
+  export type ChatMessagesUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesCreateManyInput = {
+    id?: string
+    doctorPatientRelationId: string
+    text: string
+    senderId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessagesUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -17743,11 +19161,21 @@ export namespace Prisma {
     none?: AuditLogWhereInput
   }
 
+  export type ChatMessagesListRelationFilter = {
+    every?: ChatMessagesWhereInput
+    some?: ChatMessagesWhereInput
+    none?: ChatMessagesWhereInput
+  }
+
   export type AccessLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
   export type AuditLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type ChatMessagesOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -18409,31 +19837,63 @@ export namespace Prisma {
     _max?: NestedEnumPaymentMethodFilter<$PrismaModel>
   }
 
-  export type DoctorPatientRelationDoctorIdPatientIdCompoundUniqueInput = {
-    doctorId: string
-    patientId: string
+  export type DoctorPatientRelationDoctorsUserIdPatientsUserIdCompoundUniqueInput = {
+    doctorsUserId: string
+    patientsUserId: string
   }
 
   export type DoctorPatientRelationCountOrderByAggregateInput = {
     id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
+    doctorsUserId?: SortOrder
+    patientsUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type DoctorPatientRelationMaxOrderByAggregateInput = {
     id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
+    doctorsUserId?: SortOrder
+    patientsUserId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type DoctorPatientRelationMinOrderByAggregateInput = {
     id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
+    doctorsUserId?: SortOrder
+    patientsUserId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type DoctorPatientRelationScalarRelationFilter = {
+    is?: DoctorPatientRelationWhereInput
+    isNot?: DoctorPatientRelationWhereInput
+  }
+
+  export type ChatMessagesCountOrderByAggregateInput = {
+    id?: SortOrder
+    doctorPatientRelationId?: SortOrder
+    text?: SortOrder
+    senderId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChatMessagesMaxOrderByAggregateInput = {
+    id?: SortOrder
+    doctorPatientRelationId?: SortOrder
+    text?: SortOrder
+    senderId?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type ChatMessagesMinOrderByAggregateInput = {
+    id?: SortOrder
+    doctorPatientRelationId?: SortOrder
+    text?: SortOrder
+    senderId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -18570,6 +20030,13 @@ export namespace Prisma {
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
   }
 
+  export type ChatMessagesCreateNestedManyWithoutSenderInput = {
+    create?: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput> | ChatMessagesCreateWithoutSenderInput[] | ChatMessagesUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutSenderInput | ChatMessagesCreateOrConnectWithoutSenderInput[]
+    createMany?: ChatMessagesCreateManySenderInputEnvelope
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+  }
+
   export type AdminUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
     connectOrCreate?: AdminCreateOrConnectWithoutUserInput
@@ -18600,6 +20067,13 @@ export namespace Prisma {
     connectOrCreate?: AuditLogCreateOrConnectWithoutUserInput | AuditLogCreateOrConnectWithoutUserInput[]
     createMany?: AuditLogCreateManyUserInputEnvelope
     connect?: AuditLogWhereUniqueInput | AuditLogWhereUniqueInput[]
+  }
+
+  export type ChatMessagesUncheckedCreateNestedManyWithoutSenderInput = {
+    create?: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput> | ChatMessagesCreateWithoutSenderInput[] | ChatMessagesUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutSenderInput | ChatMessagesCreateOrConnectWithoutSenderInput[]
+    createMany?: ChatMessagesCreateManySenderInputEnvelope
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -18684,6 +20158,20 @@ export namespace Prisma {
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
   }
 
+  export type ChatMessagesUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput> | ChatMessagesCreateWithoutSenderInput[] | ChatMessagesUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutSenderInput | ChatMessagesCreateOrConnectWithoutSenderInput[]
+    upsert?: ChatMessagesUpsertWithWhereUniqueWithoutSenderInput | ChatMessagesUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: ChatMessagesCreateManySenderInputEnvelope
+    set?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    disconnect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    delete?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    update?: ChatMessagesUpdateWithWhereUniqueWithoutSenderInput | ChatMessagesUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: ChatMessagesUpdateManyWithWhereWithoutSenderInput | ChatMessagesUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
+  }
+
   export type AdminUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
     connectOrCreate?: AdminCreateOrConnectWithoutUserInput
@@ -18740,6 +20228,20 @@ export namespace Prisma {
     update?: AuditLogUpdateWithWhereUniqueWithoutUserInput | AuditLogUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: AuditLogUpdateManyWithWhereWithoutUserInput | AuditLogUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: AuditLogScalarWhereInput | AuditLogScalarWhereInput[]
+  }
+
+  export type ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput = {
+    create?: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput> | ChatMessagesCreateWithoutSenderInput[] | ChatMessagesUncheckedCreateWithoutSenderInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutSenderInput | ChatMessagesCreateOrConnectWithoutSenderInput[]
+    upsert?: ChatMessagesUpsertWithWhereUniqueWithoutSenderInput | ChatMessagesUpsertWithWhereUniqueWithoutSenderInput[]
+    createMany?: ChatMessagesCreateManySenderInputEnvelope
+    set?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    disconnect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    delete?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    update?: ChatMessagesUpdateWithWhereUniqueWithoutSenderInput | ChatMessagesUpdateWithWhereUniqueWithoutSenderInput[]
+    updateMany?: ChatMessagesUpdateManyWithWhereWithoutSenderInput | ChatMessagesUpdateManyWithWhereWithoutSenderInput[]
+    deleteMany?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutAdminInput = {
@@ -19221,6 +20723,13 @@ export namespace Prisma {
     update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutAppointmentsInput, PatientUpdateWithoutAppointmentsInput>, PatientUncheckedUpdateWithoutAppointmentsInput>
   }
 
+  export type ChatMessagesCreateNestedManyWithoutDoctorPatientRelationInput = {
+    create?: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput> | ChatMessagesCreateWithoutDoctorPatientRelationInput[] | ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput | ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput[]
+    createMany?: ChatMessagesCreateManyDoctorPatientRelationInputEnvelope
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+  }
+
   export type DoctorCreateNestedOneWithoutPatientRelationsInput = {
     create?: XOR<DoctorCreateWithoutPatientRelationsInput, DoctorUncheckedCreateWithoutPatientRelationsInput>
     connectOrCreate?: DoctorCreateOrConnectWithoutPatientRelationsInput
@@ -19231,6 +20740,27 @@ export namespace Prisma {
     create?: XOR<PatientCreateWithoutDoctorRelationsInput, PatientUncheckedCreateWithoutDoctorRelationsInput>
     connectOrCreate?: PatientCreateOrConnectWithoutDoctorRelationsInput
     connect?: PatientWhereUniqueInput
+  }
+
+  export type ChatMessagesUncheckedCreateNestedManyWithoutDoctorPatientRelationInput = {
+    create?: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput> | ChatMessagesCreateWithoutDoctorPatientRelationInput[] | ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput | ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput[]
+    createMany?: ChatMessagesCreateManyDoctorPatientRelationInputEnvelope
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+  }
+
+  export type ChatMessagesUpdateManyWithoutDoctorPatientRelationNestedInput = {
+    create?: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput> | ChatMessagesCreateWithoutDoctorPatientRelationInput[] | ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput | ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput[]
+    upsert?: ChatMessagesUpsertWithWhereUniqueWithoutDoctorPatientRelationInput | ChatMessagesUpsertWithWhereUniqueWithoutDoctorPatientRelationInput[]
+    createMany?: ChatMessagesCreateManyDoctorPatientRelationInputEnvelope
+    set?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    disconnect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    delete?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    update?: ChatMessagesUpdateWithWhereUniqueWithoutDoctorPatientRelationInput | ChatMessagesUpdateWithWhereUniqueWithoutDoctorPatientRelationInput[]
+    updateMany?: ChatMessagesUpdateManyWithWhereWithoutDoctorPatientRelationInput | ChatMessagesUpdateManyWithWhereWithoutDoctorPatientRelationInput[]
+    deleteMany?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
   }
 
   export type DoctorUpdateOneRequiredWithoutPatientRelationsNestedInput = {
@@ -19247,6 +20777,48 @@ export namespace Prisma {
     upsert?: PatientUpsertWithoutDoctorRelationsInput
     connect?: PatientWhereUniqueInput
     update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutDoctorRelationsInput, PatientUpdateWithoutDoctorRelationsInput>, PatientUncheckedUpdateWithoutDoctorRelationsInput>
+  }
+
+  export type ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationNestedInput = {
+    create?: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput> | ChatMessagesCreateWithoutDoctorPatientRelationInput[] | ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput[]
+    connectOrCreate?: ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput | ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput[]
+    upsert?: ChatMessagesUpsertWithWhereUniqueWithoutDoctorPatientRelationInput | ChatMessagesUpsertWithWhereUniqueWithoutDoctorPatientRelationInput[]
+    createMany?: ChatMessagesCreateManyDoctorPatientRelationInputEnvelope
+    set?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    disconnect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    delete?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    connect?: ChatMessagesWhereUniqueInput | ChatMessagesWhereUniqueInput[]
+    update?: ChatMessagesUpdateWithWhereUniqueWithoutDoctorPatientRelationInput | ChatMessagesUpdateWithWhereUniqueWithoutDoctorPatientRelationInput[]
+    updateMany?: ChatMessagesUpdateManyWithWhereWithoutDoctorPatientRelationInput | ChatMessagesUpdateManyWithWhereWithoutDoctorPatientRelationInput[]
+    deleteMany?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
+  }
+
+  export type DoctorPatientRelationCreateNestedOneWithoutChatMessagesInput = {
+    create?: XOR<DoctorPatientRelationCreateWithoutChatMessagesInput, DoctorPatientRelationUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutChatMessagesInput
+    connect?: DoctorPatientRelationWhereUniqueInput
+  }
+
+  export type UserCreateNestedOneWithoutChatMessagesInput = {
+    create?: XOR<UserCreateWithoutChatMessagesInput, UserUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type DoctorPatientRelationUpdateOneRequiredWithoutChatMessagesNestedInput = {
+    create?: XOR<DoctorPatientRelationCreateWithoutChatMessagesInput, DoctorPatientRelationUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutChatMessagesInput
+    upsert?: DoctorPatientRelationUpsertWithoutChatMessagesInput
+    connect?: DoctorPatientRelationWhereUniqueInput
+    update?: XOR<XOR<DoctorPatientRelationUpdateToOneWithWhereWithoutChatMessagesInput, DoctorPatientRelationUpdateWithoutChatMessagesInput>, DoctorPatientRelationUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type UserUpdateOneRequiredWithoutChatMessagesNestedInput = {
+    create?: XOR<UserCreateWithoutChatMessagesInput, UserUncheckedCreateWithoutChatMessagesInput>
+    connectOrCreate?: UserCreateOrConnectWithoutChatMessagesInput
+    upsert?: UserUpsertWithoutChatMessagesInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutChatMessagesInput, UserUpdateWithoutChatMessagesInput>, UserUncheckedUpdateWithoutChatMessagesInput>
   }
 
   export type UserCreateNestedOneWithoutAccessLogsInput = {
@@ -19730,6 +21302,32 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type ChatMessagesCreateWithoutSenderInput = {
+    id?: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctorPatientRelation: DoctorPatientRelationCreateNestedOneWithoutChatMessagesInput
+  }
+
+  export type ChatMessagesUncheckedCreateWithoutSenderInput = {
+    id?: string
+    doctorPatientRelationId: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessagesCreateOrConnectWithoutSenderInput = {
+    where: ChatMessagesWhereUniqueInput
+    create: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput>
+  }
+
+  export type ChatMessagesCreateManySenderInputEnvelope = {
+    data: ChatMessagesCreateManySenderInput | ChatMessagesCreateManySenderInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AdminUpsertWithoutUserInput = {
     update: XOR<AdminUpdateWithoutUserInput, AdminUncheckedUpdateWithoutUserInput>
     create: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
@@ -19881,6 +21479,34 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"AuditLog"> | Date | string
   }
 
+  export type ChatMessagesUpsertWithWhereUniqueWithoutSenderInput = {
+    where: ChatMessagesWhereUniqueInput
+    update: XOR<ChatMessagesUpdateWithoutSenderInput, ChatMessagesUncheckedUpdateWithoutSenderInput>
+    create: XOR<ChatMessagesCreateWithoutSenderInput, ChatMessagesUncheckedCreateWithoutSenderInput>
+  }
+
+  export type ChatMessagesUpdateWithWhereUniqueWithoutSenderInput = {
+    where: ChatMessagesWhereUniqueInput
+    data: XOR<ChatMessagesUpdateWithoutSenderInput, ChatMessagesUncheckedUpdateWithoutSenderInput>
+  }
+
+  export type ChatMessagesUpdateManyWithWhereWithoutSenderInput = {
+    where: ChatMessagesScalarWhereInput
+    data: XOR<ChatMessagesUpdateManyMutationInput, ChatMessagesUncheckedUpdateManyWithoutSenderInput>
+  }
+
+  export type ChatMessagesScalarWhereInput = {
+    AND?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
+    OR?: ChatMessagesScalarWhereInput[]
+    NOT?: ChatMessagesScalarWhereInput | ChatMessagesScalarWhereInput[]
+    id?: StringFilter<"ChatMessages"> | string
+    doctorPatientRelationId?: StringFilter<"ChatMessages"> | string
+    text?: StringFilter<"ChatMessages"> | string
+    senderId?: StringFilter<"ChatMessages"> | string
+    createdAt?: DateTimeFilter<"ChatMessages"> | Date | string
+    updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
+  }
+
   export type UserCreateWithoutAdminInput = {
     id?: string
     email: string
@@ -19900,6 +21526,7 @@ export namespace Prisma {
     patient?: PatientCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutAdminInput = {
@@ -19921,6 +21548,7 @@ export namespace Prisma {
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutAdminInput = {
@@ -19958,6 +21586,7 @@ export namespace Prisma {
     patient?: PatientUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminInput = {
@@ -19979,6 +21608,7 @@ export namespace Prisma {
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateWithoutDoctorInput = {
@@ -20000,6 +21630,7 @@ export namespace Prisma {
     patient?: PatientCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutDoctorInput = {
@@ -20021,6 +21652,7 @@ export namespace Prisma {
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutDoctorInput = {
@@ -20077,14 +21709,16 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesCreateNestedManyWithoutDoctorPatientRelationInput
     patient: PatientCreateNestedOneWithoutDoctorRelationsInput
   }
 
   export type DoctorPatientRelationUncheckedCreateWithoutDoctorInput = {
     id?: string
-    patientId: string
+    patientsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutDoctorPatientRelationInput
   }
 
   export type DoctorPatientRelationCreateOrConnectWithoutDoctorInput = {
@@ -20195,6 +21829,7 @@ export namespace Prisma {
     patient?: PatientUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDoctorInput = {
@@ -20216,6 +21851,7 @@ export namespace Prisma {
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type LeaveUpsertWithWhereUniqueWithoutDoctorInput = {
@@ -20292,8 +21928,8 @@ export namespace Prisma {
     OR?: DoctorPatientRelationScalarWhereInput[]
     NOT?: DoctorPatientRelationScalarWhereInput | DoctorPatientRelationScalarWhereInput[]
     id?: StringFilter<"DoctorPatientRelation"> | string
-    doctorId?: StringFilter<"DoctorPatientRelation"> | string
-    patientId?: StringFilter<"DoctorPatientRelation"> | string
+    doctorsUserId?: StringFilter<"DoctorPatientRelation"> | string
+    patientsUserId?: StringFilter<"DoctorPatientRelation"> | string
     createdAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
     updatedAt?: DateTimeFilter<"DoctorPatientRelation"> | Date | string
   }
@@ -20380,6 +22016,7 @@ export namespace Prisma {
     doctor?: DoctorCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutPatientInput = {
@@ -20401,6 +22038,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutPatientInput = {
@@ -20412,14 +22050,16 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesCreateNestedManyWithoutDoctorPatientRelationInput
     doctor: DoctorCreateNestedOneWithoutPatientRelationsInput
   }
 
   export type DoctorPatientRelationUncheckedCreateWithoutPatientInput = {
     id?: string
-    doctorId: string
+    doctorsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutDoctorPatientRelationInput
   }
 
   export type DoctorPatientRelationCreateOrConnectWithoutPatientInput = {
@@ -20494,6 +22134,7 @@ export namespace Prisma {
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPatientInput = {
@@ -20515,6 +22156,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type DoctorPatientRelationUpsertWithWhereUniqueWithoutPatientInput = {
@@ -21041,6 +22683,32 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
+  export type ChatMessagesCreateWithoutDoctorPatientRelationInput = {
+    id?: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    sender: UserCreateNestedOneWithoutChatMessagesInput
+  }
+
+  export type ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput = {
+    id?: string
+    text: string
+    senderId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessagesCreateOrConnectWithoutDoctorPatientRelationInput = {
+    where: ChatMessagesWhereUniqueInput
+    create: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput>
+  }
+
+  export type ChatMessagesCreateManyDoctorPatientRelationInputEnvelope = {
+    data: ChatMessagesCreateManyDoctorPatientRelationInput | ChatMessagesCreateManyDoctorPatientRelationInput[]
+    skipDuplicates?: boolean
+  }
+
   export type DoctorCreateWithoutPatientRelationsInput = {
     id?: string
     specialty: $Enums.Specialty
@@ -21101,6 +22769,22 @@ export namespace Prisma {
   export type PatientCreateOrConnectWithoutDoctorRelationsInput = {
     where: PatientWhereUniqueInput
     create: XOR<PatientCreateWithoutDoctorRelationsInput, PatientUncheckedCreateWithoutDoctorRelationsInput>
+  }
+
+  export type ChatMessagesUpsertWithWhereUniqueWithoutDoctorPatientRelationInput = {
+    where: ChatMessagesWhereUniqueInput
+    update: XOR<ChatMessagesUpdateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedUpdateWithoutDoctorPatientRelationInput>
+    create: XOR<ChatMessagesCreateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedCreateWithoutDoctorPatientRelationInput>
+  }
+
+  export type ChatMessagesUpdateWithWhereUniqueWithoutDoctorPatientRelationInput = {
+    where: ChatMessagesWhereUniqueInput
+    data: XOR<ChatMessagesUpdateWithoutDoctorPatientRelationInput, ChatMessagesUncheckedUpdateWithoutDoctorPatientRelationInput>
+  }
+
+  export type ChatMessagesUpdateManyWithWhereWithoutDoctorPatientRelationInput = {
+    where: ChatMessagesScalarWhereInput
+    data: XOR<ChatMessagesUpdateManyMutationInput, ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationInput>
   }
 
   export type DoctorUpsertWithoutPatientRelationsInput = {
@@ -21177,6 +22861,158 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
+  export type DoctorPatientRelationCreateWithoutChatMessagesInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctor: DoctorCreateNestedOneWithoutPatientRelationsInput
+    patient: PatientCreateNestedOneWithoutDoctorRelationsInput
+  }
+
+  export type DoctorPatientRelationUncheckedCreateWithoutChatMessagesInput = {
+    id?: string
+    doctorsUserId: string
+    patientsUserId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type DoctorPatientRelationCreateOrConnectWithoutChatMessagesInput = {
+    where: DoctorPatientRelationWhereUniqueInput
+    create: XOR<DoctorPatientRelationCreateWithoutChatMessagesInput, DoctorPatientRelationUncheckedCreateWithoutChatMessagesInput>
+  }
+
+  export type UserCreateWithoutChatMessagesInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    city: string
+    state: string
+    pinCode: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admin?: AdminCreateNestedOneWithoutUserInput
+    doctor?: DoctorCreateNestedOneWithoutUserInput
+    patient?: PatientCreateNestedOneWithoutUserInput
+    accessLogs?: AccessLogCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutChatMessagesInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    city: string
+    state: string
+    pinCode: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    admin?: AdminUncheckedCreateNestedOneWithoutUserInput
+    doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
+    patient?: PatientUncheckedCreateNestedOneWithoutUserInput
+    accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutChatMessagesInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutChatMessagesInput, UserUncheckedCreateWithoutChatMessagesInput>
+  }
+
+  export type DoctorPatientRelationUpsertWithoutChatMessagesInput = {
+    update: XOR<DoctorPatientRelationUpdateWithoutChatMessagesInput, DoctorPatientRelationUncheckedUpdateWithoutChatMessagesInput>
+    create: XOR<DoctorPatientRelationCreateWithoutChatMessagesInput, DoctorPatientRelationUncheckedCreateWithoutChatMessagesInput>
+    where?: DoctorPatientRelationWhereInput
+  }
+
+  export type DoctorPatientRelationUpdateToOneWithWhereWithoutChatMessagesInput = {
+    where?: DoctorPatientRelationWhereInput
+    data: XOR<DoctorPatientRelationUpdateWithoutChatMessagesInput, DoctorPatientRelationUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type DoctorPatientRelationUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctor?: DoctorUpdateOneRequiredWithoutPatientRelationsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutDoctorRelationsNestedInput
+  }
+
+  export type DoctorPatientRelationUncheckedUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorsUserId?: StringFieldUpdateOperationsInput | string
+    patientsUserId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type UserUpsertWithoutChatMessagesInput = {
+    update: XOR<UserUpdateWithoutChatMessagesInput, UserUncheckedUpdateWithoutChatMessagesInput>
+    create: XOR<UserCreateWithoutChatMessagesInput, UserUncheckedCreateWithoutChatMessagesInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutChatMessagesInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutChatMessagesInput, UserUncheckedUpdateWithoutChatMessagesInput>
+  }
+
+  export type UserUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    pinCode?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUpdateOneWithoutUserNestedInput
+    patient?: PatientUpdateOneWithoutUserNestedInput
+    accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutChatMessagesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    pinCode?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
+    patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
+    accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  }
+
   export type UserCreateWithoutAccessLogsInput = {
     id?: string
     email: string
@@ -21196,6 +23032,7 @@ export namespace Prisma {
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutAccessLogsInput = {
@@ -21217,6 +23054,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutAccessLogsInput = {
@@ -21254,6 +23092,7 @@ export namespace Prisma {
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccessLogsInput = {
@@ -21275,6 +23114,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -21296,6 +23136,7 @@ export namespace Prisma {
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -21317,6 +23158,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -21354,6 +23196,7 @@ export namespace Prisma {
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -21375,6 +23218,7 @@ export namespace Prisma {
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
   }
 
   export type AccessLogCreateManyUserInput = {
@@ -21389,6 +23233,14 @@ export namespace Prisma {
     action: string
     metadata?: NullableJsonNullValueInput | InputJsonValue
     createdAt?: Date | string
+  }
+
+  export type ChatMessagesCreateManySenderInput = {
+    id?: string
+    doctorPatientRelationId: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type AccessLogUpdateWithoutUserInput = {
@@ -21433,6 +23285,30 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type ChatMessagesUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctorPatientRelation?: DoctorPatientRelationUpdateOneRequiredWithoutChatMessagesNestedInput
+  }
+
+  export type ChatMessagesUncheckedUpdateWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesUncheckedUpdateManyWithoutSenderInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeaveCreateManyDoctorInput = {
     id?: string
     reason: string
@@ -21443,7 +23319,7 @@ export namespace Prisma {
 
   export type DoctorPatientRelationCreateManyDoctorInput = {
     id?: string
-    patientId: string
+    patientsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -21499,19 +23375,21 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUpdateManyWithoutDoctorPatientRelationNestedInput
     patient?: PatientUpdateOneRequiredWithoutDoctorRelationsNestedInput
   }
 
   export type DoctorPatientRelationUncheckedUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
+    patientsUserId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationNestedInput
   }
 
   export type DoctorPatientRelationUncheckedUpdateManyWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
+    patientsUserId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21589,7 +23467,7 @@ export namespace Prisma {
 
   export type DoctorPatientRelationCreateManyPatientInput = {
     id?: string
-    doctorId: string
+    doctorsUserId: string
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -21609,19 +23487,21 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUpdateManyWithoutDoctorPatientRelationNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutPatientRelationsNestedInput
   }
 
   export type DoctorPatientRelationUncheckedUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
+    doctorsUserId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationNestedInput
   }
 
   export type DoctorPatientRelationUncheckedUpdateManyWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
+    doctorsUserId?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -21656,6 +23536,38 @@ export namespace Prisma {
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesCreateManyDoctorPatientRelationInput = {
+    id?: string
+    text: string
+    senderId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type ChatMessagesUpdateWithoutDoctorPatientRelationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    sender?: UserUpdateOneRequiredWithoutChatMessagesNestedInput
+  }
+
+  export type ChatMessagesUncheckedUpdateWithoutDoctorPatientRelationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type ChatMessagesUncheckedUpdateManyWithoutDoctorPatientRelationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    senderId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
