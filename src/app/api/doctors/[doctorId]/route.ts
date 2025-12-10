@@ -18,12 +18,14 @@ export const GET = async (
       where: { id: doctorId },
       select: {
         id: true,
+        userId: true,
         specialty: true,
         qualifications: true,
         fees: true,
         experience: true,
         user: {
           select: {
+            id: true,
             name: true,
             gender:true,
             age:true,
@@ -36,7 +38,7 @@ export const GET = async (
     });
     const doctor: Doctor = {
        id: String(d.id),
-       
+      userId: d.userId,
         name: d.user?.name ?? "",
         gender: d.user?.gender ?? "",
         age: d.user?.age ?? 0,

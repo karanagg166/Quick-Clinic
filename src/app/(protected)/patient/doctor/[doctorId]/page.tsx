@@ -1,16 +1,20 @@
 
 'use client'
 import { useEffect, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import BookTimeSlot from "@/components/patient/bookTimeSlot";
-import { useParams } from "next/navigation";
+import { useUserStore } from "@/store/userStore";
 import type {Doctor} from "@/types/doctor";
 
 export default function DoctorDetails() {
+  const router = useRouter();
   const params = useParams();
   const doctorId = params.doctorId as string;
   const [doctor, setDoctor] = useState<Doctor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [startingChat, setStartingChat] = useState(false);
+  const { user } = useUserStore();
 
   useEffect(() => {
     const fetchDoctor = async () => {
@@ -51,6 +55,49 @@ export default function DoctorDetails() {
     );
   }
 
+  const startConversation = async () => {
+    try {
+      if (!user?.userId) {
+        alert("Please log in as a patient to start a chat.");
+        return;
+      }
+
+      if (!doctor?.userId) {
+        alert("Doctor details are incomplete. Please try again.");
+        return;
+      }
+
+      setStartingChat(true);
+
+      const res = await fetch("/api/doctorpatientrelations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          doctorsUserId: doctor.userId,
+          patientsUserId: user.userId,
+        }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData?.error || "Failed to start conversation");
+      }
+
+      const data = await res.json();
+      const relationId = data?.relation?.id;
+
+      if (!relationId) {
+        throw new Error("Missing relation id from server");
+      }
+
+      router.push(`/patient/chat/${relationId}`);
+    } catch (err: any) {
+      alert(err?.message || "Could not start conversation. Please try again.");
+    } finally {
+      setStartingChat(false);
+    }
+  };
+
   return (
     <>
       <div className="max-w-3xl mx-auto p-6 shadow rounded">
@@ -72,7 +119,26 @@ export default function DoctorDetails() {
         </div>
         {/* Book appointment section */}
         <BookTimeSlot doctorId={doctorId}/>
-            </div>
+        </div>
+
+        <div className="max-w-3xl mx-auto p-6 mt-6 bg-blue-50 border border-blue-100 rounded-lg shadow-sm">
+          <h3 className="text-xl font-semibold text-blue-800 mb-2">Have questions?</h3>
+          <p className="text-sm text-blue-900 mb-3">
+            Start a conversation with the doctor to clarify symptoms, medications, or next steps.
+          </p>
+          <div className="flex flex-wrap gap-3 text-sm text-blue-900">
+            <button
+              type="button"
+              onClick={startConversation}
+              disabled={startingChat}
+              className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+            >
+              {startingChat ? "Starting..." : "💬 Start real-time chat"}
+            </button>
+          </div>
+        </div>
         </>
+
+        
     );
 }
