@@ -19,7 +19,7 @@ export async function POST(
     }
 
     const body = await req.json().catch(() => ({}));
-    const { startDate, endDate, reason } = body || {};
+    const { startDate, endDate, reason,userId } = body || {};
 
     if (!startDate || !endDate || !reason) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -60,7 +60,12 @@ export async function POST(
         reason,
       },
     });
-
+     const notification=await prisma.notification.create({
+      data:{
+        userId,
+        message:"leave request has been successfully added"
+      }
+     });
     return NextResponse.json(leaveRequest, { status: 201 });
   } catch (err: any) {
     console.error("Doctor Leave POST Error:", err);
