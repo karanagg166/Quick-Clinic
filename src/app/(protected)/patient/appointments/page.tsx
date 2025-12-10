@@ -2,24 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
-import AppointmentCard from "@/components/general/appointmentCard";
-
-type PatientAppointment = {
-  id: string;
-  status: string;
-  doctorName: string;
-  specialty: string;
-  slotDate: string;
-  slotStart: string;
-  slotEnd: string;
-};
+import AppointmentCard from "@/components/patient/appointmentCard";
+import type { PatientAppointment } from "@/types/patient";
 
 export default function PatientAppointmentsPage() {
   const patientId = useUserStore((s) => s.patientId);
 
   const [appointments, setAppointments] = useState<PatientAppointment[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [fees, setFees] = useState<number | undefined>(undefined);
   const [doctorName, setDoctorName] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [date, setDate] = useState("");
@@ -31,13 +22,17 @@ export default function PatientAppointmentsPage() {
     setLoading(true);
 
     const params = new URLSearchParams();
-    params.append("patientId", patientId);
+
     if (doctorName) params.append("doctorName", doctorName);
+    if (fees !== undefined && fees !== 0) params.append("fees", String(fees)); // FIX
     if (specialty) params.append("specialty", specialty);
     if (date) params.append("date", date);
     if (status) params.append("status", status);
 
-    const res = await fetch(`/api/patients/appointments?${params.toString()}`);
+    const res = await fetch(
+      `/api/patients/${patientId}/appointments?${params.toString()}`
+    );
+
     const data = await res.json();
 
     if (res.ok && Array.isArray(data)) {
@@ -46,22 +41,8 @@ export default function PatientAppointmentsPage() {
       console.error("Failed to fetch appointments", data?.error || data);
       setAppointments([]);
     }
+
     setLoading(false);
-  };
-
-  const deleteAppointment = async (id: string) => {
-    const res = await fetch(`/api/patients/appointments`, {
-      method: "DELETE",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ appointmentId: id }),
-    });
-
-    const result = await res.json();
-    if (res.ok) {
-      fetchAppointments(); // reload list
-    } else {
-      console.log("Delete failed", result.error || result);
-    }
   };
 
   useEffect(() => {
@@ -78,6 +59,14 @@ export default function PatientAppointmentsPage() {
           value={doctorName}
           onChange={(e) => setDoctorName(e.target.value)}
           placeholder="Doctor Name"
+          className="border p-2 rounded"
+        />
+
+        <input
+          type="number"
+          value={fees ?? ""}
+          onChange={(e) => setFees(Number(e.target.value))}
+          placeholder="Fees"
           className="border p-2 rounded"
         />
 
@@ -118,14 +107,9 @@ export default function PatientAppointmentsPage() {
       {/* List */}
       {loading && <p>Loading...</p>}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {appointments.map((a) => (
-          <AppointmentCard
-            appointment={a}
-            key={a.id}
-            role="patient"
-            onDelete={deleteAppointment}
-          />
+      <div>
+        {appointments.map((appointment) => (
+          <AppointmentCard key={appointment.id} appointment={appointment} />
         ))}
       </div>
     </div>

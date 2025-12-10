@@ -93,14 +93,13 @@ export default function BookTimeSlot({doctorId}: BookTimeSlotProps) {
         }
         
         try {
-          const bookingData= await fetch('/api/appointments',{
+          const bookingData= await fetch(`/api/patients/${patientId}/appointments`,{
                 method:'POST',
                 headers:{
                     'Content-Type':'application/json',
                 },
                 body:JSON.stringify({
                     doctorId,
-                    patientId,
                     slotId,
                     
                 }),
