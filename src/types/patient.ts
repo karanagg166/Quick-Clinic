@@ -10,3 +10,14 @@ export interface Patient {
   allergies: string[];
   currentMedications: string[];
 }
+export interface PatientAppointment{
+id:string;
+appointmentDate:string;
+appointmentTime:string;
+doctorName:string;
+doctorEmail:string;
+city:string;
+fees:string;
+status:string;
+specialty:string;
+}
