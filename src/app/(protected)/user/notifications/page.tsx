@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 
 export default function NotificationsPage(){
-    const userId = useUserStore((state) => state.userId);
+    const userId = useUserStore((state) => state.user?.userId);
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
@@ -18,13 +18,13 @@ export default function NotificationsPage(){
     const fetchNotifications = async () => {
         setLoading(true);
 
-        const response = await fetch(`/api/user/${userId}/notifications`);
+        const response = await fetch(`/api/user/${userId}/notification`);
         if (!response.ok) {
             setLoading(false);
             return; 
         }
         const data = await response.json();
-
+     
         setNotifications(data);
         setLoading(false);
     };
@@ -36,10 +36,11 @@ export default function NotificationsPage(){
 
     // mark read
     const markRead = async (id: string) => {
-        await fetch(`/api/user/${userId}/notifications/${id}`, {
-            method: "PUT",
+        await fetch(`/api/user/${userId}/notification/${id}`, {
+            method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ isRead: true }),
+            credentials:"include"
         });
 
     fetchNotifications();
@@ -47,8 +48,9 @@ export default function NotificationsPage(){
 
     // delete
     const deleteNotification = async (id: string) => {
-        await fetch(`/api/user/${userId}/notifications/${id}`, {
+        await fetch(`/api/user/${userId}/notification/${id}`, {
             method: "DELETE",
+            credentials:"include"
         });
 
     fetchNotifications();

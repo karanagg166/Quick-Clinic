@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type {Patient} from "@/types/patient";
 
 export const POST = async (req: NextRequest) => {
 	try {
@@ -134,8 +135,24 @@ export const GET = async (req: NextRequest) => {
         },
       },
     });
+    const formatted = patients.map((p:any) => ({
+      id: p.id,
+      name: p.user.name,
+      gender: p.user.gender,
+      age: p.user.age,
+      email: p.user.email,
+      city: p.user.city,
+      state: p.user.state,
+      phoneNo: p.user.phoneNo,
 
-    return NextResponse.json(patients, { status: 200 });
+      medicalHistory: p.medicalHistory ?? "",
+      allergies: p.allergies ?? "",
+      currentMedications: p.currentMedications ?? "",
+    }));
+
+    return NextResponse.json(formatted, { status: 200 });
+
+    
   } catch (err: any) {
     console.error("patients-get-error", err);
     return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });

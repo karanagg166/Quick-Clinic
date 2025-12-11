@@ -133,11 +133,12 @@ model User {
   doctor  Doctor?
   patient Patient?
 
-  accessLogs AccessLog[]
-  auditLogs  AuditLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  accessLogs    AccessLog[]
+  auditLogs     AuditLog[]
+  chatMessages  ChatMessages[]
+  notifications Notification[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Admin {
@@ -192,13 +193,13 @@ model Patient {
 // ======================================================
 
 model Notification {
-  id      String @id @default(cuid())
+  id      String    @id @default(cuid())
   userId  String
   message String
-
-  isRead Boolean   @default(false)
-  status String    @default("UNREAD")
-  readAt DateTime?
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead  Boolean   @default(false)
+  status  String    @default("UNREAD")
+  readAt  DateTime?
 
   createdAt DateTime @default(now())
 }
@@ -232,6 +233,8 @@ model Schedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([doctorId])
 }
 
 model Slot {
@@ -275,23 +278,42 @@ model Appointment {
 }
 
 // ======================================================
-// DOCTOR–PATIENT RELATION MODEL
+// DOCTOR–PATIENT RELATION MODEL / CHAT MODEL
 // ======================================================
 
 model DoctorPatientRelation {
-  id        String @id @default(cuid())
-  doctorId  String
-  patientId String
+  id             String @id @default(cuid())
+  doctorsUserId  String
+  patientsUserId String
 
-  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  chatMessages ChatMessages[]
+
+  doctor  Doctor  @relation(fields: [doctorsUserId], references: [userId], onDelete: Cascade)
+  patient Patient @relation(fields: [patientsUserId], references: [userId], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([doctorId, patientId])
-  @@index([patientId])
-  @@index([doctorId])
+  @@unique([doctorsUserId, patientsUserId])
+  @@index([patientsUserId])
+  @@index([doctorsUserId])
+}
+
+model ChatMessages {
+  id String @id @default(cuid())
+
+  doctorPatientRelationId String
+  doctorPatientRelation   DoctorPatientRelation @relation(fields: [doctorPatientRelationId], references: [id], onDelete: Cascade)
+
+  text     String
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([doctorPatientRelationId, createdAt])
+  @@index([senderId])
 }
 
 // ======================================================
