@@ -29,69 +29,67 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     return pathname === href || pathname.startsWith(href + '/');
   };
 
-  // DOCTOR MENU ITEMS (same structure as patient)
+  // UPDATED: doctorDashboard → doctor
   const menuItems = [
     {
       label: 'Dashboard',
-      href: '/doctorDashboard',
+      href: '/doctor',
       icon: LayoutDashboard,
     },
     {
       label: 'My Schedule',
-      href: '/doctorDashboard/schedule',
+      href: '/doctor/schedule',
       icon: CalendarDays,
     },
     {
       label: 'Appointments',
-      href: '/doctorDashboard/appointments',
+      href: '/doctor/appointments',
       icon: FileClock,
     },
     {
       label: 'Patients',
-      href: '/doctorDashboard/patients',
+      href: '/doctor/patients',
       icon: Users,
       submenu: [
-        { label: 'My Patients', href: '/doctorDashboard/patients' },
-        { label: 'Patient Reports', href: '/doctorDashboard/patients/reports' },
-        { label: 'History Logs', href: '/doctorDashboard/patients/history' },
+        { label: 'My Patients', href: '/doctor/patients' },
+        { label: 'Patient Reports', href: '/doctor/patients/reports' },
+        { label: 'History Logs', href: '/doctor/patients/history' },
       ]
     },
     {
       label: 'Leave Management',
-      href: '/doctorDashboard/leave',
+      href: '/doctor/leave',
       icon: ClipboardList,
       submenu: [
-        { label: 'Apply Leave', href: '/doctorDashboard/leave/apply' },
-        { label: 'Leave History', href: '/doctorDashboard/leave/history' },
+        { label: 'Apply Leave', href: '/doctor/leave/apply' },
+        { label: 'Leave History', href: '/doctor/leave/history' },
       ]
     },
     {
       label: 'Earnings',
-      href: '/doctorDashboard/earnings',
+      href: '/doctor/earnings',
       icon: Wallet,
     },
     {
       label: 'Doctor Profile',
-      href: '/doctorDashboard/profile',
+      href: '/doctor/profile',
       icon: UserCircle,
     },
     {
       label: 'Settings',
-      href: '/doctorDashboard/settings',
+      href: '/doctor/settings',
       icon: Settings,
     },
   ];
 
   return (
     <>
-
       {/* Sidebar */}
       <aside 
         className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out z-50 overflow-y-auto`}
       >
-
         {/* Header */}
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div>
@@ -110,16 +108,15 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
         {/* MENU */}
         <nav className="p-4">
           <ul className="space-y-2">
-
             {menuItems.map((item) => {
               const IconComponent = item.icon;
               const isItemActive = isActive(item.href);
-              const hasSubmenu = item.submenu?.length > 0;
+              const hasSubmenu =
+                Array.isArray(item.submenu) && item.submenu.length > 0;
               const isSubmenuOpen = expandedMenu === item.label;
 
               return (
                 <li key={item.label}>
-                  
                   <div className="flex items-center">
                     <Link
                       href={item.href}
@@ -134,7 +131,6 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                       <span className="text-sm">{item.label}</span>
                     </Link>
 
-                    {/* Toggle Submenu */}
                     {hasSubmenu && (
                       <button
                         onClick={() =>
@@ -151,7 +147,6 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                     )}
                   </div>
 
-                  {/* Submenu Items */}
                   {hasSubmenu && isSubmenuOpen && (
                     <ul className="ml-9 mt-1 space-y-1 border-l-2 border-gray-200 pl-4">
                       {item.submenu!.map((subitem) => (
@@ -171,11 +166,9 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                       ))}
                     </ul>
                   )}
-
                 </li>
               );
             })}
-
           </ul>
         </nav>
 
@@ -192,9 +185,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
             </button>
           </div>
         </div>
-
       </aside>
-
     </>
   );
 }

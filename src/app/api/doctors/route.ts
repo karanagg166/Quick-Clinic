@@ -94,77 +94,55 @@ console.log("doctors-raw", raw);
   }
 }
 
-export const POST = async (
-  req: NextRequest,
- 
-) => {
+export const POST = async (req: NextRequest) => {
   try {
-    const { userId,specialty, experience, qualifications, fees } = await req.json();
-   if(!userId){
-    return NextResponse.json({ error: "User Not Logined or userId not valid" }, { status: 400 });
-   }
-    // console.log("create-doctor-payload", { userId,specialty, experience, qualifications, fees });
+    const body = await req.json();
+    const {
+      userId,
+      specialty,
+      fees = 0,
+      experience = 0,
+      qualifications = [],
+    } = body ?? {};
 
+    if (!userId || typeof userId !== "string") {
+      return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    }
 
-   
-    if (!specialty|| !experience || !qualifications || !fees ) {
+    if (!specialty || typeof specialty !== "string") {
       return NextResponse.json({ error: "specialty is required" }, { status: 400 });
     }
 
-    
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
-console.log("user-found", user);
-    const existing = await prisma.doctor.findUnique({ where: { userId: userId } });
+
+    const existing = await prisma.doctor.findUnique({ where: { userId } });
     if (existing) {
-      return NextResponse.json({ error: "Doctor profile already exists for this user" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Doctor profile already exists for this user" },
+        { status: 409 }
+      );
     }
 
-    const created = await prisma.doctor.create({
+    const doctor = await prisma.doctor.create({
       data: {
         userId,
         specialty,
-        experience,
-        qualifications,
-        fees,
+        fees: Number(fees),
+        experience: Number(experience),
+        qualifications: Array.isArray(qualifications) ? qualifications : [],
       },
     });
 
-    return NextResponse.json({ doctor: created }, { status: 201 });
+    return NextResponse.json({ doctor }, { status: 201 });
   } catch (err: any) {
-    console.error("create-doctor-error:", err);
-    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
+    console.error("doctors-post-error", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
   }
 };
-export const PATCH=async(req:NextRequest)=>{
-  try {
-     const { doctorId,specialty, experience, qualifications, fees } = await req.json();
-    if(!doctorId){
-     return NextResponse.json({ error: "Doctor not exist yet" }, { status: 400 });
-    }
-      const existing = await prisma.doctor.findUnique({ where: { id: doctorId } }); 
-      if (!existing) {
-        return NextResponse.json({ error: "Doctor profile not found" }, { status: 404 });
-      }
-  
-      const updated = await prisma.doctor.update({
-        where: { id: doctorId },
-        data: {
-          specialty: specialty ?? existing.specialty,
-          experience: experience ?? existing.experience,
-          qualifications: qualifications ?? existing.qualifications,
-          fees: fees ?? existing.fees,
-        },
-      });
-  
-      return NextResponse.json({ doctor: updated }, { status: 200 });
-  }
-  catch(err:any){
-    console.error("update-doctor-error:", err);
-    return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
-  }
-}
-
 
