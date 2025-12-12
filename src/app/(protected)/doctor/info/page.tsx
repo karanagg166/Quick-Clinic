@@ -5,7 +5,7 @@ import { useUserStore } from "@/store/userStore";
 
 export default function DoctorInfo() {
   const { user, doctorId } = useUserStore();
-  console.log(user, doctorId);
+  //  console.log(user, doctorId);
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
 
@@ -28,7 +28,7 @@ export default function DoctorInfo() {
 
   // GET DOCTOR INFO
   useEffect(() => {
-    console.log(user, doctorId);
+    // console.log(user, doctorId);
 
     const handleGetInfo = async () => {
       try {
@@ -41,7 +41,7 @@ export default function DoctorInfo() {
 
         const response = await fetch(`/api/doctors/${doctorId}`);
         const data = await response.json();
-
+// console.log("Fetched doctor data:", data);
         if (response.ok) {
           setExistingDoctor(true);
           setFees(String(data.doctor.fees));
@@ -49,6 +49,7 @@ export default function DoctorInfo() {
           setSpecialty(data.doctor.specialty);
           setQualification(data.doctor.qualifications || []);
         }
+
       } catch (err:any) {
         console.error("Doctor not created yet.");
       } finally {
