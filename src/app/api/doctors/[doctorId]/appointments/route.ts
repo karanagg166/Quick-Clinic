@@ -75,10 +75,9 @@ export async function GET(
       const endDateTime = new Date(`${endDate}T${endTime}`);
 
       where.slot = {
-        AND: [
-          { startDateTime: { gte: startDateTime } },
-          { endDateTime: { lte: endDateTime } },
-        ],
+        ...where.slot,
+        startTime: { gte: startDateTime },
+        endTime: { lte: endDateTime },
       };
     }
 
