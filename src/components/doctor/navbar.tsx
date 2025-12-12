@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
+import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 
 interface DoctorNavbarProps {
@@ -25,7 +25,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
   };
 
   return (
-    <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
 
       {/* LEFT SECTION — Logo + Sidebar Toggle + Nav Links */}
       <div className="flex items-center gap-8">
@@ -83,6 +83,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <Wallet className="w-4 h-4" /> Earnings
+          </Link>
+
+          <Link
+            href="/doctor/chat"
+            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+          >
+            <MessageCircle className="w-4 h-4" /> Chat
           </Link>
 
         </div>

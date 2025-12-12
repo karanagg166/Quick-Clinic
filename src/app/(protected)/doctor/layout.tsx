@@ -11,10 +11,10 @@ export default function DoctorDashboardLayout({children}: Readonly<{children: Re
 
   return (
     <>
-      <div>
+      <div className="min-h-screen">
         {isSidebarOpen && <DoctorSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />}
         <DoctorNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="p-6 bg-gray-50 min-h-screen">
+        <main className="p-6 bg-gray-50 min-h-screen pt-6">
           {children}
         </main>
       </div>
