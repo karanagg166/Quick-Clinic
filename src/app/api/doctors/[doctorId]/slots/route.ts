@@ -256,7 +256,7 @@ export async function POST(
       orderBy: { startTime: "asc" },
     });
 
-    const hasOverlap = existing.some((s) => start < s.endTime && end > s.startTime);
+    const hasOverlap = existing.some((s:any) => start < s.endTime && end > s.startTime);
     if (hasOverlap) {
       return NextResponse.json(
         { error: "New slot overlaps with an existing slot" },
