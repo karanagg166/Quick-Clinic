@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { PatientAppointment } from "@/types/patient";
 
-export async function GET(req: Request, { params }: { params: Promise<{ patientId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
     const { patientId } = await params;
 
