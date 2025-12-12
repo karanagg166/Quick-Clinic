@@ -24,12 +24,12 @@ exports.Prisma = Prisma
 exports.$Enums = {}
 
 /**
- * Prisma Client JS version: 7.0.1
- * Query Engine version: f09f2815f091dbba658cdcd2264306d88bb5bda6
+ * Prisma Client JS version: 7.1.0
+ * Query Engine version: ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba
  */
 Prisma.prismaVersion = {
-  client: "7.0.1",
-  engine: "f09f2815f091dbba658cdcd2264306d88bb5bda6"
+  client: "7.1.0",
+  engine: "ab635e6b9d606fa5c8fb8b1a7f909c3c3c1c98ba"
 }
 
 Prisma.PrismaClientKnownRequestError = () => {
@@ -212,6 +212,7 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   slotId: 'slotId',
   status: 'status',
   paymentMethod: 'paymentMethod',
+  transactionId: 'transactionId',
   notes: 'notes',
   bookedAt: 'bookedAt',
   updatedAt: 'updatedAt',
@@ -233,6 +234,17 @@ exports.Prisma.ChatMessagesScalarFieldEnum = {
   senderId: 'senderId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.PaymentScalarFieldEnum = {
+  id: 'id',
+  amount: 'amount',
+  currency: 'currency',
+  userId: 'userId',
+  status: 'status',
+  razorpayOrderId: 'razorpayOrderId',
+  razorpayPaymentId: 'razorpayPaymentId',
+  createdAt: 'createdAt'
 };
 
 exports.Prisma.AccessLogScalarFieldEnum = {
@@ -386,6 +398,7 @@ exports.Prisma.ModelName = {
   Appointment: 'Appointment',
   DoctorPatientRelation: 'DoctorPatientRelation',
   ChatMessages: 'ChatMessages',
+  Payment: 'Payment',
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog'
 };
