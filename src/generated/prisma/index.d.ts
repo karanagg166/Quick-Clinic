@@ -11480,6 +11480,7 @@ export namespace Prisma {
     notes: string | null
     bookedAt: Date | null
     updatedAt: Date | null
+    isAppointmentOffline: boolean | null
   }
 
   export type AppointmentMaxAggregateOutputType = {
@@ -11492,6 +11493,7 @@ export namespace Prisma {
     notes: string | null
     bookedAt: Date | null
     updatedAt: Date | null
+    isAppointmentOffline: boolean | null
   }
 
   export type AppointmentCountAggregateOutputType = {
@@ -11504,6 +11506,7 @@ export namespace Prisma {
     notes: number
     bookedAt: number
     updatedAt: number
+    isAppointmentOffline: number
     _all: number
   }
 
@@ -11518,6 +11521,7 @@ export namespace Prisma {
     notes?: true
     bookedAt?: true
     updatedAt?: true
+    isAppointmentOffline?: true
   }
 
   export type AppointmentMaxAggregateInputType = {
@@ -11530,6 +11534,7 @@ export namespace Prisma {
     notes?: true
     bookedAt?: true
     updatedAt?: true
+    isAppointmentOffline?: true
   }
 
   export type AppointmentCountAggregateInputType = {
@@ -11542,6 +11547,7 @@ export namespace Prisma {
     notes?: true
     bookedAt?: true
     updatedAt?: true
+    isAppointmentOffline?: true
     _all?: true
   }
 
@@ -11627,6 +11633,7 @@ export namespace Prisma {
     notes: string | null
     bookedAt: Date
     updatedAt: Date
+    isAppointmentOffline: boolean
     _count: AppointmentCountAggregateOutputType | null
     _min: AppointmentMinAggregateOutputType | null
     _max: AppointmentMaxAggregateOutputType | null
@@ -11656,6 +11663,7 @@ export namespace Prisma {
     notes?: boolean
     bookedAt?: boolean
     updatedAt?: boolean
+    isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11671,6 +11679,7 @@ export namespace Prisma {
     notes?: boolean
     bookedAt?: boolean
     updatedAt?: boolean
+    isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11686,6 +11695,7 @@ export namespace Prisma {
     notes?: boolean
     bookedAt?: boolean
     updatedAt?: boolean
+    isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11701,9 +11711,10 @@ export namespace Prisma {
     notes?: boolean
     bookedAt?: boolean
     updatedAt?: boolean
+    isAppointmentOffline?: boolean
   }
 
-  export type AppointmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "slotId" | "status" | "paymentMethod" | "notes" | "bookedAt" | "updatedAt", ExtArgs["result"]["appointment"]>
+  export type AppointmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "slotId" | "status" | "paymentMethod" | "notes" | "bookedAt" | "updatedAt" | "isAppointmentOffline", ExtArgs["result"]["appointment"]>
   export type AppointmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     slot?: boolean | SlotDefaultArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -11737,6 +11748,7 @@ export namespace Prisma {
       notes: string | null
       bookedAt: Date
       updatedAt: Date
+      isAppointmentOffline: boolean
     }, ExtArgs["result"]["appointment"]>
     composites: {}
   }
@@ -12172,6 +12184,7 @@ export namespace Prisma {
     readonly notes: FieldRef<"Appointment", 'String'>
     readonly bookedAt: FieldRef<"Appointment", 'DateTime'>
     readonly updatedAt: FieldRef<"Appointment", 'DateTime'>
+    readonly isAppointmentOffline: FieldRef<"Appointment", 'Boolean'>
   }
     
 
@@ -17043,7 +17056,8 @@ export namespace Prisma {
     paymentMethod: 'paymentMethod',
     notes: 'notes',
     bookedAt: 'bookedAt',
-    updatedAt: 'updatedAt'
+    updatedAt: 'updatedAt',
+    isAppointmentOffline: 'isAppointmentOffline'
   };
 
   export type AppointmentScalarFieldEnum = (typeof AppointmentScalarFieldEnum)[keyof typeof AppointmentScalarFieldEnum]
@@ -17931,6 +17945,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Appointment"> | string | null
     bookedAt?: DateTimeFilter<"Appointment"> | Date | string
     updatedAt?: DateTimeFilter<"Appointment"> | Date | string
+    isAppointmentOffline?: BoolFilter<"Appointment"> | boolean
     slot?: XOR<SlotScalarRelationFilter, SlotWhereInput>
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
@@ -17946,6 +17961,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     bookedAt?: SortOrder
     updatedAt?: SortOrder
+    isAppointmentOffline?: SortOrder
     slot?: SlotOrderByWithRelationInput
     doctor?: DoctorOrderByWithRelationInput
     patient?: PatientOrderByWithRelationInput
@@ -17964,6 +17980,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Appointment"> | string | null
     bookedAt?: DateTimeFilter<"Appointment"> | Date | string
     updatedAt?: DateTimeFilter<"Appointment"> | Date | string
+    isAppointmentOffline?: BoolFilter<"Appointment"> | boolean
     slot?: XOR<SlotScalarRelationFilter, SlotWhereInput>
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
@@ -17979,6 +17996,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     bookedAt?: SortOrder
     updatedAt?: SortOrder
+    isAppointmentOffline?: SortOrder
     _count?: AppointmentCountOrderByAggregateInput
     _max?: AppointmentMaxOrderByAggregateInput
     _min?: AppointmentMinOrderByAggregateInput
@@ -17997,6 +18015,7 @@ export namespace Prisma {
     notes?: StringNullableWithAggregatesFilter<"Appointment"> | string | null
     bookedAt?: DateTimeWithAggregatesFilter<"Appointment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Appointment"> | Date | string
+    isAppointmentOffline?: BoolWithAggregatesFilter<"Appointment"> | boolean
   }
 
   export type DoctorPatientRelationWhereInput = {
@@ -18889,6 +18908,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
     slot: SlotCreateNestedOneWithoutAppointmentInput
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
@@ -18904,6 +18924,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type AppointmentUpdateInput = {
@@ -18913,6 +18934,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
     slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
     patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
@@ -18928,6 +18950,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type AppointmentCreateManyInput = {
@@ -18940,6 +18963,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type AppointmentUpdateManyMutationInput = {
@@ -18949,6 +18973,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type AppointmentUncheckedUpdateManyInput = {
@@ -18961,6 +18986,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DoctorPatientRelationCreateInput = {
@@ -19910,6 +19936,7 @@ export namespace Prisma {
     notes?: SortOrder
     bookedAt?: SortOrder
     updatedAt?: SortOrder
+    isAppointmentOffline?: SortOrder
   }
 
   export type AppointmentMaxOrderByAggregateInput = {
@@ -19922,6 +19949,7 @@ export namespace Prisma {
     notes?: SortOrder
     bookedAt?: SortOrder
     updatedAt?: SortOrder
+    isAppointmentOffline?: SortOrder
   }
 
   export type AppointmentMinOrderByAggregateInput = {
@@ -19934,6 +19962,7 @@ export namespace Prisma {
     notes?: SortOrder
     bookedAt?: SortOrder
     updatedAt?: SortOrder
+    isAppointmentOffline?: SortOrder
   }
 
   export type EnumAppointmentStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -21976,6 +22005,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
     slot: SlotCreateNestedOneWithoutAppointmentInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
   }
@@ -21989,6 +22019,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type AppointmentCreateOrConnectWithoutDoctorInput = {
@@ -22203,6 +22234,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"Appointment"> | string | null
     bookedAt?: DateTimeFilter<"Appointment"> | Date | string
     updatedAt?: DateTimeFilter<"Appointment"> | Date | string
+    isAppointmentOffline?: BoolFilter<"Appointment"> | boolean
   }
 
   export type SlotUpsertWithWhereUniqueWithoutDoctorInput = {
@@ -22321,6 +22353,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
     slot: SlotCreateNestedOneWithoutAppointmentInput
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
   }
@@ -22334,6 +22367,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type AppointmentCreateOrConnectWithoutPatientInput = {
@@ -22702,6 +22736,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
   }
@@ -22715,6 +22750,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type AppointmentCreateOrConnectWithoutSlotInput = {
@@ -22775,6 +22811,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
     doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
     patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
   }
@@ -22788,6 +22825,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type DoctorUpsertWithoutSlotsInput = {
@@ -23733,6 +23771,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type SlotCreateManyDoctorInput = {
@@ -23801,6 +23840,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
     slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
     patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
   }
@@ -23814,6 +23854,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type AppointmentUncheckedUpdateManyWithoutDoctorInput = {
@@ -23825,6 +23866,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type SlotUpdateWithoutDoctorInput = {
@@ -23881,6 +23923,7 @@ export namespace Prisma {
     notes?: string | null
     bookedAt?: Date | string
     updatedAt?: Date | string
+    isAppointmentOffline?: boolean
   }
 
   export type DoctorPatientRelationUpdateWithoutPatientInput = {
@@ -23913,6 +23956,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
     slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
   }
@@ -23926,6 +23970,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type AppointmentUncheckedUpdateManyWithoutPatientInput = {
@@ -23937,6 +23982,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
   }
 
   export type ChatMessagesCreateManyDoctorPatientRelationInput = {

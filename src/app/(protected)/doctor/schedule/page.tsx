@@ -1,183 +1,141 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import { useUserStore } from "@/store/userStore";
-import ScheduleDaySection from "./components/ScheduleDaySection";
 
-interface Slot {
-  slotNo: number;
-  start: string;
-  end: string;
+type Slot = {
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: "AVAILABLE" | "HELD" | "BOOKED" | "UNAVAILABLE" | "CANCELLED";
+};
+
+const statusTone: Record<Slot["status"], string> = {
+  AVAILABLE: "bg-emerald-100 text-emerald-700",
+  HELD: "bg-amber-100 text-amber-700",
+  BOOKED: "bg-blue-100 text-blue-700",
+  UNAVAILABLE: "bg-gray-200 text-gray-700",
+  CANCELLED: "bg-rose-100 text-rose-700",
+};
+
+function formatTime(dateStr: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date(dateStr));
 }
 
 export default function DoctorSchedulePage() {
- 
-const doctorId = useUserStore((s) => s.doctorId);
-
-  const days = ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"];
-
-  const [schedule, setSchedule] = useState(
-    days.map((day) => ({ day, slots: [] as Slot[] }))
-  );
-
+  const doctorId = useUserStore((s) => s.doctorId);
+  const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch existing schedule
-  const fetchSchedule = async () => {
+  const todayDate = useMemo(() => {
+    const now = new Date();
+    return {
+      dateParam: now.toISOString().split("T")[0],
+      label: new Intl.DateTimeFormat("en-US", {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      }).format(now),
+    };
+  }, []);
+
+  const fetchTodaySlots = async () => {
     if (!doctorId) return;
-
+    setLoading(true);
+    setError(null);
     try {
-      const res = await fetch(`/api/doctors/${doctorId}/schedule`);
-      
-      if (!res.ok) {
-        console.log("No existing schedule found");
-        return;
-      }
-
+      const res = await fetch(
+        `/api/doctors/${doctorId}/slots?date=${todayDate.dateParam}`
+      );
       const data = await res.json();
 
-      if (!data?.weeklySchedule) return;
-
-      // Ensure the schedule is an array format
-      if (Array.isArray(data.weeklySchedule)) {
-        console.log(data.weeklySchedule);
-        setSchedule(data.weeklySchedule);
+      if (!res.ok) {
+        throw new Error(data?.error || "Failed to fetch slots");
       }
-    } catch (err) {
-      console.error("Fetch error:", err);
-    }
-  };
 
-  useEffect(() => {
-    console.log("Fetching schedule for doctorId:", doctorId);
-    fetchSchedule();
-  }, [doctorId]);
-
-  // Add empty slot
-  const appendSlot = (dayIndex: number) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots.push({
-        slotNo: updated[dayIndex].slots.length + 1,
-        start: "",
-        end: "",
-      });
-      return updated;
-    });
-  };
-
-  // Update slot
-  const updateSlot = (
-    dayIndex: number,
-    slotIndex: number,
-    field: "start" | "end",
-    value: string
-  ) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots[slotIndex][field] = value;
-      return updated;
-    });
-  };
-
-  // Save slot validation
-  const saveSlot = (dayIndex: number, slotIndex: number) => {
-    const slot = schedule[dayIndex].slots[slotIndex];
-
-    if (!slot.start || !slot.end || slot.start >= slot.end) {
-      alert("Invalid slot time");
-      return;
-    }
-
-    alert("Slot saved!");
-  };
-
-  // Delete slot
-  const deleteSlot = (dayIndex: number, slotIndex: number) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots.splice(slotIndex, 1);
-      return updated;
-    });
-  };
-
-  // Submit full schedule
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!doctorId) {
-      alert("Doctor ID not found. Please login again.");
-      return;
-    }
-
-    // Validate that at least one day has slots
-    const hasSlots = schedule.some((day) => day.slots.length > 0);
-    if (!hasSlots) {
-      alert("Please add at least one time slot to your schedule.");
-      return;
-    }
-
-    // Renumber slots for each day
-    const normalizedSchedule = schedule.map((day) => ({
-      ...day,
-      slots: day.slots.map((slot, index) => ({
-        ...slot,
-        slotNo: index + 1,
-      })),
-    }));
-
-    setLoading(true);
-    try {
-      const res = await fetch(`/api/doctors/${doctorId}/schedule`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ weeklySchedule: normalizedSchedule }),
-      });
-
-      if (res.ok) {
-        alert("Schedule saved successfully!");
-      } else {
-        const error = await res.json();
-        alert(`Failed to save: ${error.error || "Unknown error"}`);
-      }
-    } catch (err) {
-      console.error("Save error:", err);
-      alert("Failed to save schedule. Please try again.");
+      setSlots(data.slots || []);
+    } catch (err: any) {
+      setError(err?.message || "Failed to load slots");
+      setSlots([]);
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <h1 className="text-2xl font-semibold mb-4">Doctor Weekly Schedule</h1>
+  useEffect(() => {
+    fetchTodaySlots();
+  }, [doctorId, todayDate.dateParam]);
 
-      <form onSubmit={handleSubmit}>
-        <div className="space-y-6">
-          {schedule.map((d, dayIndex) => (
-            <ScheduleDaySection
-              key={d.day}
-              day={d.day}
-              dayIndex={dayIndex}
-              slots={d.slots}
-              appendSlot={() => appendSlot(dayIndex)}
-              deleteSlot={(slotIndex) => deleteSlot(dayIndex, slotIndex)}
-              saveSlot={(slotIndex) => saveSlot(dayIndex, slotIndex)}
-              updateSlot={(slotIndex, field, value) =>
-                updateSlot(dayIndex, slotIndex, field, value)
-              }
-            />
-          ))}
+  return (
+    <div className="max-w-4xl mx-auto p-6 space-y-4">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-sm text-gray-500">Today</p>
+          <h1 className="text-2xl font-semibold text-gray-900">{todayDate.label}</h1>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={fetchTodaySlots}
+            className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            disabled={loading}
+          >
+            {loading ? "Refreshing..." : "Refresh"}
+          </button>
+          <Link
+            href="/doctor/schedule/weeklySchedule"
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-blue-700"
+          >
+            Edit weekly schedule
+          </Link>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">Today&apos;s slots</h2>
+          <p className="text-sm text-gray-500">All generated 10-minute slots</p>
         </div>
 
-        <button
-          type="submit"
-          className="mt-6 bg-green-600 text-white px-4 py-2 rounded"
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Save schedule"}
-        </button>
-      </form>
+        {!doctorId && (
+          <p className="text-sm text-red-600">Doctor ID not found. Please log in again.</p>
+        )}
+
+        {error && !loading && (
+          <div className="text-sm text-red-600">{error}</div>
+        )}
+
+        {loading && <p className="text-sm text-gray-600">Loading slots...</p>}
+
+        {!loading && !error && doctorId && slots.length === 0 && (
+          <p className="text-sm text-gray-600">No slots for today.</p>
+        )}
+
+        {!loading && !error && slots.length > 0 && (
+          <div className="space-y-3">
+            {slots.map((slot) => (
+              <div
+                key={slot.id}
+                className="flex items-center justify-between rounded-lg border border-gray-100 px-4 py-3 hover:bg-gray-50"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-gray-900">
+                    {formatTime(slot.startTime)} – {formatTime(slot.endTime)}
+                  </p>
+                  <p className="text-xs text-gray-500">Duration 10 minutes</p>
+                </div>
+                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${statusTone[slot.status]}`}>
+                  {slot.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
