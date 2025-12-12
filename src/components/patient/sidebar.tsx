@@ -58,7 +58,7 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
     },
     {
       label: "Medical Records",
-      href: "/patient/records",
+      href: "/patient/info",       // UPDATED
       icon: Heart,
     },
     {
@@ -82,7 +82,7 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
     <aside
       className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg transform ${
         isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out z-60 overflow-y-auto`}
+      } transition-transform duration-300 ease-in-out z-50 overflow-y-auto`}
     >
       {/* Header */}
       <div className="p-6 border-b border-gray-200 flex items-center justify-between">
