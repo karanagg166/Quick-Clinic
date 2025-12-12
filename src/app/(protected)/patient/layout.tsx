@@ -12,10 +12,10 @@ export default function RootLayout({children}: Readonly<{children: React.ReactNo
 
   return (
     <>
-      <div>
+      <div className="min-h-screen">
         {isSidebarOpen && <PatientSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />}
         <PatientNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="p-6 bg-gray-50 min-h-screen">
+        <main className="p-6 bg-gray-50 min-h-screen pt-6">
           {children}
         </main>
       </div>

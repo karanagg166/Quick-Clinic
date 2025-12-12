@@ -70,38 +70,63 @@ export default function DoctorChatListPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h2 className="text-2xl font-bold mb-4">Patient Chats</h2>
+    <div className="max-w-4xl mx-auto p-6">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Messages</h1>
+        <p className="text-gray-600">Chat with your patients</p>
+      </div>
 
       {loading ? (
-        <p className="text-gray-600">Loading conversations...</p>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-gray-600">Loading conversations...</p>
+          </div>
+        </div>
       ) : error ? (
-        <p className="text-red-600">{error}</p>
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 flex items-center gap-3">
+          <span className="text-xl">⚠️</span>
+          <p>{error}</p>
+        </div>
       ) : chats.length === 0 ? (
-        <p className="text-gray-600">No conversations yet. Chats will appear after patients message you.</p>
+        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
+          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-4xl">💬</span>
+          </div>
+          <p className="text-gray-900 font-semibold text-lg mb-2">No patient conversations yet</p>
+          <p className="text-gray-600">Chats will appear after patients message you</p>
+        </div>
       ) : (
         <div className="space-y-3">
           {chats.map((chat) => {
             const lastLine = chat.lastMessage
-              ? chat.lastMessage
+              ? chat.lastMessage.length > 50
+                ? chat.lastMessage.substring(0, 50) + "..."
+                : chat.lastMessage
               : "No messages yet";
 
             return (
               <button
                 key={chat.id}
                 onClick={() => handleOpenChat(chat.id)}
-                className="w-full text-left bg-white border border-gray-200 rounded-lg shadow-sm px-4 py-3 hover:border-blue-300 hover:shadow transition"
+                className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 transition-all duration-200 group"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-4 flex-1">
+                    <div className="w-12 h-12 bg-linear-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shrink-0">
+                      <span className="text-white font-bold text-lg">👤</span>
+                    </div>
                   <div>
-                    <p className="font-semibold text-gray-900">Patient: {chat.patientName}</p>
+                      <p className="font-semibold text-gray-900 group-hover:text-blue-600">Patient: {chat.patientName}</p>
                     <p className="text-sm text-gray-600">Dr. {chat.doctorName}</p>
                   </div>
-                  <span className="text-xs text-gray-500">
-                    {new Date(chat.lastMessageAt).toLocaleString()}
+                  </div>
+                  <span className="text-xs text-gray-500 whitespace-nowrap ml-4">
+                    {new Date(chat.lastMessageAt).toLocaleDateString()}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 mt-1 line-clamp-1">{lastLine}</p>
+                <p className="text-sm text-gray-700 line-clamp-1 ml-16">{lastLine}</p>
               </button>
             );
           })}
