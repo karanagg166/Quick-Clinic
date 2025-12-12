@@ -31,20 +31,20 @@ export async function POST(
       return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
     }
     const checkLeaveConflict = await prisma.leave.findFirst({
- where:{
-  doctorId,
-  OR:[
-{startDate:{
-    gte:startDateTime,
-    lte:endDateTime
-  }}
-  ,{endDate:{
-    gte:startDateTime,
-    lte:endDateTime
-  }}
-  ]
+      where:{
+        doctorId,
+        OR:[
+          {startDate:{
+              gte:startDateTime,
+              lte:endDateTime
+            }}
+        ,{endDate:{
+          gte:startDateTime,
+          lte:endDateTime
+        }}
+        ]
   
- }
+   }
 
 
     })
@@ -63,7 +63,7 @@ export async function POST(
      const notification=await prisma.notification.create({
       data:{
         userId,
-        message:"leave request has been successfully added"
+        message: `Leave request has been successfully added for ${startDateTime} to ${endDateTime}`
       }
      });
     return NextResponse.json(leaveRequest, { status: 201 });

@@ -101,7 +101,7 @@ export async function GET(
     const doctorAppointments: DoctorAppointment[] = appointments.map((a: any) => ({
       id: a.id,
       patientName: a.patient.user.name,
-      patientString: a.patient.user.email,
+      patientEmail: a.patient.user.email,
       gender: a.patient.user.gender,
       city: a.patient.user.city,
       age: a.patient.user.age,
@@ -111,7 +111,12 @@ export async function GET(
       paymentMethod:a.paymentMethod
       
     }));
-
+    const notification=await prisma.notification.create({
+      data:{
+        userId:doctorId,
+        message:`Doctor appointments fetched for doctorId: ${doctorId}`
+      }
+    });
     return NextResponse.json(doctorAppointments, { status: 200 });
 
   } catch (err) {

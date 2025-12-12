@@ -58,7 +58,7 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
     },
     {
       label: "Medical Records",
-      href: "/patient/records",
+      href: "/patient/info",       // UPDATED
       icon: Heart,
     },
     {

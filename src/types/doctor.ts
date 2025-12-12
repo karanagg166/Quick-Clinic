@@ -17,7 +17,7 @@ export interface Doctor {
 export interface DoctorAppointment{
 id:string;
 patientName:string;
-patientString:string;
+patientEmail:string;
 gender:string;
 appointmentDate:string;
 appointmentTime:string;

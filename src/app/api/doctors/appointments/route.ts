@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
       orderBy: { bookedAt: "desc" },
     });
 
-    const formatted = appts.map((a) => ({
+    const formatted = appts.map((a:any) => ({
       id: a.id,
       slotId: a.slotId,
       slotStart: a.slot?.startTime,

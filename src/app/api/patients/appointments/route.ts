@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import type { PatientAppointment } from "@/types/patient";
 
 export async function GET(req: Request) {
   try {
@@ -37,7 +38,7 @@ export async function GET(req: Request) {
       },
     });
 
-    const formatted = appts.map((a) => ({
+    const formatted : PatientAppointment[] = appts.map((a:any) => ({
       id: a.id,
       status: a.status,
       doctorName: a.doctor.user.name,

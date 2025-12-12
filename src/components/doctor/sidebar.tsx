@@ -48,7 +48,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     },
     {
       label: 'Patients',
-      href: '/doctor/patients',
+      href: '/doctor/findPatients',
       icon: Users,
       submenu: [
         { label: 'My Patients', href: '/doctor/patients' },
@@ -58,7 +58,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     },
     {
       label: 'Leave Management',
-      href: '/doctor/leave',
+      href: '/doctor/leave/apply',
       icon: ClipboardList,
       submenu: [
         { label: 'Apply Leave', href: '/doctor/leave/apply' },
@@ -72,7 +72,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     },
     {
       label: 'Doctor Profile',
-      href: '/doctor/profile',
+      href: '/doctor/info',
       icon: UserCircle,
     },
     {

@@ -59,6 +59,7 @@ export default function DoctorAppointmentsPage() {
 
     if (res.ok && Array.isArray(data)) {
       setAppointments(data);
+      
     } else {
       console.error("Failed to fetch appointments", data?.error || data);
       setAppointments([]);

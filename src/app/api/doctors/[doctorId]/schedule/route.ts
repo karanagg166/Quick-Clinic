@@ -35,6 +35,12 @@ export async function POST(
       },
     });
 
+    const notification=await prisma.notification.create({
+      data:{
+        userId:doctorId,
+        message:`Schedule has been set/updated successfully. `
+      }
+    });
     return NextResponse.json(schedule, { status: 201 });
   } catch (err: any) {
     console.error("POST Schedule Error:", err);

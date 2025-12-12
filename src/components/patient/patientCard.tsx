@@ -1,6 +1,7 @@
 "use client";
 
 import type { Patient } from "@/types/patient";
+import Link from "next/link";
 
 export default function PatientCard({ patient }: { patient: Patient }) {
   return (
@@ -17,6 +18,13 @@ export default function PatientCard({ patient }: { patient: Patient }) {
       <p><strong>Medical History:</strong> {patient.medicalHistory || "None"}</p>
       <p><strong>Allergies:</strong> {patient.allergies || "None"}</p>
       <p><strong>Medications:</strong> {patient.currentMedications || "None"}</p>
+
+      <Link
+        href={`/doctor/patient/${patient.id}`}
+        className="text-blue-600 hover:underline"
+      >
+        View Profile
+      </Link>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-"use client";
 
 import type { DoctorAppointment } from "@/types/doctor";
 

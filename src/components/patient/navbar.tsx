@@ -66,10 +66,10 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                         Find Doctors
                     </Link>
                     <Link 
-                        href="/patient/prescriptions" 
+                        href="/patient/info" 
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        Prescriptions
+                        Medical Records
                     </Link>
                     <Link 
                         href="/patient/chat" 
@@ -83,7 +83,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
             {/* Right Section - Actions */}
             <div className="flex items-center gap-4">
                 {/* Notifications */}
-                <Link href="/notifications">
+                <Link href="/user/notifications">
                     <button 
                         className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >

@@ -5,7 +5,7 @@ import { useUserStore } from "@/store/userStore";
 
 export default function DoctorInfo() {
   const { user, doctorId } = useUserStore();
-  console.log(user, doctorId);
+  
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
 
@@ -36,12 +36,16 @@ export default function DoctorInfo() {
           console.log("Doctor not created yet.");
           return;
         }
-
+        
         setLoading(true);
 
-        const response = await fetch(`/api/doctors/${doctorId}`);
-        const data = await response.json();
+        const response = await fetch(`/api/doctors/${doctorId}` , {
+          method: "GET" ,
+          credentials: "include"}
 
+        );
+        const data = await response.json();
+        
         if (response.ok) {
           setExistingDoctor(true);
           setFees(String(data.doctor.fees));
@@ -49,6 +53,7 @@ export default function DoctorInfo() {
           setSpecialty(data.doctor.specialty);
           setQualification(data.doctor.qualifications || []);
         }
+        
       } catch (err:any) {
         console.error("Doctor not created yet.");
       } finally {
@@ -63,11 +68,19 @@ export default function DoctorInfo() {
   useEffect(() => {
     const fetchEnums = async () => {
       try {
-        const sp = await fetch("/api/doctors/specializations");
+        const sp = await fetch("/api/doctors/specializations",
+          { method: "GET" ,
+          credentials: "include"
+          }
+        );
         const spData = await sp.json();
         if (sp.ok) setSpecialties(spData.specialties);
 
-        const q = await fetch("/api/doctors/qualifications");
+        const q = await fetch("/api/doctors/qualifications",
+          { method: "GET" ,
+          credentials: "include"
+          }
+        );
         const qData = await q.json();
         if (q.ok) setQualifications(qData.qualifications);
       } catch (err:any) {
@@ -129,14 +142,36 @@ export default function DoctorInfo() {
 
       {loading && <p className="text-blue-600">Loading...</p>}
 
-      {/* FEES */}
-      <label className="block font-semibold mt-3">Fees:</label>
-      <input
-        type="number"
+
+      <textarea
         value={fees}
         onChange={(e) => setFees(e.target.value)}
-        className="w-full border p-2 rounded"
+        placeholder="Fees"
+        className="w-full border p-2 mb-3 rounded"
       />
+
+      <textarea
+        value={experience}
+        onChange={(e) => setExperience(e.target.value)}
+        placeholder="Experience"
+        className="w-full border p-2 mb-3 rounded"
+      />
+
+      <textarea
+        value={fees}
+        onChange={(e) => setFees(e.target.value)}
+        placeholder="Fees"
+        className="w-full border p-2 mb-3 rounded"
+      />
+
+      <textarea
+        value={fees}
+        onChange={(e) => setFees(e.target.value)}
+        placeholder="Fees"
+        className="w-full border p-2 mb-3 rounded"
+      />
+
+      
 
       {/* EXPERIENCE */}
       <label className="block font-semibold mt-3">Experience (years):</label>

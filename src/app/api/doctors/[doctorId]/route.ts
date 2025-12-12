@@ -52,11 +52,11 @@ export const GET = async (
         state: d.user?.state ?? undefined,
 
     }
-
+    
     if (!d || !doctor) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
-console.log("Fetched doctor:", doctor);
+    
     return NextResponse.json(doctor, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);
