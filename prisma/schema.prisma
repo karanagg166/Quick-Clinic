@@ -112,6 +112,7 @@ enum PaymentMethod{
 // USER, ADMIN, DOCTOR, PATIENT MODELS
 // ======================================================
 
+
 model User {
   id       String @id @default(cuid())
   email    String @unique
@@ -135,6 +136,7 @@ model User {
   accessLogs   AccessLog[]
   auditLogs    AuditLog[]
   chatMessages ChatMessages[]
+  payments Payment[]
   notifications Notification[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -256,26 +258,25 @@ model Slot {
   @@index([startTime, status])
   @@index([heldByPatientId])
 }
-
 model Appointment {
-  id                  String            @id @default(cuid())
+  id                  String             @id @default(cuid())
   doctorId            String
   patientId           String
-  slotId              String          @unique   // <— FK lives here
-  status              AppointmentStatus @default(PENDING)
-  paymentMethod       PaymentMethod     @default(OFFLINE)
+  slotId              String             @unique   // <— FK lives here
+  status              AppointmentStatus  @default(PENDING)
+  paymentMethod       PaymentMethod      @default(OFFLINE)
+  transactionId       String?        
   notes               String?
-  bookedAt            DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
-  slot                Slot             @relation(fields: [slotId], references: [id])
-  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  isAppointmentOffline    Boolean @default(true)
+  bookedAt            DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  slot                Slot               @relation(fields: [slotId], references: [id])
+  doctor              Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  isAppointmentOffline Boolean            @default(true)
 
   @@index([doctorId, patientId])
   @@index([status])
 }
-
 
 // ======================================================
 // DOCTOR–PATIENT RELATION MODEL / CHAT MODEL
@@ -314,6 +315,18 @@ model ChatMessages {
 
   @@index([doctorPatientRelationId, createdAt])
   @@index([senderId])
+}
+model Payment{
+  id String @id @default(cuid())
+  amount Int 
+  currency String @default("INR")
+  userId String
+  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
+  
+  status String
+  razorpayOrderId String @unique
+  razorpayPaymentId String ?
+  createdAt DateTime @default(now())
 }
 
 // ======================================================
