@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
-import ScheduleDaySection from "../components/ScheduleDaySection";
+import ScheduleDaySection from "@/components/doctor/schedule/ScheduleDaySection";
 
 interface Slot {
   slotNo: number;
