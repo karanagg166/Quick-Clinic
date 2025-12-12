@@ -26,6 +26,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const [isConnected, setIsConnected] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -128,6 +129,15 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = '0px';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = Math.min(scrollHeight, 120) + 'px';
+    }
+  }, [inputValue]);
+
   const handleTyping = () => {
     if (socketRef.current && socketRef.current.connected) {
       socketRef.current.emit('user_typing');
@@ -167,64 +177,72 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     }
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      // create a fake form event to reuse send handler
+      handleSendMessage({ preventDefault: () => {} } as unknown as React.FormEvent);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-10">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-800">Chat</h2>
-            <p className="text-sm text-gray-500">Conversation with healthcare provider</p>
+            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Chat</h2>
+            <p className="text-sm text-gray-500 mt-0.5">Secure conversation with your provider</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'}`} />
-            <span className="text-sm font-medium text-gray-600">
-              {isConnected ? 'Connected' : 'Connecting...'}
+          <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
+            <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+            <span className="text-xs font-medium text-gray-700">
+              {isConnected ? 'Connected' : 'Connecting'}
             </span>
           </div>
         </div>
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Loader className="w-10 h-10 text-blue-500 animate-spin mx-auto mb-2" />
-              <p className="text-gray-600">Loading messages...</p>
+              <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600 font-medium text-lg">Loading messages...</p>
               <p className="text-xs text-gray-400 mt-2">Make sure Socket.IO server is running</p>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">💬</span>
+              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-4xl">💬</span>
               </div>
-              <p className="text-gray-600 font-medium">No messages yet</p>
-              <p className="text-sm text-gray-500">Start the conversation by sending a message</p>
+              <p className="text-gray-700 font-semibold text-lg">No messages yet</p>
+              <p className="text-sm text-gray-500 mt-2">Start the conversation by sending a message</p>
             </div>
           </div>
         ) : (
-          messages.map((message) => (
+          messages.map((message, idx) => (
             <div
               key={message.id}
-              className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'}`}
+              className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'} animate-fadeIn`}
             >
               <div
-                className={`max-w-xs px-4 py-3 rounded-lg ${
+                className={`max-w-[72%] px-4 py-2.5 rounded-2xl shadow-sm ${
                   message.senderId === userId
                     ? 'bg-blue-500 text-white rounded-br-none'
                     : 'bg-gray-200 text-gray-800 rounded-bl-none'
                 }`}
               >
-                <p className={`text-sm font-semibold mb-1 ${
+                <p className={`text-[11px] font-semibold mb-1 ${
                   message.senderId === userId ? 'text-blue-100' : 'text-gray-600'
                 }`}>
                   {message.senderName}
                 </p>
-                <p className="text-sm break-words">{message.text}</p>
-                <p className={`text-xs mt-1 ${
+                <p className="text-[13px] wrap-break-word leading-relaxed">{message.text}</p>
+                <p className={`text-[11px] mt-1.5 ${
                   message.senderId === userId ? 'text-blue-100' : 'text-gray-500'
                 }`}>
                   {new Date(message.createdAt).toLocaleTimeString('en-US', {
@@ -236,16 +254,15 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             </div>
           ))
         )}
-
         {/* Typing Indicator */}
         {typingUser && typingUser !== userId && (
           <div className="flex justify-start">
-            <div className="bg-gray-200 text-gray-800 px-4 py-3 rounded-lg rounded-bl-none">
-              <p className="text-sm font-semibold mb-1 text-gray-600">{typingUser}</p>
+            <div className="bg-gray-200 text-gray-800 px-5 py-3 rounded-2xl rounded-bl-none shadow-sm">
+              <p className="text-xs font-semibold mb-2 text-gray-600">{typingUser}</p>
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" />
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
+                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
               </div>
             </div>
           </div>
@@ -256,40 +273,40 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
       {/* Error Message */}
       {error && (
-        <div className="px-6 py-3 bg-red-50 border-b border-red-200 flex items-center gap-2">
-          <AlertCircle className="w-4 h-4 text-red-600" />
-          <p className="text-sm text-red-600">{error}</p>
+        <div className="px-6 py-3 bg-red-50 border-b border-red-200 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+          <p className="text-sm text-red-700">{error}</p>
         </div>
       )}
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 px-6 py-4">
+      <div className="bg-white border-t border-gray-200 px-6 py-3 shadow-lg sticky bottom-0">
         <form onSubmit={handleSendMessage} className="flex gap-3">
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
             value={inputValue}
             onChange={(e) => {
               setInputValue(e.target.value);
               handleTyping();
             }}
-            placeholder="Type your message..."
+            onKeyDown={handleKeyDown}
+            placeholder="Type a message (Shift+Enter for newline)"
             disabled={sending || !isConnected}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800"
+            rows={1}
+            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 placeholder-gray-400 resize-none"
           />
           <button
             type="submit"
             disabled={sending || !inputValue.trim() || !isConnected}
-            className="px-4 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
           >
             {sending ? (
               <>
                 <Loader className="w-4 h-4 animate-spin" />
-                Sending...
               </>
             ) : (
               <>
                 <Send className="w-4 h-4" />
-                Send
               </>
             )}
           </button>
