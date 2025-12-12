@@ -115,3 +115,5 @@ END OF FILE
 
 >>> We can add a feature to give patient review of doctors.
 >>> Apply pagination in Chat Bar.
+>>> OTP feature.
+>>> Add prescription feature.
