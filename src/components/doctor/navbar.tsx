@@ -65,14 +65,14 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
           </Link>
 
           <Link
-            href="/doctorDashboard/appointments"
+            href="/doctor/appointments"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <CalendarDays className="w-4 h-4" /> Appointments
           </Link>
 
           <Link
-            href="/doctorDashboard/patients"
+            href="/doctor/findPatients"
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <Users className="w-4 h-4" /> Patients

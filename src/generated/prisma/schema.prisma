@@ -260,18 +260,19 @@ model Slot {
 }
 
 model Appointment {
-  id            String            @id @default(cuid())
-  doctorId      String
-  patientId     String
-  slotId        String            @unique // <— FK lives here
-  status        AppointmentStatus @default(PENDING)
-  paymentMethod PaymentMethod     @default(OFFLINE)
-  notes         String?
-  bookedAt      DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-  slot          Slot              @relation(fields: [slotId], references: [id])
-  doctor        Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient       Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  id                   String            @id @default(cuid())
+  doctorId             String
+  patientId            String
+  slotId               String            @unique // <— FK lives here
+  status               AppointmentStatus @default(PENDING)
+  paymentMethod        PaymentMethod     @default(OFFLINE)
+  notes                String?
+  bookedAt             DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  slot                 Slot              @relation(fields: [slotId], references: [id])
+  doctor               Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient              Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  isAppointmentOffline Boolean           @default(true)
 
   @@index([doctorId, patientId])
   @@index([status])

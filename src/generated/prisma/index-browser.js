@@ -214,7 +214,8 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   paymentMethod: 'paymentMethod',
   notes: 'notes',
   bookedAt: 'bookedAt',
-  updatedAt: 'updatedAt'
+  updatedAt: 'updatedAt',
+  isAppointmentOffline: 'isAppointmentOffline'
 };
 
 exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
