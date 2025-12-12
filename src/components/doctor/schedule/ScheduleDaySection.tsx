@@ -1,6 +1,6 @@
 "use client";
 
-import SlotItem from "./Slotitem";
+import SlotItem from "./SlotItem";
 
 interface Slot {
   slotNo: number;

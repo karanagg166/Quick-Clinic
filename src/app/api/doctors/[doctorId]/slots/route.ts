@@ -136,3 +136,150 @@ export async function GET(
     );
   }
 }
+
+// =============================================
+// PATCH → Update slot status
+// =============================================
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  try {
+    const { doctorId } = await params;
+    const { slotId, status } = await req.json();
+
+    if (!doctorId || !slotId || !status) {
+      return NextResponse.json(
+        { error: "doctorId, slotId and status are required" },
+        { status: 400 }
+      );
+    }
+
+    const allowedStatuses = ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE", "CANCELLED"];
+    if (!allowedStatuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    const slot = await prisma.slot.findUnique({ where: { id: slotId } });
+    if (!slot || slot.doctorId !== doctorId) {
+      return NextResponse.json({ error: "Slot not found" }, { status: 404 });
+    }
+
+    const updated = await prisma.slot.update({
+      where: { id: slotId },
+      data: { status },
+    });
+
+    return NextResponse.json({ slot: updated }, { status: 200 });
+  } catch (err: any) {
+    console.error("PATCH Slot Error:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================================
+// DELETE → Delete a slot (only if AVAILABLE)
+// =============================================
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  try {
+    const { doctorId } = await params;
+    const { slotId } = await req.json();
+
+    if (!doctorId || !slotId) {
+      return NextResponse.json(
+        { error: "doctorId and slotId are required" },
+        { status: 400 }
+      );
+    }
+
+    const slot = await prisma.slot.findUnique({ where: { id: slotId } });
+    if (!slot || slot.doctorId !== doctorId) {
+      return NextResponse.json({ error: "Slot not found" }, { status: 404 });
+    }
+
+    if (slot.status !== "AVAILABLE") {
+      return NextResponse.json(
+        { error: "Only AVAILABLE slots can be deleted" },
+        { status: 400 }
+      );
+    }
+
+    await prisma.slot.delete({ where: { id: slotId } });
+
+    return NextResponse.json({ ok: true }, { status: 200 });
+  } catch (err: any) {
+    console.error("DELETE Slot Error:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// =============================================
+// POST → Create a new ad-hoc slot
+// =============================================
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  try {
+    const { doctorId } = await params;
+    const { date, startTime, endTime } = await req.json();
+
+    if (!doctorId || !date || !startTime || !endTime) {
+      return NextResponse.json(
+        { error: "doctorId, date, startTime and endTime are required" },
+        { status: 400 }
+      );
+    }
+
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
+      return NextResponse.json({ error: "Invalid time range" }, { status: 400 });
+    }
+
+    const dayDate = new Date(date);
+    dayDate.setHours(0, 0, 0, 0);
+
+    // Overlap check with existing slots for that doctor/date
+    const existing = await prisma.slot.findMany({
+      where: { doctorId, date: dayDate },
+      orderBy: { startTime: "asc" },
+    });
+
+    const hasOverlap = existing.some((s) => start < s.endTime && end > s.startTime);
+    if (hasOverlap) {
+      return NextResponse.json(
+        { error: "New slot overlaps with an existing slot" },
+        { status: 400 }
+      );
+    }
+
+    const created = await prisma.slot.create({
+      data: {
+        doctorId,
+        date: dayDate,
+        startTime: start,
+        endTime: end,
+        status: "AVAILABLE",
+      },
+    });
+
+    return NextResponse.json({ slot: created }, { status: 201 });
+  } catch (err: any) {
+    console.error("POST Slot Error:", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
+  }
+}
