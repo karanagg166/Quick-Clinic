@@ -188,7 +188,7 @@ export default function DoctorAppointmentsPage() {
       {/* Appointments */}
       {loading && <p>Loading...</p>}
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="flex flex-col gap-4">
         {appointments.map((a) => (
           <AppointmentCard appointment={a} key={a.id} />
         ))}
