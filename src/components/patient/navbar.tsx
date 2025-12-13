@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, User, LogOut, Menu, LayoutDashboard, Calendar, Stethoscope, FileText, MessageCircle } from 'lucide-react';
+import { Bell, User, LogOut, Menu } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 
 interface PatientNavbarProps {
@@ -25,12 +25,10 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
     };
 
     return (
-        <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
-
-            {/* LEFT SECTION — Logo + Sidebar Toggle + Nav Links */}
+        <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+            {/* Left Section - Menu Toggle & Logo & Brand */}
             <div className="flex items-center gap-8">
-                
-                {/* Menu Button */}
+                {/* Menu Toggle Button */}
                 <button
                     onClick={() => setSidebarOpen(!isSidebarOpen)}
                     className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -38,67 +36,62 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                 >
                     <Menu className="w-5 h-5 text-gray-600" />
                 </button>
-
-                {/* Logo */}
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
                         <span className="text-white font-bold text-lg">Q</span>
                     </div>
-                    <h1 className="text-xl font-bold text-gray-900">QuickClinic</h1>
+                    <h1 className="text-xl font-bold text-gray-900">
+                        QuickClinic
+                    </h1>
                 </div>
 
-                {/* Desktop Navigation */}
+                {/* Navigation Links - Desktop */}
                 <div className="hidden md:flex items-center gap-6">
-
-                    <Link
-                        href="/patient"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    <Link 
+                        href="/patient" 
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        <LayoutDashboard className="w-4 h-4" /> Dashboard
+                        Dashboard
                     </Link>
-
-                    <Link
-                        href="/patient/appointments"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    <Link 
+                        href="/patient/appointments" 
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        <Calendar className="w-4 h-4" /> Appointments
+                        Appointments
                     </Link>
-
-                    <Link
-                        href="/patient/findDoctors"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    <Link 
+                        href="/patient/findDoctors" 
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        <Stethoscope className="w-4 h-4" /> Find Doctors
+                        Find Doctors
                     </Link>
-
-                    <Link
-                        href="/patient/prescriptions"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    <Link 
+                        href="/patient/info" 
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        <FileText className="w-4 h-4" /> Prescriptions
+                        Medical Records
                     </Link>
-
-                    <Link
-                        href="/patient/chat"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                    <Link 
+                        href="/patient/chat" 
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
-                        <MessageCircle className="w-4 h-4" /> Chat
+                        Chat
                     </Link>
-
                 </div>
             </div>
 
-            {/* RIGHT SECTION — Notifications + Profile + Logout */}
+            {/* Right Section - Actions */}
             <div className="flex items-center gap-4">
-
-                <Link href="/notifications">
-                    <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
+                {/* Notifications */}
+                <Link href="/user/notifications">
+                    <button 
+                        className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
                         <Bell className="w-5 h-5 text-gray-600" />
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                     </button>
                 </Link>
-
-                {/* Profile */}
+                {/* Profile Section */}
                 <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
                     <button className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
                         <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
@@ -111,7 +104,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                 </div>
 
                 {/* Logout */}
-                <button
+                <button 
                     onClick={handleLogout}
                     className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
                     title="Logout"
@@ -121,6 +114,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
 
             </div>
 
+            
         </nav>
     );
 }

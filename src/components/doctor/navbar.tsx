@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
+import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 
 interface DoctorNavbarProps {
@@ -25,7 +25,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
   };
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
 
       {/* LEFT SECTION — Logo + Sidebar Toggle + Nav Links */}
       <div className="flex items-center gap-8">
@@ -85,20 +85,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             <Wallet className="w-4 h-4" /> Earnings
           </Link>
 
-          <Link
-            href="/doctor/chat"
-            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
-          >
-            <MessageCircle className="w-4 h-4" /> Chat
-          </Link>
-
         </div>
       </div>
 
       {/* RIGHT SECTION — Notifications + Profile + Logout */}
       <div className="flex items-center gap-4">
 
-        <Link href="/notifications">
+        <Link href="/user/notifications">
           <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
             <Bell className="w-5 h-5 text-gray-600" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
@@ -106,16 +99,22 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </Link>
 
         {/* Profile */}
+        
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-          <button className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
+          <Link
+            href="/doctor/info"
+            className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
+          >
             <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
               <User className="w-4 h-4 text-blue-600" />
             </div>
             <span className="text-sm font-medium text-gray-700 hidden md:block">
               Dr. John
             </span>
-          </button>
+          </Link>
         </div>
+
+        
 
         {/* Logout */}
         <button

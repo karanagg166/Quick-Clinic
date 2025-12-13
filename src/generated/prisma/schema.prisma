@@ -136,6 +136,7 @@ model User {
   accessLogs    AccessLog[]
   auditLogs     AuditLog[]
   chatMessages  ChatMessages[]
+  payments      Payment[]
   notifications Notification[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
@@ -266,6 +267,7 @@ model Appointment {
   slotId               String            @unique // <— FK lives here
   status               AppointmentStatus @default(PENDING)
   paymentMethod        PaymentMethod     @default(OFFLINE)
+  transactionId        String?
   notes                String?
   bookedAt             DateTime          @default(now())
   updatedAt            DateTime          @updatedAt
@@ -315,6 +317,19 @@ model ChatMessages {
 
   @@index([doctorPatientRelationId, createdAt])
   @@index([senderId])
+}
+
+model Payment {
+  id       String @id @default(cuid())
+  amount   Int
+  currency String @default("INR")
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status            String
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?
+  createdAt         DateTime @default(now())
 }
 
 // ======================================================
