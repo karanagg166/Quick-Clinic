@@ -1,8 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextResponse,NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { PatientAppointment } from "@/types/patient";
 
-export async function GET(req: Request, { params }: { params: Promise<{ patientId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
     const { patientId } = await params;
 
@@ -87,30 +87,50 @@ export async function GET(req: Request, { params }: { params: Promise<{ patientI
     return NextResponse.json({ error: "Failed to fetch appointments" }, { status: 500 });
   }
 }
-export async function POST(req: Request, { params }: { params: Promise<{ patientId: string }> }){
-    try {  
-     const {doctorId,slotId}=await req.json();
-       const {patientId}=await params;
-     // Create appointment
-     const appointment = await prisma.appointment.create({
-         data: {
-             doctorId,
-            patientId,
-             slotId,
-             status: 'PENDING',
-         },
-     });
+export async function POST(
+  req: Request, 
+  { params }: { params: Promise<{ patientId: string }> }
+) {
+  try {  
+    // 1. Destructure the new optional fields
+    // paymentId comes from the frontend when paymentMethod is 'ONLINE'
+    const { doctorId, slotId, paymentMethod, transactionId } = await req.json();
+    const { patientId } = await params;
 
-    const slotUpdate = await prisma.slot.update({
-        where: { id: slotId },
-        data: { status: 'BOOKED' },
-     });
-    return NextResponse.json({appointment,slotUpdate},{status:201});
-
-}
-    catch (err: any) {
-        return NextResponse.json({message:"internal server error"},{status:500});
+    // 2. Validation
+    if (!doctorId || !slotId) {
+      return NextResponse.json(
+        { message: "Doctor ID and Slot ID are required" }, 
+        { status: 400 }
+      );
     }
- }
-// -------------------------------------------------------------
 
+    // 3. Create appointment with payment details
+    const appointment = await prisma.appointment.create({
+      data: {
+        doctorId,
+        patientId,
+        slotId,
+        status: 'PENDING', 
+        // Save the payment info
+        paymentMethod: paymentMethod || 'OFFLINE', // Default to OFFLINE if not sent
+        transactionId           // Optional: Store the transaction ID
+      },
+    });
+
+    // 4. Update the slot status
+    const slotUpdate = await prisma.slot.update({
+      where: { id: slotId },
+      data: { status: 'BOOKED' },
+    });
+
+    return NextResponse.json({ appointment, slotUpdate }, { status: 201 });
+
+  } catch (err: any) {
+    console.error("Booking Error:", err);
+    return NextResponse.json(
+        { message: "Internal server error", error: err.message }, 
+        { status: 500 }
+    );
+  }
+}
