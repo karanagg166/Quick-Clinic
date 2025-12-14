@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { processOnlinePayment } from '@/lib/processOnlinePayment';
+import { useThrottledCallback } from '@/lib/useThrottledCallback';
 import type { Slot } from '@/types/common';
 
 interface BookTimeSlotProps {
@@ -25,7 +26,9 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     const formattedDate = today.toISOString().split('T')[0];
     setDate(formattedDate);
   }, []);
-
+  
+    // Function to check slots
+  
   useEffect(() => {
     const fetchSlots = async () => {
       if (!date) return;
@@ -131,6 +134,22 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
    *
    * NO redirects, NO new pages — processOnlinePayment is expected to call your server endpoints.
    */
+  // --- CORRECTION & THROTTLING IMPLEMENTATION ---
+
+// 1. Throttled function for "Pay at Clinic" button
+// It wraps the complex handleBookSlot logic, fixing the dependency issue.
+const throttledBookOffline = useThrottledCallback((slotId: string) => {
+    // We call the original function here, passing the required arguments.
+    // The base function (handleBookSlot) is stable because it's wrapped in useCallback (as shown in the prior response).
+    return handleBookSlot(slotId, 'OFFLINE');
+}, 3000); // Set delay to 3000ms (3 seconds)
+
+// 2. Throttled function for "Pay Online" button
+// It wraps the handleOnlinePayment logic.
+const throttledPayOnline = useThrottledCallback((slotId: string) => {
+    // We call the original function here.
+    return handleOnlinePayment(slotId);
+}, 3000); // Set delay to 3000ms (3 seconds)
   const handleOnlinePayment = async (slotId: string) => {
     if (!patientId) {
       alert('Please login to pay online');
@@ -264,14 +283,14 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                 ) : (
                   <div className="flex flex-wrap gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
                     <button
-                      onClick={() => selectedSlot && handleOnlinePayment(selectedSlot)}
+                      onClick={() => selectedSlot && throttledPayOnline(selectedSlot)}
                       className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 shadow-md transition-all"
                     >
                       Pay Online
                     </button>
 
                     <button
-                      onClick={() => selectedSlot && handleBookSlot(selectedSlot, 'OFFLINE')}
+                      onClick={() => selectedSlot && throttledBookOffline(selectedSlot)}
                       disabled={booking}
                       className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md transition-all"
                     >
