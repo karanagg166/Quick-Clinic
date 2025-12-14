@@ -1,4 +1,5 @@
 // 1. Helper function to load the script dynamically
+
 const loadRazorpayScript = (src: string) => {
   return new Promise((resolve) => {
     if (document.querySelector(`script[src="${src}"]`)) {
