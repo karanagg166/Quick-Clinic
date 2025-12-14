@@ -4,10 +4,10 @@ import type { AppointmentDetail } from '@/types/common';
 
 export async function GET(
 	req: Request,
-	{ params }: { params: { patientId: string; appointmentId: string } }
+	{ params }: { params: Promise<{ patientId: string; appointmentId: string }> }
 ) {
 	try {
-		const { patientId, appointmentId } = params;
+		const { patientId, appointmentId } =await params;
 
 		// Fetch single appointment with all relations
 		const appointment = await prisma.appointment.findFirst({
