@@ -25,8 +25,15 @@ export default function DoctorDetails() {
           throw new Error("Failed to fetch doctor details");
         }
         const data = await res.json();
-        console.log("Doctor data:", data);
-        setDoctor(data);
+        console.log("Full response:", data);
+        console.log("data.doctor:", data.doctor);
+        
+        if (!data.doctor) {
+          throw new Error("Doctor data is missing from response");
+        }
+        
+        setDoctor(data.doctor);
+
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -63,7 +70,10 @@ export default function DoctorDetails() {
       }
 
       if (!doctor?.userId) {
+        console.log(doctor);
+        console.log(doctor?.age);
         alert("Doctor details are incomplete. Please try again.");
+
         return;
       }
 
