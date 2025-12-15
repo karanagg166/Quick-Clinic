@@ -265,9 +265,10 @@ process.on('SIGTERM', async () => {
 });
 
 // Start server
-const PORT = process.env.SOCKET_PORT || 4000;
-httpServer.listen(PORT, () => {
-  console.log(`🚀 Socket.IO server running on port ${PORT}`);
+const PORT = process.env.PORT || process.env.SOCKET_PORT || 4000;
+const HOST = process.env.HOST || '0.0.0.0';
+httpServer.listen(PORT, HOST, () => {
+  console.log(`🚀 Socket.IO server running on ${HOST}:${PORT}`);
   console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
   console.log(`🌐 Frontend allowed from: ${process.env.FRONTEND_URL || 'http://localhost:3000'}`);
 });
