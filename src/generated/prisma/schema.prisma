@@ -131,11 +131,12 @@ model User {
 
   // Optional URL to a profile picture (e.g., Cloudinary/S3/local)
   profileImageUrl String?
+  emailVerified   Boolean @default(false)
 
-  admin   Admin?
-  doctor  Doctor?
-  patient Patient?
-
+  admin         Admin?
+  doctor        Doctor?
+  patient       Patient?
+  otp           Otp[]
   accessLogs    AccessLog[]
   auditLogs     AuditLog[]
   chatMessages  ChatMessages[]
@@ -333,6 +334,16 @@ model Payment {
   razorpayOrderId   String   @unique
   razorpayPaymentId String?
   createdAt         DateTime @default(now())
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 }
 
 // ======================================================

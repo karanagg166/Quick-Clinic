@@ -12,6 +12,7 @@ interface User {
   age?: number;
   role: UserRole;
   profileImageUrl?: string;
+  isVerified: boolean;
 }
 
 interface UserState {

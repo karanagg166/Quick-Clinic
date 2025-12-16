@@ -134,6 +134,7 @@ exports.Prisma.UserScalarFieldEnum = {
   state: 'state',
   pinCode: 'pinCode',
   profileImageUrl: 'profileImageUrl',
+  emailVerified: 'emailVerified',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -245,6 +246,15 @@ exports.Prisma.PaymentScalarFieldEnum = {
   status: 'status',
   razorpayOrderId: 'razorpayOrderId',
   razorpayPaymentId: 'razorpayPaymentId',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.OtpScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  userId: 'userId',
+  code: 'code',
+  expiresAt: 'expiresAt',
   createdAt: 'createdAt'
 };
 
@@ -400,6 +410,7 @@ exports.Prisma.ModelName = {
   DoctorPatientRelation: 'DoctorPatientRelation',
   ChatMessages: 'ChatMessages',
   Payment: 'Payment',
+  Otp: 'Otp',
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog'
 };
