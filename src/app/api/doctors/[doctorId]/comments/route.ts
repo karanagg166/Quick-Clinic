@@ -21,7 +21,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
 
     const body = await req.json();
     const text = (body?.text || "").trim();
-    const parentId = body?.parentId ? String(body.parentId) : null;
 
     if (!text) {
       return NextResponse.json({ message: "Comment text is required" }, { status: 400 });
@@ -33,20 +32,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
       return NextResponse.json({ message: "Doctor not found" }, { status: 404 });
     }
 
-    // Optionally ensure parent exists and matches doctor
-    if (parentId) {
-      const parent = await prisma.comment.findUnique({ where: { id: parentId } });
-      if (!parent || parent.doctorId !== doctorId) {
-        return NextResponse.json({ message: "Invalid parent comment" }, { status: 400 });
-      }
-    }
-
     const created = await prisma.comment.create({
       data: {
         doctorId,
         userId,
         text,
-        parentId,
       },
       include: {
         user: { select: { id: true, name: true, profileImageUrl: true } },
