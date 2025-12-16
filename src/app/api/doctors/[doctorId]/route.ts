@@ -14,7 +14,7 @@ export const GET = async (
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const d = await prisma.doctor.findUnique({
+    const doctorDataPromise = prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
         id: true,
@@ -27,38 +27,73 @@ export const GET = async (
           select: {
             id: true,
             name: true,
-            gender:true,
-            age:true,
-            email:true,
+            gender: true,
+            age: true,
+            email: true,
             city: true,
             state: true,
+            profileImageUrl: true,
           },
-        },  
-      }
+        },
+      },
     });
+
+    const ratingAggPromise = prisma.rating.aggregate({
+      where: { doctorId },
+      _avg: { rating: true },
+      _count: { rating: true },
+    });
+
+    const commentsPromise = prisma.comment.findMany({
+      where: { doctorId },
+      orderBy: { createdAt: "desc" },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            profileImageUrl: true,
+          },
+        },
+      },
+    });
+
+    const [d, ratingAgg, comments] = await Promise.all([
+      doctorDataPromise,
+      ratingAggPromise,
+      commentsPromise,
+    ]);
 
     if (!d) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
     const doctor: Doctor = {
-       id: String(d.id),
+      id: String(d.id),
       userId: d.userId,
-        name: d.user?.name ?? "",
-        gender: d.user?.gender ?? "",
-        age: d.user?.age ?? 0,
-        specialty: d.specialty ?? "",
-        experience: d.experience ?? 0,
-        fees: d.fees ?? 0,
-        email:d.user?.email ?? "",
-        qualifications: Array.isArray(d.qualifications) ? d.qualifications : (d.qualifications ? [d.qualifications] : []),
-       
-        city: d.user?.city ?? undefined,
-        state: d.user?.state ?? undefined,
+      name: d.user?.name ?? "",
+      gender: d.user?.gender ?? "",
+      age: d.user?.age ?? 0,
+      specialty: d.specialty ?? "",
+      experience: d.experience ?? 0,
+      fees: d.fees ?? 0,
+      email: d.user?.email ?? "",
+      qualifications: Array.isArray(d.qualifications)
+        ? d.qualifications
+        : d.qualifications
+          ? [d.qualifications]
+          : [],
+      city: d.user?.city ?? undefined,
+      state: d.user?.state ?? undefined,
+      profileImageUrl: d.user?.profileImageUrl ?? undefined,
+    };
 
-    }
+    const ratingSummary = {
+      average: ratingAgg._avg.rating ? Number(ratingAgg._avg.rating.toFixed(1)) : 0,
+      count: ratingAgg._count.rating ?? 0,
+    };
     
-    return NextResponse.json({doctor}, { status: 200 });
+    return NextResponse.json({ doctor, rating: ratingSummary, comments }, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);
     return NextResponse.json(
