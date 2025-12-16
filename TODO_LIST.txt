@@ -116,3 +116,4 @@ END OF FILE
 >>> Apply pagination in Chat Bar.
 >>> OTP feature. 
 >>> Add prescription feature.
+>>> Patinent can talk with other patient through doctors review section.
