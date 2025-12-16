@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bell, User, LogOut, Menu } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
+import Avatar from '@/components/general/Avatar';
 
 interface PatientNavbarProps {
   isSidebarOpen: boolean;
@@ -92,15 +93,17 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                     </button>
                 </Link>
                 {/* Profile Section */}
-                <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
-                    <button className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <User className="w-4 h-4 text-blue-600" />
-                        </div>
+                <div className="flex items-center gap-3 pl-3 border-gray-200">
+                    <Link href="/user/profile" className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
+                        <Avatar 
+                          src={useUserStore.getState().user?.profileImageUrl} 
+                          name={useUserStore.getState().user?.name || "User"}
+                          size="sm"
+                        />
                         <span className="text-sm font-medium text-gray-700 hidden md:block">
-                            John Doe
+                            {useUserStore.getState().user?.name || "John Doe"}
                         </span>
-                    </button>
+                    </Link>
                 </div>
 
                 {/* Logout */}

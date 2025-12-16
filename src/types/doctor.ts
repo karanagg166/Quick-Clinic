@@ -12,6 +12,7 @@ export interface Doctor {
   qualifications?: string[];
   city?:string;
   state?:string;
+  profileImageUrl?: string;
   
 }
 export interface DoctorAppointment{

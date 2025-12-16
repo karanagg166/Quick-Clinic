@@ -133,6 +133,7 @@ exports.Prisma.UserScalarFieldEnum = {
   city: 'city',
   state: 'state',
   pinCode: 'pinCode',
+  profileImageUrl: 'profileImageUrl',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
