@@ -7,7 +7,6 @@
 1. AUTHENTICATION & SECURITY
 ========================================
 [ ] Add OTP authentication (Phone or Email)
-[ ] Add Google authentication (OAuth)
 [ ] Add Confirm Password option in signup
 [ ] Add Password visibility toggle
 [ ] Add Forgot Password page + backend reset flow
@@ -115,5 +114,5 @@ END OF FILE
 
 >>> We can add a feature to give patient review of doctors.
 >>> Apply pagination in Chat Bar.
->>> OTP feature.
+>>> OTP feature. 
 >>> Add prescription feature.
