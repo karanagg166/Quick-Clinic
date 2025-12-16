@@ -115,7 +115,7 @@ export default function DoctorDetails() {
         <h2 className="text-2xl font-bold mb-6">Doctor Details</h2>
         
         {/* Doctor Information Section with Avatar */}
-        <div className="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+        <div className="mb-6 bg-linear-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
           <div className="flex gap-6 items-start">
             <Avatar 
               src={doctor.profileImageUrl} 
