@@ -1,6 +1,6 @@
 
 'use client'
-import { useEffect, useState, Dispatch, SetStateAction } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import BookTimeSlot from "@/components/patient/bookTimeSlot";
 import { useUserStore } from "@/store/userStore";
@@ -18,10 +18,8 @@ export default function DoctorDetails() {
   const [newRating, setNewRating] = useState(5);
   const [ratedOnce, setRatedOnce] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [replyText, setReplyText] = useState<Record<string, string>>({});
   const [submittingRating, setSubmittingRating] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
-  const [submittingReply, setSubmittingReply] = useState<Record<string, boolean>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [startingChat, setStartingChat] = useState(false);
@@ -160,29 +158,7 @@ export default function DoctorDetails() {
     }
   };
 
-  const handleSubmitReply = async (parentId: string) => {
-    const text = (replyText[parentId] || "").trim();
-    if (!doctorId || !text) return;
-    setSubmittingReply((prev) => ({ ...prev, [parentId]: true }));
-    try {
-      const res = await fetch(`/api/doctors/${doctorId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text, parentId }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message || "Failed to submit reply");
 
-      if (data.comment) {
-        setComments((prev) => addReplyToTree(prev, parentId, data.comment));
-      }
-      setReplyText((prev) => ({ ...prev, [parentId]: "" }));
-    } catch (err: any) {
-      alert(err?.message || "Could not submit reply");
-    } finally {
-      setSubmittingReply((prev) => ({ ...prev, [parentId]: false }));
-    }
-  };
 
   return (
     <>
@@ -269,15 +245,7 @@ export default function DoctorDetails() {
           )}
           <div className="space-y-4">
             {comments.map((c) => (
-              <CommentThread
-                key={c.id}
-                comment={c}
-                depth={0}
-                replyText={replyText}
-                setReplyText={setReplyText}
-                submittingReply={submittingReply}
-                onSubmitReply={handleSubmitReply}
-              />
+              <CommentItem key={c.id} comment={c} />
             ))}
           </div>
         </div>
@@ -323,37 +291,9 @@ function StarInput({ value, onChange, disabled }: { value: number; onChange: (v:
   );
 }
 
-function addReplyToTree(list: any[], parentId: string, reply: any): any[] {
-  return list.map((comment) => {
-    if (comment.id === parentId) {
-      return { ...comment, replies: [ ...(comment.replies || []), reply ] };
-    }
-    if (Array.isArray(comment.replies) && comment.replies.length > 0) {
-      return { ...comment, replies: addReplyToTree(comment.replies, parentId, reply) };
-    }
-    return comment;
-  });
-}
-
-function CommentThread({
-  comment,
-  depth,
-  replyText,
-  setReplyText,
-  submittingReply,
-  onSubmitReply,
-}: {
-  comment: any;
-  depth: number;
-  replyText: Record<string, string>;
-  setReplyText: Dispatch<SetStateAction<Record<string, string>>>;
-  submittingReply: Record<string, boolean>;
-  onSubmitReply: (id: string) => void;
-}) {
-  const indentStyle = depth ? { marginLeft: depth * 16 } : undefined;
-
+function CommentItem({ comment }: { comment: any }) {
   return (
-    <div className="border rounded-lg p-4" style={indentStyle}>
+    <div className="border rounded-lg p-4">
       <div className="flex gap-3 items-start">
         <Avatar src={comment.user?.profileImageUrl} name={comment.user?.name || "User"} size="sm" />
         <div className="flex-1">
@@ -362,40 +302,6 @@ function CommentThread({
             <span className="text-xs text-gray-500">{new Date(comment.createdAt).toLocaleString()}</span>
           </div>
           <p className="text-sm text-gray-700 mt-1">{comment.text}</p>
-
-          {/* Reply box for every depth */}
-          <div className="mt-3 flex items-start gap-2">
-            <textarea
-              className="flex-1 border rounded-lg p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={2}
-              placeholder="Reply to this comment"
-              value={replyText[comment.id] ?? ""}
-              onChange={(e) => setReplyText((prev) => ({ ...prev, [comment.id]: e.target.value }))}
-            />
-            <button
-              onClick={() => onSubmitReply(comment.id)}
-              disabled={submittingReply[comment.id] || !(replyText[comment.id] ?? "").trim()}
-              className="h-fit px-3 py-2 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700 disabled:opacity-60"
-            >
-              {submittingReply[comment.id] ? "Replying..." : "Reply"}
-            </button>
-          </div>
-
-          {Array.isArray(comment.replies) && comment.replies.length > 0 && (
-            <div className="mt-3 space-y-3 pl-4 border-l">
-              {comment.replies.map((child: any) => (
-                <CommentThread
-                  key={child.id}
-                  comment={child}
-                  depth={depth + 1}
-                  replyText={replyText}
-                  setReplyText={setReplyText}
-                  submittingReply={submittingReply}
-                  onSubmitReply={onSubmitReply}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>
