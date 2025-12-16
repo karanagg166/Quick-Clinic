@@ -13,6 +13,7 @@ export interface Doctor {
   city?:string;
   state?:string;
   profileImageUrl?: string;
+  doctorBio?: string;
   
 }
 export interface DoctorAppointment{
