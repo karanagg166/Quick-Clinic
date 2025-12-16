@@ -45,7 +45,7 @@ export const GET = async (
     });
 
     const commentsPromise = prisma.comment.findMany({
-      where: { doctorId, parentId: null },
+      where: { doctorId },
       orderBy: { createdAt: "desc" },
       include: {
         user: {
@@ -53,14 +53,6 @@ export const GET = async (
             id: true,
             name: true,
             profileImageUrl: true,
-          },
-        },
-        replies: {
-          orderBy: { createdAt: "asc" },
-          include: {
-            user: {
-              select: { id: true, name: true, profileImageUrl: true },
-            },
           },
         },
       },
