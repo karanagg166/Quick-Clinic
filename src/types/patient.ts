@@ -9,6 +9,7 @@ export interface Patient {
   medicalHistory: string[];
   allergies: string[];
   currentMedications: string[];
+  profileImageUrl?: string;
 }
 export interface PatientAppointment{
 id:string;

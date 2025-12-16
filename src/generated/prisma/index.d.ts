@@ -2423,6 +2423,7 @@ export namespace Prisma {
     city: string | null
     state: string | null
     pinCode: number | null
+    profileImageUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2440,6 +2441,7 @@ export namespace Prisma {
     city: string | null
     state: string | null
     pinCode: number | null
+    profileImageUrl: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -2457,6 +2459,7 @@ export namespace Prisma {
     city: number
     state: number
     pinCode: number
+    profileImageUrl: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -2486,6 +2489,7 @@ export namespace Prisma {
     city?: true
     state?: true
     pinCode?: true
+    profileImageUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2503,6 +2507,7 @@ export namespace Prisma {
     city?: true
     state?: true
     pinCode?: true
+    profileImageUrl?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -2520,6 +2525,7 @@ export namespace Prisma {
     city?: true
     state?: true
     pinCode?: true
+    profileImageUrl?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -2624,6 +2630,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl: string | null
     createdAt: Date
     updatedAt: Date
     _count: UserCountAggregateOutputType | null
@@ -2660,6 +2667,7 @@ export namespace Prisma {
     city?: boolean
     state?: boolean
     pinCode?: boolean
+    profileImageUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     admin?: boolean | User$adminArgs<ExtArgs>
@@ -2686,6 +2694,7 @@ export namespace Prisma {
     city?: boolean
     state?: boolean
     pinCode?: boolean
+    profileImageUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -2703,6 +2712,7 @@ export namespace Prisma {
     city?: boolean
     state?: boolean
     pinCode?: boolean
+    profileImageUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }, ExtArgs["result"]["user"]>
@@ -2720,11 +2730,12 @@ export namespace Prisma {
     city?: boolean
     state?: boolean
     pinCode?: boolean
+    profileImageUrl?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phoneNo" | "name" | "password" | "age" | "gender" | "role" | "address" | "city" | "state" | "pinCode" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phoneNo" | "name" | "password" | "age" | "gender" | "role" | "address" | "city" | "state" | "pinCode" | "profileImageUrl" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admin?: boolean | User$adminArgs<ExtArgs>
     doctor?: boolean | User$doctorArgs<ExtArgs>
@@ -2764,6 +2775,7 @@ export namespace Prisma {
       city: string
       state: string
       pinCode: number
+      profileImageUrl: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["user"]>
@@ -3209,6 +3221,7 @@ export namespace Prisma {
     readonly city: FieldRef<"User", 'String'>
     readonly state: FieldRef<"User", 'String'>
     readonly pinCode: FieldRef<"User", 'Int'>
+    readonly profileImageUrl: FieldRef<"User", 'String'>
     readonly createdAt: FieldRef<"User", 'DateTime'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
   }
@@ -18239,6 +18252,7 @@ export namespace Prisma {
     city: 'city',
     state: 'state',
     pinCode: 'pinCode',
+    profileImageUrl: 'profileImageUrl',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -18658,6 +18672,7 @@ export namespace Prisma {
     city?: StringFilter<"User"> | string
     state?: StringFilter<"User"> | string
     pinCode?: IntFilter<"User"> | number
+    profileImageUrl?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     admin?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
@@ -18683,6 +18698,7 @@ export namespace Prisma {
     city?: SortOrder
     state?: SortOrder
     pinCode?: SortOrder
+    profileImageUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     admin?: AdminOrderByWithRelationInput
@@ -18711,6 +18727,7 @@ export namespace Prisma {
     city?: StringFilter<"User"> | string
     state?: StringFilter<"User"> | string
     pinCode?: IntFilter<"User"> | number
+    profileImageUrl?: StringNullableFilter<"User"> | string | null
     createdAt?: DateTimeFilter<"User"> | Date | string
     updatedAt?: DateTimeFilter<"User"> | Date | string
     admin?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
@@ -18736,6 +18753,7 @@ export namespace Prisma {
     city?: SortOrder
     state?: SortOrder
     pinCode?: SortOrder
+    profileImageUrl?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
@@ -18761,6 +18779,7 @@ export namespace Prisma {
     city?: StringWithAggregatesFilter<"User"> | string
     state?: StringWithAggregatesFilter<"User"> | string
     pinCode?: IntWithAggregatesFilter<"User"> | number
+    profileImageUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
   }
@@ -19649,6 +19668,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -19674,6 +19694,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -19699,6 +19720,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -19724,6 +19746,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -19749,6 +19772,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -19766,6 +19790,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -19783,6 +19808,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -20728,6 +20754,21 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
+  export type StringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -20784,6 +20825,11 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
+  export type SortOrderInput = {
+    sort: SortOrder
+    nulls?: NullsOrder
+  }
+
   export type AccessLogOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -20817,6 +20863,7 @@ export namespace Prisma {
     city?: SortOrder
     state?: SortOrder
     pinCode?: SortOrder
+    profileImageUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20839,6 +20886,7 @@ export namespace Prisma {
     city?: SortOrder
     state?: SortOrder
     pinCode?: SortOrder
+    profileImageUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20856,6 +20904,7 @@ export namespace Prisma {
     city?: SortOrder
     state?: SortOrder
     pinCode?: SortOrder
+    profileImageUrl?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -20917,6 +20966,24 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumRoleFilter<$PrismaModel>
     _max?: NestedEnumRoleFilter<$PrismaModel>
+  }
+
+  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    mode?: QueryMode
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
@@ -21116,11 +21183,6 @@ export namespace Prisma {
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
   }
 
-  export type SortOrderInput = {
-    sort: SortOrder
-    nulls?: NullsOrder
-  }
-
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -21289,21 +21351,6 @@ export namespace Prisma {
     not?: NestedEnumSlotStatusFilter<$PrismaModel> | $Enums.SlotStatus
   }
 
-  export type StringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type AppointmentNullableScalarRelationFilter = {
     is?: AppointmentWhereInput | null
     isNot?: AppointmentWhereInput | null
@@ -21362,24 +21409,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSlotStatusFilter<$PrismaModel>
     _max?: NestedEnumSlotStatusFilter<$PrismaModel>
-  }
-
-  export type StringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    mode?: QueryMode
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type EnumAppointmentStatusFilter<$PrismaModel = never> = {
@@ -21794,6 +21823,10 @@ export namespace Prisma {
 
   export type EnumRoleFieldUpdateOperationsInput = {
     set?: $Enums.Role
+  }
+
+  export type NullableStringFieldUpdateOperationsInput = {
+    set?: string | null
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -22411,10 +22444,6 @@ export namespace Prisma {
     set?: $Enums.SlotStatus
   }
 
-  export type NullableStringFieldUpdateOperationsInput = {
-    set?: string | null
-  }
-
   export type AppointmentUpdateOneWithoutSlotNestedInput = {
     create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
     connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput
@@ -22676,6 +22705,20 @@ export namespace Prisma {
     not?: NestedEnumRoleFilter<$PrismaModel> | $Enums.Role
   }
 
+  export type NestedStringNullableFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableFilter<$PrismaModel> | string | null
+  }
+
   export type NestedDateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -22751,6 +22794,34 @@ export namespace Prisma {
     _max?: NestedEnumRoleFilter<$PrismaModel>
   }
 
+  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: string | StringFieldRefInput<$PrismaModel> | null
+    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    lt?: string | StringFieldRefInput<$PrismaModel>
+    lte?: string | StringFieldRefInput<$PrismaModel>
+    gt?: string | StringFieldRefInput<$PrismaModel>
+    gte?: string | StringFieldRefInput<$PrismaModel>
+    contains?: string | StringFieldRefInput<$PrismaModel>
+    startsWith?: string | StringFieldRefInput<$PrismaModel>
+    endsWith?: string | StringFieldRefInput<$PrismaModel>
+    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedStringNullableFilter<$PrismaModel>
+    _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -22819,17 +22890,6 @@ export namespace Prisma {
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
   export type NestedJsonFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonFilterBase<$PrismaModel>>, 'path'>>,
@@ -22861,20 +22921,6 @@ export namespace Prisma {
     not?: NestedEnumSlotStatusFilter<$PrismaModel> | $Enums.SlotStatus
   }
 
-  export type NestedStringNullableFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableFilter<$PrismaModel> | string | null
-  }
-
   export type NestedEnumSlotStatusWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.SlotStatus | EnumSlotStatusFieldRefInput<$PrismaModel>
     in?: $Enums.SlotStatus[] | ListEnumSlotStatusFieldRefInput<$PrismaModel>
@@ -22883,23 +22929,6 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSlotStatusFilter<$PrismaModel>
     _max?: NestedEnumSlotStatusFilter<$PrismaModel>
-  }
-
-  export type NestedStringNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: string | StringFieldRefInput<$PrismaModel> | null
-    in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    notIn?: string[] | ListStringFieldRefInput<$PrismaModel> | null
-    lt?: string | StringFieldRefInput<$PrismaModel>
-    lte?: string | StringFieldRefInput<$PrismaModel>
-    gt?: string | StringFieldRefInput<$PrismaModel>
-    gte?: string | StringFieldRefInput<$PrismaModel>
-    contains?: string | StringFieldRefInput<$PrismaModel>
-    startsWith?: string | StringFieldRefInput<$PrismaModel>
-    endsWith?: string | StringFieldRefInput<$PrismaModel>
-    not?: NestedStringNullableWithAggregatesFilter<$PrismaModel> | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedStringNullableFilter<$PrismaModel>
-    _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumAppointmentStatusFilter<$PrismaModel = never> = {
@@ -23421,6 +23450,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     doctor?: DoctorCreateNestedOneWithoutUserInput
@@ -23445,6 +23475,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
@@ -23485,6 +23516,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUpdateOneWithoutUserNestedInput
@@ -23509,6 +23541,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
@@ -23533,6 +23566,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -23557,6 +23591,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -23740,6 +23775,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -23764,6 +23800,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -23933,6 +23970,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -23957,6 +23995,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -24059,6 +24098,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -24083,6 +24123,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -24139,6 +24180,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -24163,6 +24205,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -24203,6 +24246,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -24227,6 +24271,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -24950,6 +24995,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -24974,6 +25020,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -25041,6 +25088,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -25065,6 +25113,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -25089,6 +25138,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -25113,6 +25163,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -25153,6 +25204,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -25177,6 +25229,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -25201,6 +25254,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -25225,6 +25279,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -25265,6 +25320,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -25289,6 +25345,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
@@ -25313,6 +25370,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
@@ -25337,6 +25395,7 @@ export namespace Prisma {
     city: string
     state: string
     pinCode: number
+    profileImageUrl?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
@@ -25377,6 +25436,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
@@ -25401,6 +25461,7 @@ export namespace Prisma {
     city?: StringFieldUpdateOperationsInput | string
     state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import BookTimeSlot from "@/components/patient/bookTimeSlot";
 import { useUserStore } from "@/store/userStore";
+import Avatar from "@/components/general/Avatar";
 import type {Doctor} from "@/types/doctor";
 
 export default function DoctorDetails() {
@@ -111,21 +112,32 @@ export default function DoctorDetails() {
   return (
     <>
       <div className="max-w-3xl mx-auto p-6 shadow rounded">
-        <h2 className="text-2xl font-bold mb-4">Doctor Details</h2>
-        {/* Doctor information section */}
-        <div className="mb-6">
-          <h3 className="text-xl font-semibold">Dr. {doctor.name} </h3>
-          <p className="text-gray-600">Age: {doctor.age}</p>
-          <p className="text-gray-600">Gender: {doctor.gender}</p>
-          <p className="text-gray-600">Specialization: {doctor.specialty}</p>
-
-          <p className="text-gray-600">Experience: {doctor.experience} years</p>
-          <p className="text-gray-600">Fees: ₹{doctor.fees}</p>
-          <p className="text-gray-600">Location: {doctor.city}, {doctor.state}</p>
-          <p className="text-gray-600">Contact:
-            <a href={`mailto:${doctor.email}`}>{doctor.email}</a>
-          </p>
-          
+        <h2 className="text-2xl font-bold mb-6">Doctor Details</h2>
+        
+        {/* Doctor Information Section with Avatar */}
+        <div className="mb-6 bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+          <div className="flex gap-6 items-start">
+            <Avatar 
+              src={doctor.profileImageUrl} 
+              name={doctor.name || "Doctor"}
+              size="xl"
+            />
+            <div className="flex-1">
+              <h3 className="text-3xl font-semibold mb-1">Dr. {doctor.name}</h3>
+              <p className="text-lg text-blue-700 font-medium mb-4">{doctor.specialty}</p>
+              
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <p className="text-gray-700"><strong>Age:</strong> {doctor.age}</p>
+                <p className="text-gray-700"><strong>Gender:</strong> {doctor.gender}</p>
+                <p className="text-gray-700"><strong>Experience:</strong> {doctor.experience} years</p>
+                <p className="text-gray-700"><strong>Fees:</strong> ₹{doctor.fees}</p>
+                <p className="text-gray-700"><strong>Location:</strong> {doctor.city}, {doctor.state}</p>
+                <p className="text-gray-700"><strong>Email:</strong> 
+                  <a href={`mailto:${doctor.email}`} className="text-blue-600 hover:underline ml-1">{doctor.email}</a>
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
         {/* Book appointment section */}
         <BookTimeSlot doctorId={doctorId}/>

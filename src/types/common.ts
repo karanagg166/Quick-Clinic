@@ -18,6 +18,7 @@ export interface UserDetail {
   city: string;
   state: string;
   pinCode: number;
+  profileImageUrl?: string;
 }
 
 export interface PatientDetail {

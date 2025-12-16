@@ -11,6 +11,7 @@ interface User {
   gender?: string;
   age?: number;
   role: UserRole;
+  profileImageUrl?: string;
 }
 
 interface UserState {

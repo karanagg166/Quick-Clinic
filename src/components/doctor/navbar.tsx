@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
+import Avatar from '@/components/general/Avatar';
 
 interface DoctorNavbarProps {
   isSidebarOpen: boolean;
@@ -105,11 +106,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             href="/doctor/info"
             className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
           >
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-              <User className="w-4 h-4 text-blue-600" />
-            </div>
+            <Avatar 
+              src={useUserStore.getState().user?.profileImageUrl} 
+              name={useUserStore.getState().user?.name || "Doctor"}
+              size="sm"
+            />
             <span className="text-sm font-medium text-gray-700 hidden md:block">
-              Dr. John
+              {useUserStore.getState().user?.name || "Dr. John"}
             </span>
           </Link>
         </div>
