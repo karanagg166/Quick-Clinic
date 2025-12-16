@@ -389,23 +389,19 @@ model Rating {
 }
 
 model Comment {
-  id       String  @id @default(cuid())
+  id       String @id @default(cuid())
   doctorId String
   userId   String
   text     String // Comment text
-  parentId String? // For reply threads (optional)
 
   // Relations
-  doctor  Doctor    @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  parent  Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies Comment[] @relation("CommentReplies")
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([doctorId])
   @@index([userId])
-  @@index([parentId])
   @@index([createdAt])
 }
