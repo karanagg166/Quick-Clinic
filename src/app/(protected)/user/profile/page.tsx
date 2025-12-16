@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore"; // Ensure this path matches your store
 import type { User } from "@/types/common";
+import AvatarUploader from "@/components/general/AvatarUploader";
 
 export default function UpdateProfile() {
   const router = useRouter();
@@ -175,6 +176,14 @@ export default function UpdateProfile() {
             >
                 Cancel
             </button>
+        </div>
+
+        {/* Avatar section */}
+        <div className="mb-6">
+          {/* Pass current userId and initial avatar from store if available */}
+          {userId && (
+            <AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
+          )}
         </div>
 
         <form onSubmit={handleUpdate} className="flex flex-col gap-4">

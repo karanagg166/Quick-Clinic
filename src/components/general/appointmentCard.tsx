@@ -1,6 +1,7 @@
 "use client";
 
 import { Calendar, User, Clock } from "lucide-react";
+import Avatar from "@/components/general/Avatar";
 
 export default function AppointmentCard({
   appointment,
@@ -17,37 +18,38 @@ export default function AppointmentCard({
 }) {
   return (
     <div className="p-4 bg-white rounded-lg shadow-md border hover:shadow-lg transition">
-      {/* ========== NAME ========== */}
-      <h2 className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-        <User className="w-5 h-5" />
-
-        {role === "patient"
-          ? `Dr. ${appointment.doctorName}`
-          : appointment.patientName
-            ? `Patient: ${appointment.patientName}`
-            : "Patient"}
-      </h2>
-
-      {/* ========== SPECIALTY (only for patient) ========== */}
-      {role === "patient" && (
-        <p className="text-sm text-gray-600 mt-1">
-          Specialty: <span className="font-medium">{appointment.specialty}</span>
-        </p>
-      )}
+      {/* ========== DOCTOR/PATIENT INFO WITH AVATAR ========== */}
+      <div className="flex items-start gap-3 pb-3 border-b mb-3">
+        <Avatar 
+          src={role === "patient" ? appointment.doctorImage : appointment.patientImage}
+          name={role === "patient" ? appointment.doctorName : (appointment.patientName || "Patient")}
+          size="md"
+        />
+        <div className="flex-1">
+          <h2 className="text-lg font-semibold text-gray-900">
+            {role === "patient"
+              ? `Dr. ${appointment.doctorName}`
+              : appointment.patientName
+                ? `Patient: ${appointment.patientName}`
+                : "Patient"}
+          </h2>
+          {role === "patient" && (
+            <p className="text-sm text-gray-600 font-medium">{appointment.specialty}</p>
+          )}
+        </div>
+      </div>
 
       {/* ========== DATE ========== */}
-      <p className="text-sm text-gray-700 mt-3 flex items-center gap-2">
+      <p className="text-sm text-gray-700 mb-2 flex items-center gap-2">
         <Calendar className="w-4 h-4" />
-        Date:
         <span className="font-medium">
           {new Date(appointment.slotDate).toDateString()}
         </span>
       </p>
 
       {/* ========== TIME ========== */}
-      <p className="text-sm text-gray-700 mt-1 flex items-center gap-2">
+      <p className="text-sm text-gray-700 mb-2 flex items-center gap-2">
         <Clock className="w-4 h-4" />
-        Time:
         <span className="font-medium">
           {new Date(appointment.slotStart).toLocaleTimeString([], {
             hour: "2-digit",
@@ -62,8 +64,7 @@ export default function AppointmentCard({
       </p>
 
       {/* ========== STATUS ========== */}
-      <p className="text-sm text-gray-700 mt-3">
-        Status:{" "}
+      <p className="text-sm text-gray-700 mb-2">
         <span
           className={`font-bold ${
             appointment.status === "CANCELLED"
