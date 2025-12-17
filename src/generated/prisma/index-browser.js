@@ -153,6 +153,7 @@ exports.Prisma.DoctorScalarFieldEnum = {
   experience: 'experience',
   qualifications: 'qualifications',
   fees: 'fees',
+  doctorBio: 'doctorBio',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -272,6 +273,24 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   action: 'action',
   metadata: 'metadata',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.RatingScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  userId: 'userId',
+  rating: 'rating',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.CommentScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  userId: 'userId',
+  text: 'text',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 };
 
 exports.Prisma.SortOrder = {
@@ -412,7 +431,9 @@ exports.Prisma.ModelName = {
   Payment: 'Payment',
   Otp: 'Otp',
   AccessLog: 'AccessLog',
-  AuditLog: 'AuditLog'
+  AuditLog: 'AuditLog',
+  Rating: 'Rating',
+  Comment: 'Comment'
 };
 
 /**

@@ -142,6 +142,8 @@ model User {
   chatMessages  ChatMessages[]
   payments      Payment[]
   notifications Notification[]
+  comments      Comment[]
+  ratings       Rating[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -165,6 +167,7 @@ model Doctor {
   experience     Int             @default(0)
   qualifications Qualification[]
   fees           Int             @default(0)
+  doctorBio      String?
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -172,6 +175,8 @@ model Doctor {
   patientRelations DoctorPatientRelation[]
   appointments     Appointment[]
   slots            Slot[]
+  comments         Comment[]
+  ratings          Rating[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -370,4 +375,44 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
+}
+
+// ======================================================
+// DOCTOR REVIEW/COMMENT SYSTEM
+// ======================================================
+
+model Rating {
+  id       String @id @default(cuid())
+  doctorId String
+  userId   String
+  rating   Int // 1-5 stars
+
+  // Relations
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([doctorId, userId]) // One rating per user per doctor
+  @@index([doctorId])
+  @@index([userId])
+}
+
+model Comment {
+  id       String @id @default(cuid())
+  doctorId String
+  userId   String
+  text     String // Comment text
+
+  // Relations
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([doctorId])
+  @@index([userId])
+  @@index([createdAt])
 }
