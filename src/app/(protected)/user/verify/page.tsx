@@ -1,0 +1,116 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import { useUserStore } from "@/store";
+import { SendOtpForm } from "@/components/general/sendOtp";
+import { VerifyOtpForm } from "@/components/general/verifyOtp";
+
+export default function VerifyPage() {
+  const [email, setEmail] = useState("");
+  const [code, setCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [sending, setSending] = useState(false);
+
+  const user = useUserStore((state) => state.user);
+  const updateUser = useUserStore((state) => state.updateUser);
+
+  const userId = user?.userId;
+  const verified = user?.isVerified;
+
+  /* -------------------------------
+     ALERT IF ALREADY VERIFIED
+  --------------------------------*/
+  useEffect(() => {
+    if (verified) {
+      alert("Your account is already verified.");
+    }
+  }, [verified]);
+
+  /* -------------------------------
+     VERIFIED STATE UI
+  --------------------------------*/
+  if (verified) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="bg-white rounded-xl shadow-md p-8 text-center max-w-md w-full">
+          <h1 className="text-2xl font-semibold text-green-600 mb-2">
+            Account Verified
+          </h1>
+          <p className="text-gray-600">
+            Your account has already been verified successfully.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  /* -------------------------------
+     NOT LOGGED IN UI
+  --------------------------------*/
+  if (!userId) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <p className="text-red-500 text-lg font-medium">
+          User not logged in
+        </p>
+      </div>
+    );
+  }
+
+  /* -------------------------------
+     MAIN UI
+  --------------------------------*/
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="bg-white w-full max-w-md rounded-xl shadow-md p-8">
+        <h1 className="text-2xl font-semibold text-center mb-6">
+          Verify Your Account
+        </h1>
+
+        <div className="space-y-6">
+          {/* Send OTP Section */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-700 mb-2">
+              Step 1: Send OTP
+            </h2>
+            <SendOtpForm
+              email={email}
+              setEmail={setEmail}
+              loading={sending}
+              setLoading={setSending}
+              setMessage={setMessage}
+              sendOtpUrl={`/api/user/${userId}/otp/send`}
+            />
+          </div>
+
+          {/* Verify OTP Section */}
+          <div>
+            <h2 className="text-sm font-medium text-gray-700 mb-2">
+              Step 2: Verify OTP
+            </h2>
+            <VerifyOtpForm
+              email={email}
+              code={code}
+              setCode={setCode}
+              loading={sending}
+              setLoading={setSending}
+              setMessage={setMessage}
+              verifyOtpUrl={`/api/user/${userId}/otp/verify`}
+              onSuccess={() => {
+                updateUser({ isVerified: true });
+                setMessage("OTP verified successfully.");
+              }}
+            />
+          </div>
+
+          {/* Message */}
+          {message && (
+            <div className="text-center text-sm text-blue-600">
+              {message}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
