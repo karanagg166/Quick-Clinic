@@ -6,13 +6,18 @@ import { SendOtpForm } from "@/components/general/sendOtp";
 import { VerifyOtpForm } from "@/components/general/verifyOtp";
 
 export default function VerifyPage() {
-  const [email, setEmail] = useState("");
+  
   const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+
 
   const user = useUserStore((state) => state.user);
   const updateUser = useUserStore((state) => state.updateUser);
+
+  const email = user?.email || "";
 
   const userId = user?.userId;
   const verified = user?.isVerified;
@@ -24,7 +29,7 @@ export default function VerifyPage() {
     if (verified) {
       alert("Your account is already verified.");
     }
-  }, [verified]);
+  }, []);
 
   /* -------------------------------
      VERIFIED STATE UI
@@ -75,9 +80,8 @@ export default function VerifyPage() {
             </h2>
             <SendOtpForm
               email={email}
-              setEmail={setEmail}
-              loading={sending}
-              setLoading={setSending}
+              loading={sendingOtp}
+              setLoading={setSendingOtp}
               setMessage={setMessage}
               sendOtpUrl={`/api/user/${userId}/otp/send`}
             />
@@ -92,8 +96,8 @@ export default function VerifyPage() {
               email={email}
               code={code}
               setCode={setCode}
-              loading={sending}
-              setLoading={setSending}
+              loading={verifyingOtp}
+              setLoading={setVerifyingOtp}
               setMessage={setMessage}
               verifyOtpUrl={`/api/user/${userId}/otp/verify`}
               onSuccess={() => {
