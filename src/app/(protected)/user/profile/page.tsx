@@ -3,15 +3,15 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore"; // Ensure this path matches your store
-import type { User } from "@/types/common";
 import AvatarUploader from "@/components/general/AvatarUploader";
 
 export default function UpdateProfile() {
   const router = useRouter();
   
   // Get current user and setter from store
-  const { user, setUser } = useUserStore();
-   const userId= user?.userId;
+  const { user, setUser, patientId, doctorId } = useUserStore();
+  const userId = user?.userId;
+  const isVerified = user?.isVerified ?? false;
   // Loading states
   const [loadingData, setLoadingData] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -131,17 +131,15 @@ export default function UpdateProfile() {
 
       // 4. Update the local Zustand store with new data
       // We merge existing user object with the updated fields
-      if (user) {
-          const updatedUser: User = {
+          if (user) {
+            const updatedUser = {
               ...user,
               name: formData.name,
               age: Number(formData.age),
               gender: formData.gender as "MALE" | "FEMALE" | "BINARY",
-              doctorId: null,
-              patientId: null
-          };
-          setUser(updatedUser);
-      }
+            };
+              setUser(updatedUser, patientId ?? undefined, doctorId ?? undefined);
+          }
 
       // Redirect back to profile dashboard
       const dashboardRoute = formData.role === "PATIENT" ? "/user/profile/patient" : "/user/profile/doctor";
@@ -164,7 +162,7 @@ export default function UpdateProfile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-10">
+    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-blue-100 px-4 py-10">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
         <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold text-gray-800">
@@ -183,6 +181,25 @@ export default function UpdateProfile() {
           {/* Pass current userId and initial avatar from store if available */}
           {userId && (
             <AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
+          )}
+        </div>
+
+        {/* Email verification call-to-action */}
+        <div className="mb-6 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-gray-800">Email verification</p>
+            <p className="text-xs text-gray-600">{formData.email || user?.email}</p>
+          </div>
+          {isVerified ? (
+            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => router.push("/user/verify")}
+              className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
+            >
+              Verify Email
+            </button>
           )}
         </div>
 
@@ -274,7 +291,7 @@ export default function UpdateProfile() {
           </div>
 
           <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Email (Read-only)</label>
+            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Email</label>
             <input
                 type="email"
                 name="email"
