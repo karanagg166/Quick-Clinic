@@ -105,7 +105,7 @@ export default function Home() {
           Don’t have an account?{" "}
           <span
             className="text-blue-600 font-medium cursor-pointer hover:underline"
-            onClick={() => router.push("/user/signup")}
+            onClick={() => router.push("/auth/signup")}
           >
             Signup
           </span>

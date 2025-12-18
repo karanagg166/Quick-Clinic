@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store";
-import type { User } from "@/types/common";
 
 export default function Signup() {
   const router = useRouter();
@@ -81,21 +80,26 @@ export default function Signup() {
         return;
       }
     //  console.log(data);
-      // Map server response -> local User type
-      const userDetails: User = {
+      // Map server response -> local store User type (includes isVerified/phone/profileImageUrl)
+      const userDetails = {
         userId: data.user.userId,
         email: data.user.email,
         role: data.user.role,
         name: data.user.name,
         gender: data.user.gender,
         age: data.user.age,
-        doctorId: data.user.doctorId ?? null,
-        patientId: data.user.patientId ?? null,
+        phoneNo: data.user.phoneNo ?? "",
+        profileImageUrl: data.user.profileImageUrl ?? "",
+        isVerified: data.user.emailVerified ?? false,
       };
 
-      // persist to zustand
+      // persist to zustand with optional ids
       console.log("Setting user in store:", userDetails);
-      setUser(userDetails);
+      setUser(
+        userDetails,
+        data.user.patientId ?? null,
+        data.user.doctorId ?? null
+      );
 
       // navigate based on role
       if (role === "PATIENT") {
@@ -282,7 +286,7 @@ export default function Signup() {
           Already have an account?{" "}
           <span
             className="text-blue-600 font-medium cursor-pointer hover:underline"
-            onClick={() => router.push("/user/login")}
+            onClick={() => router.push("/auth/login")}
             role="button"
             tabIndex={0}
           >

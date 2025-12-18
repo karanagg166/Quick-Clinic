@@ -22,7 +22,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
             console.error('Logout failed', err);
         }
         logout();
-        router.push('/user/login');
+        router.push('/auth/login');
     };
 
     return (
