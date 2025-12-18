@@ -337,6 +337,8 @@ model Payment{
   razorpayPaymentId String ?
   createdAt DateTime @default(now())
 }
+
+
 model Otp{
   id String @id @default(cuid())
   email String @unique
@@ -349,6 +351,7 @@ model Otp{
 // ======================================================
 // LOG MODELS
 // ======================================================
+
 
 model AccessLog {
   id       String  @id @default(cuid())

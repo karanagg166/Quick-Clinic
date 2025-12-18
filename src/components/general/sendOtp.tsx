@@ -4,7 +4,6 @@ import React from "react";
 
 interface Props {
   email: string;
-  setEmail: (v: string) => void;
   loading: boolean;
   setLoading: (v: boolean) => void;
   setMessage: (v: string) => void;
@@ -13,7 +12,6 @@ interface Props {
 
 export function SendOtpForm({
   email,
-  setEmail,
   loading,
   setLoading,
   setMessage,
@@ -28,8 +26,6 @@ export function SendOtpForm({
     try {
       const response = await fetch(sendOtpUrl, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
       });
 
       const data = await response.json();
@@ -38,7 +34,11 @@ export function SendOtpForm({
         throw new Error(data.message || "Failed to send OTP");
       }
 
-      setMessage("OTP sent successfully.");
+      if (data?.otp) {
+        setMessage(`OTP (dev mode): ${data.otp}`);
+      } else {
+        setMessage("OTP sent successfully.");
+      }
     } catch (error: any) {
       setMessage(error.message || "Error sending OTP.");
     } finally {
@@ -52,19 +52,14 @@ export function SendOtpForm({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Email address
         </label>
-        <input
-          type="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
+        <div className="w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+          {email || ""}
+        </div>
       </div>
 
       <button
         type="submit"
-        disabled={loading}
+        disabled={loading || !email}
         className="w-full rounded-md bg-blue-600 py-2 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? "Sending OTP..." : "Send OTP"}
