@@ -6,12 +6,12 @@ export const POST = async (
   { params }: { params: Promise<{ userId: string }> }
 ) => {
   try {
-    const { otp, email } = await request.json();
+    const { otp } = await request.json();
     const { userId } = await params;
 
-    if (!otp || !email) {
+    if (!otp) {
       return NextResponse.json(
-        { message: "OTP and email are required" },
+        { message: "OTP is required" },
         { status: 400 }
       );
     }
@@ -19,7 +19,6 @@ export const POST = async (
     // 1️⃣ Find OTP record (bind to user)
     const record = await prisma.otp.findFirst({
       where: {
-       
         userId,
       },
     });
@@ -42,25 +41,23 @@ export const POST = async (
     // 3️⃣ Check expiry BEFORE deleting
     const now = new Date();
     if (now > record.expiresAt) {
-      await prisma.otp.delete({
-        where: { id: record.id },
-      });
-
       return NextResponse.json(
         { message: "OTP has expired" },
         { status: 400 }
       );
     }
 
-    // 4️⃣ Mark user as verified
+    // 4️⃣ Mark user as verified (schema field is `emailVerified`)
     await prisma.user.update({
       where: { id: userId },
-      data: { isVerified: true },
+      data: { emailVerified: true },
     });
 
-    // 5️⃣ Delete OTP after success
-    await prisma.otp.delete({
-      where: { id: record.id },
+    // 5️⃣ Delete OTP record
+    await prisma.otp.deleteMany({
+      where: {
+        userId,
+      },
     });
 
     return NextResponse.json(
