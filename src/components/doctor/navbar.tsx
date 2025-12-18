@@ -22,7 +22,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
       console.error('Logout failed', err);
     }
     logout();
-    router.push('/user/login');
+    router.push('/auth/login');
   };
 
   return (
