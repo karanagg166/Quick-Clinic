@@ -72,7 +72,7 @@ process.on('SIGTERM', async () => {
 });
 
 // Start server
-const PORT = process.env.PORT || process.env.SOCKET_PORT || 4000;
+const PORT = Number(process.env.PORT || process.env.SOCKET_PORT || 4000);
 const HOST = process.env.HOST || '0.0.0.0';
 
 httpServer.listen(PORT, HOST, () => {
