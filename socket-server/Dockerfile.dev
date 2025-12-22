@@ -19,6 +19,7 @@ RUN cd socket-server && npm install
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
+# Prisma generate doesn't need actual DATABASE_URL connection
 RUN npx prisma generate
 
 # Copy socket server files
