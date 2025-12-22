@@ -18,10 +18,11 @@ Deploy your Next.js app on Vercel and the Socket.IO server on a platform that su
    - Built-in PostgreSQL support
    - WebSocket support
 
-2. **Render**
+2. **Render** (Recommended for Free Tier)
    - Free tier available
    - WebSocket support
    - Easy GitHub integration
+   - See detailed Render setup below
 
 3. **Fly.io**
    - Global edge deployment
