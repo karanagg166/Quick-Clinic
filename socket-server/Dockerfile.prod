@@ -12,7 +12,7 @@ COPY package*.json ./
 COPY socket-server/package*.json ./socket-server/
 
 # Install dependencies (including dev dependencies for TypeScript)
-RUN npm ci
+RUN npm ci --include=dev
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
