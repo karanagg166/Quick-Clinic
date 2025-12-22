@@ -62,6 +62,75 @@ cd socket-server
 npm run dev
 ```
 
+The socket server will start on `http://localhost:4000`
+
+## Running Socket Server Locally
+
+### Quick Start
+
+1. **Navigate to socket-server directory:**
+   ```bash
+   cd socket-server
+   ```
+
+2. **Install dependencies (if not already done):**
+   ```bash
+   npm install
+   ```
+
+3. **Ensure Prisma client is generated (from root directory):**
+   ```bash
+   cd ..
+   npx prisma generate
+   cd socket-server
+   ```
+
+4. **Set up environment variables:**
+   
+   Create a `.env` file in the `socket-server` directory (or use the root `.env`):
+   ```env
+   DATABASE_URL=your-postgresql-connection-string
+   FRONTEND_URL=http://localhost:3000
+   PORT=4000
+   SOCKET_PORT=4000
+   ```
+
+5. **Run in development mode:**
+   ```bash
+   npm run dev
+   ```
+   
+   Or with auto-reload (if nodemon is installed):
+   ```bash
+   npm run dev:watch
+   ```
+
+6. **Or run in production mode (after building):**
+   ```bash
+   npm run build
+   npm start
+   ```
+
+### Verify It's Running
+
+Open your browser and visit:
+```
+http://localhost:4000/health
+```
+
+You should see:
+```json
+{
+  "status": "ok",
+  "timestamp": "2025-12-22T..."
+}
+```
+
+### Development vs Production
+
+- **Development (`npm run dev`)**: Uses `ts-node` to run TypeScript directly
+- **Production (`npm run build && npm start`)**: Compiles TypeScript to JavaScript first, then runs compiled code
+
 ## API Endpoints
 
 ### REST API (Next.js)
