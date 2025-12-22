@@ -216,6 +216,22 @@ socket-server/
 | `SOCKET_PORT` | ❌ No | `4000` | Socket.IO port (same as PORT) |
 | `NODE_ENV` | ❌ No | `development` | Environment mode |
 
+## Running with Docker (Easier!)
+
+For an even easier setup, use Docker! See `DOCKER_SETUP.md` for instructions.
+
+**Quick Docker start:**
+```bash
+# From root directory
+docker compose up socket-server
+```
+
+This automatically:
+- ✅ Installs all dependencies
+- ✅ Generates Prisma client
+- ✅ Sets up environment
+- ✅ Starts the server
+
 ## Next Steps
 
 Once the socket server is running locally:
