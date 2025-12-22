@@ -5,18 +5,34 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apk add --no-cache openssl
 
-# Copy package files
+# Copy root package.json (for Prisma client)
 COPY package*.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Copy socket-server package files
+COPY socket-server/package*.json ./socket-server/
 
-# Copy server files
-COPY server.js .
+# Install dependencies (including dev dependencies for TypeScript)
+RUN npm ci
 
-EXPOSE 5000
+# Copy Prisma schema and generate client
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+RUN npx prisma generate
+
+# Copy socket server TypeScript files
+COPY socket-server/*.ts ./socket-server/
+COPY socket-server/tsconfig.json ./socket-server/
+
+# Build TypeScript
+WORKDIR /app/socket-server
+RUN npx tsc
+
+# Return to app root
+WORKDIR /app
+
+EXPOSE 4000
 
 ENV NODE_ENV=production
-ENV PORT=5000
+ENV PORT=4000
 
-CMD ["npm", "start"]
+CMD ["node", "socket-server/dist/main.js"]
