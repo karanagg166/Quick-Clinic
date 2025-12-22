@@ -18,6 +18,7 @@ RUN npm install
 COPY . .
 
 # Generate Prisma Client
+# Prisma generate doesn't need actual DATABASE_URL connection
 RUN npx prisma generate
 
 # 👉 Run build ONLY in production
