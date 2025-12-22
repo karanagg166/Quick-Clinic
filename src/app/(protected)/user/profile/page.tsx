@@ -2,8 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useUserStore } from "@/store/userStore"; // Ensure this path matches your store
+import { useUserStore } from "@/store/userStore";
 import AvatarUploader from "@/components/general/AvatarUploader";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function UpdateProfile() {
   const router = useRouter();
@@ -155,193 +162,192 @@ export default function UpdateProfile() {
 
   if (loadingData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-blue-50">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="space-y-4 w-full max-w-md">
+          <Skeleton className="h-64 w-full" />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 to-blue-100 px-4 py-10">
-      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 border border-gray-200">
-        <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">
-            Update Profile
-            </h2>
-            <button 
-                onClick={() => router.back()}
-                className="text-sm text-gray-500 hover:text-gray-800 hover:underline"
-            >
-                Cancel
-            </button>
-        </div>
-
-        {/* Avatar section */}
-        <div className="mb-6">
-          {/* Pass current userId and initial avatar from store if available */}
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-10">
+      <Card className="w-full max-w-md">
+        <CardHeader>
+          <div className="flex justify-between items-center">
+            <CardTitle>Update Profile</CardTitle>
+            <Button variant="ghost" size="sm" onClick={() => router.back()}>
+              Cancel
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Avatar section */}
           {userId && (
-            <AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
+            <div>
+              <AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
+            </div>
           )}
-        </div>
 
-        {/* Email verification call-to-action */}
-        <div className="mb-6 flex items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
-          <div>
-            <p className="text-sm font-semibold text-gray-800">Email verification</p>
-            <p className="text-xs text-gray-600">{formData.email || user?.email}</p>
-          </div>
-          {isVerified ? (
-            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">Verified</span>
-          ) : (
-            <button
-              type="button"
-              onClick={() => router.push("/user/verify")}
-              className="rounded-md bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700"
-            >
-              Verify Email
-            </button>
-          )}
-        </div>
+          {/* Email verification */}
+          <Card>
+            <CardContent className="p-4 flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold">Email verification</p>
+                <p className="text-xs text-muted-foreground">{formData.email || user?.email}</p>
+              </div>
+              {isVerified ? (
+                <Badge variant="default" className="bg-green-100 text-green-700">Verified</Badge>
+              ) : (
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={() => router.push("/user/verify")}
+                >
+                  Verify Email
+                </Button>
+              )}
+            </CardContent>
+          </Card>
 
-        <form onSubmit={handleUpdate} className="flex flex-col gap-4">
-          
-          {/* Read-Only Role Display */}
-          <div className="bg-blue-50 p-3 rounded-lg border border-blue-100 flex justify-between items-center">
-            <span className="text-sm text-blue-800 font-medium">Account Type:</span>
-            <span className="text-sm font-bold text-blue-900 tracking-wide">{formData.role}</span>
-          </div>
+          <form onSubmit={handleUpdate} className="flex flex-col gap-4">
+            {/* Read-Only Role Display */}
+            <Card>
+              <CardContent className="p-3 flex justify-between items-center">
+                <span className="text-sm font-medium">Account Type:</span>
+                <Badge variant="secondary">{formData.role}</Badge>
+              </CardContent>
+            </Card>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Full Name</label>
-            <input
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="name">Full Name</Label>
+              <Input
+                id="name"
                 type="text"
                 name="name"
-                className="inputBox mt-1"
                 value={formData.name}
                 onChange={handleChange}
                 required
-            />
-          </div>
+              />
+            </div>
 
-          <div className="flex gap-4">
-            <div className="w-1/3">
-                <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Age</label>
-                <input
-                    type="number"
-                    name="age"
-                    className="inputBox mt-1"
-                    value={formData.age}
-                    onChange={handleChange}
-                    required
-                    min={0}
+            <div className="flex gap-4">
+              <div className="w-1/3 flex flex-col gap-2">
+                <Label htmlFor="age">Age</Label>
+                <Input
+                  id="age"
+                  type="number"
+                  name="age"
+                  value={formData.age}
+                  onChange={handleChange}
+                  required
+                  min={0}
                 />
-            </div>
-            <div className="w-2/3">
-                <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Gender</label>
-                <select
-                    name="gender"
-                    value={formData.gender}
-                    onChange={handleChange}
-                    className="border border-gray-300 text-gray-700 rounded-xl px-4 py-3 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none mt-1"
-                    required
+              </div>
+              <div className="w-2/3 flex flex-col gap-2">
+                <Label htmlFor="gender">Gender</Label>
+                <Select
+                  name="gender"
+                  value={formData.gender}
+                  onValueChange={(value) => handleChange({ target: { name: "gender", value } } as any)}
+                  required
                 >
-                    <option value="MALE">Male</option>
-                    <option value="FEMALE">Female</option>
-                    <option value="BINARY">Binary</option>
-                </select>
+                  <SelectTrigger id="gender">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="MALE">Male</SelectItem>
+                    <SelectItem value="FEMALE">Female</SelectItem>
+                    <SelectItem value="BINARY">Binary</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Address</label>
-            <input
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="address">Address</Label>
+              <Input
+                id="address"
                 type="text"
                 name="address"
-                className="inputBox mt-1"
                 value={formData.address}
                 onChange={handleChange}
                 required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-                <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">City</label>
-                <input
-                type="text"
-                name="city"
-                className="inputBox mt-1"
-                value={formData.city}
-                onChange={handleChange}
-                required
-                />
+              />
             </div>
 
-            <div>
-                <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">State</label>
-                <input
-                type="text"
-                name="state"
-                className="inputBox mt-1"
-                value={formData.state}
-                onChange={handleChange}
-                required
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="city">City</Label>
+                <Input
+                  id="city"
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleChange}
+                  required
                 />
+              </div>
+              <div className="flex flex-col gap-2">
+                <Label htmlFor="state">State</Label>
+                <Input
+                  id="state"
+                  type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
             </div>
-          </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Email</label>
-            <input
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
                 type="email"
                 name="email"
-                className="inputBox mt-1 bg-gray-100 text-gray-500 cursor-not-allowed"
                 value={formData.email}
                 disabled
-                title="Email cannot be changed"
-            />
-          </div>
+                className="bg-muted cursor-not-allowed"
+              />
+            </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Mobile Number</label>
-            <input
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="phoneNo">Mobile Number</Label>
+              <Input
+                id="phoneNo"
                 type="tel"
                 name="phoneNo"
-                className="inputBox mt-1"
                 value={formData.phoneNo}
                 onChange={handleChange}
                 required
-            />
-          </div>
+              />
+            </div>
 
-          <div>
-            <label className="text-xs font-semibold text-gray-500 ml-1 uppercase">Pincode</label>
-            <input
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="pinCode">Pincode</Label>
+              <Input
+                id="pinCode"
                 type="text"
                 name="pinCode"
-                className="inputBox mt-1"
                 value={formData.pinCode}
                 onChange={handleChange}
                 required
-            />
-          </div>
+              />
+            </div>
 
-          <button
-            type="submit"
-            className="mt-4 bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition-all shadow-md hover:shadow-lg disabled:opacity-60 flex justify-center items-center gap-2"
-            disabled={updating}
-          >
-            {updating ? (
-                <>
-                 <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                 Updating...
-                </>
-            ) : (
-                "Save Changes"
-            )}
-          </button>
-        </form>
-      </div>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full mt-4"
+              disabled={updating}
+            >
+              {updating ? "Updating..." : "Save Changes"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

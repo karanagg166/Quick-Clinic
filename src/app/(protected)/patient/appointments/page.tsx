@@ -4,6 +4,11 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import AppointmentCard from "@/components/patient/appointmentCard";
 import type { PatientAppointment } from "@/types/patient";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PatientAppointmentsPage() {
   const patientId = useUserStore((s) => s.patientId);
@@ -50,68 +55,71 @@ export default function PatientAppointmentsPage() {
   }, [patientId]);
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-3xl font-bold mb-4">Your Appointments</h1>
+    <div className="p-6 space-y-6 min-h-screen">
+      <h1 className="text-3xl font-bold">Your Appointments</h1>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded shadow mb-6 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <input
-          value={doctorName}
-          onChange={(e) => setDoctorName(e.target.value)}
-          placeholder="Doctor Name"
-          className="border p-2 rounded"
-        />
-
-        <input
-          type="number"
-          value={fees ?? ""}
-          onChange={(e) => setFees(Number(e.target.value))}
-          placeholder="Fees"
-          className="border p-2 rounded"
-        />
-
-        <input
-          value={specialty}
-          onChange={(e) => setSpecialty(e.target.value)}
-          placeholder="Specialty"
-          className="border p-2 rounded"
-        />
-
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          className="border p-2 rounded"
-        />
-
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          className="border p-2 rounded"
-        >
-          <option value="">All Status</option>
-          <option value="PENDING">Pending</option>
-          <option value="CONFIRMED">Confirmed</option>
-          <option value="COMPLETED">Completed</option>
-          <option value="CANCELLED">Cancelled</option>
-        </select>
-
-        <button
-          onClick={fetchAppointments}
-          className="bg-blue-600 text-white p-2 rounded"
-        >
-          Search
-        </button>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Filter Appointments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Input
+              value={doctorName}
+              onChange={(e) => setDoctorName(e.target.value)}
+              placeholder="Doctor Name"
+            />
+            <Input
+              type="number"
+              value={fees ?? ""}
+              onChange={(e) => setFees(Number(e.target.value))}
+              placeholder="Fees"
+            />
+            <Input
+              value={specialty}
+              onChange={(e) => setSpecialty(e.target.value)}
+              placeholder="Specialty"
+            />
+            <Input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+            />
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="CONFIRMED">Confirmed</SelectItem>
+                <SelectItem value="COMPLETED">Completed</SelectItem>
+                <SelectItem value="CANCELLED">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={fetchAppointments} className="w-full">
+              Search
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* List */}
-      {loading && <p>Loading...</p>}
+      {loading && (
+        <div className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-32 w-full" />
+        </div>
+      )}
 
-      <div>
-        {appointments.map((appointment) => (
-          <AppointmentCard key={appointment.id} appointment={appointment} />
-        ))}
-      </div>
+      {!loading && (
+        <div className="space-y-4">
+          {appointments.map((appointment) => (
+            <AppointmentCard key={appointment.id} appointment={appointment} />
+          ))}
+        </div>
+      )}
     </div>
   );
 }

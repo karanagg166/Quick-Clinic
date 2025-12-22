@@ -2,6 +2,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Send, Loader, AlertCircle } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 
 interface Message {
   id: string;
@@ -186,20 +189,18 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4 shadow-sm sticky top-0 z-10">
+      <div className="border-b px-6 py-4 sticky top-0 z-10 bg-background">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-semibold text-gray-900 tracking-tight">Chat</h2>
-            <p className="text-sm text-gray-500 mt-0.5">Secure conversation with your provider</p>
+            <h2 className="text-xl font-semibold tracking-tight">Chat</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
           </div>
-          <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
+          <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-2">
             <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-            <span className="text-xs font-medium text-gray-700">
-              {isConnected ? 'Connected' : 'Connecting'}
-            </span>
-          </div>
+            {isConnected ? 'Connected' : 'Connecting'}
+          </Badge>
         </div>
       </div>
 
@@ -273,16 +274,16 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
       {/* Error Message */}
       {error && (
-        <div className="px-6 py-3 bg-red-50 border-b border-red-200 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-          <p className="text-sm text-red-700">{error}</p>
+        <div className="px-6 py-3 bg-destructive/10 border-b border-destructive/20 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
+          <p className="text-sm text-destructive">{error}</p>
         </div>
       )}
 
       {/* Input Area */}
-      <div className="bg-white border-t border-gray-200 px-6 py-3 shadow-lg sticky bottom-0">
+      <div className="border-t px-6 py-3 sticky bottom-0 bg-background">
         <form onSubmit={handleSendMessage} className="flex gap-3">
-          <textarea
+          <Textarea
             ref={textareaRef}
             value={inputValue}
             onChange={(e) => {
@@ -293,23 +294,20 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             placeholder="Type a message (Shift+Enter for newline)"
             disabled={sending || !isConnected}
             rows={1}
-            className="flex-1 px-4 py-2.5 border border-gray-300 rounded-2xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 placeholder-gray-400 resize-none"
+            className="flex-1 resize-none rounded-2xl"
           />
-          <button
+          <Button
             type="submit"
             disabled={sending || !inputValue.trim() || !isConnected}
-            className="px-5 py-2.5 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2 shadow-md hover:shadow-lg"
+            size="icon"
+            className="rounded-xl"
           >
             {sending ? (
-              <>
-                <Loader className="w-4 h-4 animate-spin" />
-              </>
+              <Loader className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                <Send className="w-4 h-4" />
-              </>
+              <Send className="w-4 h-4" />
             )}
-          </button>
+          </Button>
         </form>
       </div>
     </div>
