@@ -14,6 +14,23 @@
 
 ### Step 3: Configuration Settings
 
+#### Option A: Using Docker (Recommended - Easier!)
+
+**Basic Settings:**
+- **Name**: `quickclinic-socket-server`
+- **Environment**: `Docker`
+- **Region**: Choose closest to your users
+- **Branch**: `main`
+- **Root Directory**: Leave empty (uses root)
+
+**Docker Settings:**
+- **Dockerfile Path**: `socket-server/Dockerfile.prod`
+- **Docker Context**: `.` (root directory)
+
+**No build/start commands needed** - Docker handles everything! ✅
+
+#### Option B: Using Node.js (Alternative)
+
 **Basic Settings:**
 - **Name**: `quickclinic-socket-server`
 - **Environment**: `Node`
@@ -63,13 +80,21 @@ https://quickclinic-socket-server.onrender.com
 
 ---
 
-## ⚙️ Alternative: Using render.yaml (Optional)
+## 🐳 Why Use Docker?
 
-If you prefer using the `render.yaml` file in the root:
+**Benefits:**
+- ✅ **Simpler Setup** - No need to configure build commands
+- ✅ **Consistent** - Same environment as local development
+- ✅ **Automatic** - Docker handles all dependencies and builds
+- ✅ **Production Ready** - Optimized production image
 
-1. The `render.yaml` is already configured in the root directory
-2. In Render dashboard, select **"Apply render.yaml"** when creating the service
-3. Render will automatically use the configuration
+**Docker vs Node.js:**
+| Feature | Docker | Node.js |
+|---------|--------|---------|
+| Setup Complexity | ⭐ Simple | ⭐⭐ More config |
+| Build Commands | ❌ Not needed | ✅ Required |
+| Dependency Management | ✅ Automatic | ⚠️ Manual |
+| Consistency | ✅ Same as local | ⚠️ May differ |
 
 ---
 
