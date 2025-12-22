@@ -2,10 +2,12 @@
   "name": "quickclinic-socket-server",
   "version": "1.0.0",
   "description": "Socket.IO server for QuickClinic real-time chat",
-  "main": "server.js",
+  "main": "dist/main.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "build": "tsc",
+    "start": "node dist/main.js",
+    "dev": "ts-node main.ts",
+    "dev:watch": "nodemon --exec ts-node main.ts"
   },
   "keywords": [
     "socket.io",
@@ -25,7 +27,12 @@
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
     "@types/formidable": "^3.4.6",
-    "nodemon": "^3.0.2"
+    "@types/node": "^20.11.0",
+    "nodemon": "^3.0.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
   }
 }
