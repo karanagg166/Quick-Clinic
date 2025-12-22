@@ -3,6 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 
 
@@ -56,61 +60,57 @@ export default function Home() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-8">
-        
-        <h2 className="text-3xl font-bold text-center mb-6 text-gray-800">
-          Welcome Back
-        </h2>
-        <p className="text-center text-gray-500 mb-6">
-          Please login to continue
-        </p>
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-3xl">Welcome Back</CardTitle>
+          <CardDescription className="text-base">
+            Please login to continue
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter your email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
 
-        <form onSubmit={handleLogin} className="flex flex-col gap-5">
+            <div className="flex flex-col gap-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
 
-          {/* Email */}
-          <div className="flex flex-col">
-            <label className="text-gray-700 font-medium mb-1">Email</label>
-            <input
-              type="email"
-              placeholder="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="border border-black text-black placeholder-gray-400 rounded-md px-4 py-2 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
+            <Button type="submit" size="lg" className="w-full mt-2">
+              Login
+            </Button>
+          </form>
 
-          {/* Password */}
-          <div className="flex flex-col">
-            <label className="text-gray-700 font-medium mb-1">Password</label>
-            <input
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="border border-black text-black placeholder-gray-400 rounded-md px-4 py-2 w-full bg-white shadow-sm focus:ring-2 focus:ring-blue-500 outline-none"
-            />
-          </div>
-
-          {/* Login Button */}
-          <button
-            type="submit"
-            className="mt-2 w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700 transition duration-200"
-          >
-            Login
-          </button>
-        </form>
-
-        <p className="text-center mt-5 text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <span
-            className="text-blue-600 font-medium cursor-pointer hover:underline"
-            onClick={() => router.push("/auth/signup")}
-          >
-            Signup
-          </span>
-        </p>
-      </div>
+          <p className="text-center mt-5 text-sm text-muted-foreground">
+            Don't have an account?{" "}
+            <Button
+              variant="link"
+              className="p-0 h-auto"
+              onClick={() => router.push("/auth/signup")}
+            >
+              Signup
+            </Button>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

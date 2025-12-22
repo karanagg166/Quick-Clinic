@@ -1,71 +1,72 @@
 "use client";
 
 import {
-  Search,
   MapPin,
-  Stethoscope,
   Star,
   Calendar,
   User,
+  DollarSign,
 } from "lucide-react";
 import Link from "next/link";
 import type { Doctor } from "@/types/doctor";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import Avatar from "@/components/general/Avatar";
 
 export default function DoctorCard({ doctor }: { doctor: Doctor }) {
   return (
-    <div className="border p-4 rounded shadow mb-4 hover:shadow-lg transition">
-      {/* Profile Image and Name */}
-      <div className="flex items-start gap-4 mb-4">
-        <Avatar 
-          src={doctor.profileImageUrl} 
-          name={doctor.name}
-          size="lg"
-        />
-        <div className="flex-1">
-          <h2 className="text-xl font-bold mb-1">{doctor.name}</h2>
-          <p className="text-sm text-gray-600 font-medium">{doctor.specialty}</p>
+    <Card className="hover:shadow-lg transition-shadow">
+      <CardHeader>
+        <div className="flex items-start gap-4">
+          <Avatar 
+            src={doctor.profileImageUrl} 
+            name={doctor.name}
+            size="lg"
+          />
+          <div className="flex-1">
+            <h2 className="text-xl font-bold mb-1">{doctor.name}</h2>
+            <Badge variant="secondary" className="mt-1">
+              {doctor.specialty}
+            </Badge>
+          </div>
         </div>
-      </div>
+      </CardHeader>
+      <CardContent className="space-y-2">
+        <div className="flex items-center gap-2 text-sm">
+          <User className="w-4 h-4 text-muted-foreground" />
+          <span>Age: {doctor.age} • {doctor.gender}</span>
+        </div>
 
-      {/* AGE */}
-      <p className="mb-1 text-sm">
-        <User className="inline mr-2 w-4 h-4" />
-        Age: {doctor.age}
-      </p>
+        <div className="flex items-center gap-2 text-sm">
+          <Calendar className="w-4 h-4 text-muted-foreground" />
+          <span>Experience: {doctor.experience} years</span>
+        </div>
 
-      {/* GENDER */}
-      <p className="mb-1 text-sm">
-        <User className="inline mr-2 w-4 h-4" />
-        Gender: {doctor.gender}
-      </p>
+        <div className="flex items-center gap-2 text-sm">
+          <DollarSign className="w-4 h-4 text-muted-foreground" />
+          <span>Fees: ${doctor.fees}</span>
+        </div>
 
-      <p className="mb-1 text-sm">
-        <Calendar className="inline mr-2 w-4 h-4" />
-        Experience: {doctor.experience} years
-      </p>
+        <div className="flex items-center gap-2 text-sm">
+          <MapPin className="w-4 h-4 text-muted-foreground" />
+          <span>{doctor.city}, {doctor.state}</span>
+        </div>
 
-      <p className="mb-1 text-sm">
-        <Search className="inline mr-2 w-4 h-4" />
-        Fees: ${doctor.fees}
-      </p>
-
-      <p className="mb-1 text-sm">
-        <MapPin className="inline mr-2 w-4 h-4" />
-        Location: {doctor.city}, {doctor.state}
-      </p>
-
-      <p className="mb-3 text-sm">
-        <Star className="inline mr-2 w-4 h-4" />
-        Qualifications: {doctor.qualifications?.join(", ") ?? "No qualifications listed"}
-      </p>
-
-      <Link
-        href={`/patient/doctor/${doctor.id}`}
-        className="text-blue-600 hover:underline"
-      >
-        View Profile
-      </Link>
-    </div>
+        <div className="flex items-center gap-2 text-sm">
+          <Star className="w-4 h-4 text-muted-foreground" />
+          <span className="text-muted-foreground">
+            Qualifications: {doctor.qualifications?.join(", ") ?? "No qualifications listed"}
+          </span>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <Button asChild variant="outline" className="w-full">
+          <Link href={`/patient/doctor/${doctor.id}`}>
+            View Profile
+          </Link>
+        </Button>
+      </CardFooter>
+    </Card>
   );
 }

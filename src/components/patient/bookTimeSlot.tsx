@@ -4,6 +4,10 @@ import { useUserStore } from '@/store/userStore';
 import { processOnlinePayment } from '@/lib/processOnlinePayment';
 import { useThrottledCallback } from '@/lib/useThrottledCallback';
 import type { Slot } from '@/types/common';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface BookTimeSlotProps {
   doctorId: string;
@@ -106,7 +110,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       });
 
       if (bookingData.ok) {
-        const data = await bookingData.json();
+        await bookingData.json();
         alert(paymentMethod === 'ONLINE' ? 'Slot booked successfully (Online payment)' : 'Slot booked successfully (Offline)');
         setSelectedSlot(null);
         setShowPaymentOptions(false);
@@ -194,146 +198,151 @@ const throttledPayOnline = useThrottledCallback((slotId: string) => {
   const totalSlots = slots.length;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 bg-white shadow-lg rounded-lg">
-      {/* Date Picker Section */}
-      <div className="mb-6 pb-6 border-b">
-        <label htmlFor="date-picker" className="block text-lg font-semibold text-gray-700 mb-2">
-          Select Date
-        </label>
-        <input
-          id="date-picker"
-          type="date"
-          value={date}
-          onChange={(e) => {
-            setDate(e.target.value);
-            setSelectedSlot(null);
-            setShowPaymentOptions(false);
-          }}
-          min={new Date().toISOString().split('T')[0]}
-          className="w-full md:w-auto px-4 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-gray-700 font-medium"
-        />
-      </div>
-
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        Available Slots for{' '}
-        {date &&
-          new Date(date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-      </h2>
-
-      {loading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
-          <p className="mt-4 text-gray-600">Loading available slots...</p>
-        </div>
-      ) : totalSlots === 0 ? (
-        <div className="text-center py-8">
-          <p className="text-gray-600 text-lg">No slots available for this date</p>
-        </div>
-      ) : (
-        <div className="space-y-6">
+    <Card className="max-w-5xl mx-auto">
+      <CardHeader>
+        <div className="space-y-4">
           <div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-3">Available Time Slots</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-              {slots.map((slot) => (
-                <button
-                  key={slot.id}
-                  onClick={() => {
-                    setSelectedSlot(slot.id);
-                    setShowPaymentOptions(false);
-                  }}
-                  disabled={slot.status !== 'AVAILABLE'}
-                  className={`
-                                        py-3 px-4 rounded-lg border-2 transition-all duration-200 font-medium
-                                        ${slot.status === 'AVAILABLE'
-                      ? selectedSlot === slot.id
-                        ? 'border-blue-600 bg-blue-600 text-white shadow-lg'
-                        : 'border-green-300 bg-green-50 text-green-700 hover:border-green-500 hover:bg-green-100'
-                      : 'border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed'
+            <label htmlFor="date-picker" className="block text-lg font-semibold mb-2">
+              Select Date
+            </label>
+            <Input
+              id="date-picker"
+              type="date"
+              value={date}
+              onChange={(e) => {
+                setDate(e.target.value);
+                setSelectedSlot(null);
+                setShowPaymentOptions(false);
+              }}
+              min={new Date().toISOString().split('T')[0]}
+              className="w-full md:w-auto"
+            />
+          </div>
+          <CardTitle>
+            Available Slots for{' '}
+            {date &&
+              new Date(date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+          </CardTitle>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {loading ? (
+          <div className="text-center py-8 space-y-4">
+            <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+            <Skeleton className="h-4 w-48 mx-auto" />
+          </div>
+        ) : totalSlots === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground text-lg">No slots available for this date</p>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-xl font-semibold mb-3">Available Time Slots</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                {slots.map((slot) => (
+                  <Button
+                    key={slot.id}
+                    onClick={() => {
+                      setSelectedSlot(slot.id);
+                      setShowPaymentOptions(false);
+                    }}
+                    disabled={slot.status !== 'AVAILABLE'}
+                    variant={selectedSlot === slot.id ? "default" : "outline"}
+                    className={
+                      slot.status === 'AVAILABLE'
+                        ? selectedSlot === slot.id
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "border-green-300 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-500"
+                        : "opacity-50 cursor-not-allowed"
                     }
-                                    `}
-                >
-                  {formatTime(slot.startTime)}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {selectedSlot && (
-            <div className="pt-4 border-t">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <p className="text-gray-600">Selected Time:</p>
-                  <p className="text-xl font-semibold text-gray-800">
-                    {formatTime(slots.find((s) => s.id === selectedSlot)?.startTime || '')}
-                  </p>
-                </div>
-
-                {!showPaymentOptions ? (
-                  <button
-                    onClick={() => setShowPaymentOptions(true)}
-                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200 shadow-md"
                   >
-                    Proceed to Book
-                  </button>
-                ) : (
-                  <div className="flex flex-wrap gap-3 animate-in fade-in slide-in-from-right-4 duration-300">
-                    <button
-                      onClick={() => selectedSlot && throttledPayOnline(selectedSlot)}
-                      className="px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 shadow-md transition-all"
-                    >
-                      Pay Online
-                    </button>
-
-                    <button
-                      onClick={() => selectedSlot && throttledBookOffline(selectedSlot)}
-                      disabled={booking}
-                      className="px-6 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md transition-all"
-                    >
-                      {booking ? 'Booking...' : 'Pay at Clinic'}
-                    </button>
-
-                    <button
-                      onClick={() => setShowPaymentOptions(false)}
-                      className="px-4 py-3 text-gray-500 hover:text-gray-700 underline"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                )}
+                    {formatTime(slot.startTime)}
+                  </Button>
+                ))}
               </div>
             </div>
-          )}
 
-          <div className="pt-4 border-t">
-            <p className="text-sm text-gray-600 mb-2">Legend:</p>
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-green-50 border-2 border-green-300 rounded mr-2" />
-                <span className="text-gray-700">Available</span>
+            {selectedSlot && (
+              <div className="pt-4 border-t space-y-4">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div>
+                    <p className="text-muted-foreground">Selected Time:</p>
+                    <p className="text-xl font-semibold">
+                      {formatTime(slots.find((s) => s.id === selectedSlot)?.startTime || '')}
+                    </p>
+                  </div>
+
+                  {!showPaymentOptions ? (
+                    <Button
+                      onClick={() => setShowPaymentOptions(true)}
+                      size="lg"
+                    >
+                      Proceed to Book
+                    </Button>
+                  ) : (
+                    <div className="flex flex-wrap gap-3">
+                      <Button
+                        onClick={() => selectedSlot && throttledPayOnline(selectedSlot)}
+                        size="lg"
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        Pay Online
+                      </Button>
+
+                      <Button
+                        onClick={() => selectedSlot && throttledBookOffline(selectedSlot)}
+                        disabled={booking}
+                        size="lg"
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        {booking ? 'Booking...' : 'Pay at Clinic'}
+                      </Button>
+
+                      <Button
+                        onClick={() => setShowPaymentOptions(false)}
+                        variant="ghost"
+                        size="lg"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-blue-600 border-2 border-blue-600 rounded mr-2" />
-                <span className="text-gray-700">Selected</span>
-              </div>
-              <div className="flex items-center">
-                <div className="w-4 h-4 bg-gray-100 border-2 border-gray-200 rounded mr-2" />
-                <span className="text-gray-700">Unavailable</span>
+            )}
+
+            <div className="pt-4 border-t">
+              <p className="text-sm text-muted-foreground mb-2">Legend:</p>
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-green-50 border-2 border-green-300 rounded mr-2" />
+                  <span>Available</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-blue-600 border-2 border-blue-600 rounded mr-2" />
+                  <span>Selected</span>
+                </div>
+                <div className="flex items-center">
+                  <div className="w-4 h-4 bg-gray-100 border-2 border-gray-200 rounded mr-2" />
+                  <span>Unavailable</span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {error && (
-        <div className="mt-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          {error}
-        </div>
-      )}
-    </div>
+        {error && (
+          <div className="mt-6 p-4 bg-destructive/10 border border-destructive text-destructive rounded-lg">
+            {error}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

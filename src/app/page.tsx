@@ -1,5 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   const router = useRouter();
@@ -12,39 +14,35 @@ export default function Home() {
     router.push("/auth/login");
   };
 
-  
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md text-center">
-
-        {/* Title */}
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">
-          Welcome to QuickClinic
-        </h1>
-        <p className="text-gray-600 mb-8">
-          Login or Signup to continue
-        </p>
-
-        {/* Buttons */}
-        <div className="flex flex-col gap-4">
-
-          <button
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <Card className="w-full max-w-md text-center">
+        <CardHeader>
+          <CardTitle className="text-3xl mb-3">
+            Welcome to QuickClinic
+          </CardTitle>
+          <CardDescription className="text-base">
+            Login or Signup to continue
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Button
             onClick={handleLogin}
-            className="w-full bg-blue-600 text-white py-3 rounded-md font-semibold hover:bg-blue-700 transition"
+            size="lg"
+            className="w-full"
           >
             Login
-          </button>
-
-          <button
+          </Button>
+          <Button
             onClick={handleSignup}
-            className="w-full bg-gray-800 text-white py-3 rounded-md font-semibold hover:bg-black transition"
+            variant="secondary"
+            size="lg"
+            className="w-full"
           >
             Signup
-          </button>
-
-        </div>
-      </div>
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }

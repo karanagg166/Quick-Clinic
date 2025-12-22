@@ -18,6 +18,7 @@ import {
 } from "react-icons/si";
 
 import { Mail, Globe } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AboutPage() {
   return (
@@ -73,10 +74,12 @@ function TechStackSection() {
 
 function TechCard({ icon, name }: { icon: any; name: string }) {
   return (
-    <div className="flex flex-col items-center p-6 bg-white/10 backdrop-blur-md rounded-2xl shadow-md hover:shadow-2xl hover:bg-white/20 transition cursor-pointer border border-white/10">
-      <div className="text-4xl mb-3">{icon}</div>
-      <p className="text-gray-200 font-medium">{name}</p>
-    </div>
+    <Card className="flex flex-col items-center p-6 bg-white/10 backdrop-blur-md hover:bg-white/20 transition cursor-pointer border-white/10">
+      <CardContent className="flex flex-col items-center p-0">
+        <div className="text-4xl mb-3">{icon}</div>
+        <p className="text-gray-200 font-medium">{name}</p>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -156,28 +159,25 @@ function ContributorCard({
   leetcode,
 }: any) {
   return (
-    <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-lg border border-white/10 hover:shadow-2xl transition hover:-translate-y-1">
-
-      <h3 className="text-2xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
-        {name}
-      </h3>
-
-      <p className="text-gray-300 mb-3">{role}</p>
-
-      <p className="text-gray-400 text-sm mb-6">{bio}</p>
-
-      {/* Social Icons */}
-      <div className="flex flex-wrap gap-4 text-2xl">
-
-        <a href={github} target="_blank"><SiGithub /></a>
-        <a href={linkedin} target="_blank"><SiLinkedin color="#0A66C2" /></a>
-        <a href={instagram} target="_blank"><SiInstagram color="#E1306C" /></a>
-        <a href={portfolio} target="_blank"><Globe /></a>
-        <a href={`mailto:${mail}`}><Mail /></a>
-        <a href={leetcode} target="_blank"><SiLeetcode color="#FFA116" /></a>
-        <a href={codeforces} target="_blank"><SiCodeforces color="#1F8ACB" /></a>
-
-      </div>
-    </div>
+    <Card className="bg-white/10 backdrop-blur-lg hover:shadow-2xl transition hover:-translate-y-1 border-white/10">
+      <CardHeader>
+        <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+          {name}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-gray-300 mb-3">{role}</p>
+        <p className="text-gray-400 text-sm mb-6">{bio}</p>
+        <div className="flex flex-wrap gap-4 text-2xl">
+          <a href={github} target="_blank" rel="noopener noreferrer"><SiGithub /></a>
+          <a href={linkedin} target="_blank" rel="noopener noreferrer"><SiLinkedin color="#0A66C2" /></a>
+          <a href={instagram} target="_blank" rel="noopener noreferrer"><SiInstagram color="#E1306C" /></a>
+          <a href={portfolio} target="_blank" rel="noopener noreferrer"><Globe /></a>
+          <a href={`mailto:${mail}`}><Mail /></a>
+          <a href={leetcode} target="_blank" rel="noopener noreferrer"><SiLeetcode color="#FFA116" /></a>
+          <a href={codeforces} target="_blank" rel="noopener noreferrer"><SiCodeforces color="#1F8ACB" /></a>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

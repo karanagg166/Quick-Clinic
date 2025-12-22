@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PatientInfo() {
   const { user, patientId } = useUserStore();
@@ -115,51 +119,70 @@ export default function PatientInfo() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-      <h2 className="text-2xl font-bold mb-4 text-center">Patient Information</h2>
-
-      {loading && <p className="text-blue-600 mb-4">Loading...</p>}
-
-      <textarea
-        value={medicalHistory}
-        onChange={(e) => setMedicalHistory(e.target.value)}
-        placeholder="Medical History"
-        className="w-full border p-2 mb-3 rounded"
-      />
-
-      <textarea
-        value={allergies}
-        onChange={(e) => setAllergies(e.target.value)}
-        placeholder="Allergies"
-        className="w-full border p-2 mb-3 rounded"
-      />
-
-      <textarea
-        value={currentMedications}
-        onChange={(e) => setCurrentMedications(e.target.value)}
-        placeholder="Current Medications"
-        className="w-full border p-2 mb-3 rounded"
-      />
-
-      <div className="mt-6 flex justify-end">
-        {!exists ? (
-          <button
-            className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 disabled:opacity-50"
-            onClick={createInfo}
-            disabled={loading}
-          >
-            {loading ? "Creating..." : "Create Info"}
-          </button>
+    <Card className="max-w-lg mx-auto mt-6">
+      <CardHeader>
+        <CardTitle className="text-center">Patient Information</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {loading && !exists ? (
+          <div className="space-y-4">
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
         ) : (
-          <button
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-            onClick={updateInfo}
-            disabled={loading}
-          >
-            {loading ? "Updating..." : "Update Info"}
-          </button>
+          <>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Medical History</label>
+              <Textarea
+                value={medicalHistory}
+                onChange={(e) => setMedicalHistory(e.target.value)}
+                placeholder="Enter your medical history"
+                rows={4}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Allergies</label>
+              <Textarea
+                value={allergies}
+                onChange={(e) => setAllergies(e.target.value)}
+                placeholder="List any allergies"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Current Medications</label>
+              <Textarea
+                value={currentMedications}
+                onChange={(e) => setCurrentMedications(e.target.value)}
+                placeholder="List current medications"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex justify-end pt-4">
+              {!exists ? (
+                <Button
+                  onClick={createInfo}
+                  disabled={loading}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  {loading ? "Creating..." : "Create Info"}
+                </Button>
+              ) : (
+                <Button
+                  onClick={updateInfo}
+                  disabled={loading}
+                >
+                  {loading ? "Updating..." : "Update Info"}
+                </Button>
+              )}
+            </div>
+          </>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

@@ -4,6 +4,11 @@ import { useState } from "react";
 import PatientCard from "@/components/patient/patientCard";
 import type { Patient } from "@/types/patient";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FindPatientsPage() {
   const doctorId = useUserStore((s) => s.doctorId); // ✅ FIXED
@@ -64,89 +69,91 @@ console.log(data);
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      
+    <div className="min-h-screen p-6 space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Patients</h1>
-        <p className="text-gray-600">Search patient records using flexible filters</p>
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Find Patients</h1>
+        <p className="text-muted-foreground">Search patient records using flexible filters</p>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 className="text-2xl font-semibold mb-4">Search Filters</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-
-          <input
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
-
-          <select
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-            className="border p-2 rounded w-full"
-          >
-            <option value="">All Genders</option>
-            <option value="MALE">Male</option>
-            <option value="FEMALE">Female</option>
-            <option value="BINARY">Other</option>
-          </select>
-
-          <input
-            type="number"
-            placeholder="Age"
-            value={age}
-            onChange={(e) => setAge(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
-
-          <input
-            type="text"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
-
-          <input
-            type="text"
-            placeholder="City"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
-
-          <input
-            type="text"
-            placeholder="State"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            className="border p-2 rounded w-full"
-          />
-
-          <button
-            onClick={handleSearch}
-            className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700 transition w-full"
-          >
-            {loading ? "Searching..." : "Search"}
-          </button>
-        </div>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Search Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <Input
+              type="text"
+              placeholder="Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <Select value={gender} onValueChange={setGender}>
+              <SelectTrigger>
+                <SelectValue placeholder="All Genders" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Genders</SelectItem>
+                <SelectItem value="MALE">Male</SelectItem>
+                <SelectItem value="FEMALE">Female</SelectItem>
+                <SelectItem value="BINARY">Other</SelectItem>
+              </SelectContent>
+            </Select>
+            <Input
+              type="number"
+              placeholder="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
+            />
+            <Input
+              type="text"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Input
+              type="text"
+              placeholder="City"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            />
+            <Input
+              type="text"
+              placeholder="State"
+              value={state}
+              onChange={(e) => setState(e.target.value)}
+            />
+            <Button
+              onClick={handleSearch}
+              className="w-full"
+              disabled={loading}
+            >
+              {loading ? "Searching..." : "Search"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Results */}
       <div>
-        {loading && <p className="text-gray-600">Loading...</p>}
-
-        {!loading && searched && patients.length === 0 && (
-          <p className="text-gray-600">No patients found.</p>
+        {loading && (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+            <Skeleton className="h-64 w-full" />
+          </div>
         )}
 
-        {patients.length > 0 && (
+        {!loading && searched && patients.length === 0 && (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p className="text-muted-foreground">No patients found.</p>
+            </CardContent>
+          </Card>
+        )}
+
+        {!loading && patients.length > 0 && (
           <>
             <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
