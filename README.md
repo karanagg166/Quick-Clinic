@@ -45,8 +45,15 @@ docker compose exec app npx prisma migrate dev
 ▶️ 6. Start the Project
 docker compose up
 
+This starts both:
+- Next.js App: http://localhost:3000
+- Socket.IO Server: http://localhost:4000
+
 Visit the app:
 http://localhost:3000
+
+Test socket server health:
+http://localhost:4000/health
 
 --------------------------------------------------------------------------------
 

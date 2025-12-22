@@ -1,0 +1,36 @@
+# Development Dockerfile for Socket Server
+FROM node:24.11.1-alpine
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN apk add --no-cache openssl
+
+# Copy root package.json (for Prisma client dependencies)
+COPY package*.json ./
+
+# Copy socket-server package files
+COPY socket-server/package*.json ./socket-server/
+
+# Install all dependencies (including dev dependencies)
+RUN npm install
+RUN cd socket-server && npm install
+
+# Copy Prisma schema and generate client
+COPY prisma ./prisma/
+COPY prisma.config.ts ./
+RUN npx prisma generate
+
+# Copy socket server files
+COPY socket-server ./socket-server/
+
+# Expose port
+EXPOSE 4000
+
+ENV NODE_ENV=development
+ENV PORT=4000
+
+# Start in development mode with watch
+WORKDIR /app/socket-server
+CMD ["npm", "run", "dev"]
+
