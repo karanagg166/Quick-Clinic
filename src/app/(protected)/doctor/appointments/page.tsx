@@ -43,7 +43,7 @@ export default function DoctorAppointmentsPage() {
 
     if (patientName) params.append("patientName", patientName);
     if (patientEmail) params.append("patientEmail", patientEmail);
-    if (gender) params.append("gender", gender);
+    if (gender && gender !== "all") params.append("gender", gender);
     if (city) params.append("city", city);
     if (age) params.append("age", age);
 
@@ -53,9 +53,9 @@ export default function DoctorAppointmentsPage() {
     if (endDate) params.append("endDate", endDate);
     if (endTime) params.append("endTime", endTime);
 
-    if (paymentMethod) params.append("paymentMethod", paymentMethod);
+    if (paymentMethod && paymentMethod !== "all") params.append("paymentMethod", paymentMethod);
 
-    if (status) params.append("status", status);
+    if (status && status !== "all") params.append("status", status);
 
     const res = await fetch(
       `/api/doctors/${doctorId}/appointments?${params.toString()}`
@@ -102,7 +102,7 @@ export default function DoctorAppointmentsPage() {
                 <SelectValue placeholder="Gender" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Gender</SelectItem>
+                <SelectItem value="all">All Genders</SelectItem>
                 <SelectItem value="MALE">Male</SelectItem>
                 <SelectItem value="FEMALE">Female</SelectItem>
                 <SelectItem value="BINARY">Other</SelectItem>
@@ -148,7 +148,7 @@ export default function DoctorAppointmentsPage() {
                 <SelectValue placeholder="Payment Method" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Payment Method</SelectItem>
+                <SelectItem value="all">All Payment Methods</SelectItem>
                 <SelectItem value="CASH">Cash</SelectItem>
                 <SelectItem value="CARD">Card</SelectItem>
                 <SelectItem value="UPI">UPI</SelectItem>
@@ -159,7 +159,7 @@ export default function DoctorAppointmentsPage() {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="CONFIRMED">Confirmed</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>

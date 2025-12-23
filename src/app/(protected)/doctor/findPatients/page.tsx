@@ -33,7 +33,7 @@ export default function FindPatientsPage() {
       params.append("doctorId", doctorId || "");
 
       if (name) params.append("name", name);
-      if (gender) params.append("gender", gender);
+      if (gender && gender !== "all") params.append("gender", gender);
       if (age) params.append("age", age);
       if (email) params.append("email", email);
       if (city) params.append("city", city);
@@ -94,7 +94,7 @@ console.log(data);
                 <SelectValue placeholder="All Genders" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Genders</SelectItem>
+                <SelectItem value="all">All Genders</SelectItem>
                 <SelectItem value="MALE">Male</SelectItem>
                 <SelectItem value="FEMALE">Female</SelectItem>
                 <SelectItem value="BINARY">Other</SelectItem>

@@ -32,7 +32,7 @@ export default function PatientAppointmentsPage() {
     if (fees !== undefined && fees !== 0) params.append("fees", String(fees)); // FIX
     if (specialty) params.append("specialty", specialty);
     if (date) params.append("date", date);
-    if (status) params.append("status", status);
+    if (status && status !== "all") params.append("status", status);
 
     const res = await fetch(
       `/api/patients/${patientId}/appointments?${params.toString()}`
@@ -91,7 +91,7 @@ export default function PatientAppointmentsPage() {
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Status</SelectItem>
+                <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="CONFIRMED">Confirmed</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
