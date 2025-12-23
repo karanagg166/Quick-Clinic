@@ -25,6 +25,9 @@ COPY prisma.config.ts ./
 # Ensure src directory exists, then generate Prisma client
 RUN mkdir -p src/generated && npx prisma generate
 
+# Verify Prisma client was generated (for debugging)
+RUN ls -la src/generated/prisma/ || echo "Prisma client not found"
+
 # Copy socket server TypeScript files
 COPY socket-server/*.ts ./socket-server/
 COPY socket-server/tsconfig.json ./socket-server/
