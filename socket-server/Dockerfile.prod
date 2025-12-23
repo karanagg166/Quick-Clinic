@@ -33,12 +33,11 @@ COPY socket-server/tsconfig.json ./socket-server/
 WORKDIR /app/socket-server
 RUN npx tsc
 
-# Return to app root
-WORKDIR /app
-
 EXPOSE 4000
 
 ENV NODE_ENV=production
 ENV PORT=4000
 
-CMD ["node", "socket-server/dist/main.js"]
+# Run from socket-server directory to match local development paths
+WORKDIR /app/socket-server
+CMD ["node", "dist/main.js"]
