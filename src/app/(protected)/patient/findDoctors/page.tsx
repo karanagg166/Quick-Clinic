@@ -61,8 +61,8 @@ export default function FindDoctorsPage() {
       const params = new URLSearchParams();
       if (city) params.append("city", city);
       if (state) params.append("state", state);
-      if (specialty) params.append("specialization", specialty);
-      if (gender) params.append("gender", gender);
+      if (specialty && specialty !== "all") params.append("specialization", specialty);
+      if (gender && gender !== "all") params.append("gender", gender);
       if (name) params.append("name", name);
       if (fees) params.append("fees", fees);
       if (experience) params.append("experience", experience);
@@ -126,7 +126,7 @@ export default function FindDoctorsPage() {
                 <SelectValue placeholder="All Specializations" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Specializations</SelectItem>
+                <SelectItem value="all">All Specializations</SelectItem>
                 {specializations.map((spec) => (
                   <SelectItem key={spec} value={spec}>
                     {spec}
@@ -139,7 +139,7 @@ export default function FindDoctorsPage() {
                 <SelectValue placeholder="All Genders" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Genders</SelectItem>
+                <SelectItem value="all">All Genders</SelectItem>
                 <SelectItem value="MALE">Male</SelectItem>
                 <SelectItem value="FEMALE">Female</SelectItem>
                 <SelectItem value="BINARY">Other</SelectItem>
