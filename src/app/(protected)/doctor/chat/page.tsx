@@ -1,8 +1,12 @@
 'use client';
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { MessageCircle, AlertCircle } from "lucide-react";
+import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 interface ChatListItem {
   id: string;
@@ -39,8 +43,9 @@ export default function DoctorChatListPage() {
 
         const data = await res.json();
         setChats(data?.relations || []);
-      } catch (err: any) {
-        setError(err?.message || "Unable to load chats");
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unable to load chats";
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -55,51 +60,64 @@ export default function DoctorChatListPage() {
 
   if (isLoading) {
     return (
-      <div className="max-w-3xl mx-auto p-6">
-        <p className="text-gray-600">Loading user...</p>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LoadingSpinner />
       </div>
     );
   }
 
   if (!user?.userId || user.role !== "DOCTOR") {
     return (
-      <div className="max-w-3xl mx-auto p-6">
-        <p className="text-gray-600">Please log in as a doctor to view your chats.</p>
-      </div>
+      <Card className="max-w-2xl mx-auto border shadow-sm">
+        <CardContent className="p-6">
+          <div className="flex items-center gap-3 text-destructive">
+            <AlertCircle className="h-5 w-5" />
+            <p className="text-sm">Please log in as a doctor to view your chats.</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto p-6">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Patient Messages</h1>
-        <p className="text-gray-600">Chat with your patients</p>
-      </div>
+    <div className="space-y-6">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+      >
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Patient Messages</h1>
+          <p className="text-muted-foreground">Chat with your patients</p>
+        </div>
+      </motion.div>
 
       {loading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-gray-600">Loading conversations...</p>
-          </div>
+          <LoadingSpinner />
         </div>
       ) : error ? (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700 flex items-center gap-3">
-          <span className="text-xl">⚠️</span>
-          <p>{error}</p>
-        </div>
+        <Card className="border-destructive border-2">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3 text-destructive">
+              <AlertCircle className="h-5 w-5" />
+              <p className="text-sm font-medium">{error}</p>
+            </div>
+          </CardContent>
+        </Card>
       ) : chats.length === 0 ? (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">💬</span>
-          </div>
-          <p className="text-gray-900 font-semibold text-lg mb-2">No patient conversations yet</p>
-          <p className="text-gray-600">Chats will appear after patients message you</p>
-        </div>
+        <Card className="border shadow-sm">
+          <CardContent className="p-12 text-center">
+            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
+              <MessageCircle className="w-10 h-10 text-muted-foreground" />
+            </div>
+            <CardTitle className="mb-2">No patient conversations yet</CardTitle>
+            <CardDescription>Chats will appear after patients message you</CardDescription>
+          </CardContent>
+        </Card>
       ) : (
-        <div className="space-y-3">
-          {chats.map((chat) => {
+        <div className="grid gap-4">
+          {chats.map((chat, index) => {
             const lastLine = chat.lastMessage
               ? chat.lastMessage.length > 50
                 ? chat.lastMessage.substring(0, 50) + "..."
@@ -107,27 +125,35 @@ export default function DoctorChatListPage() {
               : "No messages yet";
 
             return (
-              <button
+              <motion.div
                 key={chat.id}
-                onClick={() => handleOpenChat(chat.id)}
-                className="w-full text-left bg-white border border-gray-200 rounded-lg p-4 hover:border-blue-400 hover:shadow-md hover:bg-blue-50 transition-all duration-200 group"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="w-12 h-12 bg-linear-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shrink-0">
-                      <span className="text-white font-bold text-lg">👤</span>
+                <Card 
+                  className="border shadow-sm hover:shadow-md transition-all cursor-pointer"
+                  onClick={() => handleOpenChat(chat.id)}
+                >
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-4 flex-1">
+                        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center shrink-0">
+                          <span className="text-primary font-bold text-sm">👤</span>
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground truncate">Patient: {chat.patientName}</p>
+                          <p className="text-sm text-muted-foreground truncate">Dr. {chat.doctorName}</p>
+                          <p className="text-sm text-muted-foreground mt-1 truncate">{lastLine}</p>
+                        </div>
+                      </div>
+                      <div className="text-xs text-muted-foreground whitespace-nowrap">
+                        {new Date(chat.lastMessageAt).toLocaleDateString()}
+                      </div>
                     </div>
-                  <div>
-                      <p className="font-semibold text-gray-900 group-hover:text-blue-600">Patient: {chat.patientName}</p>
-                    <p className="text-sm text-gray-600">Dr. {chat.doctorName}</p>
-                  </div>
-                  </div>
-                  <span className="text-xs text-gray-500 whitespace-nowrap ml-4">
-                    {new Date(chat.lastMessageAt).toLocaleDateString()}
-                  </span>
-                </div>
-                <p className="text-sm text-gray-700 line-clamp-1 ml-16">{lastLine}</p>
-              </button>
+                  </CardContent>
+                </Card>
+              </motion.div>
             );
           })}
         </div>

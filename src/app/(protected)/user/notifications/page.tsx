@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NotificationsPage(){
     const userId = useUserStore((state) => state.user?.userId);
@@ -57,75 +61,92 @@ export default function NotificationsPage(){
     };
 
     return (
-        <div className="max-w-xl mx-auto mt-8 p-4 bg-white shadow rounded">
-
-            <h2 className="text-2xl font-bold mb-4">Notifications</h2>
-
-            {/* loading */}
-            {loading && <p>Loading...</p>}
-
-            {/* no notifications */}
-            {!loading && notifications.length === 0 && (
-                <p className="text-gray-500">No notifications found</p>
-            )}
-
-            <div className="space-y-3">
-                {visibleNotifications.map((n) => (
-                <div
-                    key={n.id}
-                    className={`p-3 border rounded ${
-                    n.isRead ? "bg-gray-100" : "bg-blue-50"
-                    }`}
-                >
-                    <p className="font-medium">{n.message}</p>
-
-                    <span className="text-xs text-gray-500 block">
-                    {new Date(n.createdAt).toLocaleString()}
-                    </span>
-
-                    <div className="flex gap-2 mt-2">
-                    
-                    {!n.isRead && (
-                        <button
-                        onClick={() => markRead(n.id)}
-                        className="text-sm bg-green-600 text-white px-2 py-1 rounded"
-                        >
-                        Mark Read
-                        </button>
-                    )}
-
-                    <button
-                        onClick={() => deleteNotification(n.id)}
-                        className="text-sm bg-red-600 text-white px-2 py-1 rounded"
-                    >
-                        Delete
-                    </button>
-                    </div>
-
-                </div>
-                ))}
+        <div className="min-h-screen p-6 space-y-6">
+            <div>
+                <h1 className="text-3xl font-semibold mb-2">Notifications</h1>
+                <p className="text-muted-foreground">Manage your notifications</p>
             </div>
 
-            {/*"More..." button:*/}
-            {!showAll && notifications.length > 4 && (
-                <button
-                    onClick={() => setShowAll(true)}
-                    className="text-blue-600 text-sm mt-4"
-                >
-                    More...
-                </button>
-            )}
+            <Card className="max-w-2xl">
+                <CardHeader>
+                    <CardTitle>Your Notifications</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {/* loading */}
+                    {loading && (
+                        <div className="space-y-3">
+                            <Skeleton className="h-20 w-full" />
+                            <Skeleton className="h-20 w-full" />
+                            <Skeleton className="h-20 w-full" />
+                        </div>
+                    )}
 
-            {/*"show less..." button:*/}
-            {showAll && notifications.length > 4 && (
-                <button
-                    onClick={() => setShowAll(false)}
-                    className="text-blue-600 text-sm mt-4"
-                >
-                    Show Less
-                </button>
-            )}
-            
+                    {/* no notifications */}
+                    {!loading && notifications.length === 0 && (
+                        <p className="text-center text-muted-foreground py-8">No notifications found</p>
+                    )}
+
+                    <div className="space-y-3">
+                        {visibleNotifications.map((n) => (
+                            <Card key={n.id} className={n.isRead ? "border bg-muted/50" : "border shadow-sm"}>
+                                <CardContent className="p-4">
+                                    <div className="flex items-start justify-between gap-4">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <p className="font-medium text-foreground">{n.message}</p>
+                                                {!n.isRead && <Badge variant="default" className="text-xs">New</Badge>}
+                                            </div>
+                                            <span className="text-xs text-muted-foreground">
+                                                {new Date(n.createdAt).toLocaleString()}
+                                            </span>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            {!n.isRead && (
+                                                <Button
+                                                    onClick={() => markRead(n.id)}
+                                                    variant="outline"
+                                                    size="sm"
+                                                >
+                                                    Mark Read
+                                                </Button>
+                                            )}
+                                            <Button
+                                                onClick={() => deleteNotification(n.id)}
+                                                variant="outline"
+                                                size="sm"
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+
+                    {/*"More..." button:*/}
+                    {!showAll && notifications.length > 4 && (
+                        <Button
+                            onClick={() => setShowAll(true)}
+                            variant="outline"
+                            className="w-full"
+                        >
+                            Show More ({notifications.length - 4} more)
+                        </Button>
+                    )}
+
+                    {/*"show less..." button:*/}
+                    {showAll && notifications.length > 4 && (
+                        <Button
+                            onClick={() => setShowAll(false)}
+                            variant="outline"
+                            className="w-full"
+                        >
+                            Show Less
+                        </Button>
+                    )}
+                </CardContent>
+            </Card>
         </div>
     );
 }

@@ -77,11 +77,14 @@ export default function DoctorAppointmentsPage() {
   }, [doctorId]);
 
   return (
-    <div className="p-6 space-y-6 min-h-screen">
-      <h1 className="text-3xl font-bold">Your Appointments</h1>
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Your Appointments</h1>
+        <p className="text-muted-foreground">Manage and filter your appointments</p>
+      </div>
 
       {/* Filters */}
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader>
           <CardTitle>Filter Appointments</CardTitle>
         </CardHeader>

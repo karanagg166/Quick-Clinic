@@ -15,6 +15,9 @@ import {
   X
 } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
 
 interface DoctorSidebarProps {
   isSidebarOpen: boolean;
@@ -86,24 +89,27 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     <>
       {/* Sidebar */}
       <aside 
-        className={`fixed top-0 left-0 h-full w-64 bg-white border-r border-gray-200 shadow-lg transform ${
+        className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         } transition-transform duration-300 ease-in-out z-50 overflow-y-auto`}
       >
         {/* Header */}
-        <div className="p-6 border-b border-gray-200 flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-bold text-gray-900">Doctor Portal</h2>
-            <p className="text-xs text-gray-500 mt-1">Welcome back, Doctor!</p>
-          </div>
-
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+        <Card className="border-0 border-b rounded-none shadow-none">
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-foreground">Doctor Portal</h2>
+              <p className="text-xs text-muted-foreground mt-1">Welcome back, Doctor!</p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setSidebarOpen(false)}
+              className="h-8 w-8"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* MENU */}
         <nav className="p-4">
@@ -118,50 +124,55 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
               return (
                 <li key={item.label}>
                   <div className="flex items-center">
-                    <Link
-                      href={item.href}
-                      onClick={() => !hasSubmenu && setSidebarOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-2.5 rounded-lg transition-colors flex-1 ${
-                        isItemActive
-                          ? 'bg-blue-100 text-blue-600 font-medium'
-                          : 'text-gray-700 hover:bg-gray-100'
+                    <Button
+                      asChild
+                      variant={isItemActive ? "secondary" : "ghost"}
+                      className={`w-full justify-start ${
+                        isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
                       }`}
+                      onClick={() => !hasSubmenu && setSidebarOpen(false)}
                     >
-                      <IconComponent className="w-5 h-5" />
-                      <span className="text-sm">{item.label}</span>
-                    </Link>
+                      <Link href={item.href} className="flex items-center gap-3">
+                        <IconComponent className="w-5 h-5" />
+                        <span>{item.label}</span>
+                      </Link>
+                    </Button>
 
                     {hasSubmenu && (
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
                         onClick={() =>
                           setExpandedMenu(isSubmenuOpen ? null : item.label)
                         }
-                        className="px-2 py-2.5 hover:bg-gray-100 rounded-lg transition-colors"
+                        className="h-8 w-8"
                       >
                         <ChevronDown
-                          className={`w-4 h-4 text-gray-500 transition-transform ${
+                          className={`w-4 h-4 transition-transform ${
                             isSubmenuOpen ? 'rotate-180' : ''
                           }`}
                         />
-                      </button>
+                      </Button>
                     )}
                   </div>
 
                   {hasSubmenu && isSubmenuOpen && (
-                    <ul className="ml-9 mt-1 space-y-1 border-l-2 border-gray-200 pl-4">
+                    <ul className="ml-9 mt-1 space-y-1 border-l-2 border-border pl-4">
                       {item.submenu!.map((subitem) => (
                         <li key={subitem.label}>
-                          <Link
-                            href={subitem.href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`text-sm py-2 px-2 rounded transition-colors block ${
-                              pathname === subitem.href
-                                ? 'text-blue-600 font-medium bg-blue-50'
-                                : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                          <Button
+                            asChild
+                            variant={pathname === subitem.href ? "secondary" : "ghost"}
+                            size="sm"
+                            className={`w-full justify-start text-sm ${
+                              pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
                             }`}
+                            onClick={() => setSidebarOpen(false)}
                           >
-                            {subitem.label}
-                          </Link>
+                            <Link href={subitem.href}>
+                              {subitem.label}
+                            </Link>
+                          </Button>
                         </li>
                       ))}
                     </ul>
@@ -172,19 +183,6 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
           </ul>
         </nav>
 
-        {/* FOOTER */}
-        <div className="p-4 mt-auto border-t border-gray-200">
-          <div className="bg-blue-50 rounded-lg p-4">
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">Need Help?</h3>
-            <p className="text-xs text-gray-600 mb-3">
-              Contact support for scheduling or patient issues.
-            </p>
-
-            <button className="w-full px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-lg hover:bg-blue-700 transition-colors">
-              Contact Support
-            </button>
-          </div>
-        </div>
       </aside>
     </>
   );

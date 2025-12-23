@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DoctorEarnings() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -13,7 +18,7 @@ export default function DoctorEarnings() {
     endTime: "",
   });
 
-  const [data, setData] = useState<any>(null);
+  const [data, setData] = useState<{ count: number; total: number } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchEarnings = async () => {
@@ -42,82 +47,119 @@ export default function DoctorEarnings() {
   }, [doctorId]);
 
   return (
-  <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow rounded">
-
-    <h2 className="text-2xl font-bold mb-6 text-center">Earnings Dashboard</h2>
-
-    {/* Filters */}
-    <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-
-      {/* Start Date */}
-      <input
-        type="date"
-        value={filters.startDate || ""}
-        onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
-        className="border p-2 rounded"
-      />
-
-      {/* End Date */}
-      <input
-        type="date"
-        value={filters.endDate || ""}
-        onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
-        className="border p-2 rounded"
-      />
-
-      {/* Start Time */}
-      <input
-        type="time"
-        value={filters.startTime || ""}
-        onChange={(e) => setFilters({ ...filters, startTime: e.target.value })}
-        className="border p-2 rounded"
-      />
-
-      {/* End Time */}
-      <input
-        type="time"
-        value={filters.endTime || ""}
-        onChange={(e) => setFilters({ ...filters, endTime: e.target.value })}
-        className="border p-2 rounded"
-      />
-
-      {/* Filter Button */}
-      <button
-        onClick={fetchEarnings}
-        disabled={loading}
-        className="bg-blue-600 text-white rounded"
-      >
-        {loading ? "Loading..." : "Filter"}
-      </button>
-    </div>
-
-    {/* Loading */}
-    {loading && (
-      <p className="text-center text-blue-600">Fetching earnings...</p>
-    )}
-
-    {/* No Results */}
-    {!loading && data?.count === 0 && (
-      <p className="text-center text-gray-500">No earnings found for filters.</p>
-    )}
-
-    {/* Stats */}
-    {!loading && data && data.count > 0 && (
-      <div className="mt-8 text-center space-y-3">
-
-        <p className="text-lg">
-          Total Appointments: <b>{data.count}</b>
-        </p>
-
-        <p className="text-2xl font-bold text-green-700">
-          Total Earnings: ₹{data.total}
-        </p>
-
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Earnings Dashboard</h1>
+        <p className="text-muted-foreground">Track your earnings and revenue</p>
       </div>
-    )}
 
-  </div>
-);
+      {/* Filters */}
+      <Card className="border shadow-sm">
+        <CardHeader>
+          <CardTitle>Filter Earnings</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+            {/* Start Date */}
+            <div className="space-y-2">
+              <Label htmlFor="startDate">Start Date</Label>
+              <Input
+                id="startDate"
+                type="date"
+                value={filters.startDate || ""}
+                onChange={(e) => setFilters({ ...filters, startDate: e.target.value })}
+              />
+            </div>
+
+            {/* End Date */}
+            <div className="space-y-2">
+              <Label htmlFor="endDate">End Date</Label>
+              <Input
+                id="endDate"
+                type="date"
+                value={filters.endDate || ""}
+                onChange={(e) => setFilters({ ...filters, endDate: e.target.value })}
+              />
+            </div>
+
+            {/* Start Time */}
+            <div className="space-y-2">
+              <Label htmlFor="startTime">Start Time</Label>
+              <Input
+                id="startTime"
+                type="time"
+                value={filters.startTime || ""}
+                onChange={(e) => setFilters({ ...filters, startTime: e.target.value })}
+              />
+            </div>
+
+            {/* End Time */}
+            <div className="space-y-2">
+              <Label htmlFor="endTime">End Time</Label>
+              <Input
+                id="endTime"
+                type="time"
+                value={filters.endTime || ""}
+                onChange={(e) => setFilters({ ...filters, endTime: e.target.value })}
+              />
+            </div>
+
+            {/* Filter Button */}
+            <div className="flex items-end">
+              <Button
+                onClick={fetchEarnings}
+                disabled={loading}
+                className="w-full"
+              >
+                {loading ? "Loading..." : "Filter"}
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Results */}
+      {loading && (
+        <Card className="border shadow-sm">
+          <CardContent className="p-6">
+            <div className="space-y-4">
+              <Skeleton className="h-8 w-full" />
+              <Skeleton className="h-8 w-full" />
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* No Results */}
+      {!loading && data?.count === 0 && (
+        <Card className="border shadow-sm">
+          <CardContent className="p-6 text-center">
+            <p className="text-muted-foreground">No earnings found for the selected filters.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Stats */}
+      {!loading && data && data.count > 0 && (
+        <Card className="border shadow-sm">
+          <CardHeader>
+            <CardTitle>Earnings Summary</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="text-center space-y-2">
+              <p className="text-lg text-muted-foreground">
+                Total Appointments: <span className="font-semibold text-foreground">{data.count}</span>
+              </p>
+              <p className="text-3xl font-semibold text-foreground">
+                Total Earnings: ₹{data.total}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
 
   
 }

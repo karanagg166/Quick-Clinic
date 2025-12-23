@@ -2,9 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DoctorInfo() {
-  const { user, doctorId } = useUserStore();
+  const { doctorId } = useUserStore();
   //  console.log(user, doctorId);
   const [fees, setFees] = useState("");
   const [experience, setExperience] = useState("");
@@ -23,7 +30,6 @@ export default function DoctorInfo() {
     );
   };
 
-  const [existingDoctor, setExistingDoctor] = useState(true);
   const [loading, setLoading] = useState(false);
 
   // GET DOCTOR INFO
@@ -43,15 +49,14 @@ export default function DoctorInfo() {
         const data = await response.json();
 // console.log("Fetched doctor data:", data);
         if (response.ok) {
-          setExistingDoctor(true);
           setFees(String(data.doctor.fees));
           setExperience(String(data.doctor.experience));
           setSpecialty(data.doctor.specialty);
           setQualification(data.doctor.qualifications || []);
         }
 
-      } catch (err:any) {
-        console.error("Doctor not created yet.");
+      } catch (err: unknown) {
+        console.error("Doctor not created yet.", err);
       } finally {
         setLoading(false);
       }
@@ -71,8 +76,9 @@ export default function DoctorInfo() {
         const q = await fetch("/api/doctors/qualifications");
         const qData = await q.json();
         if (q.ok) setQualifications(qData.qualifications);
-      } catch (err:any) {
-        console.error("Enum fetch error:"+ err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("Enum fetch error:", errorMessage);
       }
     };
 
@@ -112,8 +118,9 @@ export default function DoctorInfo() {
       } else {
         alert("Error updating doctor info: " + data.error);
       }
-    } catch (err:any) {
-      alert("Error updating doctor info: " + err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      alert("Error updating doctor info: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -122,83 +129,114 @@ export default function DoctorInfo() {
  
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Doctor Information
-      </h2>
-
-      {loading && <p className="text-blue-600">Loading...</p>}
-
-      {/* FEES */}
-      <label className="block font-semibold mt-3">Fees:</label>
-      <input
-        type="number"
-        value={fees}
-        onChange={(e) => setFees(e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-
-      {/* EXPERIENCE */}
-      <label className="block font-semibold mt-3">Experience (years):</label>
-      <input
-        type="number"
-        value={experience}
-        onChange={(e) => setExperience(e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-
-      {/* SPECIALITY — SINGLE SELECT */}
-      <label className="block font-semibold mt-3">Specialty:</label>
-      <select
-        value={specialty}
-        onChange={(e) => setSpecialty(e.target.value)}
-        className="w-full border p-2 rounded"
-      >
-        <option value="">Select specialty</option>
-        {specialties.map((sp: string) => (
-          <option key={sp} value={sp}>
-            {sp}
-          </option>
-        ))}
-      </select>
-
-      {/* QUALIFICATIONS — MULTIPLE SELECT */}
-      <label className="block font-semibold mt-4">Qualifications:</label>
-
-      <div className="border p-3 rounded max-h-48 overflow-y-auto space-y-2 bg-gray-50">
-        {qualifications.map((q: string) => (
-          <label key={q} className="flex items-center gap-2 cursor-pointer text-sm">
-            
-            <input
-              type="checkbox"
-              value={q}
-              checked={qualification.includes(q)}
-              onChange={() => toggleQualification(q)}
-              className="h-4 w-4"
-            />
-
-            <span>{q}</span>
-          </label>
-        ))}
-
-        {qualifications.length === 0 && (
-          <p className="text-gray-500 text-sm">Loading...</p>
-        )}
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Doctor Information</h1>
+        <p className="text-muted-foreground">Update your professional details</p>
       </div>
 
+      <Card className="max-w-2xl">
+        <CardHeader>
+          <CardTitle>Professional Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {loading ? (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          ) : (
+            <>
+              {/* FEES */}
+              <div className="space-y-2">
+                <Label htmlFor="fees">Fees (₹)</Label>
+                <Input
+                  id="fees"
+                  type="number"
+                  value={fees}
+                  onChange={(e) => setFees(e.target.value)}
+                  placeholder="Enter consultation fees"
+                />
+              </div>
 
-      {/* BUTTONS */}
-      <div className="mt-6 flex justify-between">
-      
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded"
-            onClick={handleUpdateInfo}
-          >
-            Update Info
-          </button>
-        
-      </div>
+              {/* EXPERIENCE */}
+              <div className="space-y-2">
+                <Label htmlFor="experience">Experience (years)</Label>
+                <Input
+                  id="experience"
+                  type="number"
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                  placeholder="Years of experience"
+                />
+              </div>
+
+              {/* SPECIALITY — SINGLE SELECT */}
+              <div className="space-y-2">
+                <Label htmlFor="specialty">Specialty</Label>
+                <Select value={specialty} onValueChange={setSpecialty}>
+                  <SelectTrigger id="specialty">
+                    <SelectValue placeholder="Select specialty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {specialties.map((sp: string) => (
+                      <SelectItem key={sp} value={sp}>
+                        {sp}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* QUALIFICATIONS — MULTIPLE SELECT */}
+              <div className="space-y-2">
+                <Label>Qualifications</Label>
+                <Card className="p-4 max-h-48 overflow-y-auto">
+                  <div className="space-y-3">
+                    {qualifications.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">Loading qualifications...</p>
+                    ) : (
+                      qualifications.map((q: string) => (
+                        <div key={q} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`qual-${q}`}
+                            checked={qualification.includes(q)}
+                            onChange={() => toggleQualification(q)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                          <Label htmlFor={`qual-${q}`} className="cursor-pointer text-sm font-normal">
+                            {q}
+                          </Label>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </Card>
+                {qualification.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {qualification.map((q) => (
+                      <Badge key={q} variant="secondary">{q}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* BUTTON */}
+              <div className="pt-4">
+                <Button
+                  onClick={handleUpdateInfo}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? "Updating..." : "Update Info"}
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -22,17 +22,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function AboutPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-gray-800 text-white p-10">
+    <div className="min-h-screen bg-background p-6 md:p-10">
 
       {/* PAGE HEADER */}
-      <h1 className="text-5xl font-extrabold text-center mb-8 bg-gradient-to-r from-cyan-400 to-blue-500 text-transparent bg-clip-text drop-shadow-lg">
-        About Quick Clinic
-      </h1>
-
-      <p className="text-center text-gray-300 max-w-3xl mx-auto text-lg mb-16">
-        Quick Clinic is a modern healthcare platform built to simplify doctor–patient interactions. 
-        From real-time chat to appointment scheduling, we deliver a seamless, secure, and scalable experience using cutting-edge technologies.
-      </p>
+      <div className="max-w-4xl mx-auto mb-12">
+        <h1 className="text-4xl md:text-5xl font-semibold text-center mb-4 text-foreground">
+          About Quick Clinic
+        </h1>
+        <p className="text-center text-muted-foreground max-w-3xl mx-auto text-base md:text-lg">
+          Quick Clinic is a modern healthcare platform built to simplify doctor–patient interactions. 
+          From real-time chat to appointment scheduling, we deliver a seamless, secure, and scalable experience using cutting-edge technologies.
+        </p>
+      </div>
 
       {/* TECH STACK SECTION */}
       <TechStackSection />
@@ -50,12 +51,12 @@ export default function AboutPage() {
 
 function TechStackSection() {
   return (
-    <section className="max-w-6xl mx-auto mb-24">
-      <h2 className="text-4xl font-semibold mb-10 text-cyan-400 text-center">
+    <section className="max-w-6xl mx-auto mb-16">
+      <h2 className="text-3xl md:text-4xl font-semibold mb-8 text-foreground text-center">
         Technologies Used
       </h2>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
 
         <TechCard icon={<SiNextdotjs size={40} />} name="Next.js" />
         <TechCard icon={<SiTypescript size={40} color="#3178C6" />} name="TypeScript" />
@@ -74,10 +75,10 @@ function TechStackSection() {
 
 function TechCard({ icon, name }: { icon: any; name: string }) {
   return (
-    <Card className="flex flex-col items-center p-6 bg-white/10 backdrop-blur-md hover:bg-white/20 transition cursor-pointer border-white/10">
+    <Card className="flex flex-col items-center p-6 hover:shadow-md transition-shadow border">
       <CardContent className="flex flex-col items-center p-0">
-        <div className="text-4xl mb-3">{icon}</div>
-        <p className="text-gray-200 font-medium">{name}</p>
+        <div className="text-4xl mb-3 text-muted-foreground">{icon}</div>
+        <p className="text-sm font-medium text-foreground">{name}</p>
       </CardContent>
     </Card>
   );
@@ -89,12 +90,12 @@ function TechCard({ icon, name }: { icon: any; name: string }) {
 
 function ContributorsSection() {
   return (
-    <section className="max-w-6xl mx-auto mb-24">
-      <h2 className="text-4xl font-semibold mb-10 text-blue-400 text-center">
+    <section className="max-w-6xl mx-auto mb-16">
+      <h2 className="text-3xl md:text-4xl font-semibold mb-8 text-foreground text-center">
         Project Contributors
       </h2>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
         {/* ---------------------- YOUR CARD ---------------------- */}
         <ContributorCard
@@ -159,16 +160,16 @@ function ContributorCard({
   leetcode,
 }: any) {
   return (
-    <Card className="bg-white/10 backdrop-blur-lg hover:shadow-2xl transition hover:-translate-y-1 border-white/10">
+    <Card className="hover:shadow-md transition-shadow border">
       <CardHeader>
-        <CardTitle className="text-2xl text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
+        <CardTitle className="text-xl font-semibold text-foreground">
           {name}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-300 mb-3">{role}</p>
-        <p className="text-gray-400 text-sm mb-6">{bio}</p>
-        <div className="flex flex-wrap gap-4 text-2xl">
+        <p className="text-muted-foreground mb-3 text-sm">{role}</p>
+        <p className="text-muted-foreground text-sm mb-6">{bio}</p>
+        <div className="flex flex-wrap gap-3 text-lg">
           <a href={github} target="_blank" rel="noopener noreferrer"><SiGithub /></a>
           <a href={linkedin} target="_blank" rel="noopener noreferrer"><SiLinkedin color="#0A66C2" /></a>
           <a href={instagram} target="_blank" rel="noopener noreferrer"><SiInstagram color="#E1306C" /></a>

@@ -14,71 +14,16 @@
 [ ] Add Rate Limiting for OTP
 
 
-========================================
-2. NOTIFICATION SYSTEM
-========================================
-[ ] Create Notification model (Prisma)
-[ ] Add backend logic to create notifications
-[ ] Add real-time or polling notification system
-[ ] Build frontend notification UI (Bell icon + dropdown)
-
 
 ========================================
 3. DOCTOR FEATURES
 ========================================
-
------ SCHEDULE -----
-[ ] Doctor — Add weekly schedule
-[ ] Doctor — Edit weekly schedule
-[ ] Doctor — View schedule
-
------ LEAVES -----
-[ ] Doctor — Apply for leave
-[ ] Doctor — View past leaves
-[ ] Doctor — Add filters for leaves (date range, reason)
-[ ] Prevent schedule conflicts with leave
-
------ PATIENT MANAGEMENT -----
-[ ] Doctor — Search for a patient
-[ ] Doctor — View patient medical info
-[ ] Doctor — View patient history
-
------ APPOINTMENTS MANAGEMENT -----
-[ ] Doctor — View today’s appointments
-[ ] Doctor — View weekly appointments
-[ ] Doctor — View monthly appointments
-[ ] Doctor — Search previous appointments (filters)
-
------ EARNINGS -----
-[ ] Doctor — View monthly earnings
-[ ] Doctor — View weekly earnings
-[ ] Doctor — Track completed appointments revenue
 
 
 ========================================
 4. PATIENT FEATURES
 ========================================
 
------ DOCTOR DISCOVERY -----
-[ ] Patient — Search doctors
-[ ] Patient — Filter by specialty, experience, fees, rating
-
------ APPOINTMENTS -----
-[ ] Patient — Book appointments
-[ ] Patient — Cancel appointment
-[ ] Patient — Postpone appointment
-[ ] Patient — View upcoming appointments
-[ ] Patient — View past appointments (filters)
-
------ MEDICAL MANAGEMENT -----
-[ ] Patient — View own medical info
-[ ] Patient — Update own medical info (if allowed)
-
------ CHAT SYSTEM -----
-[ ] Patient — Chat with doctor
-[ ] Doctor — Chat with patient
-[ ] Store messages in DB (PostgreSQL)
-[ ] Add unread message notifications
 
 
 ========================================

@@ -1,9 +1,13 @@
 "use client";
 
 import { useState } from "react";
-
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 export default function PatientDetails() {
   const userId = useUserStore((state) => state.user?.userId);
   const setUser = useUserStore((state) => state.setUser);
@@ -60,47 +64,68 @@ setUser(user, data.patient.id, undefined);
   };
 
   return (
-    <div className="max-w-lg mx-auto p-6 shadow rounded">
-      <h2 className="text-xl font-bold mb-4">Patient Info</h2>
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Patient Information</h1>
+        <p className="text-muted-foreground">Complete your medical profile</p>
+      </div>
 
-      <textarea
-        value={medicalHistory}
-        onChange={(e) => setMedicalHistory(e.target.value)}
-        placeholder="Medical History"
-        className="w-full border p-2 mb-3"
-      />
+      <Card className="max-w-2xl border shadow-sm">
+        <CardHeader>
+          <CardTitle>Medical Information</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="space-y-2">
+            <Label htmlFor="medicalHistory">Medical History</Label>
+            <Textarea
+              id="medicalHistory"
+              value={medicalHistory}
+              onChange={(e) => setMedicalHistory(e.target.value)}
+              placeholder="Enter your medical history"
+              rows={4}
+            />
+          </div>
 
-      <textarea
-        value={allergies}
-        onChange={(e) => setAllergies(e.target.value)}
-        placeholder="Allergies"
-        className="w-full border p-2 mb-3"
-      />
+          <div className="space-y-2">
+            <Label htmlFor="allergies">Allergies</Label>
+            <Textarea
+              id="allergies"
+              value={allergies}
+              onChange={(e) => setAllergies(e.target.value)}
+              placeholder="List any allergies"
+              rows={3}
+            />
+          </div>
 
-      <textarea
-        value={currentMedications}
-        onChange={(e) => setCurrentMedications(e.target.value)}
-        placeholder="Current Medications"
-        className="w-full border p-2 mb-3"
-      />
+          <div className="space-y-2">
+            <Label htmlFor="medications">Current Medications</Label>
+            <Textarea
+              id="medications"
+              value={currentMedications}
+              onChange={(e) => setCurrentMedications(e.target.value)}
+              placeholder="List current medications"
+              rows={3}
+            />
+          </div>
 
-      <button
-        className={`px-4 py-2 rounded text-white transition ${
-          loading
-            ? "bg-gray-500 cursor-not-allowed"
-            : "bg-green-600 hover:bg-green-700"
-        }`}
-        onClick={createInfo}
-        disabled={loading}
-      >
-        {loading ? "Saving..." : "Create Info"}
-      </button>
+          <div className="flex justify-end pt-4">
+            <Button
+              onClick={createInfo}
+              disabled={loading}
+              className="w-full md:w-auto"
+            >
+              {loading ? "Saving..." : "Create Info"}
+            </Button>
+          </div>
 
-      {loading && (
-        <p className="mt-3 text-sm text-gray-500 animate-pulse">
-          Processing, please wait...
-        </p>
-      )}
+          {loading && (
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
