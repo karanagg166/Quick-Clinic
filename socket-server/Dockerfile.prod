@@ -22,10 +22,8 @@ WORKDIR /app
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npx prisma generate
-
-# Copy generated Prisma client (needed at runtime)
-COPY src/generated ./src/generated/
+# Ensure src directory exists, then generate Prisma client
+RUN mkdir -p src/generated && npx prisma generate
 
 # Copy socket server TypeScript files
 COPY socket-server/*.ts ./socket-server/
