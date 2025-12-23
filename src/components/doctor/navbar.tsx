@@ -14,6 +14,7 @@ interface DoctorNavbarProps {
 export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNavbarProps) {
   const router = useRouter();
   const logout = useUserStore((state) => state.logout);
+  const user = useUserStore((state) => state.user);
 
   const handleLogout = async () => {
     try {
@@ -107,12 +108,12 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
           >
             <Avatar 
-              src={useUserStore.getState().user?.profileImageUrl} 
-              name={useUserStore.getState().user?.name || "Doctor"}
+              src={user?.profileImageUrl} 
+              name={user?.name || "Doctor"}
               size="sm"
             />
             <span className="text-sm font-medium text-gray-700 hidden md:block">
-              {useUserStore.getState().user?.name || "Dr. John"}
+              {user?.name || "Dr. John"}
             </span>
           </Link>
         </div>
