@@ -40,6 +40,8 @@ EXPOSE 4000
 
 ENV NODE_ENV=production
 ENV PORT=4000
+# Add root node_modules to module resolution path
+ENV NODE_PATH=/app/node_modules
 
 # Run from socket-server directory to match local development paths
 WORKDIR /app/socket-server
