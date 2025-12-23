@@ -30,6 +30,10 @@ RUN echo "=== Prisma client verification ===" && \
     ls -la src/generated/prisma/ | head -10 && \
     test -f src/generated/prisma/client.js && echo "✓ client.js exists" || echo "✗ client.js missing"
 
+# Copy Prisma client to socket-server so relative paths work
+RUN mkdir -p socket-server/src/generated && \
+    cp -r src/generated/prisma socket-server/src/generated/
+
 # Copy socket server TypeScript files
 COPY socket-server/*.ts ./socket-server/
 COPY socket-server/tsconfig.json ./socket-server/
