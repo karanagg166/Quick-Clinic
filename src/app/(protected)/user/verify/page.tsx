@@ -36,12 +36,12 @@ export default function VerifyPage() {
   --------------------------------*/
   if (verified) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="bg-white rounded-xl shadow-md p-8 text-center max-w-md w-full">
-          <h1 className="text-2xl font-semibold text-green-600 mb-2">
+      <div className="min-h-screen flex items-center justify-center bg-background px-4">
+        <div className="bg-card rounded-lg border shadow-sm p-8 text-center max-w-md w-full">
+          <h1 className="text-2xl font-semibold text-foreground mb-2">
             Account Verified
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Your account has already been verified successfully.
           </p>
         </div>

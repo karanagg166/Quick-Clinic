@@ -92,12 +92,12 @@ export default function FindDoctorsPage() {
     <div className="min-h-screen p-6 space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold mb-2">Find Your Preferred Doctor</h1>
+        <h1 className="text-3xl font-semibold mb-2">Find Your Preferred Doctor</h1>
         <p className="text-muted-foreground">Search and book appointments with qualified healthcare professionals</p>
       </div>
 
       {/* Search Filters */}
-      <Card>
+      <Card className="border shadow-sm">
         <CardHeader>
           <CardTitle>Search Filters</CardTitle>
         </CardHeader>

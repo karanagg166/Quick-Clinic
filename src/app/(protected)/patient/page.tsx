@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, HeartPulse, Clock3 } from "lucide-react";
+import { motion } from "framer-motion";
+import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, HeartPulse, Clock3, TrendingUp } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import UpcomingAppointmentsSection from "@/components/patient/upcomingAppointmentsSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,69 +11,100 @@ import { Button } from "@/components/ui/button";
 export default function PatientDashboard() {
   const { user } = useUserStore();
 
+  const stats = [
+    { label: "Upcoming Appointments", value: "--", icon: CalendarDays, bgColor: "bg-emerald-50", textColor: "text-emerald-600" },
+    { label: "Assigned Doctors", value: "--", icon: Stethoscope, bgColor: "bg-blue-50", textColor: "text-blue-600" },
+    { label: "Pending Approvals", value: "--", icon: Clock3, bgColor: "bg-amber-50", textColor: "text-amber-600" },
+    { label: "Wellness Score", value: "--", icon: HeartPulse, bgColor: "bg-rose-50", textColor: "text-rose-600" },
+  ];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-fade-in">
       {/* Hero */}
-      <Card className="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white border-0">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div>
-              <p className="text-sm opacity-80">Welcome back</p>
-              <h1 className="text-3xl font-bold leading-tight">{user?.name || "Patient"}</h1>
-              <p className="text-sm opacity-80 mt-1">Track your health, appointments, and care in one place.</p>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <Card className="border shadow-sm hover:shadow-md transition-shadow">
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <p className="text-sm text-muted-foreground font-medium">Welcome back</p>
+                <h1 className="text-2xl md:text-3xl font-bold leading-tight mt-1 bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text">
+                  {user?.name || "Patient"}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">Track your health, appointments, and care in one place.</p>
+              </div>
+              <div className="flex flex-wrap gap-3">
+                <Button asChild variant="outline" size="sm" className="group">
+                  <Link href="/patient/findDoctors">
+                    <Stethoscope className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> Find Doctors
+                  </Link>
+                </Button>
+                <Button asChild size="sm" className="group">
+                  <Link href="/patient/appointments">
+                    <CalendarDays className="w-4 h-4 mr-2 group-hover:rotate-12 transition-transform" /> View Appointments
+                  </Link>
+                </Button>
+              </div>
             </div>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild variant="secondary" size="sm" className="bg-white/10 hover:bg-white/20 text-white border-0">
-                <Link href="/patient/doctor">
-                  <Stethoscope className="w-4 h-4 mr-2" /> Find Doctors
-                </Link>
-              </Button>
-              <Button asChild size="sm" className="bg-white text-emerald-600 hover:bg-emerald-50">
-                <Link href="/patient/appointments">
-                  <CalendarDays className="w-4 h-4 mr-2" /> View Appointments
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </motion.div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
-        {[
-          { label: "Upcoming Appointments", value: "--", icon: CalendarDays, tone: "emerald" },
-          { label: "Assigned Doctors", value: "--", icon: Stethoscope, tone: "blue" },
-          { label: "Pending Approvals", value: "--", icon: Clock3, tone: "amber" },
-          { label: "Wellness Score", value: "--", icon: HeartPulse, tone: "rose" },
-        ].map((card) => (
-          <Card key={card.label}>
-            <CardContent className="p-5 flex items-start gap-3">
-              <div className={`p-2.5 rounded-lg bg-${card.tone}-50 text-${card.tone}-600`}>
-                <card.icon className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs uppercase tracking-wide text-muted-foreground">{card.label}</p>
-                <p className="text-2xl font-bold mt-1">{card.value}</p>
-                <p className="text-xs text-muted-foreground">Live metrics coming soon</p>
-              </div>
-            </CardContent>
-          </Card>
+        {stats.map((card, index) => (
+          <motion.div
+            key={card.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1, duration: 0.4 }}
+          >
+            <Card className="border shadow-sm hover:shadow-md transition-all hover:scale-[1.02] cursor-pointer">
+              <CardContent className="p-5 flex items-start gap-3">
+                <motion.div
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  className={`p-2.5 rounded-lg ${card.bgColor} ${card.textColor}`}
+                >
+                  <card.icon className="w-5 h-5" />
+                </motion.div>
+                <div className="flex-1">
+                  <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{card.label}</p>
+                  <p className="text-2xl font-bold mt-1 text-foreground">{card.value}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">Live metrics coming soon</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
 
       {/* Main grid */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         {/* Upcoming section */}
-        <div className="xl:col-span-2">
-          <Card>
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.4, duration: 0.5 }}
+          className="xl:col-span-2"
+        >
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Upcoming Appointments</CardTitle>
-                  <CardDescription>Your scheduled visits and follow-ups</CardDescription>
+                  <CardTitle className="text-xl font-bold">Upcoming Appointments</CardTitle>
+                  <CardDescription className="mt-1">Your scheduled visits and follow-ups</CardDescription>
                 </div>
-                <Button asChild variant="link" className="h-auto p-0">
-                  <Link href="/patient/appointments">View all</Link>
+                <Button asChild variant="link" className="h-auto p-0 font-semibold">
+                  <Link href="/patient/appointments" className="flex items-center gap-1">
+                    View all
+                    <CalendarDays className="w-4 h-4" />
+                  </Link>
                 </Button>
               </div>
             </CardHeader>
@@ -80,53 +112,67 @@ export default function PatientDashboard() {
               <UpcomingAppointmentsSection />
             </CardContent>
           </Card>
-        </div>
+        </motion.div>
 
         {/* Quick actions / recent activity */}
-        <div className="space-y-6">
-          <Card>
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+          className="space-y-6"
+        >
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
             <CardHeader>
-              <CardTitle className="text-lg">Quick Actions</CardTitle>
+              <CardTitle className="text-lg font-bold">Quick Actions</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <Button asChild variant="ghost" className="w-full justify-start">
-                <Link href="/patient/doctor">
-                  <UserPlus className="w-5 h-5 mr-3 text-blue-600" />
-                  <div className="text-left">
-                    <p className="font-medium text-sm">Find a doctor</p>
-                    <p className="text-xs text-muted-foreground">Browse specializations and availability</p>
-                  </div>
-                </Link>
-              </Button>
-              <Button asChild variant="ghost" className="w-full justify-start">
-                <Link href="/patient/chat">
-                  <MessageCircle className="w-5 h-5 mr-3 text-emerald-600" />
-                  <div className="text-left">
-                    <p className="font-medium text-sm">Open chat</p>
-                    <p className="text-xs text-muted-foreground">Message your doctor</p>
-                  </div>
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Recent Activity</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {["Appointment confirmed", "Prescription added", "Lab results updated"].map((item) => (
-                <div key={item} className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition">
-                  <FileText className="w-5 h-5 text-emerald-600" />
-                  <div>
-                    <p className="font-medium text-sm">{item}</p>
-                    <p className="text-xs text-muted-foreground">Just now</p>
-                  </div>
-                </div>
+              {[
+                { href: "/patient/findDoctors", icon: UserPlus, title: "Find a doctor", desc: "Browse specializations and availability", color: "text-blue-600" },
+                { href: "/patient/chat", icon: MessageCircle, title: "Open chat", desc: "Message your doctor", color: "text-emerald-600" },
+              ].map((action, index) => (
+                <motion.div
+                  key={action.href}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.6 + index * 0.1 }}
+                >
+                  <Button asChild variant="ghost" className="w-full justify-start hover:bg-accent/50 transition-colors">
+                    <Link href={action.href}>
+                      <action.icon className={`w-5 h-5 mr-3 ${action.color}`} />
+                      <div className="text-left">
+                        <p className="font-semibold text-sm">{action.title}</p>
+                        <p className="text-xs text-muted-foreground">{action.desc}</p>
+                      </div>
+                    </Link>
+                  </Button>
+                </motion.div>
               ))}
             </CardContent>
           </Card>
-        </div>
+
+          <Card className="border shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-lg font-bold">Recent Activity</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {["Appointment confirmed", "Prescription added", "Lab results updated"].map((item, index) => (
+                <motion.div
+                  key={item}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.8 + index * 0.1 }}
+                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
+                >
+                  <FileText className="w-5 h-5 text-emerald-600" />
+                  <div>
+                    <p className="font-semibold text-sm">{item}</p>
+                    <p className="text-xs text-muted-foreground">Just now</p>
+                  </div>
+                </motion.div>
+              ))}
+            </CardContent>
+          </Card>
+        </motion.div>
       </div>
     </div>
   );

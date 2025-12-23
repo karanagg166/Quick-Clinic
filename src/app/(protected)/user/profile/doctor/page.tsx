@@ -3,6 +3,13 @@
 import { useState, useEffect } from "react";
 import { useRouter} from "next/navigation";
 import { useUserStore } from "@/store/userStore";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 export default function DoctorDetails() {
   const router = useRouter();
   const userId = useUserStore((state) => state.user?.userId);
@@ -21,9 +28,6 @@ export default function DoctorDetails() {
   const [loading, setLoading] = useState(false); // button loading
   const [enumLoading, setEnumLoading] = useState(true); // loading enums
   
-  const getUser = useUserStore((state) => state.user);
-  
-   
   // Toggle qualification
   const toggleQualification = (value: string) => {
     setQualification((prev) =>
@@ -49,8 +53,9 @@ export default function DoctorDetails() {
         const qData = await q.json();
         if (q.ok) setQualifications(qData.qualifications);
 
-      } catch (err: any) {
-        console.error("Enum fetch error: " + err.message);
+      } catch (err: unknown) {
+        const errorMessage = err instanceof Error ? err.message : "Unknown error";
+        console.error("Enum fetch error:", errorMessage);
       } finally {
         setEnumLoading(false);
       }
@@ -76,7 +81,6 @@ export default function DoctorDetails() {
 
     try {
       setLoading(true);
-      console.log("user context api",getUser);
 
       const response = await fetch("/api/doctors", {
         method: "POST",
@@ -103,8 +107,9 @@ export default function DoctorDetails() {
         alert("Error creating doctor info: " + data.error);
       }
 
-    } catch (err: any) {
-      alert("Create error: " + err.message);
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Unknown error";
+      alert("Create error: " + errorMessage);
     } finally {
       setLoading(false);
     }
@@ -114,88 +119,117 @@ export default function DoctorDetails() {
   //  UI
   // ============================
   return (
-    <div className="max-w-lg mx-auto p-6 bg-white shadow-md rounded-lg mt-6">
-      
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        Doctor Information
-      </h2>
-
-      {/* Loading for ENUM fetch */}
-      {enumLoading && (
-        <p className="text-blue-600 text-sm mb-4 animate-pulse">
-          Loading doctor fields...
-        </p>
-      )}
-
-      {/* FEES */}
-      <label className="block font-semibold mt-3">Fees:</label>
-      <input
-        type="number"
-        value={fees}
-        onChange={(e) => setFees(e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-
-      {/* EXPERIENCE */}
-      <label className="block font-semibold mt-3">Experience (years):</label>
-      <input
-        type="number"
-        value={experience}
-        onChange={(e) => setExperience(e.target.value)}
-        className="w-full border p-2 rounded"
-      />
-
-      {/* SPECIALTY */}
-      <label className="block font-semibold mt-3">Specialty:</label>
-      <select
-        value={specialty}
-        onChange={(e) => setSpecialty(e.target.value)}
-        className="w-full border p-2 rounded"
-      >
-        <option value="">Select specialty</option>
-        {specialties.map((sp) => (
-          <option key={sp} value={sp}>
-            {sp}
-          </option>
-        ))}
-      </select>
-
-      {/* QUALIFICATIONS */}
-      <label className="block font-semibold mt-4">Qualifications:</label>
-
-      <div className="border p-3 rounded max-h-48 overflow-y-auto space-y-2 bg-gray-50">
-        {qualifications.length > 0 ? (
-          qualifications.map((q) => (
-            <label key={q} className="flex items-center gap-2 cursor-pointer text-sm">
-              <input
-                type="checkbox"
-                value={q}
-                checked={qualification.includes(q)}
-                onChange={() => toggleQualification(q)}
-                className="h-4 w-4"
-              />
-              <span>{q}</span>
-            </label>
-          ))
-        ) : (
-          <p className="text-gray-500 text-sm">Loading qualifications...</p>
-        )}
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Doctor Information</h1>
+        <p className="text-muted-foreground">Complete your professional profile</p>
       </div>
 
-      {/* BUTTON */}
-      <div className="mt-6 flex justify-end">
-        <button
-          className={`px-4 py-2 rounded text-white transition ${
-            loading
-              ? "bg-gray-500 cursor-not-allowed"
-              : "bg-green-600 hover:bg-green-700"
-          }`}
-          onClick={handleCreateInfo}
-          disabled={loading}
-        >
-          {loading ? "Saving..." : "Create Info"}
-        </button>
-      </div>
+      <Card className="max-w-2xl border shadow-sm">
+        <CardHeader>
+          <CardTitle>Professional Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Loading for ENUM fetch */}
+          {enumLoading && (
+            <div className="space-y-4">
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+              <Skeleton className="h-10 w-full" />
+            </div>
+          )}
+
+          {!enumLoading && (
+            <>
+              {/* FEES */}
+              <div className="space-y-2">
+                <Label htmlFor="fees">Fees (₹)</Label>
+                <Input
+                  id="fees"
+                  type="number"
+                  value={fees}
+                  onChange={(e) => setFees(e.target.value)}
+                  placeholder="Enter consultation fees"
+                />
+              </div>
+
+              {/* EXPERIENCE */}
+              <div className="space-y-2">
+                <Label htmlFor="experience">Experience (years)</Label>
+                <Input
+                  id="experience"
+                  type="number"
+                  value={experience}
+                  onChange={(e) => setExperience(e.target.value)}
+                  placeholder="Years of experience"
+                />
+              </div>
+
+              {/* SPECIALTY */}
+              <div className="space-y-2">
+                <Label htmlFor="specialty">Specialty</Label>
+                <Select value={specialty} onValueChange={setSpecialty}>
+                  <SelectTrigger id="specialty">
+                    <SelectValue placeholder="Select specialty" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {specialties.map((sp) => (
+                      <SelectItem key={sp} value={sp}>
+                        {sp}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* QUALIFICATIONS */}
+              <div className="space-y-2">
+                <Label>Qualifications</Label>
+                <Card className="p-4 max-h-48 overflow-y-auto">
+                  <div className="space-y-3">
+                    {qualifications.length > 0 ? (
+                      qualifications.map((q) => (
+                        <div key={q} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`qual-${q}`}
+                            checked={qualification.includes(q)}
+                            onChange={() => toggleQualification(q)}
+                            className="h-4 w-4 rounded border-gray-300"
+                          />
+                          <Label htmlFor={`qual-${q}`} className="cursor-pointer text-sm font-normal">
+                            {q}
+                          </Label>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-muted-foreground">Loading qualifications...</p>
+                    )}
+                  </div>
+                </Card>
+                {qualification.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {qualification.map((q) => (
+                      <Badge key={q} variant="secondary">{q}</Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* BUTTON */}
+              <div className="pt-4">
+                <Button
+                  onClick={handleCreateInfo}
+                  disabled={loading}
+                  className="w-full"
+                >
+                  {loading ? "Saving..." : "Create Info"}
+                </Button>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

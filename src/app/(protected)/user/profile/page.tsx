@@ -171,8 +171,8 @@ export default function UpdateProfile() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 px-4 py-10">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4 py-10">
+      <Card className="w-full max-w-md shadow-sm">
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>Update Profile</CardTitle>

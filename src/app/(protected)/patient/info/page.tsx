@@ -79,8 +79,9 @@ export default function PatientInfo() {
       } else {
         alert(data.error || "Failed to create info");
       }
-    } catch (err: any) {
-      alert(err.message || "Create error");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Create error";
+      alert(errorMessage);
       console.error("Create error:", err);
     } finally {
       setLoading(false);
@@ -110,8 +111,9 @@ export default function PatientInfo() {
       } else {
         alert(data.error || "Update failed");
       }
-    } catch (err: any) {
-      alert(err.message || "Update error");
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Update error";
+      alert(errorMessage);
       console.error("Update error:", err);
     } finally {
       setLoading(false);
@@ -119,10 +121,16 @@ export default function PatientInfo() {
   };
 
   return (
-    <Card className="max-w-lg mx-auto mt-6">
-      <CardHeader>
-        <CardTitle className="text-center">Patient Information</CardTitle>
-      </CardHeader>
+    <div className="min-h-screen p-6 space-y-6">
+      <div>
+        <h1 className="text-3xl font-semibold mb-2">Medical Information</h1>
+        <p className="text-muted-foreground">Manage your medical history and records</p>
+      </div>
+
+      <Card className="max-w-2xl border shadow-sm">
+        <CardHeader>
+          <CardTitle>Patient Information</CardTitle>
+        </CardHeader>
       <CardContent className="space-y-4">
         {loading && !exists ? (
           <div className="space-y-4">
@@ -133,7 +141,7 @@ export default function PatientInfo() {
         ) : (
           <>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Medical History</label>
+              <label className="text-sm font-medium text-foreground">Medical History</label>
               <Textarea
                 value={medicalHistory}
                 onChange={(e) => setMedicalHistory(e.target.value)}
@@ -143,7 +151,7 @@ export default function PatientInfo() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Allergies</label>
+              <label className="text-sm font-medium text-foreground">Allergies</label>
               <Textarea
                 value={allergies}
                 onChange={(e) => setAllergies(e.target.value)}
@@ -153,7 +161,7 @@ export default function PatientInfo() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium">Current Medications</label>
+              <label className="text-sm font-medium text-foreground">Current Medications</label>
               <Textarea
                 value={currentMedications}
                 onChange={(e) => setCurrentMedications(e.target.value)}
@@ -167,7 +175,6 @@ export default function PatientInfo() {
                 <Button
                   onClick={createInfo}
                   disabled={loading}
-                  className="bg-green-600 hover:bg-green-700"
                 >
                   {loading ? "Creating..." : "Create Info"}
                 </Button>
@@ -184,5 +191,6 @@ export default function PatientInfo() {
         )}
       </CardContent>
     </Card>
+    </div>
   );
 }
