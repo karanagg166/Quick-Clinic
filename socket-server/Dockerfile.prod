@@ -25,8 +25,10 @@ COPY prisma.config.ts ./
 # Ensure src directory exists, then generate Prisma client
 RUN mkdir -p src/generated && npx prisma generate
 
-# List generated files to verify
-RUN ls -la src/generated/prisma/ 2>/dev/null | head -5 || (echo "Prisma files:" && find src -name "*.js" -type f | head -5)
+# Verify Prisma client was generated and show structure
+RUN echo "=== Prisma client verification ===" && \
+    ls -la src/generated/prisma/ | head -10 && \
+    test -f src/generated/prisma/client.js && echo "✓ client.js exists" || echo "✗ client.js missing"
 
 # Copy socket server TypeScript files
 COPY socket-server/*.ts ./socket-server/
@@ -42,6 +44,12 @@ ENV NODE_ENV=production
 ENV PORT=4000
 # Add root node_modules to module resolution path
 ENV NODE_PATH=/app/node_modules
+
+# Verify paths before running
+RUN echo "=== Final verification ===" && \
+    pwd && \
+    ls -la /app/src/generated/prisma/ 2>/dev/null | head -5 && \
+    ls -la /app/socket-server/dist/ 2>/dev/null | head -5
 
 # Run from socket-server directory to match local development paths
 WORKDIR /app/socket-server
