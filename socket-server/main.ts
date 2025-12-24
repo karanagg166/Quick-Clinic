@@ -26,9 +26,25 @@ const prisma = new PrismaClient({
 });
 
 // CORS configuration
-const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+// Normalize frontend URL by removing trailing slash to avoid CORS mismatches
+const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
+// Create array of allowed origins (with and without trailing slash for compatibility)
+const allowedOrigins = [frontendUrl, `${frontendUrl}/`];
+
 app.use(cors({
-  origin: frontendUrl,
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Normalize origin by removing trailing slash for comparison
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    
+    if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 
@@ -42,7 +58,19 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 // Initialize Socket.IO
 const io = new Server(httpServer, {
   cors: {
-    origin: frontendUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl requests)
+      if (!origin) return callback(null, true);
+      
+      // Normalize origin by removing trailing slash for comparison
+      const normalizedOrigin = origin.replace(/\/$/, '');
+      
+      if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     methods: ['GET', 'POST'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
