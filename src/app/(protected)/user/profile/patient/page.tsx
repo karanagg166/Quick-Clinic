@@ -79,30 +79,30 @@ setUser(user, data.patient.id, undefined);
             <Label htmlFor="medicalHistory">Medical History</Label>
             <Textarea
               id="medicalHistory"
-              value={medicalHistory}
-              onChange={(e) => setMedicalHistory(e.target.value)}
+        value={medicalHistory}
+        onChange={(e) => setMedicalHistory(e.target.value)}
               placeholder="Enter your medical history"
               rows={4}
-            />
+      />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="allergies">Allergies</Label>
             <Textarea
               id="allergies"
-              value={allergies}
-              onChange={(e) => setAllergies(e.target.value)}
+        value={allergies}
+        onChange={(e) => setAllergies(e.target.value)}
               placeholder="List any allergies"
               rows={3}
-            />
+      />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="medications">Current Medications</Label>
             <Textarea
               id="medications"
-              value={currentMedications}
-              onChange={(e) => setCurrentMedications(e.target.value)}
+        value={currentMedications}
+        onChange={(e) => setCurrentMedications(e.target.value)}
               placeholder="List current medications"
               rows={3}
             />
@@ -110,20 +110,20 @@ setUser(user, data.patient.id, undefined);
 
           <div className="flex justify-end pt-4">
             <Button
-              onClick={createInfo}
-              disabled={loading}
+        onClick={createInfo}
+        disabled={loading}
               className="w-full md:w-auto"
-            >
-              {loading ? "Saving..." : "Create Info"}
+      >
+        {loading ? "Saving..." : "Create Info"}
             </Button>
           </div>
 
-          {loading && (
+      {loading && (
             <div className="space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-3/4" />
             </div>
-          )}
+      )}
         </CardContent>
       </Card>
     </div>

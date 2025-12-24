@@ -45,11 +45,81 @@ const io = new Server(httpServer, {
     origin: frontendUrl,
     methods: ['GET', 'POST'],
     credentials: true,
+    allowedHeaders: ['Content-Type', 'Authorization'],
   },
+  allowEIO3: true,
+  transports: ['websocket', 'polling'],
 });
 
 // Initialize Socket.IO server with event handlers
-new SocketServer(io, prisma);
+const socketServer = new SocketServer(io, prisma);
+
+// API endpoint to send appointment notification (called from Next.js API routes)
+app.post('/api/notifications/appointment', async (req: express.Request, res: express.Response) => {
+  try {
+    const { doctorId, appointmentId } = req.body;
+
+    if (!doctorId || !appointmentId) {
+      return res.status(400).json({ error: 'doctorId and appointmentId are required' });
+    }
+
+    // Get appointment details
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+        slot: true,
+      },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    // Get doctor's userId
+    const doctorUserId = appointment.doctor.user.id;
+    const patientName = appointment.patient.user.name;
+    
+    // Format date and time
+    const slotDate = appointment.slot.date.toLocaleDateString();
+    const slotTime = new Date(appointment.slot.startTime).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+    // Create notification message
+    const message = `New appointment booking from ${patientName} for ${slotDate} at ${slotTime}`;
+
+    // Create notification in database
+    const notification = await prisma.notification.create({
+      data: {
+        userId: doctorUserId,
+        message,
+        isRead: false,
+        status: 'UNREAD',
+      },
+    });
+
+    // Send via socket
+    socketServer.sendNotificationToUser(doctorUserId, {
+      id: notification.id,
+      message: notification.message,
+      createdAt: notification.createdAt.toISOString(),
+      isRead: notification.isRead,
+    });
+
+    return res.json({ success: true, notification });
+  } catch (error: unknown) {
+    console.error('Error sending appointment notification:', error);
+    return res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Failed to send notification' 
+    });
+  }
+});
+
+// Export socket server instance for use in API routes
+export { socketServer };
 
 // Error handling
 process.on('unhandledRejection', (error: unknown) => {

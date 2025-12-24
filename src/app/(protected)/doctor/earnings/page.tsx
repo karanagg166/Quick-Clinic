@@ -160,6 +160,3 @@ export default function DoctorEarnings() {
     </div>
   );
 }
-
-  
-}
