@@ -17,43 +17,71 @@ export class SocketServer {
 
   /**
    * Setup Socket.IO authentication middleware
+   * Handles both chat (relationId) and notification (userId only) connections
    */
   private setupAuthentication(): void {
     this.io.use(async (socket: Socket, next) => {
       try {
         const { relationId, userId } = socket.handshake.auth;
 
-        if (!relationId || !userId) {
-          return next(new Error('Missing relationId or userId'));
+        console.log('Socket auth attempt:', { relationId: relationId || 'none', userId: userId || 'none' });
+
+        if (!userId) {
+          console.log('Authentication failed: Missing userId');
+          return next(new Error('Missing userId'));
         }
 
-        // Verify user has access to this relation
-        const relation = await this.prisma.doctorPatientRelation.findUnique({
-          where: { id: relationId },
-          include: {
-            doctor: { include: { user: true } },
-            patient: { include: { user: true } },
-          },
-        });
+        // If relationId is present, this is a chat connection
+        if (relationId) {
+          console.log(`Authenticating chat connection: userId=${userId}, relationId=${relationId}`);
+          // Verify user has access to this relation
+          const relation = await this.prisma.doctorPatientRelation.findUnique({
+            where: { id: relationId },
+            include: {
+              doctor: { include: { user: true } },
+              patient: { include: { user: true } },
+            },
+          });
 
-        if (!relation) {
-          return next(new Error('Relation not found'));
+          if (!relation) {
+            console.log('Authentication failed: Relation not found');
+            return next(new Error('Relation not found'));
+          }
+
+          const hasAccess =
+            relation.doctor.user.id === userId || relation.patient.user.id === userId;
+
+          if (!hasAccess) {
+            console.log('Authentication failed: Unauthorized access to relation');
+            return next(new Error('Unauthorized'));
+          }
+
+          // Attach user info to socket for chat
+          (socket as any).relationId = relationId;
+          (socket as any).userId = userId;
+          (socket as any).userName = relation.doctor.user.id === userId 
+            ? relation.doctor.user.name 
+            : relation.patient.user.name;
+          (socket as any).userRole = relation.doctor.user.id === userId ? 'DOCTOR' : 'PATIENT';
+          console.log(`Chat connection authenticated: ${(socket as any).userName} (${(socket as any).userRole})`);
+        } else {
+          // This is a notification connection - only need userId
+          console.log(`Authenticating notification connection: userId=${userId}`);
+          const user = await this.prisma.user.findUnique({
+            where: { id: userId },
+          });
+
+          if (!user) {
+            console.log('Authentication failed: User not found');
+            return next(new Error('User not found'));
+          }
+
+          // Attach user info to socket for notifications
+          (socket as any).userId = userId;
+          (socket as any).userRole = user.role;
+          (socket as any).userName = user.name;
+          console.log(`Notification connection authenticated: ${user.name} (${user.role})`);
         }
-
-        const hasAccess =
-          relation.doctor.user.id === userId || relation.patient.user.id === userId;
-
-        if (!hasAccess) {
-          return next(new Error('Unauthorized'));
-        }
-
-        // Attach user info to socket
-        (socket as any).relationId = relationId;
-        (socket as any).userId = userId;
-        (socket as any).userName = relation.doctor.user.id === userId 
-          ? relation.doctor.user.name 
-          : relation.patient.user.name;
-        (socket as any).userRole = relation.doctor.user.id === userId ? 'DOCTOR' : 'PATIENT';
 
         next();
       } catch (error) {
@@ -73,6 +101,13 @@ export class SocketServer {
       const userName = (socket as any).userName;
       const userRole = (socket as any).userRole;
 
+      // Handle notification connections (no relationId)
+      if (!relationId) {
+        this.handleNotificationConnection(socket, userId, userRole, userName);
+        return;
+      }
+
+      // Handle chat connections (has relationId)
       console.log(`User ${userName} (${userRole}) connected to relation ${relationId}`);
 
       // Join room for the relation
@@ -104,6 +139,50 @@ export class SocketServer {
       // Handle errors
       this.handleSocketError(socket, userName);
     });
+  }
+
+  /**
+   * Handle notification connection
+   */
+  private handleNotificationConnection(socket: Socket, userId: string, userRole: string, userName: string): void {
+    console.log(`User ${userName} (${userRole}) connected for notifications`);
+
+    // Join user's personal notification room
+    socket.join(`user_${userId}`);
+
+    // Emit connection confirmation
+    socket.emit('notification_connected', {
+      message: 'Connected to notifications',
+      userId,
+      userRole,
+      userName,
+    });
+
+    // Handle disconnect
+    socket.on('disconnect', () => {
+      console.log(`User ${userName} (${userId}) disconnected from notifications`);
+      socket.leave(`user_${userId}`);
+    });
+  }
+
+  /**
+   * Send notification to a specific user (public method)
+   */
+  public sendNotificationToUser(
+    userId: string,
+    notification: {
+      id: string;
+      message: string;
+      createdAt: string;
+      isRead: boolean;
+    }
+  ): void {
+    // Emit to user's room
+    this.io.to(`user_${userId}`).emit('new_notification', {
+      notification,
+    });
+
+    console.log(`Notification sent to user ${userId}: ${notification.message}`);
   }
 
   /**

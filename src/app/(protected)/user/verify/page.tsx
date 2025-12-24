@@ -29,7 +29,7 @@ export default function VerifyPage() {
     if (verified) {
       alert("Your account is already verified.");
     }
-  }, []);
+  }, [verified]);
 
   /* -------------------------------
      VERIFIED STATE UI
@@ -54,8 +54,8 @@ export default function VerifyPage() {
   --------------------------------*/
   if (!userId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <p className="text-red-500 text-lg font-medium">
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <p className="text-destructive text-lg font-medium">
           User not logged in
         </p>
       </div>
@@ -66,16 +66,16 @@ export default function VerifyPage() {
      MAIN UI
   --------------------------------*/
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="bg-white w-full max-w-md rounded-xl shadow-md p-8">
-        <h1 className="text-2xl font-semibold text-center mb-6">
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="bg-card border shadow-sm w-full max-w-md rounded-xl p-8">
+        <h1 className="text-2xl font-semibold text-center mb-6 text-foreground">
           Verify Your Account
         </h1>
 
         <div className="space-y-6">
           {/* Send OTP Section */}
           <div>
-            <h2 className="text-sm font-medium text-gray-700 mb-2">
+            <h2 className="text-sm font-medium text-foreground mb-2">
               Step 1: Send OTP
             </h2>
             <SendOtpForm
@@ -89,7 +89,7 @@ export default function VerifyPage() {
 
           {/* Verify OTP Section */}
           <div>
-            <h2 className="text-sm font-medium text-gray-700 mb-2">
+            <h2 className="text-sm font-medium text-foreground mb-2">
               Step 2: Verify OTP
             </h2>
             <VerifyOtpForm
@@ -109,7 +109,7 @@ export default function VerifyPage() {
 
           {/* Message */}
           {message && (
-            <div className="text-center text-sm text-blue-600">
+            <div className="text-center text-sm text-primary">
               {message}
             </div>
           )}

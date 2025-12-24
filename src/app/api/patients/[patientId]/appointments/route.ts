@@ -124,6 +124,25 @@ export async function POST(
       data: { status: 'BOOKED' },
     });
 
+    // 5. Send notification to doctor via Socket.IO
+    try {
+      const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
+      await fetch(`${socketServerUrl}/api/notifications/appointment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          doctorId,
+          appointmentId: appointment.id,
+        }),
+      }).catch((err) => {
+        // Silently fail if socket server is not available
+        console.warn('Socket server notification failed (this is non-critical):', err);
+      });
+    } catch (notifError) {
+      // Log but don't fail the appointment creation if notification fails
+      console.warn('Failed to send notification:', notifError);
+    }
+
     return NextResponse.json({ appointment, slotUpdate }, { status: 201 });
 
   } catch (err: any) {

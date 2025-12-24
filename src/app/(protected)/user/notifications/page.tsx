@@ -2,13 +2,16 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import { useNotifications } from "@/hooks/useNotifications";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Bell, Wifi, WifiOff } from "lucide-react";
 
 export default function NotificationsPage(){
     const userId = useUserStore((state) => state.user?.userId);
+    const { notifications: socketNotifications, isConnected } = useNotifications();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
@@ -38,6 +41,15 @@ export default function NotificationsPage(){
         fetchNotifications();
     }, [userId]);
 
+    // Merge socket notifications with fetched notifications
+    useEffect(() => {
+        if (socketNotifications.length > 0) {
+            // Refresh from API to get full data including the new notification
+            fetchNotifications();
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socketNotifications.length]);
+
     // mark read
     const markRead = async (id: string) => {
         await fetch(`/api/user/${userId}/notification/${id}`, {
@@ -62,9 +74,24 @@ export default function NotificationsPage(){
 
     return (
         <div className="min-h-screen p-6 space-y-6">
-            <div>
-                <h1 className="text-3xl font-semibold mb-2">Notifications</h1>
-                <p className="text-muted-foreground">Manage your notifications</p>
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-semibold mb-2">Notifications</h1>
+                    <p className="text-muted-foreground">Manage your notifications</p>
+                </div>
+                <div className="flex items-center gap-2">
+                    {isConnected ? (
+                        <>
+                            <Wifi className="w-4 h-4 text-green-600" />
+                            <span className="text-sm text-muted-foreground">Live updates active</span>
+                        </>
+                    ) : (
+                        <>
+                            <WifiOff className="w-4 h-4 text-muted-foreground" />
+                            <span className="text-sm text-muted-foreground">Reconnecting...</span>
+                        </>
+                    )}
+                </div>
             </div>
 
             <Card className="max-w-2xl">
