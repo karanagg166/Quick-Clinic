@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { useParams, useRouter } from 'next/navigation';
 import type { AppointmentDetail } from '@/types/common';
+import { showToast } from '@/lib/toast';
 
 export default function AppointmentPage() {
     const params = useParams();
@@ -68,13 +69,13 @@ export default function AppointmentPage() {
     const startConversation = async () => {
         try {
             if (!user?.userId) {
-                alert('Please log in as a patient to start a chat.');
+                showToast.warning('Please log in as a patient to start a chat.');
                 return;
             }
 
             const doctorUserId = appointment.doctor?.user?.id;
             if (!doctorUserId) {
-                alert('Doctor details are incomplete. Please try again.');
+                showToast.warning('Doctor details are incomplete. Please try again.');
                 return;
             }
 
@@ -103,7 +104,7 @@ export default function AppointmentPage() {
 
             router.push(`/patient/chat/${relationId}`);
         } catch (e: any) {
-            alert(e?.message || 'Could not start conversation. Please try again.');
+            showToast.error(e?.message || 'Could not start conversation. Please try again.');
         } finally {
             setStartingChat(false);
         }

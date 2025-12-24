@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 
 export default function UpdateProfile() {
   const router = useRouter();
@@ -105,7 +106,7 @@ export default function UpdateProfile() {
     try {
         // Validate Pincode
         if (!/^\d{6}$/.test(formData.pinCode)) {
-            alert("Please enter a valid 6-digit pincode.");
+            showToast.warning("Please enter a valid 6-digit pincode.");
             setUpdating(false);
             return;
         }
@@ -134,7 +135,7 @@ export default function UpdateProfile() {
         throw new Error(data.error || "Update failed");
       }
 
-      alert("Profile updated successfully!");
+      showToast.success("Profile updated successfully!");
 
       // 4. Update the local Zustand store with new data
       // We merge existing user object with the updated fields
@@ -154,7 +155,7 @@ export default function UpdateProfile() {
 
     } catch (err: any) {
       console.error("Update Error:", err);
-      alert(err.message || "Something went wrong.");
+      showToast.error(err.message || "Something went wrong.");
     } finally {
       setUpdating(false);
     }

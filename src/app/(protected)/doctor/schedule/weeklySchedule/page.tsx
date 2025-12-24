@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import ScheduleDaySection from "@/components/doctor/schedule/ScheduleDaySection";
+import { showToast } from "@/lib/toast";
 
 interface Slot {
   slotNo: number;
@@ -85,11 +86,11 @@ const doctorId = useUserStore((s) => s.doctorId);
     const slot = schedule[dayIndex].slots[slotIndex];
 
     if (!slot.start || !slot.end || slot.start >= slot.end) {
-      alert("Invalid slot time");
+      showToast.warning("Invalid slot time");
       return;
     }
 
-    alert("Slot saved!");
+    showToast.success("Slot saved!");
   };
 
   // Delete slot
@@ -106,14 +107,14 @@ const doctorId = useUserStore((s) => s.doctorId);
     e.preventDefault();
 
     if (!doctorId) {
-      alert("Doctor ID not found. Please login again.");
+      showToast.error("Doctor ID not found. Please login again.");
       return;
     }
 
     // Validate that at least one day has slots
     const hasSlots = schedule.some((day) => day.slots.length > 0);
     if (!hasSlots) {
-      alert("Please add at least one time slot to your schedule.");
+      showToast.warning("Please add at least one time slot to your schedule.");
       return;
     }
 
@@ -135,14 +136,14 @@ const doctorId = useUserStore((s) => s.doctorId);
       });
 
       if (res.ok) {
-        alert("Schedule saved successfully!");
+        showToast.success("Schedule saved successfully!");
       } else {
         const error = await res.json();
-        alert(`Failed to save: ${error.error || "Unknown error"}`);
+        showToast.error(`Failed to save: ${error.error || "Unknown error"}`);
       }
     } catch (err) {
       console.error("Save error:", err);
-      alert("Failed to save schedule. Please try again.");
+      showToast.error("Failed to save schedule. Please try again.");
     } finally {
       setLoading(false);
     }

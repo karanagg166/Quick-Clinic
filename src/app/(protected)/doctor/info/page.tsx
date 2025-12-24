@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 
 export default function DoctorInfo() {
   const { doctorId } = useUserStore();
@@ -89,7 +90,7 @@ export default function DoctorInfo() {
   const handleUpdateInfo = async () => {
     try {
       if (!doctorId) {
-        alert("Doctor ID not found");
+        showToast.error("Doctor ID not found");
         return;
       }
 
@@ -114,13 +115,13 @@ export default function DoctorInfo() {
       console.log(data);
 
       if (response.ok) {
-        alert("Doctor info updated successfully.");
+        showToast.success("Doctor info updated successfully.");
       } else {
-        alert("Error updating doctor info: " + data.error);
+        showToast.error("Error updating doctor info: " + data.error);
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      alert("Error updating doctor info: " + errorMessage);
+      showToast.error("Error updating doctor info: " + errorMessage);
     } finally {
       setLoading(false);
     }

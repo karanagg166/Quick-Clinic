@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import { showToast } from '@/lib/toast';
 
 interface BookTimeSlotProps {
   doctorId: string;
@@ -80,11 +81,11 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
    */
   const handleBookSlot = async (slotId: string, paymentMethod: string, transactionId?: string | null) => {
     if (!patientId) {
-      alert('Please login to book a slot');
+      showToast.warning('Please login to book a slot');
       return;
     }
     if (!date || !slotId || !doctorId) {
-      alert('Invalid selection');
+      showToast.warning('Invalid selection');
       return;
     }
 
@@ -111,7 +112,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
       if (bookingData.ok) {
         await bookingData.json();
-        alert(paymentMethod === 'ONLINE' ? 'Slot booked successfully (Online payment)' : 'Slot booked successfully (Offline)');
+        showToast.success(paymentMethod === 'ONLINE' ? 'Slot booked successfully (Online payment)' : 'Slot booked successfully (Offline)');
         setSelectedSlot(null);
         setShowPaymentOptions(false);
 
@@ -123,7 +124,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
         throw new Error(errorData.message || 'Failed to book slot');
       }
     } catch (err: any) {
-      alert(err?.message || 'Failed to book slot');
+      showToast.error(err?.message || 'Failed to book slot');
       console.error('Error booking slot:', err);
     } finally {
       setBooking(false);
@@ -156,11 +157,11 @@ const throttledPayOnline = useThrottledCallback((slotId: string) => {
 }, 3000); // Set delay to 3000ms (3 seconds)
   const handleOnlinePayment = async (slotId: string) => {
     if (!patientId) {
-      alert('Please login to pay online');
+      showToast.warning('Please login to pay online');
       return;
     }
     if (!date || !slotId || !doctorId) {
-      alert('Missing payment parameters');
+      showToast.warning('Missing payment parameters');
       return;
     }
 
@@ -175,13 +176,13 @@ const throttledPayOnline = useThrottledCallback((slotId: string) => {
 
       if (!result || !result.success) {
         const msg = result?.error ?? 'Payment failed or cancelled';
-        alert('Payment failed: ' + msg);
+        showToast.error('Payment failed: ' + msg);
         return;
       }
 
       const transactionId = result.transactionId;
       if (!transactionId) {
-        alert('Payment succeeded but no transactionId returned.');
+        showToast.error('Payment succeeded but no transactionId returned.');
         return;
       }
 
@@ -189,7 +190,7 @@ const throttledPayOnline = useThrottledCallback((slotId: string) => {
       await handleBookSlot(slotId, 'ONLINE', transactionId);
     } catch (err: any) {
       console.error('handleOnlinePayment error', err);
-      alert(err?.message || 'Online payment failed');
+      showToast.error(err?.message || 'Online payment failed');
     } finally {
       setBooking(false);
     }

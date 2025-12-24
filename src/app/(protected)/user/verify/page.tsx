@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/store";
 import { SendOtpForm } from "@/components/general/sendOtp";
 import { VerifyOtpForm } from "@/components/general/verifyOtp";
+import { showToast } from "@/lib/toast";
 
 export default function VerifyPage() {
   
@@ -27,7 +28,7 @@ export default function VerifyPage() {
   --------------------------------*/
   useEffect(() => {
     if (verified) {
-      alert("Your account is already verified.");
+      showToast.info("Your account is already verified.");
     }
   }, [verified]);
 

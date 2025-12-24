@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { showToast } from '@/lib/toast';
 
 export default function DoctorAppointmentDetailPage() {
   const params = useParams();
@@ -85,7 +86,7 @@ export default function DoctorAppointmentDetailPage() {
         setIsOffline(Boolean(data.isAppointmentOffline));
       }
     } catch (err: any) {
-      alert(err?.message || 'Could not update appointment.');
+      showToast.error(err?.message || 'Could not update appointment.');
     } finally {
       setSaving(false);
     }
@@ -94,12 +95,12 @@ export default function DoctorAppointmentDetailPage() {
   const startConversation = async () => {
     try {
       if (!user?.userId) {
-        alert('Please log in as a doctor to start a chat.');
+        showToast.warning('Please log in as a doctor to start a chat.');
         return;
       }
       const patientUserId = appointment?.patient?.user?.id;
       if (!patientUserId) {
-        alert('Patient details are incomplete. Please try again.');
+        showToast.warning('Patient details are incomplete. Please try again.');
         return;
       }
       setStartingChat(true);
@@ -120,7 +121,7 @@ export default function DoctorAppointmentDetailPage() {
       if (!relationId) throw new Error('Missing relation id from server');
       router.push(`/doctor/chat/${relationId}`);
     } catch (err: any) {
-      alert(err?.message || 'Could not start conversation. Please try again.');
+      showToast.error(err?.message || 'Could not start conversation. Please try again.');
     } finally {
       setStartingChat(false);
     }

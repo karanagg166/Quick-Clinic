@@ -9,9 +9,18 @@ import type { User } from "@/types/common";
 
 
 
+export const maxDuration = 30; // Increase timeout to 30 seconds for Vercel
+
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json();
+
+    if (!email || !password) {
+      return NextResponse.json(
+        { error: "Email and password are required" },
+        { status: 400 }
+      );
+    }
 
     const user = await prisma.user.findUnique({
       where: {
@@ -57,23 +66,9 @@ export async function POST(req: NextRequest) {
       patientId: user.patient?.id,
     };
 
-    // Fetch linked doctor/patient ids
-    let doctorId: string | null = null;
-    let patientId: string | null = null;
-
-    if (user.role === "DOCTOR") {
-      const doctor = await prisma.doctor.findUnique({
-        where: { userId: user.id },
-        select: { id: true },
-      });
-      doctorId = doctor?.id ?? null;
-    } else if (user.role === "PATIENT") {
-      const patient = await prisma.patient.findUnique({
-        where: { userId: user.id },
-        select: { id: true },
-      });
-      patientId = patient?.id ?? null;
-    }
+    // Use doctor/patient IDs from the initial query (already included)
+    const doctorId = user.doctor?.id ?? null;
+    const patientId = user.patient?.id ?? null;
 
     // Response
     const res = NextResponse.json(
@@ -88,24 +83,26 @@ export async function POST(req: NextRequest) {
 
     res.cookies.set("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,
     });
     res.cookies.set("role", user.role, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",});
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
     
   
 
 
     return res;
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("LOGIN ERROR:", error);
+    const errorMessage = error instanceof Error ? error.message : "Server error";
     return NextResponse.json(
-      { error: error?.message ?? "Server error" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
