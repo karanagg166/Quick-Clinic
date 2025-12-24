@@ -61,7 +61,7 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
   }
 
   // Show message that charts require recharts installation
-  // After installing recharts, uncomment the chart code below
+  // After installing recharts, uncomment the chart code below (see commented code at bottom of file)
   return (
     <Card className="border shadow-sm">
       <CardHeader>
