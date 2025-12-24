@@ -2,6 +2,7 @@
 
 import type { DoctorAppointment } from "@/types/doctor";
 import Link from "next/link";
+import StatusBadge from "@/components/general/StatusBadge";
 
 export default function AppointmentCard({ appointment }: { appointment: DoctorAppointment }) {
   const dateText = (() => {
@@ -26,19 +27,10 @@ export default function AppointmentCard({ appointment }: { appointment: DoctorAp
             </h2>
             <p className="text-sm text-gray-500">{appointment.gender}</p>
           </div>
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-              appointment.status === 'CONFIRMED'
-                ? 'bg-green-50 text-green-700 border-green-200'
-                : appointment.status === 'PENDING'
-                ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
-                : appointment.status === 'CANCELLED'
-                ? 'bg-red-50 text-red-700 border-red-200'
-                : 'bg-blue-50 text-blue-700 border-blue-200'
-            }`}
-          >
-            {appointment.status}
-          </span>
+          <StatusBadge 
+            status={appointment.status.toLowerCase()} 
+            showIcon={true}
+          />
         </div>
 
         <div className="flex flex-wrap gap-4 text-sm text-gray-700">
