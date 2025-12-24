@@ -2,9 +2,6 @@
 
 import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-// Note: Install recharts with: npm install recharts
-// @ts-expect-error - recharts types will be available after installation
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from "recharts";
 
 interface EarningsData {
   earnings: Array<{
@@ -63,9 +60,38 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
     return null;
   }
 
+  // Show message that charts require recharts installation
+  // After installing recharts, uncomment the chart code below
+  return (
+    <Card className="border shadow-sm">
+      <CardHeader>
+        <CardTitle>Earnings Charts</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="h-64 flex flex-col items-center justify-center text-center p-6 space-y-4">
+          <p className="text-muted-foreground">Charts require recharts package to be installed</p>
+          <div className="bg-muted/50 rounded-lg p-4">
+            <p className="text-sm font-mono text-foreground">npm install recharts</p>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            After installation, charts will automatically appear here showing daily earnings and trends.
+          </p>
+          {dailyData.length > 0 && (
+            <div className="mt-4 text-sm text-muted-foreground">
+              <p>Data ready: {dailyData.length} days of earnings data available</p>
+            </div>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  /* 
+  // Uncomment this section after installing recharts with: npm install recharts
+  const { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } = require("recharts");
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Bar Chart - Daily Earnings */}
       <Card className="border shadow-sm">
         <CardHeader>
           <CardTitle>Daily Earnings</CardTitle>
@@ -90,7 +116,7 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "6px",
                 }}
-                formatter={(value: number | string) => [`₹${Number(value).toLocaleString()}`, "Earnings"]}
+                formatter={(value: unknown) => [`₹${Number(value).toLocaleString()}`, "Earnings"]}
               />
               <Bar dataKey="earnings" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
@@ -98,7 +124,6 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
         </CardContent>
       </Card>
 
-      {/* Line Chart - Earnings Trend */}
       <Card className="border shadow-sm">
         <CardHeader>
           <CardTitle>Earnings Trend</CardTitle>
@@ -123,7 +148,7 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
                   border: "1px solid hsl(var(--border))",
                   borderRadius: "6px",
                 }}
-                formatter={(value: number | string) => [`₹${Number(value).toLocaleString()}`, "Earnings"]}
+                formatter={(value: unknown) => [`₹${Number(value).toLocaleString()}`, "Earnings"]}
               />
               <Line 
                 type="monotone" 
@@ -138,5 +163,5 @@ export default function EarningsChart({ data, loading }: EarningsChartProps) {
       </Card>
     </div>
   );
+  */
 }
-
