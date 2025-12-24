@@ -12,7 +12,8 @@ import {
   UserCircle,
   Settings,
   ChevronDown,
-  X
+  X,
+  MessageCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -58,6 +59,11 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
         { label: 'Patient Reports', href: '/doctor/patients/reports' },
         { label: 'History Logs', href: '/doctor/patients/history' },
       ]
+    },
+    {
+      label: 'Chat',
+      href: '/doctor/chat',
+      icon: MessageCircle,
     },
     {
       label: 'Leave Management',
