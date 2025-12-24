@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Eye, EyeOff, UserPlus, Mail, Phone, MapPin, Lock, User } from "lucide-react";
 import ParticlesBackground from "@/components/general/Particles";
+import { showToast } from "@/lib/toast";
 
 export default function Signup() {
   const router = useRouter();
@@ -38,20 +39,20 @@ export default function Signup() {
 
     // Basic client-side checks
     if (!gender) {
-      alert("Please select gender.");
+      showToast.warning("Please select gender.");
       return;
     }
     if (!/^\d{6}$/.test(pinCode)) {
       // simple pincode check (India-style 6 digits)
-      alert("Please enter a valid 6-digit pincode.");
+      showToast.warning("Please enter a valid 6-digit pincode.");
       return;
     }
     if (password !== confirmPassword) {
-      alert("Passwords do not match.");
+      showToast.error("Passwords do not match.");
       return;
     }
     if (password.length < 6) {
-      alert("Password must be at least 6 characters long.");
+      showToast.warning("Password must be at least 6 characters long.");
       return;
     }
 
@@ -88,13 +89,13 @@ export default function Signup() {
 
       if (!response.ok) {
         // server returned an error status
-        alert(data?.error || "Signup failed");
+        showToast.error(data?.error || "Signup failed");
         setLoading(false);
         return;
       }
 
       if (!data?.user) {
-        alert("Signup did not return user data.");
+        showToast.error("Signup did not return user data.");
         setLoading(false);
         return;
       }
@@ -129,7 +130,7 @@ export default function Signup() {
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
       console.error("Signup Error:", errorMessage);
-      alert(errorMessage);
+      showToast.error(errorMessage);
     } finally {
       setLoading(false);
     }

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 export default function PatientDetails() {
   const userId = useUserStore((state) => state.user?.userId);
   const setUser = useUserStore((state) => state.setUser);
@@ -22,7 +23,7 @@ export default function PatientDetails() {
   // CREATE
   const createInfo = async () => {
     if (!userId || Array.isArray(userId)) {
-      alert("Missing user id from URL.");
+      showToast.error("Missing user id from URL.");
       return;
     }
 
@@ -44,20 +45,20 @@ export default function PatientDetails() {
       const data = await response.json();
 
       if (response.ok) {
-        alert("Patient info saved successfully.");
+        showToast.success("Patient info saved successfully.");
         if(user){
 setUser(user, data.patient.id, undefined);
         }
         
         router.push(`/patient`);
       } else {
-        alert(data.error || "Failed to save info.");
+        showToast.error(data.error || "Failed to save info.");
       }
 
       
     } catch (error) {
       console.error("Error:", error);
-      alert("Failed to save info.");
+      showToast.error("Failed to save info.");
     } finally {
       setLoading(false); // END LOADING
     }

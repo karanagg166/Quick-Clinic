@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 
 export default function DoctorEarnings() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -37,7 +38,7 @@ export default function DoctorEarnings() {
     const json = await res.json();
 
     if (res.ok) setData(json);
-    else alert(json.error);
+    else showToast.error(json.error || "Failed to fetch earnings");
 
     setLoading(false);
   };

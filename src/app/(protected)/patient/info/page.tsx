@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 
 export default function PatientInfo() {
   const { user, patientId } = useUserStore();
@@ -53,7 +54,7 @@ export default function PatientInfo() {
   const createInfo = async () => {
     try {
       if (!user?.userId) {
-        alert("User ID not found");
+        showToast.error("User ID not found");
         return;
       }
 
@@ -75,13 +76,13 @@ export default function PatientInfo() {
 
       if (response.ok) {
         setExists(true);
-        alert("Patient info created successfully");
+        showToast.success("Patient info created successfully");
       } else {
-        alert(data.error || "Failed to create info");
+        showToast.error(data.error || "Failed to create info");
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Create error";
-      alert(errorMessage);
+      showToast.error(errorMessage);
       console.error("Create error:", err);
     } finally {
       setLoading(false);
@@ -92,7 +93,7 @@ export default function PatientInfo() {
   const updateInfo = async () => {
     try {
       if (!patientId) {
-        alert("Patient ID not found");
+        showToast.error("Patient ID not found");
         return;
       }
 
@@ -107,13 +108,13 @@ export default function PatientInfo() {
 
       const data = await res.json();
       if (res.ok) {
-        alert("Patient info updated successfully");
+        showToast.success("Patient info updated successfully");
       } else {
-        alert(data.error || "Update failed");
+        showToast.error(data.error || "Update failed");
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Update error";
-      alert(errorMessage);
+      showToast.error(errorMessage);
       console.error("Update error:", err);
     } finally {
       setLoading(false);

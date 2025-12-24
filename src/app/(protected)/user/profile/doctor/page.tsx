@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 export default function DoctorDetails() {
   const router = useRouter();
   const userId = useUserStore((state) => state.user?.userId);
@@ -69,13 +70,13 @@ export default function DoctorDetails() {
   // ============================
   const handleCreateInfo = async () => {
     if (!userId || Array.isArray(userId)) {
-      alert("Missing user id from URL.");
+      showToast.error("Missing user id from URL.");
       return;
     }
 
     // Basic Validation
     if (!fees || !experience || !specialty) {
-      alert("Please fill all required fields.");
+      showToast.warning("Please fill all required fields.");
       return;
     }
 
@@ -101,15 +102,15 @@ export default function DoctorDetails() {
         if (user) {
           setUser(user, undefined, data.doctor.id);
         }
-        alert("Doctor info created successfully.");
+        showToast.success("Doctor info created successfully.");
         router.push(`/doctor/schedule`);
       } else {
-        alert("Error creating doctor info: " + data.error);
+        showToast.error("Error creating doctor info: " + data.error);
       }
 
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
-      alert("Create error: " + errorMessage);
+      showToast.error("Create error: " + errorMessage);
     } finally {
       setLoading(false);
     }

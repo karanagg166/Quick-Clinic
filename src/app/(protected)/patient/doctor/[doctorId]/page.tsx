@@ -7,6 +7,7 @@ import { useUserStore } from "@/store/userStore";
 import Avatar from "@/components/general/Avatar";
 import type { Doctor } from "@/types/doctor";
 import { Star } from "lucide-react";
+import { showToast } from "@/lib/toast";
 
 export default function DoctorDetails() {
   const router = useRouter();
@@ -72,14 +73,14 @@ export default function DoctorDetails() {
   const startConversation = async () => {
     try {
       if (!user?.userId) {
-        alert("Please log in as a patient to start a chat.");
+        showToast.warning("Please log in as a patient to start a chat.");
         return;
       }
 
       if (!doctor?.userId) {
         console.log(doctor);
         console.log(doctor?.age);
-        alert("Doctor details are incomplete. Please try again.");
+        showToast.warning("Doctor details are incomplete. Please try again.");
 
         return;
       }
@@ -109,7 +110,7 @@ export default function DoctorDetails() {
 
       router.push(`/patient/chat/${relationId}`);
     } catch (err: any) {
-      alert(err?.message || "Could not start conversation. Please try again.");
+      showToast.error(err?.message || "Could not start conversation. Please try again.");
     } finally {
       setStartingChat(false);
     }
@@ -129,7 +130,7 @@ export default function DoctorDetails() {
       setRating(ratingData.rating ?? { average: 0, count: 0 });
       setRatedOnce(true);
     } catch (err: any) {
-      alert(err?.message || "Could not submit rating");
+      showToast.error(err?.message || "Could not submit rating");
     } finally {
       setSubmittingRating(false);
     }
@@ -152,7 +153,7 @@ export default function DoctorDetails() {
       }
       setNewComment("");
     } catch (err: any) {
-      alert(err?.message || "Could not submit comment");
+      showToast.error(err?.message || "Could not submit comment");
     } finally {
       setSubmittingComment(false);
     }

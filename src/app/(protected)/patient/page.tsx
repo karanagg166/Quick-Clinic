@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, HeartPulse, Clock3, TrendingUp } from "lucide-react";
@@ -7,15 +8,72 @@ import { useUserStore } from "@/store/userStore";
 import UpcomingAppointmentsSection from "@/components/patient/upcomingAppointmentsSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface StatsData {
+  upcomingAppointments: number;
+  assignedDoctors: number;
+  pendingApprovals: number;
+  wellnessScore: number;
+}
 
 export default function PatientDashboard() {
-  const { user } = useUserStore();
+  const { user, patientId } = useUserStore();
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!patientId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`/api/patients/${patientId}/stats`);
+        if (res.ok) {
+          const data = await res.json();
+          setStatsData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [patientId]);
 
   const stats = [
-    { label: "Upcoming Appointments", value: "--", icon: CalendarDays, bgColor: "bg-emerald-50", textColor: "text-emerald-600" },
-    { label: "Assigned Doctors", value: "--", icon: Stethoscope, bgColor: "bg-blue-50", textColor: "text-blue-600" },
-    { label: "Pending Approvals", value: "--", icon: Clock3, bgColor: "bg-amber-50", textColor: "text-amber-600" },
-    { label: "Wellness Score", value: "--", icon: HeartPulse, bgColor: "bg-rose-50", textColor: "text-rose-600" },
+    { 
+      label: "Upcoming Appointments", 
+      value: loading ? "--" : statsData?.upcomingAppointments.toString() || "0", 
+      icon: CalendarDays, 
+      bgColor: "bg-emerald-50", 
+      textColor: "text-emerald-600" 
+    },
+    { 
+      label: "Assigned Doctors", 
+      value: loading ? "--" : statsData?.assignedDoctors.toString() || "0", 
+      icon: Stethoscope, 
+      bgColor: "bg-blue-50", 
+      textColor: "text-blue-600" 
+    },
+    { 
+      label: "Pending Approvals", 
+      value: loading ? "--" : statsData?.pendingApprovals.toString() || "0", 
+      icon: Clock3, 
+      bgColor: "bg-amber-50", 
+      textColor: "text-amber-600" 
+    },
+    { 
+      label: "Wellness Score", 
+      value: loading ? "--" : `${statsData?.wellnessScore || 0}/100`, 
+      icon: HeartPulse, 
+      bgColor: "bg-rose-50", 
+      textColor: "text-rose-600" 
+    },
   ];
 
   return (
@@ -72,11 +130,11 @@ export default function PatientDashboard() {
                 </motion.div>
                 <div className="flex-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{card.label}</p>
-                  <p className="text-2xl font-bold mt-1 text-foreground">{card.value}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Live metrics coming soon</p>
-                  </div>
+                  {loading ? (
+                    <Skeleton className="h-8 w-20 mt-1" />
+                  ) : (
+                    <p className="text-2xl font-bold mt-1 text-foreground">{card.value}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

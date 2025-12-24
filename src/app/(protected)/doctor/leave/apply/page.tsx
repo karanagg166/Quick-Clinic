@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
+import { showToast } from "@/lib/toast";
 
 export default function DoctorLeave() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -37,7 +38,7 @@ export default function DoctorLeave() {
 
   const validateLeave = () => {
     if (!reason || !startDate || !startTime || !endDate || !endTime) {
-      alert("All fields (including start/end time) are required");
+      showToast.warning("All fields (including start/end time) are required");
       return false;
     }
 
@@ -45,12 +46,12 @@ export default function DoctorLeave() {
     const end = combineDateTime(endDate, endTime);
 
     if (!start || !end) {
-      alert("Invalid start or end date/time");
+      showToast.warning("Invalid start or end date/time");
       return false;
     }
 
     if (end < start) {
-      alert("End date/time cannot be before start date/time");
+      showToast.warning("End date/time cannot be before start date/time");
       return false;
     }
 
@@ -61,7 +62,7 @@ export default function DoctorLeave() {
     e.preventDefault();
 
     if (!doctorId) {
-      alert("Doctor ID not found");
+      showToast.error("Doctor ID not found");
       return;
     }
 
@@ -91,7 +92,7 @@ export default function DoctorLeave() {
         throw new Error(data.error || "Failed to submit leave request");
       }
 
-      alert("Leave request submitted successfully!");
+      showToast.success("Leave request submitted successfully!");
 
       // Reset form
       setReason("");
@@ -100,7 +101,7 @@ export default function DoctorLeave() {
       setEndDate("");
       setEndTime("");
     } catch (error: any) {
-      alert(error.message || "Failed to submit leave request");
+      showToast.error(error.message || "Failed to submit leave request");
     } finally {
       setSubmitting(false);
     }

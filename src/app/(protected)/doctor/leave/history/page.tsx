@@ -2,6 +2,7 @@
 
 import { useState} from "react";
 import { useUserStore } from "@/store/userStore";
+import { showToast } from "@/lib/toast";
 
 export default function DoctorLeaveSearch() {
   // selector form — reactive
@@ -39,7 +40,7 @@ export default function DoctorLeaveSearch() {
     setErrorMsg(null);
 
     if (!doctorReady) {
-      alert("Doctor ID not loaded yet. Please wait...");
+      showToast.warning("Doctor ID not loaded yet. Please wait...");
       return;
     }
 
@@ -73,7 +74,7 @@ export default function DoctorLeaveSearch() {
       const msg = err?.message || "Error searching leave requests";
       setErrorMsg(msg);
       console.error("Leave Search Error:", err);
-      alert(msg);
+      showToast.error(msg);
     } finally {
       setLoading(false);
     }

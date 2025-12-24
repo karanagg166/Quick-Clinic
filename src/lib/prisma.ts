@@ -16,7 +16,7 @@ export const prisma =
   new PrismaClient({
     adapter,
     // only warnings and errors; no 'query' logs
-    log: [ ],
+    log: [],
   });
 
 

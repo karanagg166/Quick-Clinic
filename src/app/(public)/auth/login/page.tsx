@@ -9,7 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, LogIn, Mail, Lock } from "lucide-react";
-import ParticlesBackground from "@/components/general/Particles";
+import dynamic from "next/dynamic";
+import { showToast } from "@/lib/toast";
+
+const ParticlesBackground = dynamic(
+  () => import("@/components/general/Particles"),
+  { ssr: false }
+);
 
 
 
@@ -55,12 +61,12 @@ export default function Home() {
           router.push("/admin");
         }
       } else {
-        alert(data.error || "Login failed");
+        showToast.error(data.error || "Login failed");
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
       console.error("Login Error:", errorMessage);
-      alert("Login error: " + errorMessage);
+      showToast.error("Login error: " + errorMessage);
     }
   };
 

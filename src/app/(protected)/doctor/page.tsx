@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { CalendarDays, Users, Wallet, Clock3, PlusCircle, MessageCircle, FileText, TrendingUp } from "lucide-react";
@@ -7,15 +8,72 @@ import { useUserStore } from "@/store/userStore";
 import TodaysAppointmentSection from "@/components/doctor/todaysAppointmentSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
+interface StatsData {
+  todayAppointments: number;
+  activePatients: number;
+  pendingConsults: number;
+  monthlyEarnings: number;
+}
 
 export default function DoctorDashboard() {
   const { user, doctorId } = useUserStore();
+  const [statsData, setStatsData] = useState<StatsData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!doctorId) {
+      setLoading(false);
+      return;
+    }
+
+    const fetchStats = async () => {
+      try {
+        const res = await fetch(`/api/doctors/${doctorId}/stats`);
+        if (res.ok) {
+          const data = await res.json();
+          setStatsData(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch stats:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, [doctorId]);
 
   const stats = [
-    { label: "Today's Appointments", value: "--", icon: CalendarDays, bgColor: "bg-blue-50", textColor: "text-blue-600" },
-    { label: "Active Patients", value: "--", icon: Users, bgColor: "bg-emerald-50", textColor: "text-emerald-600" },
-    { label: "Pending Consults", value: "--", icon: Clock3, bgColor: "bg-amber-50", textColor: "text-amber-600" },
-    { label: "This Month's Earnings", value: "--", icon: Wallet, bgColor: "bg-indigo-50", textColor: "text-indigo-600" },
+    { 
+      label: "Today's Appointments", 
+      value: loading ? "--" : statsData?.todayAppointments.toString() || "0", 
+      icon: CalendarDays, 
+      bgColor: "bg-blue-50", 
+      textColor: "text-blue-600" 
+    },
+    { 
+      label: "Active Patients", 
+      value: loading ? "--" : statsData?.activePatients.toString() || "0", 
+      icon: Users, 
+      bgColor: "bg-emerald-50", 
+      textColor: "text-emerald-600" 
+    },
+    { 
+      label: "Pending Consults", 
+      value: loading ? "--" : statsData?.pendingConsults.toString() || "0", 
+      icon: Clock3, 
+      bgColor: "bg-amber-50", 
+      textColor: "text-amber-600" 
+    },
+    { 
+      label: "This Month's Earnings", 
+      value: loading ? "--" : `₹${statsData?.monthlyEarnings.toLocaleString() || "0"}`, 
+      icon: Wallet, 
+      bgColor: "bg-indigo-50", 
+      textColor: "text-indigo-600" 
+    },
   ];
 
   return (
@@ -72,11 +130,11 @@ export default function DoctorDashboard() {
                 </motion.div>
                 <div className="flex-1">
                   <p className="text-xs uppercase tracking-wide text-muted-foreground font-medium">{card.label}</p>
-                  <p className="text-2xl font-bold mt-1 text-foreground">{card.value}</p>
-                  <div className="flex items-center gap-1 mt-1">
-                    <TrendingUp className="w-3 h-3 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">Live metrics coming soon</p>
-                  </div>
+                  {loading ? (
+                    <Skeleton className="h-8 w-20 mt-1" />
+                  ) : (
+                    <p className="text-2xl font-bold mt-1 text-foreground">{card.value}</p>
+                  )}
                 </div>
               </CardContent>
             </Card>
