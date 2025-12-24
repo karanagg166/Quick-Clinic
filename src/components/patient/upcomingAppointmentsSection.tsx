@@ -3,6 +3,9 @@ import React, { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
 import type { PatientAppointment } from '@/types/patient';
 import AppointmentCard from '@/components/patient/appointmentCard';
+import EmptyState from '@/components/general/EmptyState';
+import { CalendarDays } from 'lucide-react';
+import LoadingSpinner from '@/components/general/LoadingSpinner';
 
 export default function UpcomingAppointmentsSection() {
   const { patientId } = useUserStore();
@@ -57,10 +60,7 @@ export default function UpcomingAppointmentsSection() {
 
       {loading && (
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mx-auto mb-3"></div>
-            <p className="text-gray-600">Loading appointments...</p>
-          </div>
+          <LoadingSpinner />
         </div>
       )}
 
@@ -72,13 +72,11 @@ export default function UpcomingAppointmentsSection() {
       )}
 
       {!loading && !error && appointments.length === 0 && (
-        <div className="bg-white rounded-lg shadow-sm p-12 text-center border border-gray-200">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <span className="text-4xl">📅</span>
-          </div>
-          <p className="text-gray-900 font-semibold text-lg mb-2">No upcoming appointments</p>
-          <p className="text-gray-600">You currently have no appointments scheduled</p>
-        </div>
+        <EmptyState
+          icon={CalendarDays}
+          title="No upcoming appointments"
+          description="You currently have no appointments scheduled. Browse doctors to book your next appointment."
+        />
       )}
 
       {!loading && !error && appointments.length > 0 && (

@@ -8,6 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showToast } from "@/lib/toast";
+import EarningsChart from "@/components/doctor/EarningsChart";
+import EmptyState from "@/components/general/EmptyState";
+import { Wallet } from "lucide-react";
+import EnhancedSkeleton from "@/components/general/EnhancedSkeleton";
 
 export default function DoctorEarnings() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -19,7 +23,7 @@ export default function DoctorEarnings() {
     endTime: "",
   });
 
-  const [data, setData] = useState<{ count: number; total: number } | null>(null);
+  const [data, setData] = useState<{ count: number; total: number; earnings?: Array<{ id: string; earned: number; patientName: string; appointmentDateTime: string }> } | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchEarnings = async () => {
@@ -121,42 +125,45 @@ export default function DoctorEarnings() {
 
       {/* Results */}
       {loading && (
-        <Card className="border shadow-sm">
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <Skeleton className="h-8 w-full" />
-              <Skeleton className="h-8 w-full" />
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <EnhancedSkeleton variant="card" />
+          <EnhancedSkeleton variant="card" />
+        </div>
       )}
 
       {/* No Results */}
       {!loading && data?.count === 0 && (
-        <Card className="border shadow-sm">
-          <CardContent className="p-6 text-center">
-            <p className="text-muted-foreground">No earnings found for the selected filters.</p>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Wallet}
+          title="No earnings found"
+          description="No earnings found for the selected filters. Try adjusting your date range or check back later."
+        />
       )}
 
-      {/* Stats */}
+      {/* Stats and Charts */}
       {!loading && data && data.count > 0 && (
-        <Card className="border shadow-sm">
-          <CardHeader>
-            <CardTitle>Earnings Summary</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-center space-y-2">
-              <p className="text-lg text-muted-foreground">
-                Total Appointments: <span className="font-semibold text-foreground">{data.count}</span>
-              </p>
-              <p className="text-3xl font-semibold text-foreground">
-                Total Earnings: ₹{data.total}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="space-y-6">
+          <Card className="border shadow-sm">
+            <CardHeader>
+              <CardTitle>Earnings Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center space-y-2">
+                <p className="text-lg text-muted-foreground">
+                  Total Appointments: <span className="font-semibold text-foreground">{data.count}</span>
+                </p>
+                <p className="text-3xl font-semibold text-foreground">
+                  Total Earnings: ₹{data.total.toLocaleString()}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Charts */}
+          {data.earnings && data.earnings.length > 0 && (
+            <EarningsChart data={{ earnings: data.earnings }} />
+          )}
+        </div>
       )}
     </div>
   );

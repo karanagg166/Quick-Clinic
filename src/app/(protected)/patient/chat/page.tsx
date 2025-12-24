@@ -7,8 +7,9 @@ import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, AlertCircle } from "lucide-react";
+import { MessageCircle, AlertCircle, Stethoscope } from "lucide-react";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import EmptyState from "@/components/general/EmptyState";
 
 interface ChatListItem {
     id: string;
@@ -108,15 +109,13 @@ export default function ChatPage() {
                     </CardContent>
                 </Card>
             ) : chats.length === 0 ? (
-                <Card className="border shadow-sm">
-                    <CardContent className="p-12 text-center">
-                        <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                            <MessageCircle className="w-10 h-10 text-muted-foreground" />
-                        </div>
-                        <CardTitle className="mb-2">No conversations yet</CardTitle>
-                        <CardDescription>Start a chat from a doctor profile to begin messaging</CardDescription>
-                    </CardContent>
-                </Card>
+                <EmptyState
+                    icon={MessageCircle}
+                    title="No conversations yet"
+                    description="Start a chat from a doctor profile to begin messaging with your healthcare providers."
+                    actionLabel="Find Doctors"
+                    onAction={() => router.push("/patient/findDoctors")}
+                />
             ) : (
                 <div className="grid gap-4">
                     {chats.map((chat, index) => {

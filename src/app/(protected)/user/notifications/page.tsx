@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Wifi, WifiOff } from "lucide-react";
+import EmptyState from "@/components/general/EmptyState";
 
 export default function NotificationsPage(){
     const userId = useUserStore((state) => state.user?.userId);
@@ -110,7 +111,11 @@ export default function NotificationsPage(){
 
                     {/* no notifications */}
                     {!loading && notifications.length === 0 && (
-                        <p className="text-center text-muted-foreground py-8">No notifications found</p>
+                        <EmptyState
+                            icon={Bell}
+                            title="No notifications yet"
+                            description="You'll see notifications here when you receive updates about appointments, messages, and other activities."
+                        />
                     )}
 
                     <div className="space-y-3">

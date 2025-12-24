@@ -5,8 +5,9 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MessageCircle, AlertCircle } from "lucide-react";
+import { MessageCircle, AlertCircle, Users } from "lucide-react";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
+import EmptyState from "@/components/general/EmptyState";
 
 interface ChatListItem {
   id: string;
@@ -106,15 +107,11 @@ export default function DoctorChatListPage() {
           </CardContent>
         </Card>
       ) : chats.length === 0 ? (
-        <Card className="border shadow-sm">
-          <CardContent className="p-12 text-center">
-            <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-              <MessageCircle className="w-10 h-10 text-muted-foreground" />
-            </div>
-            <CardTitle className="mb-2">No patient conversations yet</CardTitle>
-            <CardDescription>Chats will appear after patients message you</CardDescription>
-          </CardContent>
-        </Card>
+        <EmptyState
+          icon={Users}
+          title="No patient conversations yet"
+          description="Chats will appear here after patients start messaging you. You can also initiate conversations from patient appointments."
+        />
       ) : (
         <div className="grid gap-4">
           {chats.map((chat, index) => {
