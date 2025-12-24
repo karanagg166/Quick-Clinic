@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, User, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet } from 'lucide-react';
+import { Bell, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
 
@@ -78,6 +78,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <Users className="w-4 h-4" /> Patients
+          </Link>
+
+          <Link
+            href="/doctor/chat"
+            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+          >
+            <MessageCircle className="w-4 h-4" /> Chat
           </Link>
 
           <Link
