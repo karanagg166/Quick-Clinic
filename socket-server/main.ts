@@ -82,6 +82,61 @@ const io = new Server(httpServer, {
 // Initialize Socket.IO server with event handlers
 const socketServer = new SocketServer(io, prisma);
 
+// API endpoint to send appointment status update (called from Next.js API routes)
+app.post('/api/notifications/appointment-status', async (req: express.Request, res: express.Response) => {
+  try {
+    const { patientUserId, appointmentId, status, appointmentDate, appointmentTime, doctorName } = req.body;
+
+    if (!patientUserId || !appointmentId || !status) {
+      return res.status(400).json({ error: 'patientUserId, appointmentId, and status are required' });
+    }
+
+    // Create notification message
+    const statusMessages: Record<string, string> = {
+      CONFIRMED: `Your appointment with Dr. ${doctorName} has been confirmed`,
+      CANCELLED: `Your appointment with Dr. ${doctorName} has been cancelled`,
+      COMPLETED: `Your appointment with Dr. ${doctorName} has been marked as completed`,
+      RESCHEDULED: `Your appointment with Dr. ${doctorName} has been rescheduled`,
+    };
+
+    const message = statusMessages[status] || `Your appointment status has been updated to ${status}`;
+
+    // Create notification in database
+    const notification = await prisma.notification.create({
+      data: {
+        userId: patientUserId,
+        message,
+        isRead: false,
+        status: 'UNREAD',
+      },
+    });
+
+    // Send notification via socket
+    socketServer.sendNotificationToUser(patientUserId, {
+      id: notification.id,
+      message: notification.message,
+      createdAt: notification.createdAt.toISOString(),
+      isRead: notification.isRead,
+    });
+
+    // Send appointment status update via socket
+    socketServer.sendAppointmentStatusUpdate(patientUserId, {
+      id: appointmentId,
+      status,
+      appointmentDate,
+      appointmentTime,
+      doctorName: doctorName || 'Doctor',
+    });
+
+    return res.json({ success: true, notification });
+  } catch (error: unknown) {
+    console.error('Error sending appointment status update:', error);
+    return res.status(500).json({ 
+      error: error instanceof Error ? error.message : 'Failed to send status update' 
+    });
+  }
+});
+
 // API endpoint to send appointment notification (called from Next.js API routes)
 app.post('/api/notifications/appointment', async (req: express.Request, res: express.Response) => {
   try {
@@ -129,7 +184,7 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
       },
     });
 
-    // Send via socket
+    // Send notification via socket
     socketServer.sendNotificationToUser(doctorUserId, {
       id: notification.id,
       message: notification.message,
@@ -137,7 +192,23 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
       isRead: notification.isRead,
     });
 
-    return res.json({ success: true, notification });
+    // Send appointment request data via socket for real-time UI update
+    const appointmentData = {
+      id: appointment.id,
+      patientName: appointment.patient.user.name,
+      patientString: appointment.patient.user.email,
+      gender: appointment.patient.user.gender,
+      appointmentDate: appointment.slot.date.toISOString(),
+      appointmentTime: appointment.slot.startTime.toISOString(),
+      status: appointment.status,
+      city: appointment.patient.user.city,
+      age: appointment.patient.user.age,
+      paymentMethod: appointment.paymentMethod,
+    };
+
+    socketServer.sendAppointmentRequest(doctorUserId, appointmentData);
+
+    return res.json({ success: true, notification, appointment: appointmentData });
   } catch (error: unknown) {
     console.error('Error sending appointment notification:', error);
     return res.status(500).json({ 

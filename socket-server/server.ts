@@ -186,6 +186,53 @@ export class SocketServer {
   }
 
   /**
+   * Send appointment request to doctor (public method)
+   */
+  public sendAppointmentRequest(
+    doctorUserId: string,
+    appointment: {
+      id: string;
+      patientName: string;
+      patientString: string;
+      gender: string;
+      appointmentDate: string;
+      appointmentTime: string;
+      status: string;
+      city: string;
+      age: number;
+      paymentMethod: string;
+    }
+  ): void {
+    // Emit to doctor's room
+    this.io.to(`user_${doctorUserId}`).emit('new_appointment_request', {
+      appointment,
+    });
+
+    console.log(`Appointment request sent to doctor ${doctorUserId}: ${appointment.id}`);
+  }
+
+  /**
+   * Send appointment status update to patient (public method)
+   */
+  public sendAppointmentStatusUpdate(
+    patientUserId: string,
+    appointment: {
+      id: string;
+      status: string;
+      appointmentDate: string;
+      appointmentTime: string;
+      doctorName: string;
+    }
+  ): void {
+    // Emit to patient's room
+    this.io.to(`user_${patientUserId}`).emit('appointment_status_update', {
+      appointment,
+    });
+
+    console.log(`Appointment status update sent to patient ${patientUserId}: ${appointment.id} - ${appointment.status}`);
+  }
+
+  /**
    * Handle getting initial messages with pagination
    */
   private handleGetInitialMessages(socket: Socket, relationId: string): void {
