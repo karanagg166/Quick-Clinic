@@ -130,9 +130,9 @@ export default function Signup() {
 
       // navigate based on role
       if (role === "PATIENT") {
-        router.push(`/user/profile/patient`);
+        router.push(`/patient/profile`);
       } else {
-        router.push(`/user/profile/doctor`);
+        router.push(`/doctor/profile`);
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
