@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { User } from "@/types/common"; // 1. Import the User type
+import type { UserDetail } from "@/types/common";
 
 // 1. GET: Fetch User Details
 export async function GET(
@@ -27,25 +27,21 @@ export async function GET(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // 3. Map DB result to your User type format
-    // This ensures the frontend receives exactly what it expects
-    const userData: User & { 
-      // Add extra profile fields if they aren't in your base User type
-      address: string; city: string; state: string; pinCode: number; phoneNo: string 
-    } = {
-      userId: userDB.id,
+    // 3. Map DB result to unified UserDetail shape
+    const userData: UserDetail = {
+      id: userDB.id,
       name: userDB.name,
       email: userDB.email,
-      role: userDB.role as "DOCTOR" | "PATIENT",
-      gender: userDB.gender as "MALE" | "FEMALE" | "BINARY",
-      age: userDB.age,
       phoneNo: userDB.phoneNo || "",
+      age: userDB.age,
+      gender: userDB.gender as "MALE" | "FEMALE" | "BINARY",
+      role: userDB.role as "ADMIN" | "DOCTOR" | "PATIENT",
       address: userDB.address || "",
       city: userDB.city || "",
       state: userDB.state || "",
       pinCode: userDB.pinCode || 0,
-      
-      // Handle optional relations safely
+      profileImageUrl: userDB.profileImageUrl ?? undefined,
+      emailVerified: userDB.emailVerified,
       doctorId: userDB.doctor?.id ?? null,
       patientId: userDB.patient?.id ?? null,
     };
@@ -92,21 +88,20 @@ export async function PATCH(
       },
     });
 
-    // Map updated result to User type
-    const updatedUserData: User & { 
-       address: string; city: string; state: string; pinCode: number; phoneNo: string 
-    } = {
-      userId: updatedDB.id,
+    const updatedUserData: UserDetail = {
+      id: updatedDB.id,
       name: updatedDB.name,
       email: updatedDB.email,
-      role: updatedDB.role as "DOCTOR" | "PATIENT",
-      gender: updatedDB.gender as "MALE" | "FEMALE" | "BINARY",
-      age: updatedDB.age,
       phoneNo: updatedDB.phoneNo || "",
+      age: updatedDB.age,
+      gender: updatedDB.gender as "MALE" | "FEMALE" | "BINARY",
+      role: updatedDB.role as "ADMIN" | "DOCTOR" | "PATIENT",
       address: updatedDB.address || "",
       city: updatedDB.city || "",
       state: updatedDB.state || "",
       pinCode: updatedDB.pinCode || 0,
+      profileImageUrl: updatedDB.profileImageUrl ?? undefined,
+      emailVerified: updatedDB.emailVerified,
       doctorId: updatedDB.doctor?.id ?? null,
       patientId: updatedDB.patient?.id ?? null,
     };

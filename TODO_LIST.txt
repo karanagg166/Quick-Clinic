@@ -59,6 +59,4 @@ END OF FILE
 
 >>> We can add a feature to give patient review of doctors.
 >>> Apply pagination in Chat Bar.
->>> OTP feature. 
 >>> Add prescription feature.
->>> Patinent can talk with other patient through doctors review section.

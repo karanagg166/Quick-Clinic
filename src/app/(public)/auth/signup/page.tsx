@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Eye, EyeOff, UserPlus, Mail, Phone, MapPin, Lock, User } from "lucide-react";
 import ParticlesBackground from "@/components/general/Particles";
 import { showToast } from "@/lib/toast";
+import type { UserDetail } from "@/types/common";
 
 export default function Signup() {
   const router = useRouter();
@@ -100,17 +101,23 @@ export default function Signup() {
         return;
       }
     //  console.log(data);
-      // Map server response -> local store User type (includes isVerified/phone/profileImageUrl)
-      const userDetails = {
-        userId: data.user.userId,
+      // Map server response -> local store UserDetail
+      const userDetails: UserDetail = {
+        id: data.user.id,
         email: data.user.email,
-        role: data.user.role,
-        name: data.user.name,
-        gender: data.user.gender,
-        age: data.user.age,
         phoneNo: data.user.phoneNo ?? "",
+        name: data.user.name,
+        age: data.user.age,
+        gender: data.user.gender,
+        role: data.user.role,
+        address: data.user.address ?? "",
+        city: data.user.city ?? "",
+        state: data.user.state ?? "",
+        pinCode: data.user.pinCode ?? 0,
         profileImageUrl: data.user.profileImageUrl ?? "",
-        isVerified: data.user.emailVerified ?? false,
+        emailVerified: data.user.emailVerified ?? false,
+        patientId: data.user.patientId ?? null,
+        doctorId: data.user.doctorId ?? null,
       };
 
       // persist to zustand with optional ids
@@ -123,9 +130,9 @@ export default function Signup() {
 
       // navigate based on role
       if (role === "PATIENT") {
-        router.push(`/user/profile/patient`);
+        router.push(`/patient/profile`);
       } else {
-        router.push(`/user/profile/doctor`);
+        router.push(`/doctor/profile`);
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";

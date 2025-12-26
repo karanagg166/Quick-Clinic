@@ -13,12 +13,19 @@ export interface UserDetail {
   phoneNo: string;
   name: string;
   age: number;
-  gender: string;
+
+  gender: 'MALE' | 'FEMALE' | 'BINARY';
+  role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
+  patientId?: string | null;
+  doctorId?: string | null;
+
   address: string;
   city: string;
   state: string;
   pinCode: number;
+
   profileImageUrl?: string;
+  emailVerified: boolean;
 }
 
 export interface PatientDetail {
@@ -77,16 +84,4 @@ appointmentDate:string;
 appointmentTime:string;
 bookedAt:string;
 status:'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
-}
-
-type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
-export interface User {
-  userId: string;
-  email: string;
-  role: UserRole;
-  name: string;
-  gender: string;
-  age: number;
-  doctorId: string | null;
-  patientId: string | null;
 }
