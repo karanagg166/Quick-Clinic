@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bell, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
@@ -15,6 +16,38 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
   const router = useRouter();
   const logout = useUserStore((state) => state.logout);
   const user = useUserStore((state) => state.user);
+  const doctorId = useUserStore((state) => state.doctorId);
+  const [balance, setBalance] = useState<number | null>(null);
+  const [loadingBalance, setLoadingBalance] = useState(true);
+
+  // Fetch doctor balance
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (!doctorId) {
+        setLoadingBalance(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/doctors/${doctorId}/balance`, {
+          credentials: 'include',
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setBalance(data.balanceInRupees);
+        }
+      } catch (error) {
+        console.error('Failed to fetch balance:', error);
+      } finally {
+        setLoadingBalance(false);
+      }
+    };
+
+    fetchBalance();
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchBalance, 30000);
+    return () => clearInterval(interval);
+  }, [doctorId]);
 
   const handleLogout = async () => {
     try {
@@ -97,8 +130,24 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </div>
       </div>
 
-      {/* RIGHT SECTION — Notifications + Profile + Logout */}
+      {/* RIGHT SECTION — Balance + Notifications + Profile + Logout */}
       <div className="flex items-center gap-4">
+
+        {/* Balance Display */}
+        {doctorId && (
+          <Link href="/doctor/earnings">
+            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200">
+              <Wallet className="w-4 h-4 text-green-700" />
+              <span className="text-sm font-semibold text-green-700">
+                {loadingBalance ? (
+                  '...'
+                ) : (
+                  `₹${balance !== null ? balance.toFixed(2) : '0.00'}`
+                )}
+              </span>
+            </div>
+          </Link>
+        )}
 
         <Link href="/user/notifications">
           <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
