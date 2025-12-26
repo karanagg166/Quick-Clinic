@@ -75,7 +75,18 @@ export async function GET(
     });
 
     // Map appointments to earnings format
-    const earnings = appointments.map((a) => {
+    const earnings = appointments.map((a: {
+      id: string;
+      slot: {
+        date: Date;
+        startTime: Date;
+      } | null;
+      patient: {
+        user: {
+          name: string;
+        } | null;
+      } | null;
+    }) => {
       // Construct appointmentDateTime from slot.date and slot.startTime
       const appointmentDateTime = a.slot?.startTime 
         ? new Date(a.slot.startTime)
