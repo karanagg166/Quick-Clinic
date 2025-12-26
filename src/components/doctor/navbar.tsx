@@ -111,7 +111,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
           <Link
-            href="/doctor/info"
+            href="/doctor/profile"
             className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
           >
             <Avatar 
