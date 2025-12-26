@@ -118,9 +118,19 @@ export default function PatientAppointmentsPage() {
 
       {!loading && (
         <div className="space-y-4">
-          {appointments.map((appointment) => (
-            <AppointmentCard key={appointment.id} appointment={appointment} />
-          ))}
+          {appointments.length === 0 ? (
+            <div className="text-center py-12 text-gray-500">
+              <p>No appointments found</p>
+            </div>
+          ) : (
+            appointments.map((appointment) => (
+              <AppointmentCard 
+                key={appointment.id} 
+                appointment={appointment}
+                onCancel={fetchAppointments}
+              />
+            ))
+          )}
         </div>
       )}
     </div>

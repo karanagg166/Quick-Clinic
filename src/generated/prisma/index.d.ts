@@ -74,6 +74,11 @@ export type ChatMessages = $Result.DefaultSelection<Prisma.$ChatMessagesPayload>
  */
 export type Payment = $Result.DefaultSelection<Prisma.$PaymentPayload>
 /**
+ * Model Withdrawal
+ * 
+ */
+export type Withdrawal = $Result.DefaultSelection<Prisma.$WithdrawalPayload>
+/**
  * Model Otp
  * 
  */
@@ -217,6 +222,17 @@ export const PaymentMethod: {
 
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
 
+
+export const WithdrawalStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
+export type WithdrawalStatus = (typeof WithdrawalStatus)[keyof typeof WithdrawalStatus]
+
 }
 
 export type Gender = $Enums.Gender
@@ -246,6 +262,10 @@ export const AppointmentStatus: typeof $Enums.AppointmentStatus
 export type PaymentMethod = $Enums.PaymentMethod
 
 export const PaymentMethod: typeof $Enums.PaymentMethod
+
+export type WithdrawalStatus = $Enums.WithdrawalStatus
+
+export const WithdrawalStatus: typeof $Enums.WithdrawalStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -483,6 +503,16 @@ export class PrismaClient<
     * ```
     */
   get payment(): Prisma.PaymentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.withdrawal`: Exposes CRUD operations for the **Withdrawal** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Withdrawals
+    * const withdrawals = await prisma.withdrawal.findMany()
+    * ```
+    */
+  get withdrawal(): Prisma.WithdrawalDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.otp`: Exposes CRUD operations for the **Otp** model.
@@ -979,6 +1009,7 @@ export namespace Prisma {
     DoctorPatientRelation: 'DoctorPatientRelation',
     ChatMessages: 'ChatMessages',
     Payment: 'Payment',
+    Withdrawal: 'Withdrawal',
     Otp: 'Otp',
     AccessLog: 'AccessLog',
     AuditLog: 'AuditLog',
@@ -999,7 +1030,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "admin" | "doctor" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
+      modelProps: "user" | "admin" | "doctor" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1891,6 +1922,80 @@ export namespace Prisma {
           }
         }
       }
+      Withdrawal: {
+        payload: Prisma.$WithdrawalPayload<ExtArgs>
+        fields: Prisma.WithdrawalFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WithdrawalFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WithdrawalFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          findFirst: {
+            args: Prisma.WithdrawalFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WithdrawalFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          findMany: {
+            args: Prisma.WithdrawalFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>[]
+          }
+          create: {
+            args: Prisma.WithdrawalCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          createMany: {
+            args: Prisma.WithdrawalCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WithdrawalCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>[]
+          }
+          delete: {
+            args: Prisma.WithdrawalDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          update: {
+            args: Prisma.WithdrawalUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          deleteMany: {
+            args: Prisma.WithdrawalDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WithdrawalUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WithdrawalUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>[]
+          }
+          upsert: {
+            args: Prisma.WithdrawalUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WithdrawalPayload>
+          }
+          aggregate: {
+            args: Prisma.WithdrawalAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWithdrawal>
+          }
+          groupBy: {
+            args: Prisma.WithdrawalGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WithdrawalGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WithdrawalCountArgs<ExtArgs>
+            result: $Utils.Optional<WithdrawalCountAggregateOutputType> | number
+          }
+        }
+      }
       Otp: {
         payload: Prisma.$OtpPayload<ExtArgs>
         fields: Prisma.OtpFieldRefs
@@ -2381,6 +2486,7 @@ export namespace Prisma {
     doctorPatientRelation?: DoctorPatientRelationOmit
     chatMessages?: ChatMessagesOmit
     payment?: PaymentOmit
+    withdrawal?: WithdrawalOmit
     otp?: OtpOmit
     accessLog?: AccessLogOmit
     auditLog?: AuditLogOmit
@@ -2566,6 +2672,7 @@ export namespace Prisma {
     slots: number
     comments: number
     ratings: number
+    withdrawals: number
   }
 
   export type DoctorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2575,6 +2682,7 @@ export namespace Prisma {
     slots?: boolean | DoctorCountOutputTypeCountSlotsArgs
     comments?: boolean | DoctorCountOutputTypeCountCommentsArgs
     ratings?: boolean | DoctorCountOutputTypeCountRatingsArgs
+    withdrawals?: boolean | DoctorCountOutputTypeCountWithdrawalsArgs
   }
 
   // Custom InputTypes
@@ -2628,6 +2736,13 @@ export namespace Prisma {
    */
   export type DoctorCountOutputTypeCountRatingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RatingWhereInput
+  }
+
+  /**
+   * DoctorCountOutputType without action
+   */
+  export type DoctorCountOutputTypeCountWithdrawalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WithdrawalWhereInput
   }
 
 
@@ -5282,11 +5397,13 @@ export namespace Prisma {
   export type DoctorAvgAggregateOutputType = {
     experience: number | null
     fees: number | null
+    balance: number | null
   }
 
   export type DoctorSumAggregateOutputType = {
     experience: number | null
     fees: number | null
+    balance: number | null
   }
 
   export type DoctorMinAggregateOutputType = {
@@ -5296,6 +5413,11 @@ export namespace Prisma {
     experience: number | null
     fees: number | null
     doctorBio: string | null
+    balance: number | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5307,6 +5429,11 @@ export namespace Prisma {
     experience: number | null
     fees: number | null
     doctorBio: string | null
+    balance: number | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5319,6 +5446,11 @@ export namespace Prisma {
     qualifications: number
     fees: number
     doctorBio: number
+    balance: number
+    bankAccountNumber: number
+    bankIFSC: number
+    bankAccountHolderName: number
+    bankName: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5328,11 +5460,13 @@ export namespace Prisma {
   export type DoctorAvgAggregateInputType = {
     experience?: true
     fees?: true
+    balance?: true
   }
 
   export type DoctorSumAggregateInputType = {
     experience?: true
     fees?: true
+    balance?: true
   }
 
   export type DoctorMinAggregateInputType = {
@@ -5342,6 +5476,11 @@ export namespace Prisma {
     experience?: true
     fees?: true
     doctorBio?: true
+    balance?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5353,6 +5492,11 @@ export namespace Prisma {
     experience?: true
     fees?: true
     doctorBio?: true
+    balance?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5365,6 +5509,11 @@ export namespace Prisma {
     qualifications?: true
     fees?: true
     doctorBio?: true
+    balance?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5464,6 +5613,11 @@ export namespace Prisma {
     qualifications: $Enums.Qualification[]
     fees: number
     doctorBio: string | null
+    balance: number
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
     createdAt: Date
     updatedAt: Date
     _count: DoctorCountAggregateOutputType | null
@@ -5495,6 +5649,11 @@ export namespace Prisma {
     qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
+    balance?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5505,6 +5664,7 @@ export namespace Prisma {
     slots?: boolean | Doctor$slotsArgs<ExtArgs>
     comments?: boolean | Doctor$commentsArgs<ExtArgs>
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
+    withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["doctor"]>
 
@@ -5516,6 +5676,11 @@ export namespace Prisma {
     qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
+    balance?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5529,6 +5694,11 @@ export namespace Prisma {
     qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
+    balance?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5542,11 +5712,16 @@ export namespace Prisma {
     qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
+    balance?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "qualifications" | "fees" | "doctorBio" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
+  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "qualifications" | "fees" | "doctorBio" | "balance" | "bankAccountNumber" | "bankIFSC" | "bankAccountHolderName" | "bankName" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
   export type DoctorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     leaves?: boolean | Doctor$leavesArgs<ExtArgs>
@@ -5556,6 +5731,7 @@ export namespace Prisma {
     slots?: boolean | Doctor$slotsArgs<ExtArgs>
     comments?: boolean | Doctor$commentsArgs<ExtArgs>
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
+    withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DoctorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5576,6 +5752,7 @@ export namespace Prisma {
       slots: Prisma.$SlotPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
+      withdrawals: Prisma.$WithdrawalPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -5585,6 +5762,11 @@ export namespace Prisma {
       qualifications: $Enums.Qualification[]
       fees: number
       doctorBio: string | null
+      balance: number
+      bankAccountNumber: string | null
+      bankIFSC: string | null
+      bankAccountHolderName: string | null
+      bankName: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["doctor"]>
@@ -5989,6 +6171,7 @@ export namespace Prisma {
     slots<T extends Doctor$slotsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$slotsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SlotPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     comments<T extends Doctor$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ratings<T extends Doctor$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    withdrawals<T extends Doctor$withdrawalsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$withdrawalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6025,6 +6208,11 @@ export namespace Prisma {
     readonly qualifications: FieldRef<"Doctor", 'Qualification[]'>
     readonly fees: FieldRef<"Doctor", 'Int'>
     readonly doctorBio: FieldRef<"Doctor", 'String'>
+    readonly balance: FieldRef<"Doctor", 'Int'>
+    readonly bankAccountNumber: FieldRef<"Doctor", 'String'>
+    readonly bankIFSC: FieldRef<"Doctor", 'String'>
+    readonly bankAccountHolderName: FieldRef<"Doctor", 'String'>
+    readonly bankName: FieldRef<"Doctor", 'String'>
     readonly createdAt: FieldRef<"Doctor", 'DateTime'>
     readonly updatedAt: FieldRef<"Doctor", 'DateTime'>
   }
@@ -6583,6 +6771,30 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[]
+  }
+
+  /**
+   * Doctor.withdrawals
+   */
+  export type Doctor$withdrawalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    where?: WithdrawalWhereInput
+    orderBy?: WithdrawalOrderByWithRelationInput | WithdrawalOrderByWithRelationInput[]
+    cursor?: WithdrawalWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WithdrawalScalarFieldEnum | WithdrawalScalarFieldEnum[]
   }
 
   /**
@@ -16560,6 +16772,1215 @@ export namespace Prisma {
 
 
   /**
+   * Model Withdrawal
+   */
+
+  export type AggregateWithdrawal = {
+    _count: WithdrawalCountAggregateOutputType | null
+    _avg: WithdrawalAvgAggregateOutputType | null
+    _sum: WithdrawalSumAggregateOutputType | null
+    _min: WithdrawalMinAggregateOutputType | null
+    _max: WithdrawalMaxAggregateOutputType | null
+  }
+
+  export type WithdrawalAvgAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type WithdrawalSumAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type WithdrawalMinAggregateOutputType = {
+    id: string | null
+    doctorId: string | null
+    amount: number | null
+    currency: string | null
+    status: $Enums.WithdrawalStatus | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
+    razorpayPayoutId: string | null
+    failureReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type WithdrawalMaxAggregateOutputType = {
+    id: string | null
+    doctorId: string | null
+    amount: number | null
+    currency: string | null
+    status: $Enums.WithdrawalStatus | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
+    razorpayPayoutId: string | null
+    failureReason: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type WithdrawalCountAggregateOutputType = {
+    id: number
+    doctorId: number
+    amount: number
+    currency: number
+    status: number
+    bankAccountNumber: number
+    bankIFSC: number
+    bankAccountHolderName: number
+    bankName: number
+    razorpayPayoutId: number
+    failureReason: number
+    createdAt: number
+    updatedAt: number
+    processedAt: number
+    _all: number
+  }
+
+
+  export type WithdrawalAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type WithdrawalSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type WithdrawalMinAggregateInputType = {
+    id?: true
+    doctorId?: true
+    amount?: true
+    currency?: true
+    status?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+    razorpayPayoutId?: true
+    failureReason?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+  }
+
+  export type WithdrawalMaxAggregateInputType = {
+    id?: true
+    doctorId?: true
+    amount?: true
+    currency?: true
+    status?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+    razorpayPayoutId?: true
+    failureReason?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+  }
+
+  export type WithdrawalCountAggregateInputType = {
+    id?: true
+    doctorId?: true
+    amount?: true
+    currency?: true
+    status?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+    razorpayPayoutId?: true
+    failureReason?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+    _all?: true
+  }
+
+  export type WithdrawalAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Withdrawal to aggregate.
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Withdrawals to fetch.
+     */
+    orderBy?: WithdrawalOrderByWithRelationInput | WithdrawalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WithdrawalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Withdrawals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Withdrawals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Withdrawals
+    **/
+    _count?: true | WithdrawalCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: WithdrawalAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WithdrawalSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WithdrawalMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WithdrawalMaxAggregateInputType
+  }
+
+  export type GetWithdrawalAggregateType<T extends WithdrawalAggregateArgs> = {
+        [P in keyof T & keyof AggregateWithdrawal]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWithdrawal[P]>
+      : GetScalarType<T[P], AggregateWithdrawal[P]>
+  }
+
+
+
+
+  export type WithdrawalGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WithdrawalWhereInput
+    orderBy?: WithdrawalOrderByWithAggregationInput | WithdrawalOrderByWithAggregationInput[]
+    by: WithdrawalScalarFieldEnum[] | WithdrawalScalarFieldEnum
+    having?: WithdrawalScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WithdrawalCountAggregateInputType | true
+    _avg?: WithdrawalAvgAggregateInputType
+    _sum?: WithdrawalSumAggregateInputType
+    _min?: WithdrawalMinAggregateInputType
+    _max?: WithdrawalMaxAggregateInputType
+  }
+
+  export type WithdrawalGroupByOutputType = {
+    id: string
+    doctorId: string
+    amount: number
+    currency: string
+    status: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId: string | null
+    failureReason: string | null
+    createdAt: Date
+    updatedAt: Date
+    processedAt: Date | null
+    _count: WithdrawalCountAggregateOutputType | null
+    _avg: WithdrawalAvgAggregateOutputType | null
+    _sum: WithdrawalSumAggregateOutputType | null
+    _min: WithdrawalMinAggregateOutputType | null
+    _max: WithdrawalMaxAggregateOutputType | null
+  }
+
+  type GetWithdrawalGroupByPayload<T extends WithdrawalGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WithdrawalGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WithdrawalGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WithdrawalGroupByOutputType[P]>
+            : GetScalarType<T[P], WithdrawalGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WithdrawalSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    amount?: boolean
+    currency?: boolean
+    status?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    razorpayPayoutId?: boolean
+    failureReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["withdrawal"]>
+
+  export type WithdrawalSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    amount?: boolean
+    currency?: boolean
+    status?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    razorpayPayoutId?: boolean
+    failureReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["withdrawal"]>
+
+  export type WithdrawalSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    amount?: boolean
+    currency?: boolean
+    status?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    razorpayPayoutId?: boolean
+    failureReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["withdrawal"]>
+
+  export type WithdrawalSelectScalar = {
+    id?: boolean
+    doctorId?: boolean
+    amount?: boolean
+    currency?: boolean
+    status?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    razorpayPayoutId?: boolean
+    failureReason?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+  }
+
+  export type WithdrawalOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "amount" | "currency" | "status" | "bankAccountNumber" | "bankIFSC" | "bankAccountHolderName" | "bankName" | "razorpayPayoutId" | "failureReason" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["withdrawal"]>
+  export type WithdrawalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+  export type WithdrawalIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+  export type WithdrawalIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+
+  export type $WithdrawalPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Withdrawal"
+    objects: {
+      doctor: Prisma.$DoctorPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      doctorId: string
+      amount: number
+      currency: string
+      status: $Enums.WithdrawalStatus
+      bankAccountNumber: string
+      bankIFSC: string
+      bankAccountHolderName: string
+      bankName: string
+      razorpayPayoutId: string | null
+      failureReason: string | null
+      createdAt: Date
+      updatedAt: Date
+      processedAt: Date | null
+    }, ExtArgs["result"]["withdrawal"]>
+    composites: {}
+  }
+
+  type WithdrawalGetPayload<S extends boolean | null | undefined | WithdrawalDefaultArgs> = $Result.GetResult<Prisma.$WithdrawalPayload, S>
+
+  type WithdrawalCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WithdrawalFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WithdrawalCountAggregateInputType | true
+    }
+
+  export interface WithdrawalDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Withdrawal'], meta: { name: 'Withdrawal' } }
+    /**
+     * Find zero or one Withdrawal that matches the filter.
+     * @param {WithdrawalFindUniqueArgs} args - Arguments to find a Withdrawal
+     * @example
+     * // Get one Withdrawal
+     * const withdrawal = await prisma.withdrawal.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WithdrawalFindUniqueArgs>(args: SelectSubset<T, WithdrawalFindUniqueArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Withdrawal that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WithdrawalFindUniqueOrThrowArgs} args - Arguments to find a Withdrawal
+     * @example
+     * // Get one Withdrawal
+     * const withdrawal = await prisma.withdrawal.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WithdrawalFindUniqueOrThrowArgs>(args: SelectSubset<T, WithdrawalFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Withdrawal that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalFindFirstArgs} args - Arguments to find a Withdrawal
+     * @example
+     * // Get one Withdrawal
+     * const withdrawal = await prisma.withdrawal.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WithdrawalFindFirstArgs>(args?: SelectSubset<T, WithdrawalFindFirstArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Withdrawal that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalFindFirstOrThrowArgs} args - Arguments to find a Withdrawal
+     * @example
+     * // Get one Withdrawal
+     * const withdrawal = await prisma.withdrawal.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WithdrawalFindFirstOrThrowArgs>(args?: SelectSubset<T, WithdrawalFindFirstOrThrowArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Withdrawals that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Withdrawals
+     * const withdrawals = await prisma.withdrawal.findMany()
+     * 
+     * // Get first 10 Withdrawals
+     * const withdrawals = await prisma.withdrawal.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const withdrawalWithIdOnly = await prisma.withdrawal.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WithdrawalFindManyArgs>(args?: SelectSubset<T, WithdrawalFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Withdrawal.
+     * @param {WithdrawalCreateArgs} args - Arguments to create a Withdrawal.
+     * @example
+     * // Create one Withdrawal
+     * const Withdrawal = await prisma.withdrawal.create({
+     *   data: {
+     *     // ... data to create a Withdrawal
+     *   }
+     * })
+     * 
+     */
+    create<T extends WithdrawalCreateArgs>(args: SelectSubset<T, WithdrawalCreateArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Withdrawals.
+     * @param {WithdrawalCreateManyArgs} args - Arguments to create many Withdrawals.
+     * @example
+     * // Create many Withdrawals
+     * const withdrawal = await prisma.withdrawal.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WithdrawalCreateManyArgs>(args?: SelectSubset<T, WithdrawalCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Withdrawals and returns the data saved in the database.
+     * @param {WithdrawalCreateManyAndReturnArgs} args - Arguments to create many Withdrawals.
+     * @example
+     * // Create many Withdrawals
+     * const withdrawal = await prisma.withdrawal.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Withdrawals and only return the `id`
+     * const withdrawalWithIdOnly = await prisma.withdrawal.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WithdrawalCreateManyAndReturnArgs>(args?: SelectSubset<T, WithdrawalCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Withdrawal.
+     * @param {WithdrawalDeleteArgs} args - Arguments to delete one Withdrawal.
+     * @example
+     * // Delete one Withdrawal
+     * const Withdrawal = await prisma.withdrawal.delete({
+     *   where: {
+     *     // ... filter to delete one Withdrawal
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WithdrawalDeleteArgs>(args: SelectSubset<T, WithdrawalDeleteArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Withdrawal.
+     * @param {WithdrawalUpdateArgs} args - Arguments to update one Withdrawal.
+     * @example
+     * // Update one Withdrawal
+     * const withdrawal = await prisma.withdrawal.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WithdrawalUpdateArgs>(args: SelectSubset<T, WithdrawalUpdateArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Withdrawals.
+     * @param {WithdrawalDeleteManyArgs} args - Arguments to filter Withdrawals to delete.
+     * @example
+     * // Delete a few Withdrawals
+     * const { count } = await prisma.withdrawal.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WithdrawalDeleteManyArgs>(args?: SelectSubset<T, WithdrawalDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Withdrawals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Withdrawals
+     * const withdrawal = await prisma.withdrawal.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WithdrawalUpdateManyArgs>(args: SelectSubset<T, WithdrawalUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Withdrawals and returns the data updated in the database.
+     * @param {WithdrawalUpdateManyAndReturnArgs} args - Arguments to update many Withdrawals.
+     * @example
+     * // Update many Withdrawals
+     * const withdrawal = await prisma.withdrawal.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Withdrawals and only return the `id`
+     * const withdrawalWithIdOnly = await prisma.withdrawal.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WithdrawalUpdateManyAndReturnArgs>(args: SelectSubset<T, WithdrawalUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Withdrawal.
+     * @param {WithdrawalUpsertArgs} args - Arguments to update or create a Withdrawal.
+     * @example
+     * // Update or create a Withdrawal
+     * const withdrawal = await prisma.withdrawal.upsert({
+     *   create: {
+     *     // ... data to create a Withdrawal
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Withdrawal we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WithdrawalUpsertArgs>(args: SelectSubset<T, WithdrawalUpsertArgs<ExtArgs>>): Prisma__WithdrawalClient<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Withdrawals.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalCountArgs} args - Arguments to filter Withdrawals to count.
+     * @example
+     * // Count the number of Withdrawals
+     * const count = await prisma.withdrawal.count({
+     *   where: {
+     *     // ... the filter for the Withdrawals we want to count
+     *   }
+     * })
+    **/
+    count<T extends WithdrawalCountArgs>(
+      args?: Subset<T, WithdrawalCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WithdrawalCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Withdrawal.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WithdrawalAggregateArgs>(args: Subset<T, WithdrawalAggregateArgs>): Prisma.PrismaPromise<GetWithdrawalAggregateType<T>>
+
+    /**
+     * Group by Withdrawal.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WithdrawalGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WithdrawalGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WithdrawalGroupByArgs['orderBy'] }
+        : { orderBy?: WithdrawalGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WithdrawalGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWithdrawalGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Withdrawal model
+   */
+  readonly fields: WithdrawalFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Withdrawal.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WithdrawalClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Withdrawal model
+   */
+  interface WithdrawalFieldRefs {
+    readonly id: FieldRef<"Withdrawal", 'String'>
+    readonly doctorId: FieldRef<"Withdrawal", 'String'>
+    readonly amount: FieldRef<"Withdrawal", 'Int'>
+    readonly currency: FieldRef<"Withdrawal", 'String'>
+    readonly status: FieldRef<"Withdrawal", 'WithdrawalStatus'>
+    readonly bankAccountNumber: FieldRef<"Withdrawal", 'String'>
+    readonly bankIFSC: FieldRef<"Withdrawal", 'String'>
+    readonly bankAccountHolderName: FieldRef<"Withdrawal", 'String'>
+    readonly bankName: FieldRef<"Withdrawal", 'String'>
+    readonly razorpayPayoutId: FieldRef<"Withdrawal", 'String'>
+    readonly failureReason: FieldRef<"Withdrawal", 'String'>
+    readonly createdAt: FieldRef<"Withdrawal", 'DateTime'>
+    readonly updatedAt: FieldRef<"Withdrawal", 'DateTime'>
+    readonly processedAt: FieldRef<"Withdrawal", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Withdrawal findUnique
+   */
+  export type WithdrawalFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter, which Withdrawal to fetch.
+     */
+    where: WithdrawalWhereUniqueInput
+  }
+
+  /**
+   * Withdrawal findUniqueOrThrow
+   */
+  export type WithdrawalFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter, which Withdrawal to fetch.
+     */
+    where: WithdrawalWhereUniqueInput
+  }
+
+  /**
+   * Withdrawal findFirst
+   */
+  export type WithdrawalFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter, which Withdrawal to fetch.
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Withdrawals to fetch.
+     */
+    orderBy?: WithdrawalOrderByWithRelationInput | WithdrawalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Withdrawals.
+     */
+    cursor?: WithdrawalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Withdrawals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Withdrawals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Withdrawals.
+     */
+    distinct?: WithdrawalScalarFieldEnum | WithdrawalScalarFieldEnum[]
+  }
+
+  /**
+   * Withdrawal findFirstOrThrow
+   */
+  export type WithdrawalFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter, which Withdrawal to fetch.
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Withdrawals to fetch.
+     */
+    orderBy?: WithdrawalOrderByWithRelationInput | WithdrawalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Withdrawals.
+     */
+    cursor?: WithdrawalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Withdrawals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Withdrawals.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Withdrawals.
+     */
+    distinct?: WithdrawalScalarFieldEnum | WithdrawalScalarFieldEnum[]
+  }
+
+  /**
+   * Withdrawal findMany
+   */
+  export type WithdrawalFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter, which Withdrawals to fetch.
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Withdrawals to fetch.
+     */
+    orderBy?: WithdrawalOrderByWithRelationInput | WithdrawalOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Withdrawals.
+     */
+    cursor?: WithdrawalWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Withdrawals from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Withdrawals.
+     */
+    skip?: number
+    distinct?: WithdrawalScalarFieldEnum | WithdrawalScalarFieldEnum[]
+  }
+
+  /**
+   * Withdrawal create
+   */
+  export type WithdrawalCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Withdrawal.
+     */
+    data: XOR<WithdrawalCreateInput, WithdrawalUncheckedCreateInput>
+  }
+
+  /**
+   * Withdrawal createMany
+   */
+  export type WithdrawalCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Withdrawals.
+     */
+    data: WithdrawalCreateManyInput | WithdrawalCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Withdrawal createManyAndReturn
+   */
+  export type WithdrawalCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * The data used to create many Withdrawals.
+     */
+    data: WithdrawalCreateManyInput | WithdrawalCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Withdrawal update
+   */
+  export type WithdrawalUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Withdrawal.
+     */
+    data: XOR<WithdrawalUpdateInput, WithdrawalUncheckedUpdateInput>
+    /**
+     * Choose, which Withdrawal to update.
+     */
+    where: WithdrawalWhereUniqueInput
+  }
+
+  /**
+   * Withdrawal updateMany
+   */
+  export type WithdrawalUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Withdrawals.
+     */
+    data: XOR<WithdrawalUpdateManyMutationInput, WithdrawalUncheckedUpdateManyInput>
+    /**
+     * Filter which Withdrawals to update
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * Limit how many Withdrawals to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Withdrawal updateManyAndReturn
+   */
+  export type WithdrawalUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * The data used to update Withdrawals.
+     */
+    data: XOR<WithdrawalUpdateManyMutationInput, WithdrawalUncheckedUpdateManyInput>
+    /**
+     * Filter which Withdrawals to update
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * Limit how many Withdrawals to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Withdrawal upsert
+   */
+  export type WithdrawalUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Withdrawal to update in case it exists.
+     */
+    where: WithdrawalWhereUniqueInput
+    /**
+     * In case the Withdrawal found by the `where` argument doesn't exist, create a new Withdrawal with this data.
+     */
+    create: XOR<WithdrawalCreateInput, WithdrawalUncheckedCreateInput>
+    /**
+     * In case the Withdrawal was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WithdrawalUpdateInput, WithdrawalUncheckedUpdateInput>
+  }
+
+  /**
+   * Withdrawal delete
+   */
+  export type WithdrawalDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+    /**
+     * Filter which Withdrawal to delete.
+     */
+    where: WithdrawalWhereUniqueInput
+  }
+
+  /**
+   * Withdrawal deleteMany
+   */
+  export type WithdrawalDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Withdrawals to delete
+     */
+    where?: WithdrawalWhereInput
+    /**
+     * Limit how many Withdrawals to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Withdrawal without action
+   */
+  export type WithdrawalDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Withdrawal
+     */
+    select?: WithdrawalSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Withdrawal
+     */
+    omit?: WithdrawalOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WithdrawalInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Otp
    */
 
@@ -22026,6 +23447,11 @@ export namespace Prisma {
     qualifications: 'qualifications',
     fees: 'fees',
     doctorBio: 'doctorBio',
+    balance: 'balance',
+    bankAccountNumber: 'bankAccountNumber',
+    bankIFSC: 'bankIFSC',
+    bankAccountHolderName: 'bankAccountHolderName',
+    bankName: 'bankName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -22150,6 +23576,26 @@ export namespace Prisma {
   };
 
   export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+  export const WithdrawalScalarFieldEnum: {
+    id: 'id',
+    doctorId: 'doctorId',
+    amount: 'amount',
+    currency: 'currency',
+    status: 'status',
+    bankAccountNumber: 'bankAccountNumber',
+    bankIFSC: 'bankIFSC',
+    bankAccountHolderName: 'bankAccountHolderName',
+    bankName: 'bankName',
+    razorpayPayoutId: 'razorpayPayoutId',
+    failureReason: 'failureReason',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    processedAt: 'processedAt'
+  };
+
+  export type WithdrawalScalarFieldEnum = (typeof WithdrawalScalarFieldEnum)[keyof typeof WithdrawalScalarFieldEnum]
 
 
   export const OtpScalarFieldEnum: {
@@ -22425,6 +23871,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'WithdrawalStatus'
+   */
+  export type EnumWithdrawalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WithdrawalStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'WithdrawalStatus[]'
+   */
+  export type ListEnumWithdrawalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WithdrawalStatus[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -22644,6 +24104,11 @@ export namespace Prisma {
     qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
+    balance?: IntFilter<"Doctor"> | number
+    bankAccountNumber?: StringNullableFilter<"Doctor"> | string | null
+    bankIFSC?: StringNullableFilter<"Doctor"> | string | null
+    bankAccountHolderName?: StringNullableFilter<"Doctor"> | string | null
+    bankName?: StringNullableFilter<"Doctor"> | string | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -22654,6 +24119,7 @@ export namespace Prisma {
     slots?: SlotListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    withdrawals?: WithdrawalListRelationFilter
   }
 
   export type DoctorOrderByWithRelationInput = {
@@ -22664,6 +24130,11 @@ export namespace Prisma {
     qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
+    balance?: SortOrder
+    bankAccountNumber?: SortOrderInput | SortOrder
+    bankIFSC?: SortOrderInput | SortOrder
+    bankAccountHolderName?: SortOrderInput | SortOrder
+    bankName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -22674,6 +24145,7 @@ export namespace Prisma {
     slots?: SlotOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
+    withdrawals?: WithdrawalOrderByRelationAggregateInput
   }
 
   export type DoctorWhereUniqueInput = Prisma.AtLeast<{
@@ -22687,6 +24159,11 @@ export namespace Prisma {
     qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
+    balance?: IntFilter<"Doctor"> | number
+    bankAccountNumber?: StringNullableFilter<"Doctor"> | string | null
+    bankIFSC?: StringNullableFilter<"Doctor"> | string | null
+    bankAccountHolderName?: StringNullableFilter<"Doctor"> | string | null
+    bankName?: StringNullableFilter<"Doctor"> | string | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -22697,6 +24174,7 @@ export namespace Prisma {
     slots?: SlotListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    withdrawals?: WithdrawalListRelationFilter
   }, "id" | "userId">
 
   export type DoctorOrderByWithAggregationInput = {
@@ -22707,6 +24185,11 @@ export namespace Prisma {
     qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
+    balance?: SortOrder
+    bankAccountNumber?: SortOrderInput | SortOrder
+    bankIFSC?: SortOrderInput | SortOrder
+    bankAccountHolderName?: SortOrderInput | SortOrder
+    bankName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DoctorCountOrderByAggregateInput
@@ -22727,6 +24210,11 @@ export namespace Prisma {
     qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntWithAggregatesFilter<"Doctor"> | number
     doctorBio?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
+    balance?: IntWithAggregatesFilter<"Doctor"> | number
+    bankAccountNumber?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
+    bankIFSC?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
+    bankAccountHolderName?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
+    bankName?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
   }
@@ -23355,6 +24843,108 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
   }
 
+  export type WithdrawalWhereInput = {
+    AND?: WithdrawalWhereInput | WithdrawalWhereInput[]
+    OR?: WithdrawalWhereInput[]
+    NOT?: WithdrawalWhereInput | WithdrawalWhereInput[]
+    id?: StringFilter<"Withdrawal"> | string
+    doctorId?: StringFilter<"Withdrawal"> | string
+    amount?: IntFilter<"Withdrawal"> | number
+    currency?: StringFilter<"Withdrawal"> | string
+    status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFilter<"Withdrawal"> | string
+    bankIFSC?: StringFilter<"Withdrawal"> | string
+    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
+    bankName?: StringFilter<"Withdrawal"> | string
+    razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
+    failureReason?: StringNullableFilter<"Withdrawal"> | string | null
+    createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    updatedAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Withdrawal"> | Date | string | null
+    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
+  }
+
+  export type WithdrawalOrderByWithRelationInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    status?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    razorpayPayoutId?: SortOrderInput | SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    doctor?: DoctorOrderByWithRelationInput
+  }
+
+  export type WithdrawalWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: WithdrawalWhereInput | WithdrawalWhereInput[]
+    OR?: WithdrawalWhereInput[]
+    NOT?: WithdrawalWhereInput | WithdrawalWhereInput[]
+    doctorId?: StringFilter<"Withdrawal"> | string
+    amount?: IntFilter<"Withdrawal"> | number
+    currency?: StringFilter<"Withdrawal"> | string
+    status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFilter<"Withdrawal"> | string
+    bankIFSC?: StringFilter<"Withdrawal"> | string
+    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
+    bankName?: StringFilter<"Withdrawal"> | string
+    razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
+    failureReason?: StringNullableFilter<"Withdrawal"> | string | null
+    createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    updatedAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Withdrawal"> | Date | string | null
+    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
+  }, "id">
+
+  export type WithdrawalOrderByWithAggregationInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    status?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    razorpayPayoutId?: SortOrderInput | SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    _count?: WithdrawalCountOrderByAggregateInput
+    _avg?: WithdrawalAvgOrderByAggregateInput
+    _max?: WithdrawalMaxOrderByAggregateInput
+    _min?: WithdrawalMinOrderByAggregateInput
+    _sum?: WithdrawalSumOrderByAggregateInput
+  }
+
+  export type WithdrawalScalarWhereWithAggregatesInput = {
+    AND?: WithdrawalScalarWhereWithAggregatesInput | WithdrawalScalarWhereWithAggregatesInput[]
+    OR?: WithdrawalScalarWhereWithAggregatesInput[]
+    NOT?: WithdrawalScalarWhereWithAggregatesInput | WithdrawalScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Withdrawal"> | string
+    doctorId?: StringWithAggregatesFilter<"Withdrawal"> | string
+    amount?: IntWithAggregatesFilter<"Withdrawal"> | number
+    currency?: StringWithAggregatesFilter<"Withdrawal"> | string
+    status?: EnumWithdrawalStatusWithAggregatesFilter<"Withdrawal"> | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringWithAggregatesFilter<"Withdrawal"> | string
+    bankIFSC?: StringWithAggregatesFilter<"Withdrawal"> | string
+    bankAccountHolderName?: StringWithAggregatesFilter<"Withdrawal"> | string
+    bankName?: StringWithAggregatesFilter<"Withdrawal"> | string
+    razorpayPayoutId?: StringNullableWithAggregatesFilter<"Withdrawal"> | string | null
+    failureReason?: StringNullableWithAggregatesFilter<"Withdrawal"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Withdrawal"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Withdrawal"> | Date | string
+    processedAt?: DateTimeNullableWithAggregatesFilter<"Withdrawal"> | Date | string | null
+  }
+
   export type OtpWhereInput = {
     AND?: OtpWhereInput | OtpWhereInput[]
     OR?: OtpWhereInput[]
@@ -23886,6 +25476,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -23896,6 +25491,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateInput = {
@@ -23906,6 +25502,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -23915,6 +25516,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUpdateInput = {
@@ -23924,6 +25526,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -23934,6 +25541,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateInput = {
@@ -23944,6 +25552,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -23953,6 +25566,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateManyInput = {
@@ -23963,6 +25577,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -23974,6 +25593,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -23986,6 +25610,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -24635,6 +26264,124 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalCreateInput = {
+    id?: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+    doctor: DoctorCreateNestedOneWithoutWithdrawalsInput
+  }
+
+  export type WithdrawalUncheckedCreateInput = {
+    id?: string
+    doctorId: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WithdrawalUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    doctor?: DoctorUpdateOneRequiredWithoutWithdrawalsNestedInput
+  }
+
+  export type WithdrawalUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WithdrawalCreateManyInput = {
+    id?: string
+    doctorId: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WithdrawalUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WithdrawalUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type OtpCreateInput = {
@@ -25333,6 +27080,12 @@ export namespace Prisma {
     none?: SlotWhereInput
   }
 
+  export type WithdrawalListRelationFilter = {
+    every?: WithdrawalWhereInput
+    some?: WithdrawalWhereInput
+    none?: WithdrawalWhereInput
+  }
+
   export type LeaveOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -25349,6 +27102,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type WithdrawalOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type DoctorCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -25357,6 +27114,11 @@ export namespace Prisma {
     qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrder
+    balance?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25364,6 +27126,7 @@ export namespace Prisma {
   export type DoctorAvgOrderByAggregateInput = {
     experience?: SortOrder
     fees?: SortOrder
+    balance?: SortOrder
   }
 
   export type DoctorMaxOrderByAggregateInput = {
@@ -25373,6 +27136,11 @@ export namespace Prisma {
     experience?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrder
+    balance?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25384,6 +27152,11 @@ export namespace Prisma {
     experience?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrder
+    balance?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -25391,6 +27164,7 @@ export namespace Prisma {
   export type DoctorSumOrderByAggregateInput = {
     experience?: SortOrder
     fees?: SortOrder
+    balance?: SortOrder
   }
 
   export type EnumSpecialtyWithAggregatesFilter<$PrismaModel = never> = {
@@ -25850,6 +27624,82 @@ export namespace Prisma {
 
   export type PaymentSumOrderByAggregateInput = {
     amount?: SortOrder
+  }
+
+  export type EnumWithdrawalStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WithdrawalStatus | EnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWithdrawalStatusFilter<$PrismaModel> | $Enums.WithdrawalStatus
+  }
+
+  export type WithdrawalCountOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    status?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    razorpayPayoutId?: SortOrder
+    failureReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type WithdrawalAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type WithdrawalMaxOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    status?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    razorpayPayoutId?: SortOrder
+    failureReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type WithdrawalMinOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    status?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    razorpayPayoutId?: SortOrder
+    failureReason?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type WithdrawalSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type EnumWithdrawalStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WithdrawalStatus | EnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWithdrawalStatusWithAggregatesFilter<$PrismaModel> | $Enums.WithdrawalStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
+    _max?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
   }
 
   export type OtpCountOrderByAggregateInput = {
@@ -26582,6 +28432,13 @@ export namespace Prisma {
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
+  export type WithdrawalCreateNestedManyWithoutDoctorInput = {
+    create?: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput> | WithdrawalCreateWithoutDoctorInput[] | WithdrawalUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: WithdrawalCreateOrConnectWithoutDoctorInput | WithdrawalCreateOrConnectWithoutDoctorInput[]
+    createMany?: WithdrawalCreateManyDoctorInputEnvelope
+    connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+  }
+
   export type LeaveUncheckedCreateNestedManyWithoutDoctorInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -26628,6 +28485,13 @@ export namespace Prisma {
     connectOrCreate?: RatingCreateOrConnectWithoutDoctorInput | RatingCreateOrConnectWithoutDoctorInput[]
     createMany?: RatingCreateManyDoctorInputEnvelope
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+  }
+
+  export type WithdrawalUncheckedCreateNestedManyWithoutDoctorInput = {
+    create?: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput> | WithdrawalCreateWithoutDoctorInput[] | WithdrawalUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: WithdrawalCreateOrConnectWithoutDoctorInput | WithdrawalCreateOrConnectWithoutDoctorInput[]
+    createMany?: WithdrawalCreateManyDoctorInputEnvelope
+    connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
   }
 
   export type EnumSpecialtyFieldUpdateOperationsInput = {
@@ -26741,6 +28605,20 @@ export namespace Prisma {
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
+  export type WithdrawalUpdateManyWithoutDoctorNestedInput = {
+    create?: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput> | WithdrawalCreateWithoutDoctorInput[] | WithdrawalUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: WithdrawalCreateOrConnectWithoutDoctorInput | WithdrawalCreateOrConnectWithoutDoctorInput[]
+    upsert?: WithdrawalUpsertWithWhereUniqueWithoutDoctorInput | WithdrawalUpsertWithWhereUniqueWithoutDoctorInput[]
+    createMany?: WithdrawalCreateManyDoctorInputEnvelope
+    set?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    disconnect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    delete?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    update?: WithdrawalUpdateWithWhereUniqueWithoutDoctorInput | WithdrawalUpdateWithWhereUniqueWithoutDoctorInput[]
+    updateMany?: WithdrawalUpdateManyWithWhereWithoutDoctorInput | WithdrawalUpdateManyWithWhereWithoutDoctorInput[]
+    deleteMany?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
+  }
+
   export type LeaveUncheckedUpdateManyWithoutDoctorNestedInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -26833,6 +28711,20 @@ export namespace Prisma {
     update?: RatingUpdateWithWhereUniqueWithoutDoctorInput | RatingUpdateWithWhereUniqueWithoutDoctorInput[]
     updateMany?: RatingUpdateManyWithWhereWithoutDoctorInput | RatingUpdateManyWithWhereWithoutDoctorInput[]
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
+  }
+
+  export type WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput = {
+    create?: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput> | WithdrawalCreateWithoutDoctorInput[] | WithdrawalUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: WithdrawalCreateOrConnectWithoutDoctorInput | WithdrawalCreateOrConnectWithoutDoctorInput[]
+    upsert?: WithdrawalUpsertWithWhereUniqueWithoutDoctorInput | WithdrawalUpsertWithWhereUniqueWithoutDoctorInput[]
+    createMany?: WithdrawalCreateManyDoctorInputEnvelope
+    set?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    disconnect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    delete?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
+    update?: WithdrawalUpdateWithWhereUniqueWithoutDoctorInput | WithdrawalUpdateWithWhereUniqueWithoutDoctorInput[]
+    updateMany?: WithdrawalUpdateManyWithWhereWithoutDoctorInput | WithdrawalUpdateManyWithWhereWithoutDoctorInput[]
+    deleteMany?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutPatientInput = {
@@ -27189,6 +29081,24 @@ export namespace Prisma {
     upsert?: UserUpsertWithoutPaymentsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPaymentsInput, UserUpdateWithoutPaymentsInput>, UserUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type DoctorCreateNestedOneWithoutWithdrawalsInput = {
+    create?: XOR<DoctorCreateWithoutWithdrawalsInput, DoctorUncheckedCreateWithoutWithdrawalsInput>
+    connectOrCreate?: DoctorCreateOrConnectWithoutWithdrawalsInput
+    connect?: DoctorWhereUniqueInput
+  }
+
+  export type EnumWithdrawalStatusFieldUpdateOperationsInput = {
+    set?: $Enums.WithdrawalStatus
+  }
+
+  export type DoctorUpdateOneRequiredWithoutWithdrawalsNestedInput = {
+    create?: XOR<DoctorCreateWithoutWithdrawalsInput, DoctorUncheckedCreateWithoutWithdrawalsInput>
+    connectOrCreate?: DoctorCreateOrConnectWithoutWithdrawalsInput
+    upsert?: DoctorUpsertWithoutWithdrawalsInput
+    connect?: DoctorWhereUniqueInput
+    update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutWithdrawalsInput, DoctorUpdateWithoutWithdrawalsInput>, DoctorUncheckedUpdateWithoutWithdrawalsInput>
   }
 
   export type UserCreateNestedOneWithoutOtpInput = {
@@ -27591,6 +29501,23 @@ export namespace Prisma {
     _min?: NestedEnumPaymentMethodFilter<$PrismaModel>
     _max?: NestedEnumPaymentMethodFilter<$PrismaModel>
   }
+
+  export type NestedEnumWithdrawalStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WithdrawalStatus | EnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWithdrawalStatusFilter<$PrismaModel> | $Enums.WithdrawalStatus
+  }
+
+  export type NestedEnumWithdrawalStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WithdrawalStatus | EnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWithdrawalStatusWithAggregatesFilter<$PrismaModel> | $Enums.WithdrawalStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
+    _max?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
+  }
   export type NestedJsonNullableFilter<$PrismaModel = never> =
     | PatchUndefined<
         Either<Required<NestedJsonNullableFilterBase<$PrismaModel>>, Exclude<keyof Required<NestedJsonNullableFilterBase<$PrismaModel>>, 'path'>>,
@@ -27639,6 +29566,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveCreateNestedManyWithoutDoctorInput
@@ -27648,6 +29580,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutUserInput = {
@@ -27657,6 +29590,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -27666,6 +29604,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutUserInput = {
@@ -27951,6 +29890,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUpdateManyWithoutDoctorNestedInput
@@ -27960,6 +29904,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutUserInput = {
@@ -27969,6 +29914,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -27978,6 +29928,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutUserInput = {
@@ -28628,6 +30579,48 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type WithdrawalCreateWithoutDoctorInput = {
+    id?: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WithdrawalUncheckedCreateWithoutDoctorInput = {
+    id?: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WithdrawalCreateOrConnectWithoutDoctorInput = {
+    where: WithdrawalWhereUniqueInput
+    create: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput>
+  }
+
+  export type WithdrawalCreateManyDoctorInputEnvelope = {
+    data: WithdrawalCreateManyDoctorInput | WithdrawalCreateManyDoctorInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutDoctorInput = {
     update: XOR<UserUpdateWithoutDoctorInput, UserUncheckedUpdateWithoutDoctorInput>
     create: XOR<UserCreateWithoutDoctorInput, UserUncheckedCreateWithoutDoctorInput>
@@ -28872,6 +30865,42 @@ export namespace Prisma {
   export type RatingUpdateManyWithWhereWithoutDoctorInput = {
     where: RatingScalarWhereInput
     data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyWithoutDoctorInput>
+  }
+
+  export type WithdrawalUpsertWithWhereUniqueWithoutDoctorInput = {
+    where: WithdrawalWhereUniqueInput
+    update: XOR<WithdrawalUpdateWithoutDoctorInput, WithdrawalUncheckedUpdateWithoutDoctorInput>
+    create: XOR<WithdrawalCreateWithoutDoctorInput, WithdrawalUncheckedCreateWithoutDoctorInput>
+  }
+
+  export type WithdrawalUpdateWithWhereUniqueWithoutDoctorInput = {
+    where: WithdrawalWhereUniqueInput
+    data: XOR<WithdrawalUpdateWithoutDoctorInput, WithdrawalUncheckedUpdateWithoutDoctorInput>
+  }
+
+  export type WithdrawalUpdateManyWithWhereWithoutDoctorInput = {
+    where: WithdrawalScalarWhereInput
+    data: XOR<WithdrawalUpdateManyMutationInput, WithdrawalUncheckedUpdateManyWithoutDoctorInput>
+  }
+
+  export type WithdrawalScalarWhereInput = {
+    AND?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
+    OR?: WithdrawalScalarWhereInput[]
+    NOT?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
+    id?: StringFilter<"Withdrawal"> | string
+    doctorId?: StringFilter<"Withdrawal"> | string
+    amount?: IntFilter<"Withdrawal"> | number
+    currency?: StringFilter<"Withdrawal"> | string
+    status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFilter<"Withdrawal"> | string
+    bankIFSC?: StringFilter<"Withdrawal"> | string
+    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
+    bankName?: StringFilter<"Withdrawal"> | string
+    razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
+    failureReason?: StringNullableFilter<"Withdrawal"> | string | null
+    createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    updatedAt?: DateTimeFilter<"Withdrawal"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Withdrawal"> | Date | string | null
   }
 
   export type UserCreateWithoutPatientInput = {
@@ -29239,6 +31268,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29248,6 +31282,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutLeavesInput = {
@@ -29258,6 +31293,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
@@ -29266,6 +31306,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutLeavesInput = {
@@ -29291,6 +31332,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29300,6 +31346,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutLeavesInput = {
@@ -29310,6 +31357,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
@@ -29318,6 +31370,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateWithoutScheduleInput = {
@@ -29327,6 +31380,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29336,6 +31394,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutScheduleInput = {
@@ -29346,6 +31405,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29354,6 +31418,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutScheduleInput = {
@@ -29379,6 +31444,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29388,6 +31458,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutScheduleInput = {
@@ -29398,6 +31469,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29406,6 +31482,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type AppointmentCreateWithoutSlotInput = {
@@ -29446,6 +31523,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29455,6 +31537,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutSlotsInput = {
@@ -29465,6 +31548,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29473,6 +31561,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutSlotsInput = {
@@ -29535,6 +31624,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29544,6 +31638,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutSlotsInput = {
@@ -29554,6 +31649,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29562,6 +31662,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type SlotCreateWithoutAppointmentInput = {
@@ -29602,6 +31703,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29611,6 +31717,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutAppointmentsInput = {
@@ -29621,6 +31728,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29629,6 +31741,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutAppointmentsInput = {
@@ -29718,6 +31831,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29727,6 +31845,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutAppointmentsInput = {
@@ -29737,6 +31856,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29745,6 +31869,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutAppointmentsInput = {
@@ -29813,6 +31938,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29822,6 +31952,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutPatientRelationsInput = {
@@ -29832,6 +31963,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29840,6 +31976,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutPatientRelationsInput = {
@@ -29908,6 +32045,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29917,6 +32059,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutPatientRelationsInput = {
@@ -29927,6 +32070,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29935,6 +32083,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutDoctorRelationsInput = {
@@ -30280,6 +32429,118 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type DoctorCreateWithoutWithdrawalsInput = {
+    id?: string
+    specialty: $Enums.Specialty
+    experience?: number
+    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
+    fees?: number
+    doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutDoctorInput
+    leaves?: LeaveCreateNestedManyWithoutDoctorInput
+    schedule?: ScheduleCreateNestedOneWithoutDoctorInput
+    patientRelations?: DoctorPatientRelationCreateNestedManyWithoutDoctorInput
+    appointments?: AppointmentCreateNestedManyWithoutDoctorInput
+    slots?: SlotCreateNestedManyWithoutDoctorInput
+    comments?: CommentCreateNestedManyWithoutDoctorInput
+    ratings?: RatingCreateNestedManyWithoutDoctorInput
+  }
+
+  export type DoctorUncheckedCreateWithoutWithdrawalsInput = {
+    id?: string
+    userId: string
+    specialty: $Enums.Specialty
+    experience?: number
+    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
+    fees?: number
+    doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
+    schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
+    patientRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutDoctorInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+    slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
+    comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+  }
+
+  export type DoctorCreateOrConnectWithoutWithdrawalsInput = {
+    where: DoctorWhereUniqueInput
+    create: XOR<DoctorCreateWithoutWithdrawalsInput, DoctorUncheckedCreateWithoutWithdrawalsInput>
+  }
+
+  export type DoctorUpsertWithoutWithdrawalsInput = {
+    update: XOR<DoctorUpdateWithoutWithdrawalsInput, DoctorUncheckedUpdateWithoutWithdrawalsInput>
+    create: XOR<DoctorCreateWithoutWithdrawalsInput, DoctorUncheckedCreateWithoutWithdrawalsInput>
+    where?: DoctorWhereInput
+  }
+
+  export type DoctorUpdateToOneWithWhereWithoutWithdrawalsInput = {
+    where?: DoctorWhereInput
+    data: XOR<DoctorUpdateWithoutWithdrawalsInput, DoctorUncheckedUpdateWithoutWithdrawalsInput>
+  }
+
+  export type DoctorUpdateWithoutWithdrawalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
+    experience?: IntFieldUpdateOperationsInput | number
+    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
+    fees?: IntFieldUpdateOperationsInput | number
+    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutDoctorNestedInput
+    leaves?: LeaveUpdateManyWithoutDoctorNestedInput
+    schedule?: ScheduleUpdateOneWithoutDoctorNestedInput
+    patientRelations?: DoctorPatientRelationUpdateManyWithoutDoctorNestedInput
+    appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
+    slots?: SlotUpdateManyWithoutDoctorNestedInput
+    comments?: CommentUpdateManyWithoutDoctorNestedInput
+    ratings?: RatingUpdateManyWithoutDoctorNestedInput
+  }
+
+  export type DoctorUncheckedUpdateWithoutWithdrawalsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
+    experience?: IntFieldUpdateOperationsInput | number
+    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
+    fees?: IntFieldUpdateOperationsInput | number
+    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
+    schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
+    patientRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutDoctorNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+    slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserCreateWithoutOtpInput = {
@@ -30685,6 +32946,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -30694,6 +32960,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutRatingsInput = {
@@ -30704,6 +32971,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -30712,6 +32984,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutRatingsInput = {
@@ -30800,6 +33073,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -30809,6 +33087,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutRatingsInput = {
@@ -30819,6 +33098,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -30827,6 +33111,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserUpsertWithoutRatingsInput = {
@@ -30905,6 +33190,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -30914,6 +33204,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutDoctorInput
     slots?: SlotCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutCommentsInput = {
@@ -30924,6 +33215,11 @@ export namespace Prisma {
     qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
+    balance?: number
+    bankAccountNumber?: string | null
+    bankIFSC?: string | null
+    bankAccountHolderName?: string | null
+    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -30932,6 +33228,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutCommentsInput = {
@@ -31020,6 +33317,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -31029,6 +33331,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutCommentsInput = {
@@ -31039,6 +33342,11 @@ export namespace Prisma {
     qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
+    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
+    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
+    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -31047,6 +33355,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserUpsertWithoutCommentsInput = {
@@ -31434,6 +33743,22 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type WithdrawalCreateManyDoctorInput = {
+    id?: string
+    amount: number
+    currency?: string
+    status?: $Enums.WithdrawalStatus
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    razorpayPayoutId?: string | null
+    failureReason?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
   export type LeaveUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
@@ -31604,6 +33929,54 @@ export namespace Prisma {
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type WithdrawalUpdateWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WithdrawalUncheckedUpdateWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WithdrawalUncheckedUpdateManyWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type DoctorPatientRelationCreateManyPatientInput = {

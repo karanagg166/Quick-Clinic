@@ -192,6 +192,24 @@ export async function PATCH(
           where: { id: appointmentBefore.slotId },
           data: { status: 'BOOKED' },
         });
+      } else if (status === 'COMPLETED' && appointmentBefore.status !== 'COMPLETED') {
+        // When appointment is completed, transfer payment to doctor's balance if payment was online
+        if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
+          const doctorFees = appointmentBefore.doctor.fees; // Fees in rupees
+          const feesInPaise = doctorFees * 100; // Convert to paise (smallest currency unit)
+          
+          // Add fees to doctor's balance
+          await prisma.doctor.update({
+            where: { id: doctorId },
+            data: {
+              balance: {
+                increment: feesInPaise,
+              },
+            },
+          });
+          
+          console.log(`Transferred ₹${doctorFees} to doctor ${doctorId} balance for completed appointment ${appointmentId}`);
+        }
       }
     }
 

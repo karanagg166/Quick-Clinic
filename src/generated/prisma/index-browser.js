@@ -154,6 +154,11 @@ exports.Prisma.DoctorScalarFieldEnum = {
   qualifications: 'qualifications',
   fees: 'fees',
   doctorBio: 'doctorBio',
+  balance: 'balance',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIFSC: 'bankIFSC',
+  bankAccountHolderName: 'bankAccountHolderName',
+  bankName: 'bankName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -248,6 +253,23 @@ exports.Prisma.PaymentScalarFieldEnum = {
   razorpayOrderId: 'razorpayOrderId',
   razorpayPaymentId: 'razorpayPaymentId',
   createdAt: 'createdAt'
+};
+
+exports.Prisma.WithdrawalScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIFSC: 'bankIFSC',
+  bankAccountHolderName: 'bankAccountHolderName',
+  bankName: 'bankName',
+  razorpayPayoutId: 'razorpayPayoutId',
+  failureReason: 'failureReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  processedAt: 'processedAt'
 };
 
 exports.Prisma.OtpScalarFieldEnum = {
@@ -416,6 +438,14 @@ exports.PaymentMethod = exports.$Enums.PaymentMethod = {
   ONLINE: 'ONLINE'
 };
 
+exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Admin: 'Admin',
@@ -429,6 +459,7 @@ exports.Prisma.ModelName = {
   DoctorPatientRelation: 'DoctorPatientRelation',
   ChatMessages: 'ChatMessages',
   Payment: 'Payment',
+  Withdrawal: 'Withdrawal',
   Otp: 'Otp',
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog',

@@ -101,3 +101,165 @@ export async function GET(
 		return NextResponse.json({ error: 'Failed to fetch appointment' }, { status: 500 });
 	}
 }
+
+// PATCH - Cancel appointment (patient can cancel)
+export async function PATCH(
+	req: Request,
+	{ params }: { params: Promise<{ patientId: string; appointmentId: string }> }
+) {
+	try {
+		const { patientId, appointmentId } = await params;
+
+		if (!patientId || !appointmentId) {
+			return NextResponse.json({ error: 'patientId and appointmentId are required' }, { status: 400 });
+		}
+
+		// Get appointment details
+		const appointment = await prisma.appointment.findFirst({
+			where: {
+				id: appointmentId,
+				patientId,
+			},
+			include: {
+				doctor: {
+					include: { user: true },
+				},
+				patient: {
+					include: { user: true },
+				},
+				slot: true,
+			},
+		});
+
+		if (!appointment) {
+			return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+		}
+
+		// Check if appointment can be cancelled (only PENDING or CONFIRMED)
+		if (appointment.status !== 'PENDING' && appointment.status !== 'CONFIRMED') {
+			return NextResponse.json(
+				{ error: `Cannot cancel appointment with status: ${appointment.status}` },
+				{ status: 400 }
+			);
+		}
+
+		// Process refund if payment was online
+		let refundProcessed = false;
+		if (appointment.paymentMethod === 'ONLINE' && appointment.transactionId) {
+			try {
+				// Find the payment record
+				const payment = await prisma.payment.findFirst({
+					where: {
+						razorpayPaymentId: appointment.transactionId,
+						userId: patientId,
+						status: 'SUCCESS',
+					},
+				});
+
+				if (payment && payment.razorpayPaymentId) {
+					// Process refund via Razorpay
+					if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+						console.warn('Razorpay credentials missing, cannot process refund');
+					} else {
+						const Razorpay = require('razorpay');
+						const razorpay = new Razorpay({
+							key_id: process.env.RAZORPAY_KEY_ID,
+							key_secret: process.env.RAZORPAY_KEY_SECRET,
+						});
+
+						// Create refund
+						const refund = await razorpay.payments.refund(payment.razorpayPaymentId, {
+							amount: payment.amount, // Full refund
+							notes: {
+								reason: 'Appointment cancelled by patient',
+								appointmentId: appointmentId,
+							},
+						});
+
+						console.log('Refund processed:', refund.id);
+						refundProcessed = true;
+
+						// Update payment status
+						await prisma.payment.update({
+							where: { id: payment.id },
+							data: {
+								status: 'REFUNDED',
+							},
+						});
+					}
+				}
+			} catch (refundError: any) {
+				console.error('Refund error:', refundError);
+				// Don't fail the cancellation if refund fails, but log it
+				// In production, you might want to queue this for retry
+			}
+		}
+
+		// If appointment was COMPLETED and doctor already received balance, deduct it
+		// (This shouldn't happen for PENDING/CONFIRMED, but adding as safeguard)
+		if (appointment.status === 'COMPLETED' && appointment.paymentMethod === 'ONLINE') {
+			const doctorFees = appointment.doctor.fees * 100; // Convert to paise
+			await prisma.doctor.update({
+				where: { id: appointment.doctorId },
+				data: {
+					balance: {
+						decrement: doctorFees,
+					},
+				},
+			});
+		}
+
+		// Update appointment status to CANCELLED
+		await prisma.appointment.update({
+			where: { id: appointmentId },
+			data: {
+				status: 'CANCELLED',
+			},
+		});
+
+		// Make slot available again
+		await prisma.slot.update({
+			where: { id: appointment.slotId },
+			data: {
+				status: 'AVAILABLE',
+			},
+		});
+
+		// Send notification to doctor via Socket.IO
+		try {
+			const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
+			const doctorUserId = appointment.doctor.user.id;
+			
+			await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					patientUserId: appointment.patient.user.id,
+					appointmentId,
+					status: 'CANCELLED',
+					appointmentDate: appointment.slot.date.toISOString(),
+					appointmentTime: appointment.slot.startTime.toISOString(),
+					doctorName: appointment.doctor.user.name,
+				}),
+			}).catch((err) => {
+				console.warn('Socket server notification failed:', err);
+			});
+		} catch (notifError) {
+			console.warn('Failed to send cancellation notification:', notifError);
+		}
+
+		return NextResponse.json(
+			{
+				message: 'Appointment cancelled successfully',
+				refundProcessed,
+			},
+			{ status: 200 }
+		);
+	} catch (error: any) {
+		console.error('Error cancelling appointment:', error);
+		return NextResponse.json(
+			{ error: error?.message || 'Failed to cancel appointment' },
+			{ status: 500 }
+		);
+	}
+}
