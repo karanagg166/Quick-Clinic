@@ -75,18 +75,7 @@ export async function GET(
     });
 
     // Map appointments to earnings format
-    const earnings = appointments.map((a: {
-      id: string;
-      slot: {
-        date: Date;
-        startTime: Date;
-      } | null;
-      patient: {
-        user: {
-          name: string;
-        } | null;
-      } | null;
-    }) => {
+    const earnings = appointments.map((a: any) => {
       // Construct appointmentDateTime from slot.date and slot.startTime
       const appointmentDateTime = a.slot?.startTime 
         ? new Date(a.slot.startTime)
@@ -102,7 +91,7 @@ export async function GET(
       };
     });
 
-    const total = earnings.reduce((sum: number, e) => sum + e.earned, 0);
+    const total = earnings.reduce((sum: number, e: any) => sum + e.earned, 0);
 
     return NextResponse.json(
       { total, count: earnings.length, earnings },
