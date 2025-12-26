@@ -95,7 +95,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                 </Link>
                 {/* Profile Section */}
                 <div className="flex items-center gap-3 pl-3 border-gray-200">
-                    <Link href="/user/profile" className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
+                    <Link href="/patient/profile" className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
                         <Avatar 
                           src={user?.profileImageUrl} 
                           name={user?.name || "User"}

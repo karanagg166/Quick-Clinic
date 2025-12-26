@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
-import { User } from "@/types/common";
+import type { UserDetail } from "@/types/common";
 export const POST = async (req: NextRequest) => {
   try {
     const {
@@ -52,13 +52,20 @@ export const POST = async (req: NextRequest) => {
       
     });
     console.log("New User Created:", user);
-const userDetails: User = {
-      userId: user.id,
+const userDetails: UserDetail = {
+      id: user.id,
       email: user.email,
-      role: user.role,
+      phoneNo: user.phoneNo ?? "",
       name: user.name,
-      gender: user.gender,
       age: user.age,
+      gender: user.gender as "MALE" | "FEMALE" | "BINARY",
+      role: user.role as "ADMIN" | "DOCTOR" | "PATIENT",
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      pinCode: user.pinCode,
+      profileImageUrl: user.profileImageUrl ?? undefined,
+      emailVerified: user.emailVerified,
       doctorId: null,
       patientId: null,
     };

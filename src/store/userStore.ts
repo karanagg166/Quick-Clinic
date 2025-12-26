@@ -1,32 +1,21 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-type UserRole = 'ADMIN' | 'DOCTOR' | 'PATIENT';
+import  type { UserDetail } from '@/types/common';
 
-interface User {
-  userId: string;
-  email: string;
-  phoneNo?: string;
-  name?: string;
-  gender?: string;
-  age?: number;
-  role: UserRole;
-  profileImageUrl?: string;
-  isVerified: boolean;
-}
 
 interface UserState {
-  user: User | null;
+  user: UserDetail | null;
   patientId: string | null;
   doctorId: string | null;
   isLoading: boolean;
 
   // Actions
-  setUser: (user: User, patientId?: string, doctorId?: string) => void;
+  setUser: (user: UserDetail, patientId?: string, doctorId?: string) => void;
   setPatientId: (patientId: string | null) => void;
   setDoctorId: (doctorId: string | null) => void;
   logout: () => void;
-  updateUser: (updates: Partial<User>) => void;
+  updateUser: (updates: Partial<UserDetail>) => void;
   setLoading: (loading: boolean) => void;
 }
 
@@ -41,7 +30,7 @@ export const useUserStore = create<
       doctorId: null,
       isLoading: false,
 
-      setUser: (user: User, patientId?: string, doctorId?: string) =>
+      setUser: (user: UserDetail, patientId?: string, doctorId?: string) =>
         set({
           user,
           patientId: patientId || null,
@@ -62,7 +51,7 @@ export const useUserStore = create<
           isLoading: false,
         }),
 
-      updateUser: (updates: Partial<User>) =>
+      updateUser: (updates: Partial<UserDetail>) =>
         set((state) => ({
           user: state.user ? { ...state.user, ...updates } : null,
         })),
@@ -71,6 +60,33 @@ export const useUserStore = create<
     }),
     {
       name: 'user-store',
+      version: 1,
+      migrate: (persistedState: any, _version: number) => {
+        if (!persistedState?.user) return persistedState;
+
+        const migratedUser = persistedState.user;
+
+        // Rename legacy userId/isVerified fields to id/emailVerified
+        if (!migratedUser.id && migratedUser.userId) {
+          migratedUser.id = migratedUser.userId;
+          delete migratedUser.userId;
+        }
+
+        if (migratedUser.isVerified !== undefined && migratedUser.emailVerified === undefined) {
+          migratedUser.emailVerified = migratedUser.isVerified;
+          delete migratedUser.isVerified;
+        }
+
+        if (migratedUser.patientId === undefined) {
+          migratedUser.patientId = null;
+        }
+
+        if (migratedUser.doctorId === undefined) {
+          migratedUser.doctorId = null;
+        }
+
+        return { ...persistedState, user: migratedUser } as UserState;
+      },
     }
   )
 );

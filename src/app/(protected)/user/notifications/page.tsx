@@ -11,7 +11,7 @@ import { Bell, Wifi, WifiOff } from "lucide-react";
 import EmptyState from "@/components/general/EmptyState";
 
 export default function NotificationsPage(){
-    const userId = useUserStore((state) => state.user?.userId);
+    const userId = useUserStore((state) => state.user?.id);
     const { notifications: socketNotifications, isConnected } = useNotifications();
     const [notifications, setNotifications] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);

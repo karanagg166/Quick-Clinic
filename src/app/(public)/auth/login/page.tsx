@@ -48,6 +48,8 @@ export default function Home() {
 
       const { user, patientId, doctorId } = data;
       console.log("Login Response:", data);
+      console.log("user from Login Response:", user);
+
       if (response.ok) {
         // Set user in store with patientId or doctorId based on role
         if (user.role === "DOCTOR") {

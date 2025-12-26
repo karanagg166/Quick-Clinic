@@ -13,7 +13,7 @@ export async function POST(
 
     const body = await req.json();
     const { amount } = body;
-
+ 
     if (!amount || isNaN(amount)) {
       return NextResponse.json({ message: 'Amount required' }, { status: 400 });
     }

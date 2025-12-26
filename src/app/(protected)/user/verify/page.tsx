@@ -20,8 +20,8 @@ export default function VerifyPage() {
 
   const email = user?.email || "";
 
-  const userId = user?.userId;
-  const verified = user?.isVerified;
+  const userId = user?.id;
+  const verified = user?.emailVerified;
 
   /* -------------------------------
      ALERT IF ALREADY VERIFIED
@@ -102,7 +102,7 @@ export default function VerifyPage() {
               setMessage={setMessage}
               verifyOtpUrl={`/api/user/${userId}/otp/verify`}
               onSuccess={() => {
-                updateUser({ isVerified: true });
+                updateUser({ emailVerified: true });
                 setMessage("OTP verified successfully.");
               }}
             />

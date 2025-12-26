@@ -94,7 +94,7 @@ export default function DoctorAppointmentDetailPage() {
 
   const startConversation = async () => {
     try {
-      if (!user?.userId) {
+      if (!user?.id) {
         showToast.warning('Please log in as a doctor to start a chat.');
         return;
       }
@@ -108,7 +108,7 @@ export default function DoctorAppointmentDetailPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          doctorsUserId: user.userId,
+          doctorsUserId: user.id,
           patientsUserId: patientUserId,
         }),
       });

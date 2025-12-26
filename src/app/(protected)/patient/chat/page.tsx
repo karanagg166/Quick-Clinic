@@ -28,7 +28,7 @@ export default function ChatPage() {
 
     useEffect(() => {
         const fetchChats = async () => {
-            if (!user?.userId) {
+            if (!user?.id) {
                 setLoading(false);
                 return;
             }
@@ -36,7 +36,7 @@ export default function ChatPage() {
             try {
                 setLoading(true);
                 const res = await fetch(
-                    `/api/doctorpatientrelations?userId=${user.userId}&role=${user.role}`
+                    `/api/doctorpatientrelations?userId=${user.id}&role=${user.role}`
                 );
 
                 if (!res.ok) {
@@ -55,7 +55,7 @@ export default function ChatPage() {
         };
 
         fetchChats();
-    }, [user?.userId, user?.role]);
+    }, [user?.id, user?.role]);
 
     const handleOpenChat = (relationId: string) => {
         router.push(`/patient/chat/${relationId}`);
@@ -69,7 +69,7 @@ export default function ChatPage() {
         );
     }
 
-    if (!user?.userId || user.role !== "PATIENT") {
+    if (!user?.id || user.role !== "PATIENT") {
         return (
             <Card className="max-w-2xl mx-auto border shadow-sm">
                 <CardContent className="p-6">
