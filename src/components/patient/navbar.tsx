@@ -68,12 +68,6 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                         Find Doctors
                     </Link>
                     <Link 
-                        href="/patient/info" 
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
-                    >
-                        Medical Records
-                    </Link>
-                    <Link 
                         href="/patient/chat" 
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
