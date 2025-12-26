@@ -24,9 +24,11 @@ export async function GET(
     const todayAppointments = await prisma.appointment.count({
       where: {
         doctorId,
-        appointmentDateTime: {
-          gte: today,
-          lt: tomorrow,
+        slot: {
+          startTime: {
+            gte: today,
+            lt: tomorrow,
+          },
         },
         status: {
           in: ["CONFIRMED", "PENDING"],
@@ -54,9 +56,11 @@ export async function GET(
       where: {
         doctorId,
         status: "COMPLETED",
-        appointmentDateTime: {
-          gte: thisMonthStart,
-          lt: nextMonthStart,
+        slot: {
+          startTime: {
+            gte: thisMonthStart,
+            lt: nextMonthStart,
+          },
         },
       },
       select: {
@@ -77,10 +81,11 @@ export async function GET(
       pendingConsults,
       monthlyEarnings,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Failed to fetch stats";
     console.error("Stats GET Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch stats" },
+      { error: errorMessage },
       { status: 500 }
     );
   }

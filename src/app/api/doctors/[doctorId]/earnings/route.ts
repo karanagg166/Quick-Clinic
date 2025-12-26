@@ -28,28 +28,44 @@ export async function GET(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    const filter: any = {
+    const filter: {
+      doctorId: string;
+      status: string;
+      slot?: {
+        startTime?: {
+          gte?: Date;
+          lte?: Date;
+        };
+      };
+    } = {
       doctorId,
       status: "COMPLETED",
     };
 
     if (startDate || endDate) {
-      filter.appointmentDateTime = {
-        ...(startDate && {
-          gte: new Date(`${startDate}T${startTime || "00:00"}`),
-        }),
-        ...(endDate && {
-          lte: new Date(`${endDate}T${endTime || "23:59"}`),
-        }),
+      filter.slot = {
+        startTime: {
+          ...(startDate && {
+            gte: new Date(`${startDate}T${startTime || "00:00"}`),
+          }),
+          ...(endDate && {
+            lte: new Date(`${endDate}T${endTime || "23:59"}`),
+          }),
+        },
       };
     }
 
     const appointments = await prisma.appointment.findMany({
       where: filter,
-      orderBy: { appointmentDateTime: "desc" },
+      orderBy: { slot: { startTime: "desc" } },
       select: {
         id: true,
-        appointmentDateTime: true,
+        slot: {
+          select: {
+            date: true,
+            startTime: true,
+          },
+        },
         patient: {
           select: {
             user: { select: { name: true } },
@@ -58,24 +74,34 @@ export async function GET(
       },
     });
 
-    // Fix: Add type to `a`
-    const earnings = appointments.map((a: any) => ({
-      id: a.id,
-      earned: doctor.fees,
-      patientName: a.patient?.user?.name || "Unknown",
-      appointmentDateTime: a.appointmentDateTime,
-    }));
+    // Map appointments to earnings format
+    const earnings = appointments.map((a) => {
+      // Construct appointmentDateTime from slot.date and slot.startTime
+      const appointmentDateTime = a.slot?.startTime 
+        ? new Date(a.slot.startTime)
+        : a.slot?.date 
+        ? new Date(a.slot.date)
+        : new Date();
+      
+      return {
+        id: a.id,
+        earned: doctor.fees,
+        patientName: a.patient?.user?.name || "Unknown",
+        appointmentDateTime: appointmentDateTime.toISOString(),
+      };
+    });
 
-    const total = earnings.reduce((sum: number, e: any) => sum + e.earned, 0);
+    const total = earnings.reduce((sum: number, e) => sum + e.earned, 0);
 
     return NextResponse.json(
       { total, count: earnings.length, earnings },
       { status: 200 }
     );
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const errorMessage = err instanceof Error ? err.message : "Server error";
     console.error("Earnings GET Error:", err);
     return NextResponse.json(
-      { error: err?.message || "Server error" },
+      { error: errorMessage },
       { status: 500 }
     );
   }
