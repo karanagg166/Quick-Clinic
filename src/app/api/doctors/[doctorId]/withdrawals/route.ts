@@ -34,7 +34,21 @@ export async function GET(
     });
 
     return NextResponse.json(
-      withdrawals.map((w) => ({
+      withdrawals.map((w: {
+        id: string;
+        amount: number;
+        currency: string;
+        status: string;
+        bankAccountNumber: string;
+        bankIFSC: string;
+        bankAccountHolderName: string;
+        bankName: string;
+        razorpayPayoutId: string | null;
+        failureReason: string | null;
+        createdAt: Date;
+        updatedAt: Date;
+        processedAt: Date | null;
+      }) => ({
         ...w,
         amountInRupees: w.amount / 100, // Convert from paise to rupees
       })),
