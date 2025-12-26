@@ -6,7 +6,7 @@ import { showToast } from "@/lib/toast";
 
 export default function DoctorLeave() {
   const doctorId = useUserStore((s) => s.doctorId);
-  const userId=useUserStore((s)=> s.user?.userId);
+  const userId=useUserStore((s)=> s.user?.id);
   const [reason, setReason] = useState("");
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");

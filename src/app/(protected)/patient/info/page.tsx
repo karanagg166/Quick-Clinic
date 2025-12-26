@@ -53,7 +53,7 @@ export default function PatientInfo() {
   // CREATE
   const createInfo = async () => {
     try {
-      if (!user?.userId) {
+      if (!user?.id) {
         showToast.error("User ID not found");
         return;
       }
@@ -65,7 +65,7 @@ export default function PatientInfo() {
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          userId: user.userId,
+          userId: user.id,
           medicalHistory,
           allergies,
           currentMedications,

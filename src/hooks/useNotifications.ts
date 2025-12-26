@@ -12,7 +12,7 @@ interface Notification {
 }
 
 export function useNotifications() {
-  const userId = useUserStore((state) => state.user?.userId);
+  const userId = useUserStore((state) => state.user?.id);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);

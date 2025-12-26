@@ -63,6 +63,8 @@ export default function AvatarUploader({ userId, initialUrl }: Props) {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || 'Upload failed');
 
+      console.log("upload request response: ", data);
+
       setPreviewUrl(data.avatarUrl);
       updateUser({ profileImageUrl: data.avatarUrl });
       setSelectedFile(null);

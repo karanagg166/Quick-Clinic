@@ -16,7 +16,7 @@ interface BookTimeSlotProps {
 
 export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const { patientId } = useUserStore();
-  const userId = useUserStore((state) => state.user?.userId);
+  const userId = useUserStore((state) => state.user?.id);
 
   const [date, setDate] = useState<string>('');
   const [slots, setSlots] = useState<Slot[]>([]);

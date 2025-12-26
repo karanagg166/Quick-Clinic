@@ -72,7 +72,7 @@ export default function DoctorDetails() {
 
   const startConversation = async () => {
     try {
-      if (!user?.userId) {
+      if (!user?.id) {
         showToast.warning("Please log in as a patient to start a chat.");
         return;
       }
@@ -92,7 +92,7 @@ export default function DoctorDetails() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           doctorsUserId: doctor.userId,
-          patientsUserId: user.userId,
+          patientsUserId: user.id,
         }),
       });
 
