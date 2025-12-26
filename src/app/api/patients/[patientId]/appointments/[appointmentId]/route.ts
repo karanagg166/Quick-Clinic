@@ -39,8 +39,8 @@ export async function GET(
 			doctorId: appointment.doctorId,
 			patientId: appointment.patientId,
 			slotId: appointment.slotId,
-			status: appointment.status as any,
-			paymentMethod: appointment.paymentMethod as any,
+			status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED',
+			paymentMethod: appointment.paymentMethod as 'OFFLINE' | 'ONLINE',
 			transactionId: appointment.transactionId ?? null,
 			notes: appointment.notes ?? null,
 			bookedAt: appointment.bookedAt.toISOString(),
@@ -59,11 +59,13 @@ export async function GET(
 					phoneNo: appointment.doctor.user.phoneNo,
 					name: appointment.doctor.user.name,
 					age: appointment.doctor.user.age,
-					gender: String(appointment.doctor.user.gender),
+					gender: String(appointment.doctor.user.gender) as 'MALE' | 'FEMALE' | 'BINARY',
+					role: appointment.doctor.user.role as 'ADMIN' | 'DOCTOR' | 'PATIENT',
 					address: appointment.doctor.user.address,
 					city: appointment.doctor.user.city,
 					state: appointment.doctor.user.state,
 					pinCode: appointment.doctor.user.pinCode,
+					emailVerified: appointment.doctor.user.emailVerified,
 				},
 			},
 			patient: {
@@ -78,11 +80,13 @@ export async function GET(
 					phoneNo: appointment.patient.user.phoneNo,
 					name: appointment.patient.user.name,
 					age: appointment.patient.user.age,
-					gender: String(appointment.patient.user.gender),
+					gender: String(appointment.patient.user.gender) as 'MALE' | 'FEMALE' | 'BINARY',
+					role: appointment.patient.user.role as 'ADMIN' | 'DOCTOR' | 'PATIENT',
 					address: appointment.patient.user.address,
 					city: appointment.patient.user.city,
 					state: appointment.patient.user.state,
 					pinCode: appointment.patient.user.pinCode,
+					emailVerified: appointment.patient.user.emailVerified,
 				},
 			},
 			slot: {
@@ -91,7 +95,7 @@ export async function GET(
 				date: appointment.slot.date.toISOString().split('T')[0],
 				startTime: appointment.slot.startTime.toISOString(),
 				endTime: appointment.slot.endTime.toISOString(),
-				status: String(appointment.slot.status) as any,
+				status: String(appointment.slot.status) as 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED',
 			},
 		};
 
@@ -161,7 +165,8 @@ export async function PATCH(
 					if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
 						console.warn('Razorpay credentials missing, cannot process refund');
 					} else {
-						const Razorpay = require('razorpay');
+						const RazorpayModule = await import('razorpay');
+						const Razorpay = RazorpayModule.default;
 						const razorpay = new Razorpay({
 							key_id: process.env.RAZORPAY_KEY_ID,
 							key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -188,7 +193,7 @@ export async function PATCH(
 						});
 					}
 				}
-			} catch (refundError: any) {
+			} catch (refundError: unknown) {
 				console.error('Refund error:', refundError);
 				// Don't fail the cancellation if refund fails, but log it
 				// In production, you might want to queue this for retry
@@ -228,7 +233,6 @@ export async function PATCH(
 		// Send notification to doctor via Socket.IO
 		try {
 			const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-			const doctorUserId = appointment.doctor.user.id;
 			
 			await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
 				method: 'POST',
@@ -255,10 +259,11 @@ export async function PATCH(
 			},
 			{ status: 200 }
 		);
-	} catch (error: any) {
+	} catch (error: unknown) {
+		const errorMessage = error instanceof Error ? error.message : 'Failed to cancel appointment';
 		console.error('Error cancelling appointment:', error);
 		return NextResponse.json(
-			{ error: error?.message || 'Failed to cancel appointment' },
+			{ error: errorMessage },
 			{ status: 500 }
 		);
 	}
