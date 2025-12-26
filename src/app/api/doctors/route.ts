@@ -103,6 +103,7 @@ export const POST = async (req: NextRequest) => {
       fees = 0,
       experience = 0,
       qualifications = [],
+      doctorBio = null,
     } = body ?? {};
 
     if (!userId || typeof userId !== "string") {
@@ -133,6 +134,7 @@ export const POST = async (req: NextRequest) => {
         fees: Number(fees),
         experience: Number(experience),
         qualifications: Array.isArray(qualifications) ? qualifications : [],
+        doctorBio,
       },
     });
 
