@@ -68,7 +68,7 @@ export default function AppointmentPage() {
 
     const startConversation = async () => {
         try {
-            if (!user?.userId) {
+            if (!user?.id) {
                 showToast.warning('Please log in as a patient to start a chat.');
                 return;
             }
@@ -86,7 +86,7 @@ export default function AppointmentPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     doctorsUserId: doctorUserId,
-                    patientsUserId: user.userId,
+                    patientsUserId: user.id,
                 }),
             });
 

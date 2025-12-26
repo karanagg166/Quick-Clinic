@@ -18,8 +18,8 @@ export default function UpdateProfile() {
   
   // Get current user and setter from store
   const { user, setUser, patientId, doctorId } = useUserStore();
-  const userId = user?.userId;
-  const isVerified = user?.isVerified ?? false;
+  const userId = user?.id;
+  const isVerified = user?.emailVerified ?? false;
   // Loading states
   const [loadingData, setLoadingData] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -111,7 +111,7 @@ export default function UpdateProfile() {
             return;
         }
 
-      const response = await fetch(`/api/user/${user?.userId}`, {
+      const response = await fetch(`/api/user/${userId}`, {
         method: "PATCH", // Using PATCH for partial updates
         headers: {
           "Content-Type": "application/json",

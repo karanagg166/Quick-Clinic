@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
-import type { User } from "@/types/common";
+import type { UserDetail } from "@/types/common";
 
 
 
@@ -55,20 +55,29 @@ export async function POST(req: NextRequest) {
       role: user.role 
     });
 
-    const userDetails: User = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-      gender: user.gender,
-      age: user.age,
-      doctorId: user.doctor?.id,
-      patientId: user.patient?.id,
-    };
-
-    // Use doctor/patient IDs from the initial query (already included)
     const doctorId = user.doctor?.id ?? null;
     const patientId = user.patient?.id ?? null;
+
+    const userDetails: UserDetail = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phoneNo: user.phoneNo,
+      age: user.age,
+
+      gender: user.gender,
+      role: user.role,  
+      
+      address: user.address,
+      city: user.city,
+      state: user.state,
+      pinCode: user.pinCode,
+
+      profileImageUrl: user.profileImageUrl,
+      emailVerified: user.emailVerified,
+      doctorId,
+      patientId,
+    };
 
     // Response
     const res = NextResponse.json(

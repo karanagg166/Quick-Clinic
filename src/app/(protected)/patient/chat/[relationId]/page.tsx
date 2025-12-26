@@ -9,7 +9,7 @@ import { MessageCircle } from "lucide-react";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 
 export default function PatientChatPage({ params }: { params: Promise<{ relationId: string }> }) {
-    const userId = useUserStore((state) => state.user?.userId);
+    const userId = useUserStore((state) => state.user?.id);
     const resolvedParams = use(params);
     const doctorPatientRelationId = resolvedParams.relationId;
 
