@@ -13,7 +13,7 @@ import { io, Socket } from "socket.io-client";
 
 export default function DoctorAppointmentsPage() {
   const doctorId = useUserStore((s) => s.doctorId);
-  const userId = useUserStore((s) => s.user?.userId);
+  const userId = useUserStore((s) => s.user?.id);
   const socketRef = useRef<Socket | null>(null);
 
   const [appointments, setAppointments] = useState<DoctorAppointment[]>([]);
@@ -77,7 +77,10 @@ export default function DoctorAppointmentsPage() {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (doctorId) {
+      fetchAppointments();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctorId]);
 
   // Setup Socket.IO connection for real-time appointment requests
@@ -161,6 +164,7 @@ export default function DoctorAppointmentsPage() {
       socket.disconnect();
       socketRef.current = null;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, doctorId]);
 
   return (
