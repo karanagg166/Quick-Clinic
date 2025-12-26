@@ -23,6 +23,7 @@ export const GET = async (
         qualifications: true,
         fees: true,
         experience: true,
+        doctorBio: true,
         user: {
           select: {
             id: true,
@@ -86,6 +87,7 @@ export const GET = async (
       city: d.user?.city ?? undefined,
       state: d.user?.state ?? undefined,
       profileImageUrl: d.user?.profileImageUrl ?? undefined,
+      doctorBio: d.doctorBio ?? undefined,
     };
 
     const ratingSummary = {
@@ -121,6 +123,7 @@ export const PUT = async (
       fees = undefined,
       experience = undefined,
       qualifications = undefined,
+      doctorBio = undefined,
     } = body ?? {};
 
     // Check if doctor exists
@@ -140,6 +143,7 @@ export const PUT = async (
         ...(fees !== undefined && { fees: Number(fees) }),
         ...(experience !== undefined && { experience: Number(experience) }),
         ...(qualifications && Array.isArray(qualifications) && { qualifications }),
+        ...(doctorBio !== undefined && { doctorBio }),
       },
     });
 
@@ -175,6 +179,7 @@ export const PATCH = async (
     if (body.qualifications !== undefined && Array.isArray(body.qualifications)) {
       updateData.qualifications = body.qualifications;
     }
+    if (body.doctorBio !== undefined) updateData.doctorBio = body.doctorBio;
 
     // Check if doctor exists
     const doctor = await prisma.doctor.findUnique({

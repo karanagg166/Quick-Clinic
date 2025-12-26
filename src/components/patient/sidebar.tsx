@@ -60,11 +60,6 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
       icon: FileText,
     },
     {
-      label: "Medical Records",
-      href: "/patient/info",       // UPDATED
-      icon: Heart,
-    },
-    {
       label: "Health History",
       href: "/patient/history",
       icon: Clock,

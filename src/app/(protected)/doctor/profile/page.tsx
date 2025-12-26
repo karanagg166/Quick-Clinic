@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/lib/toast";
 import { useUserStore } from "@/store/userStore";
 
@@ -19,6 +20,7 @@ type DoctorFields = {
 	experience: string;
 	fees: string;
 	qualifications: string[];
+	doctorBio: string;
 };
 
 export default function DoctorProfilePage() {
@@ -51,6 +53,7 @@ export default function DoctorProfilePage() {
 		experience: "",
 		fees: "",
 		qualifications: [],
+		doctorBio: "",
 	});
 
 	const [specialties, setSpecialties] = useState<string[]>([]);
@@ -132,6 +135,7 @@ export default function DoctorProfilePage() {
 							experience: doctor?.experience?.toString() ?? "",
 							fees: doctor?.fees?.toString() ?? "",
 							qualifications: Array.isArray(doctor?.qualifications) ? doctor.qualifications : [],
+							doctorBio: doctor?.doctorBio ?? "",
 						});
 						setDoctorId(nextDoctorId);
 					}
@@ -219,6 +223,7 @@ export default function DoctorProfilePage() {
 						experience: Number(doctorData.experience),
 						fees: Number(doctorData.fees),
 						qualifications: doctorData.qualifications,
+						doctorBio: doctorData.doctorBio,
 					}),
 				});
 
@@ -236,6 +241,7 @@ export default function DoctorProfilePage() {
 						experience: Number(doctorData.experience || 0),
 						fees: Number(doctorData.fees || 0),
 						qualifications: doctorData.qualifications,
+						doctorBio: doctorData.doctorBio,
 					}),
 				});
 
@@ -457,7 +463,20 @@ export default function DoctorProfilePage() {
 									</SelectContent>
 								</Select>
 							</div>
-
+						<div className="space-y-2">
+							<Label htmlFor="doctorBio">Professional Bio</Label>
+							<Textarea
+								id="doctorBio"
+								placeholder="Tell patients about yourself, your expertise, and your approach to healthcare..."
+								value={doctorData.doctorBio}
+								onChange={(e) => handleDoctorChange("doctorBio", e.target.value)}
+								rows={4}
+								className="resize-none"
+							/>
+							<p className="text-xs text-muted-foreground">
+								A good bio helps patients understand your background and approach to care.
+							</p>
+						</div>
 							<div className="grid md:grid-cols-2 gap-4">
 								<div className="space-y-2">
 									<Label htmlFor="experience">Experience (years)</Label>
