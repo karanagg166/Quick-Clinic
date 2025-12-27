@@ -1,10 +1,10 @@
 
 export interface Slot {
-    id: string;
-    startTime: string;
-    endTime: string;
-    status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED';
-    date: string;
+  id: string;
+  startTime: string;
+  endTime: string;
+  status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED';
+  date: string;
 }
 
 export interface UserDetail {

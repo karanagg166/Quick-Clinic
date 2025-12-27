@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
+import { profile } from "console";
 
 
 
@@ -53,6 +54,9 @@ export async function GET(req: NextRequest) {
         qualifications: true,
         fees: true,
         experience: true,
+        
+        doctorBio: true,
+
         user: {
           select: {
             name: true,
@@ -60,6 +64,7 @@ export async function GET(req: NextRequest) {
             age: true,
             city: true,
             state: true,
+            profileImageUrl: true,
           },
         },
       },
@@ -76,6 +81,8 @@ console.log("doctors-raw", raw);
         specialty: d.specialty ?? "",
         experience: d.experience ?? 0,
         fees: d.fees ?? 0,
+        profileImageUrl: d.user?.profileImageUrl ?? "",
+        doctorBio: d.doctorBio ?? "",
        
         qualifications: Array.isArray(d.qualifications) ? d.qualifications : (d.qualifications ? [d.qualifications] : []),
        

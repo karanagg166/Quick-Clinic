@@ -75,7 +75,14 @@ export default function FindDoctorsPage() {
       if (res.ok) {
         const data = await res.json();
         // if API returns { doctors: [...] } adjust accordingly
-        setDoctors(Array.isArray(data) ? data : data.doctors ?? []);
+        console.log(data);
+
+        const doctorsData = Array.isArray(data) ? data : data.doctors ?? [];
+
+        console.log(doctorsData);
+
+
+        setDoctors(doctorsData);
       } else {
         console.error("Failed to fetch doctors:", res);
         setDoctors([]);
