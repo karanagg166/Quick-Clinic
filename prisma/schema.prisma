@@ -103,7 +103,8 @@ enum AppointmentStatus {
   NO_SHOW
   RESCHEDULED
 }
-enum PaymentMethod{
+
+enum PaymentMethod {
   OFFLINE
   ONLINE
 }
@@ -111,7 +112,6 @@ enum PaymentMethod{
 // ======================================================
 // USER, ADMIN, DOCTOR, PATIENT MODELS
 // ======================================================
-
 
 model User {
   id       String @id @default(cuid())
@@ -125,27 +125,36 @@ model User {
   role   Role   @default(PATIENT)
 
   address String
-  city    String
-  state   String
+
   pinCode Int
-  
+
   // Optional URL to a profile picture (e.g., Cloudinary/S3/local)
   profileImageUrl String?
-  emailVerified Boolean @default(false)
+  emailVerified   Boolean        @default(false)
+  isActive        Boolean        @default(true)
+  admin           Admin?
+  doctor          Doctor?
+  patient         Patient?
+  otp             Otp[]
+  accessLogs      AccessLog[]
+  auditLogs       AuditLog[]
+  chatMessages    ChatMessages[]
+  payments        Payment[]
+  notifications   Notification[]
+  comments        Comment[]
+  ratings         Rating[]
+  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime       @default(now())
+  location        Location       @relation(fields: [pinCode], references: [pincode])
+  bankAccounts    BankAccount[]
+}
 
-  admin   Admin?
-  doctor  Doctor?
-  patient Patient?
-  otp Otp[]
-  accessLogs   AccessLog[]
-  auditLogs    AuditLog[]
-  chatMessages ChatMessages[]
-  payments Payment[]
-  notifications Notification[]
-  comments Comment[]
-  ratings  Rating[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Location {
+  pincode Int    @id @unique
+  city    String
+  state   String
+
+  user User[]
 }
 
 model Admin {
@@ -154,27 +163,26 @@ model Admin {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  managerId String?
+  manager   Admin?  @relation("AdminHierarchy", fields: [managerId], references: [id], onDelete: Cascade)
+  subAdmins Admin[] @relation("AdminHierarchy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([managerId])
 }
 
 model Doctor {
-  id             String          @id @default(cuid())
-  userId         String          @unique
-  specialty      Specialty
-  experience     Int             @default(0)
-  qualifications Qualification[]
-  fees           Int             @default(0)
-  doctorBio      String?
-  balance        Int             @default(0) // Balance in paise (smallest currency unit)
-  
-  // Bank details for withdrawals
-  bankAccountNumber String?
-  bankIFSC          String?
-  bankAccountHolderName String?
-  bankName          String?
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  specialty  Specialty
+  experience Int       @default(0)
+
+  fees      Int     @default(0)
+  doctorBio String?
+  balance   Int     @default(0) // Balance in paise (smallest currency unit)
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -184,10 +192,21 @@ model Doctor {
   slots            Slot[]
   comments         Comment[]
   ratings          Rating[]
-  withdrawals     Withdrawal[]
+  withdrawals      Withdrawal[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  doctorQualifications DoctorQualification[]
+}
+
+model DoctorQualification {
+  id            String        @id @default(cuid())
+  doctorId      String
+  doctor        Doctor        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  qualification Qualification
+
+  @@unique([doctorId, qualification])
 }
 
 model Patient {
@@ -211,13 +230,13 @@ model Patient {
 // ======================================================
 
 model Notification {
-  id        String   @id @default(cuid())
-  userId    String
-  message   String
-  user      User @relation(fields:[userId],references:[id],onDelete:Cascade)
-  isRead    Boolean  @default(false)
-  status    String   @default("UNREAD")
-  readAt    DateTime?
+  id      String    @id @default(cuid())
+  userId  String
+  message String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead  Boolean   @default(false)
+  status  String    @default("UNREAD")
+  readAt  DateTime?
 
   createdAt DateTime @default(now())
 }
@@ -251,20 +270,21 @@ model Schedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@index([doctorId])
 }
 
 model Slot {
-  id              String       @id @default(cuid())
+  id              String     @id @default(cuid())
   doctorId        String
-  date            DateTime     @db.Date
+  date            DateTime   @db.Date
   startTime       DateTime
   endTime         DateTime
-  status          SlotStatus   @default(AVAILABLE)
+  status          SlotStatus @default(AVAILABLE)
   heldByPatientId String?
   heldAt          DateTime?
-  
-  appointment     Appointment? 
+
+  appointment Appointment?
 
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -275,21 +295,22 @@ model Slot {
   @@index([startTime, status])
   @@index([heldByPatientId])
 }
+
 model Appointment {
-  id                  String             @id @default(cuid())
-  doctorId            String
-  patientId           String
-  slotId              String             @unique   // <— FK lives here
-  status              AppointmentStatus  @default(PENDING)
-  paymentMethod       PaymentMethod      @default(OFFLINE)
-  transactionId       String?        
-  notes               String?
-  bookedAt            DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  slot                Slot               @relation(fields: [slotId], references: [id])
-  doctor              Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient             Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  isAppointmentOffline Boolean            @default(true)
+  id                   String            @id @default(cuid())
+  doctorId             String
+  patientId            String
+  slotId               String            @unique // <— FK lives here
+  status               AppointmentStatus @default(PENDING)
+  paymentMethod        PaymentMethod     @default(OFFLINE)
+  transactionId        String?
+  notes                String?
+  bookedAt             DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  slot                 Slot              @relation(fields: [slotId], references: [id])
+  doctor               Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient              Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  isAppointmentOffline Boolean           @default(true)
 
   @@index([doctorId, patientId])
   @@index([status])
@@ -318,14 +339,14 @@ model DoctorPatientRelation {
 }
 
 model ChatMessages {
-  id   String @id @default(cuid())
+  id String @id @default(cuid())
 
   doctorPatientRelationId String
   doctorPatientRelation   DoctorPatientRelation @relation(fields: [doctorPatientRelationId], references: [id], onDelete: Cascade)
 
-  text      String
-  senderId  String
-  sender    User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  text     String
+  senderId String
+  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -333,17 +354,18 @@ model ChatMessages {
   @@index([doctorPatientRelationId, createdAt])
   @@index([senderId])
 }
-model Payment{
-  id String @id @default(cuid())
-  amount Int 
+
+model Payment {
+  id       String @id @default(cuid())
+  amount   Int
   currency String @default("INR")
-  userId String
-  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
-  
-  status String
-  razorpayOrderId String @unique
-  razorpayPaymentId String ?
-  createdAt DateTime @default(now())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status            String
+  razorpayOrderId   String   @unique
+  razorpayPaymentId String?
+  createdAt         DateTime @default(now())
 }
 
 enum WithdrawalStatus {
@@ -355,46 +377,49 @@ enum WithdrawalStatus {
 }
 
 model Withdrawal {
-  id String @id @default(cuid())
+  id       String @id @default(cuid())
   doctorId String
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  
-  amount Int // Amount in paise
-  currency String @default("INR")
-  status WithdrawalStatus @default(PENDING)
-  
-  // Bank details at time of withdrawal
-  bankAccountNumber String
-  bankIFSC String
-  bankAccountHolderName String
-  bankName String
-  
+  doctor   Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  amount   Int // Amount in paise
+  currency String           @default("INR")
+  status   WithdrawalStatus @default(PENDING)
+
   // Razorpay payout details (if using Razorpay for payouts)
   razorpayPayoutId String?
-  failureReason String?
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  failureReason    String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   processedAt DateTime?
-  
+
   @@index([doctorId])
   @@index([status])
 }
 
+model BankAccount {
+  id                    String @id @default(cuid())
+  userId                String
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankAccountNumber     String @unique
+  bankIFSC              String
+  bankAccountHolderName String
+  bankName              String
+}
 
-model Otp{
-  id String @id @default(cuid())
-  email String @unique
-  userId String @unique
-  user User @relation(fields:[userId],references:[id],onDelete:Cascade)
-  code String
+model Otp {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  code      String
   expiresAt DateTime
   createdAt DateTime @default(now())
 }
+
 // ======================================================
 // LOG MODELS
 // ======================================================
-
 
 model AccessLog {
   id       String  @id @default(cuid())
@@ -418,21 +443,20 @@ model AuditLog {
   createdAt DateTime @default(now())
 }
 
-
 // ======================================================
 // DOCTOR REVIEW/COMMENT SYSTEM
 // ======================================================
 
 model Rating {
-  id        String   @id @default(cuid())
-  doctorId  String
-  userId    String
-  rating    Int      // 1-5 stars
-  
+  id       String @id @default(cuid())
+  doctorId String
+  userId   String
+  rating   Int // 1-5 stars
+
   // Relations
-  doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -442,17 +466,17 @@ model Rating {
 }
 
 model Comment {
-  id          String   @id @default(cuid())
-  doctorId    String
-  userId      String
-  text        String   // Comment text
-  
+  id       String @id @default(cuid())
+  doctorId String
+  userId   String
+  text     String // Comment text
+
   // Relations
-  doctor      Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([doctorId])
   @@index([userId])

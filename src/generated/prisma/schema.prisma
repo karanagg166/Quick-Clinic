@@ -125,27 +125,36 @@ model User {
   role   Role   @default(PATIENT)
 
   address String
-  city    String
-  state   String
+
   pinCode Int
 
   // Optional URL to a profile picture (e.g., Cloudinary/S3/local)
   profileImageUrl String?
-  emailVerified   Boolean @default(false)
+  emailVerified   Boolean        @default(false)
+  isActive        Boolean        @default(true)
+  admin           Admin?
+  doctor          Doctor?
+  patient         Patient?
+  otp             Otp[]
+  accessLogs      AccessLog[]
+  auditLogs       AuditLog[]
+  chatMessages    ChatMessages[]
+  payments        Payment[]
+  notifications   Notification[]
+  comments        Comment[]
+  ratings         Rating[]
+  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime       @default(now())
+  location        Location       @relation(fields: [pinCode], references: [pincode])
+  bankAccounts    BankAccount[]
+}
 
-  admin         Admin?
-  doctor        Doctor?
-  patient       Patient?
-  otp           Otp[]
-  accessLogs    AccessLog[]
-  auditLogs     AuditLog[]
-  chatMessages  ChatMessages[]
-  payments      Payment[]
-  notifications Notification[]
-  comments      Comment[]
-  ratings       Rating[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+model Location {
+  pincode Int    @id @unique
+  city    String
+  state   String
+
+  user User[]
 }
 
 model Admin {
@@ -154,27 +163,26 @@ model Admin {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  managerId String?
+  manager   Admin?  @relation("AdminHierarchy", fields: [managerId], references: [id], onDelete: Cascade)
+  subAdmins Admin[] @relation("AdminHierarchy")
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
+  @@index([managerId])
 }
 
 model Doctor {
-  id             String          @id @default(cuid())
-  userId         String          @unique
-  specialty      Specialty
-  experience     Int             @default(0)
-  qualifications Qualification[]
-  fees           Int             @default(0)
-  doctorBio      String?
-  balance        Int             @default(0) // Balance in paise (smallest currency unit)
+  id         String    @id @default(cuid())
+  userId     String    @unique
+  specialty  Specialty
+  experience Int       @default(0)
 
-  // Bank details for withdrawals
-  bankAccountNumber     String?
-  bankIFSC              String?
-  bankAccountHolderName String?
-  bankName              String?
+  fees      Int     @default(0)
+  doctorBio String?
+  balance   Int     @default(0) // Balance in paise (smallest currency unit)
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -188,6 +196,17 @@ model Doctor {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  doctorQualifications DoctorQualification[]
+}
+
+model DoctorQualification {
+  id            String        @id @default(cuid())
+  doctorId      String
+  doctor        Doctor        @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  qualification Qualification
+
+  @@unique([doctorId, qualification])
 }
 
 model Patient {
@@ -366,12 +385,6 @@ model Withdrawal {
   currency String           @default("INR")
   status   WithdrawalStatus @default(PENDING)
 
-  // Bank details at time of withdrawal
-  bankAccountNumber     String
-  bankIFSC              String
-  bankAccountHolderName String
-  bankName              String
-
   // Razorpay payout details (if using Razorpay for payouts)
   razorpayPayoutId String?
   failureReason    String?
@@ -382,6 +395,16 @@ model Withdrawal {
 
   @@index([doctorId])
   @@index([status])
+}
+
+model BankAccount {
+  id                    String @id @default(cuid())
+  userId                String
+  user                  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  bankAccountNumber     String @unique
+  bankIFSC              String
+  bankAccountHolderName String
+  bankName              String
 }
 
 model Otp {

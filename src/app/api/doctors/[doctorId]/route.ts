@@ -13,14 +13,15 @@ export const GET = async (
     if (!doctorId || typeof doctorId !== "string") {
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
+    console.log(doctorId);
 
-    const doctorDataPromise = prisma.doctor.findUnique({
+    const doctorDataPromise = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
         id: true,
         userId: true,
         specialty: true,
-        qualifications: true,
+        doctorQualifications: { select: { qualification: true } },
         fees: true,
         experience: true,
         doctorBio: true,
@@ -31,21 +32,27 @@ export const GET = async (
             gender: true,
             age: true,
             email: true,
-            city: true,
-            state: true,
             profileImageUrl: true,
+
+            location: {
+              select: {
+                city: true,
+                state: true,
+              }
+            }
           },
+
         },
       },
     });
 
-    const ratingAggPromise = prisma.rating.aggregate({
+    const ratingAggPromise = await prisma.rating.aggregate({
       where: { doctorId },
       _avg: { rating: true },
       _count: { rating: true },
     });
 
-    const commentsPromise = prisma.comment.findMany({
+    const commentsPromise = await prisma.comment.findMany({
       where: { doctorId },
       orderBy: { createdAt: "desc" },
       include: {
@@ -79,13 +86,9 @@ export const GET = async (
       experience: d.experience ?? 0,
       fees: d.fees ?? 0,
       email: d.user?.email ?? "",
-      qualifications: Array.isArray(d.qualifications)
-        ? d.qualifications
-        : d.qualifications
-          ? [d.qualifications]
-          : [],
-      city: d.user?.city ?? undefined,
-      state: d.user?.state ?? undefined,
+      qualifications: d.doctorQualifications?.map((q: any) => q.qualification) ?? [],
+      city: d.user?.location?.city ?? undefined,
+      state: d.user?.location?.state ?? undefined,
       profileImageUrl: d.user?.profileImageUrl ?? undefined,
       doctorBio: d.doctorBio ?? undefined,
     };
@@ -94,7 +97,7 @@ export const GET = async (
       average: ratingAgg._avg.rating ? Number(ratingAgg._avg.rating.toFixed(1)) : 0,
       count: ratingAgg._count.rating ?? 0,
     };
-    
+
     return NextResponse.json({ doctor, rating: ratingSummary, comments }, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);
@@ -135,16 +138,30 @@ export const PUT = async (
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
+    // Prepare update data
+    const data: any = {};
+    if (specialty) data.specialty = specialty;
+    if (fees !== undefined) data.fees = Number(fees);
+    if (experience !== undefined) data.experience = Number(experience);
+    if (doctorBio !== undefined) data.doctorBio = doctorBio;
+
+    // Handle qualifications update: Delete all existing, verify uniqueness, then create new
+    if (qualifications && Array.isArray(qualifications)) {
+      // Filter redundant qualifications
+      const uniqueQuals = Array.from(new Set(qualifications));
+
+      data.doctorQualifications = {
+        deleteMany: {}, // Clear existing
+        create: uniqueQuals.map((q: any) => ({
+          qualification: q,
+        })),
+      };
+    }
+
     // Update doctor
     const updated = await prisma.doctor.update({
       where: { id: doctorId },
-      data: {
-        ...(specialty && { specialty }),
-        ...(fees !== undefined && { fees: Number(fees) }),
-        ...(experience !== undefined && { experience: Number(experience) }),
-        ...(qualifications && Array.isArray(qualifications) && { qualifications }),
-        ...(doctorBio !== undefined && { doctorBio }),
-      },
+      data,
     });
 
     return NextResponse.json({ doctor: updated }, { status: 200 });
@@ -156,6 +173,7 @@ export const PUT = async (
     );
   }
 };
+
 
 // PATCH - Partially update doctor profile
 export const PATCH = async (
@@ -176,10 +194,18 @@ export const PATCH = async (
     if (body.specialty !== undefined) updateData.specialty = body.specialty;
     if (body.fees !== undefined) updateData.fees = Number(body.fees);
     if (body.experience !== undefined) updateData.experience = Number(body.experience);
-    if (body.qualifications !== undefined && Array.isArray(body.qualifications)) {
-      updateData.qualifications = body.qualifications;
-    }
     if (body.doctorBio !== undefined) updateData.doctorBio = body.doctorBio;
+
+    // Handle qualifications update: Delete all existing, verify uniqueness, then create new
+    if (body.qualifications !== undefined && Array.isArray(body.qualifications)) {
+      const uniqueQuals = Array.from(new Set(body.qualifications));
+      updateData.doctorQualifications = {
+        deleteMany: {}, // Clear existing
+        create: uniqueQuals.map((q: any) => ({
+          qualification: q,
+        })),
+      };
+    }
 
     // Check if doctor exists
     const doctor = await prisma.doctor.findUnique({

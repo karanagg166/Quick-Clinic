@@ -24,7 +24,7 @@ NODE_ENV="production"
 
 🐳 3. Build & Start Docker (First Time)
 
-
+docker compose up --build -d
 
 --------------------------------------------------------------------------------
 

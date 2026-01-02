@@ -20,7 +20,7 @@ export default function FindDoctorsPage() {
   const [experience, setExperience] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [gender, setGender] = useState("");
-
+  const [age, setAge] = useState("");
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
@@ -66,12 +66,13 @@ export default function FindDoctorsPage() {
       if (name) params.append("name", name);
       if (fees) params.append("fees", fees);
       if (experience) params.append("experience", experience);
-    // console.log("Fetching doctors with params:", params.toString());
+      if (age) params.append("age", age);
+      // console.log("Fetching doctors with params:", params.toString());
       const res = await fetch(`/api/doctors?${params.toString()}`, {
         method: "GET",
         credentials: "include",
       });
-    console.log("Response status:", res);
+      console.log("Response status:", res);
       if (res.ok) {
         const data = await res.json();
         // if API returns { doctors: [...] } adjust accordingly
@@ -163,6 +164,12 @@ export default function FindDoctorsPage() {
               placeholder="Min Experience (years)"
               value={experience}
               onChange={(e) => setExperience(e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Age"
+              value={age}
+              onChange={(e) => setAge(e.target.value)}
             />
             <Button
               onClick={handleSearch}

@@ -35,10 +35,10 @@ app.use(cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     // Normalize origin by removing trailing slash for comparison
     const normalizedOrigin = origin.replace(/\/$/, '');
-    
+
     if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -61,10 +61,10 @@ const io = new Server(httpServer, {
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps or curl requests)
       if (!origin) return callback(null, true);
-      
+
       // Normalize origin by removing trailing slash for comparison
       const normalizedOrigin = origin.replace(/\/$/, '');
-      
+
       if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -131,8 +131,8 @@ app.post('/api/notifications/appointment-status', async (req: express.Request, r
     return res.json({ success: true, notification });
   } catch (error: unknown) {
     console.error('Error sending appointment status update:', error);
-    return res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Failed to send status update' 
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to send status update'
     });
   }
 });
@@ -150,7 +150,7 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
     const appointment = await prisma.appointment.findUnique({
       where: { id: appointmentId },
       include: {
-        patient: { include: { user: true } },
+        patient: { include: { user: { include: { location: true } } } },
         doctor: { include: { user: true } },
         slot: true,
       },
@@ -163,7 +163,7 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
     // Get doctor's userId
     const doctorUserId = appointment.doctor.user.id;
     const patientName = appointment.patient.user.name;
-    
+
     // Format date and time
     const slotDate = appointment.slot.date.toLocaleDateString();
     const slotTime = new Date(appointment.slot.startTime).toLocaleTimeString([], {
@@ -201,7 +201,7 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
       appointmentDate: appointment.slot.date.toISOString(),
       appointmentTime: appointment.slot.startTime.toISOString(),
       status: appointment.status,
-      city: appointment.patient.user.city,
+      city: appointment.patient.user.location?.city || "N/A",
       age: appointment.patient.user.age,
       paymentMethod: appointment.paymentMethod,
     };
@@ -211,8 +211,8 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
     return res.json({ success: true, notification, appointment: appointmentData });
   } catch (error: unknown) {
     console.error('Error sending appointment notification:', error);
-    return res.status(500).json({ 
-      error: error instanceof Error ? error.message : 'Failed to send notification' 
+    return res.status(500).json({
+      error: error instanceof Error ? error.message : 'Failed to send notification'
     });
   }
 });

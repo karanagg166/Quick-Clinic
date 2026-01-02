@@ -1,11 +1,11 @@
-import { NextResponse,NextRequest } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { PatientAppointment } from "@/types/patient";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
     const { patientId } = await params;
-
+    // console.log(patientId);
     if (!patientId) {
       return NextResponse.json({ error: "patientId required" }, { status: 400 });
     }
@@ -54,7 +54,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
               select: {
                 name: true,
                 email: true,
-                city: true,
+                location: {
+                  city: true,
+                  state: true
+                }
               },
             },
             fees: true,
@@ -69,14 +72,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
         },
       },
     });
-
+    console.log("hhgfgdshjhkjhl");
+    console.log(appointments);
     const patientAppointments: PatientAppointment[] = appointments.map((a: any) => ({
       id: a.id,
       appointmentDate: a.slot?.date?.toISOString() ?? "",
       appointmentTime: a.slot?.startTime ?? "",
       doctorName: a.doctor.user.name,
       doctorEmail: a.doctor.user.email,
-      city: a.doctor.user.city,
+      city: a.doctor.user.location.city,
+      state: a.doctor.user.location.state,
       fees: a.doctor.fees,
       status: a.status,
       specialty: a.doctor.specialty,
@@ -84,14 +89,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
 
     return NextResponse.json(patientAppointments, { status: 200 });
   } catch (err) {
-    return NextResponse.json({ error: "Failed to fetch appointments" }, { status: 500 });
+    console.log(err);
+    return NextResponse.json({ error: err }, { status: 500 });
   }
 }
 export async function POST(
-  req: Request, 
+  req: Request,
   { params }: { params: Promise<{ patientId: string }> }
 ) {
-  try {  
+  try {
     // 1. Destructure the new optional fields
     // paymentId comes from the frontend when paymentMethod is 'ONLINE'
     const { doctorId, slotId, paymentMethod, transactionId } = await req.json();
@@ -100,7 +106,7 @@ export async function POST(
     // 2. Validation
     if (!doctorId || !slotId) {
       return NextResponse.json(
-        { message: "Doctor ID and Slot ID are required" }, 
+        { message: "Doctor ID and Slot ID are required" },
         { status: 400 }
       );
     }
@@ -111,7 +117,7 @@ export async function POST(
         doctorId,
         patientId,
         slotId,
-        status: 'PENDING', 
+        status: 'PENDING',
         // Save the payment info
         paymentMethod: paymentMethod || 'OFFLINE', // Default to OFFLINE if not sent
         transactionId           // Optional: Store the transaction ID
@@ -148,8 +154,8 @@ export async function POST(
   } catch (err: any) {
     console.error("Booking Error:", err);
     return NextResponse.json(
-        { message: "Internal server error", error: err.message }, 
-        { status: 500 }
+      { message: "Internal server error", error: err.message },
+      { status: 500 }
     );
   }
 }

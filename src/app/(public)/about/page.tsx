@@ -6,7 +6,7 @@ import {
   SiTailwindcss,
   SiPrisma,
   SiPostgresql,
-  SiRedis,
+
   SiSocketdotio,
   SiNodedotjs,
   SiDocker,
@@ -30,7 +30,7 @@ export default function AboutPage() {
           About Quick Clinic
         </h1>
         <p className="text-center text-muted-foreground max-w-3xl mx-auto text-base md:text-lg">
-          Quick Clinic is a modern healthcare platform built to simplify doctor–patient interactions. 
+          Quick Clinic is a modern healthcare platform built to simplify doctor–patient interactions.
           From real-time chat to appointment scheduling, we deliver a seamless, secure, and scalable experience using cutting-edge technologies.
         </p>
       </div>
@@ -63,7 +63,7 @@ function TechStackSection() {
         <TechCard icon={<SiTailwindcss size={40} color="#38BDF8" />} name="Tailwind CSS" />
         <TechCard icon={<SiPrisma size={40} />} name="Prisma ORM" />
         <TechCard icon={<SiPostgresql size={40} color="#336791" />} name="PostgreSQL" />
-        <TechCard icon={<SiRedis size={40} color="#DC382D" />} name="Redis" />
+
         <TechCard icon={<SiSocketdotio size={40} />} name="Socket.IO" />
         <TechCard icon={<SiNodedotjs size={40} color="#3C873A" />} name="Node.js" />
         <TechCard icon={<SiDocker size={40} color="#0db7ed" />} name="Docker" />
