@@ -1,11 +1,27 @@
 // prisma/seed.ts
-import { PrismaClient } from "../src/generated/prisma/client.js";
+import { PrismaClient } from "../src/generated/prisma/index.js";
 import { hash } from "bcryptjs";
 
 const prisma = new PrismaClient();
 
 async function main() {
   console.log("Start seeding...");
+
+  // ---------- LOCATIONS ----------
+  const locations = [
+    { pincode: 121004, city: "Faridabad", state: "Haryana" },
+    { pincode: 560001, city: "Bangalore", state: "Karnataka" },
+    { pincode: 110001, city: "New Delhi", state: "Delhi" },
+  ];
+
+  for (const loc of locations) {
+    await prisma.location.upsert({
+      where: { pincode: loc.pincode },
+      update: {},
+      create: loc,
+    });
+  }
+  console.log("Locations seeded");
 
   // ---------- PATIENT ----------
   const patientEmail = "karan@gmail.com";
@@ -18,8 +34,6 @@ async function main() {
       name: "Karan Aggarwal",
       phoneNo: "7838222130",
       age: 22,
-      city: "Faridabad",
-      state: "Haryana",
     },
     create: {
       email: patientEmail,
@@ -30,8 +44,6 @@ async function main() {
       gender: "MALE",
       role: "PATIENT",
       address: "Flat 1, Example St",
-      city: "Faridabad",
-      state: "Haryana",
       pinCode: 121004,
     },
   });
@@ -67,8 +79,6 @@ async function main() {
       name: "Dr. Priyanshu",
       phoneNo: "9520183169",
       age: 21,
-      city: "Faridabad",
-      state: "Haryana",
     },
     create: {
       email: doctorEmail,
@@ -79,8 +89,6 @@ async function main() {
       gender: "MALE",
       role: "DOCTOR",
       address: "Clinic St",
-      city: "Faridabad",
-      state: "Haryana",
       pinCode: 560001,
     },
   });
@@ -93,14 +101,14 @@ async function main() {
     update: {
       specialty: "GENERAL_PHYSICIAN",
       experience: 12,
-      qualifications: ["MBBS", "MD"],
+      // qualifications: ["MBBS", "MD"], // Removed in schema, handled via relation if needed
       fees: 700,
     },
     create: {
       userId: doctorUser.id,
       specialty: "GENERAL_PHYSICIAN",
       experience: 12,
-      qualifications: ["MBBS", "MD"],
+      // qualifications: ["MBBS", "MD"],
       fees: 700,
     },
   });
@@ -132,6 +140,46 @@ async function main() {
   });
 
   console.log("Schedule ensured for doctor:", doctorUser.id);
+
+  // ---------- ADMIN (Super Admin) ----------
+  const adminEmail = "admin@quickclinic.com";
+  const adminPlain = "admin123"; // Change this in production!
+  const adminHashed = await hash(adminPlain, 10);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: adminEmail },
+    update: {
+      name: "Super Admin",
+      // admin user doesn't necessarily need personal details like address,
+      // but schema requires them currently on 'User' model:
+      phoneNo: "9999999999",
+      age: 30,
+      role: "ADMIN",
+    },
+    create: {
+      email: adminEmail,
+      phoneNo: "9999999999",
+      name: "Super Admin",
+      password: adminHashed,
+      age: 30,
+      gender: "BINARY",
+      role: "ADMIN",
+      address: "HQ",
+      pinCode: 110001,
+      isActive: true, // Super admin is active by default
+    },
+  });
+
+  // Ensure Admin profile exists
+  await prisma.admin.upsert({
+    where: { userId: adminUser.id },
+    update: {},
+    create: {
+      userId: adminUser.id,
+    },
+  });
+
+  console.log("Super Admin ensured:", adminUser.id);
 
   console.log("Seeding finished.");
 }

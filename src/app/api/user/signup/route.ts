@@ -12,7 +12,7 @@ export const POST = async (req: NextRequest) => {
       age,
       city,
       state,
-      pinCode, 
+      pinCode,
       password,
       address,
       role,
@@ -42,17 +42,28 @@ export const POST = async (req: NextRequest) => {
         phoneNo,
         password: hashedPassword,
         age: Number(age),
-        city,
         address,
-        state,
-        pinCode: Number(pinCode),
-        role: normalizedRole, 
-        gender
+        role: normalizedRole,
+        gender,
+        location: {
+          connectOrCreate: {
+            where: { pincode: Number(pinCode) },
+            create: {
+              pincode: Number(pinCode),
+              city: city,
+              state: state,
+            },
+          },
+        },
       },
-      
+      include: {
+        location: true
+      }
     });
+
     console.log("New User Created:", user);
-const userDetails: UserDetail = {
+
+    const userDetails: UserDetail = {
       id: user.id,
       email: user.email,
       phoneNo: user.phoneNo ?? "",
@@ -61,25 +72,25 @@ const userDetails: UserDetail = {
       gender: user.gender as "MALE" | "FEMALE" | "BINARY",
       role: user.role as "ADMIN" | "DOCTOR" | "PATIENT",
       address: user.address,
-      city: user.city,
-      state: user.state,
-      pinCode: user.pinCode,
+      city: user.location.city,
+      state: user.location.state,
+      pinCode: user.location.pincode,
       profileImageUrl: user.profileImageUrl ?? undefined,
       emailVerified: user.emailVerified,
       doctorId: null,
       patientId: null,
     };
     const res = NextResponse.json(
-      
-      { message: "User created successfully",user:userDetails },
+
+      { message: "User created successfully", user: userDetails },
       { status: 201 }
     );
- const token = await createToken({ 
+    const token = await createToken({
       id: user.id,
       email: user.email,
-      role: user.role 
+      role: user.role
     });
-     res.cookies.set("token", token, {
+    res.cookies.set("token", token, {
       httpOnly: true,
       secure: false,
       sameSite: "lax",
@@ -87,10 +98,11 @@ const userDetails: UserDetail = {
       maxAge: 60 * 60 * 24 * 7,
     });
     res.cookies.set("role", user.role, {
-    httpOnly: false,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",});
-    
+      httpOnly: false,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
     return res;
 
   } catch (error: any) {

@@ -51,7 +51,11 @@ export default function PatientAppointmentsPage() {
   };
 
   useEffect(() => {
-    if (patientId) fetchAppointments();
+    try {
+      if (patientId) fetchAppointments();
+    } catch (error) {
+      console.error("Failed to fetch appointments", error);
+    }
   }, [patientId]);
 
   return (
@@ -124,8 +128,8 @@ export default function PatientAppointmentsPage() {
             </div>
           ) : (
             appointments.map((appointment) => (
-              <AppointmentCard 
-                key={appointment.id} 
+              <AppointmentCard
+                key={appointment.id}
                 appointment={appointment}
                 onCancel={fetchAppointments}
               />

@@ -130,18 +130,24 @@ exports.Prisma.UserScalarFieldEnum = {
   gender: 'gender',
   role: 'role',
   address: 'address',
-  city: 'city',
-  state: 'state',
   pinCode: 'pinCode',
   profileImageUrl: 'profileImageUrl',
   emailVerified: 'emailVerified',
-  createdAt: 'createdAt',
-  updatedAt: 'updatedAt'
+  isActive: 'isActive',
+  updatedAt: 'updatedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.LocationScalarFieldEnum = {
+  pincode: 'pincode',
+  city: 'city',
+  state: 'state'
 };
 
 exports.Prisma.AdminScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
+  managerId: 'managerId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -151,16 +157,17 @@ exports.Prisma.DoctorScalarFieldEnum = {
   userId: 'userId',
   specialty: 'specialty',
   experience: 'experience',
-  qualifications: 'qualifications',
   fees: 'fees',
   doctorBio: 'doctorBio',
   balance: 'balance',
-  bankAccountNumber: 'bankAccountNumber',
-  bankIFSC: 'bankIFSC',
-  bankAccountHolderName: 'bankAccountHolderName',
-  bankName: 'bankName',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
+};
+
+exports.Prisma.DoctorQualificationScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  qualification: 'qualification'
 };
 
 exports.Prisma.PatientScalarFieldEnum = {
@@ -261,15 +268,20 @@ exports.Prisma.WithdrawalScalarFieldEnum = {
   amount: 'amount',
   currency: 'currency',
   status: 'status',
-  bankAccountNumber: 'bankAccountNumber',
-  bankIFSC: 'bankIFSC',
-  bankAccountHolderName: 'bankAccountHolderName',
-  bankName: 'bankName',
   razorpayPayoutId: 'razorpayPayoutId',
   failureReason: 'failureReason',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   processedAt: 'processedAt'
+};
+
+exports.Prisma.BankAccountScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  bankAccountNumber: 'bankAccountNumber',
+  bankIFSC: 'bankIFSC',
+  bankAccountHolderName: 'bankAccountHolderName',
+  bankName: 'bankName'
 };
 
 exports.Prisma.OtpScalarFieldEnum = {
@@ -448,8 +460,10 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
 
 exports.Prisma.ModelName = {
   User: 'User',
+  Location: 'Location',
   Admin: 'Admin',
   Doctor: 'Doctor',
+  DoctorQualification: 'DoctorQualification',
   Patient: 'Patient',
   Notification: 'Notification',
   Leave: 'Leave',
@@ -460,6 +474,7 @@ exports.Prisma.ModelName = {
   ChatMessages: 'ChatMessages',
   Payment: 'Payment',
   Withdrawal: 'Withdrawal',
+  BankAccount: 'BankAccount',
   Otp: 'Otp',
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog',

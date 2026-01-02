@@ -19,6 +19,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  */
 export type User = $Result.DefaultSelection<Prisma.$UserPayload>
 /**
+ * Model Location
+ * 
+ */
+export type Location = $Result.DefaultSelection<Prisma.$LocationPayload>
+/**
  * Model Admin
  * 
  */
@@ -28,6 +33,11 @@ export type Admin = $Result.DefaultSelection<Prisma.$AdminPayload>
  * 
  */
 export type Doctor = $Result.DefaultSelection<Prisma.$DoctorPayload>
+/**
+ * Model DoctorQualification
+ * 
+ */
+export type DoctorQualification = $Result.DefaultSelection<Prisma.$DoctorQualificationPayload>
 /**
  * Model Patient
  * 
@@ -78,6 +88,11 @@ export type Payment = $Result.DefaultSelection<Prisma.$PaymentPayload>
  * 
  */
 export type Withdrawal = $Result.DefaultSelection<Prisma.$WithdrawalPayload>
+/**
+ * Model BankAccount
+ * 
+ */
+export type BankAccount = $Result.DefaultSelection<Prisma.$BankAccountPayload>
 /**
  * Model Otp
  * 
@@ -395,6 +410,16 @@ export class PrismaClient<
   get user(): Prisma.UserDelegate<ExtArgs, ClientOptions>;
 
   /**
+   * `prisma.location`: Exposes CRUD operations for the **Location** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Locations
+    * const locations = await prisma.location.findMany()
+    * ```
+    */
+  get location(): Prisma.LocationDelegate<ExtArgs, ClientOptions>;
+
+  /**
    * `prisma.admin`: Exposes CRUD operations for the **Admin** model.
     * Example usage:
     * ```ts
@@ -413,6 +438,16 @@ export class PrismaClient<
     * ```
     */
   get doctor(): Prisma.DoctorDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.doctorQualification`: Exposes CRUD operations for the **DoctorQualification** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DoctorQualifications
+    * const doctorQualifications = await prisma.doctorQualification.findMany()
+    * ```
+    */
+  get doctorQualification(): Prisma.DoctorQualificationDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.patient`: Exposes CRUD operations for the **Patient** model.
@@ -513,6 +548,16 @@ export class PrismaClient<
     * ```
     */
   get withdrawal(): Prisma.WithdrawalDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.bankAccount`: Exposes CRUD operations for the **BankAccount** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more BankAccounts
+    * const bankAccounts = await prisma.bankAccount.findMany()
+    * ```
+    */
+  get bankAccount(): Prisma.BankAccountDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.otp`: Exposes CRUD operations for the **Otp** model.
@@ -998,8 +1043,10 @@ export namespace Prisma {
 
   export const ModelName: {
     User: 'User',
+    Location: 'Location',
     Admin: 'Admin',
     Doctor: 'Doctor',
+    DoctorQualification: 'DoctorQualification',
     Patient: 'Patient',
     Notification: 'Notification',
     Leave: 'Leave',
@@ -1010,6 +1057,7 @@ export namespace Prisma {
     ChatMessages: 'ChatMessages',
     Payment: 'Payment',
     Withdrawal: 'Withdrawal',
+    BankAccount: 'BankAccount',
     Otp: 'Otp',
     AccessLog: 'AccessLog',
     AuditLog: 'AuditLog',
@@ -1030,7 +1078,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "admin" | "doctor" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
+      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1105,6 +1153,80 @@ export namespace Prisma {
           count: {
             args: Prisma.UserCountArgs<ExtArgs>
             result: $Utils.Optional<UserCountAggregateOutputType> | number
+          }
+        }
+      }
+      Location: {
+        payload: Prisma.$LocationPayload<ExtArgs>
+        fields: Prisma.LocationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.LocationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.LocationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          findFirst: {
+            args: Prisma.LocationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.LocationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          findMany: {
+            args: Prisma.LocationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>[]
+          }
+          create: {
+            args: Prisma.LocationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          createMany: {
+            args: Prisma.LocationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.LocationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>[]
+          }
+          delete: {
+            args: Prisma.LocationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          update: {
+            args: Prisma.LocationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          deleteMany: {
+            args: Prisma.LocationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.LocationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.LocationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>[]
+          }
+          upsert: {
+            args: Prisma.LocationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$LocationPayload>
+          }
+          aggregate: {
+            args: Prisma.LocationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateLocation>
+          }
+          groupBy: {
+            args: Prisma.LocationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<LocationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.LocationCountArgs<ExtArgs>
+            result: $Utils.Optional<LocationCountAggregateOutputType> | number
           }
         }
       }
@@ -1253,6 +1375,80 @@ export namespace Prisma {
           count: {
             args: Prisma.DoctorCountArgs<ExtArgs>
             result: $Utils.Optional<DoctorCountAggregateOutputType> | number
+          }
+        }
+      }
+      DoctorQualification: {
+        payload: Prisma.$DoctorQualificationPayload<ExtArgs>
+        fields: Prisma.DoctorQualificationFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DoctorQualificationFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DoctorQualificationFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          findFirst: {
+            args: Prisma.DoctorQualificationFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DoctorQualificationFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          findMany: {
+            args: Prisma.DoctorQualificationFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>[]
+          }
+          create: {
+            args: Prisma.DoctorQualificationCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          createMany: {
+            args: Prisma.DoctorQualificationCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DoctorQualificationCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>[]
+          }
+          delete: {
+            args: Prisma.DoctorQualificationDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          update: {
+            args: Prisma.DoctorQualificationUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          deleteMany: {
+            args: Prisma.DoctorQualificationDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DoctorQualificationUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DoctorQualificationUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>[]
+          }
+          upsert: {
+            args: Prisma.DoctorQualificationUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DoctorQualificationPayload>
+          }
+          aggregate: {
+            args: Prisma.DoctorQualificationAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDoctorQualification>
+          }
+          groupBy: {
+            args: Prisma.DoctorQualificationGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DoctorQualificationGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DoctorQualificationCountArgs<ExtArgs>
+            result: $Utils.Optional<DoctorQualificationCountAggregateOutputType> | number
           }
         }
       }
@@ -1996,6 +2192,80 @@ export namespace Prisma {
           }
         }
       }
+      BankAccount: {
+        payload: Prisma.$BankAccountPayload<ExtArgs>
+        fields: Prisma.BankAccountFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.BankAccountFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.BankAccountFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          findFirst: {
+            args: Prisma.BankAccountFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.BankAccountFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          findMany: {
+            args: Prisma.BankAccountFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>[]
+          }
+          create: {
+            args: Prisma.BankAccountCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          createMany: {
+            args: Prisma.BankAccountCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.BankAccountCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>[]
+          }
+          delete: {
+            args: Prisma.BankAccountDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          update: {
+            args: Prisma.BankAccountUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          deleteMany: {
+            args: Prisma.BankAccountDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.BankAccountUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.BankAccountUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>[]
+          }
+          upsert: {
+            args: Prisma.BankAccountUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$BankAccountPayload>
+          }
+          aggregate: {
+            args: Prisma.BankAccountAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateBankAccount>
+          }
+          groupBy: {
+            args: Prisma.BankAccountGroupByArgs<ExtArgs>
+            result: $Utils.Optional<BankAccountGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.BankAccountCountArgs<ExtArgs>
+            result: $Utils.Optional<BankAccountCountAggregateOutputType> | number
+          }
+        }
+      }
       Otp: {
         payload: Prisma.$OtpPayload<ExtArgs>
         fields: Prisma.OtpFieldRefs
@@ -2475,8 +2745,10 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     user?: UserOmit
+    location?: LocationOmit
     admin?: AdminOmit
     doctor?: DoctorOmit
+    doctorQualification?: DoctorQualificationOmit
     patient?: PatientOmit
     notification?: NotificationOmit
     leave?: LeaveOmit
@@ -2487,6 +2759,7 @@ export namespace Prisma {
     chatMessages?: ChatMessagesOmit
     payment?: PaymentOmit
     withdrawal?: WithdrawalOmit
+    bankAccount?: BankAccountOmit
     otp?: OtpOmit
     accessLog?: AccessLogOmit
     auditLog?: AuditLogOmit
@@ -2580,6 +2853,7 @@ export namespace Prisma {
     notifications: number
     comments: number
     ratings: number
+    bankAccounts: number
   }
 
   export type UserCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2591,6 +2865,7 @@ export namespace Prisma {
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
     comments?: boolean | UserCountOutputTypeCountCommentsArgs
     ratings?: boolean | UserCountOutputTypeCountRatingsArgs
+    bankAccounts?: boolean | UserCountOutputTypeCountBankAccountsArgs
   }
 
   // Custom InputTypes
@@ -2660,6 +2935,75 @@ export namespace Prisma {
     where?: RatingWhereInput
   }
 
+  /**
+   * UserCountOutputType without action
+   */
+  export type UserCountOutputTypeCountBankAccountsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankAccountWhereInput
+  }
+
+
+  /**
+   * Count Type LocationCountOutputType
+   */
+
+  export type LocationCountOutputType = {
+    user: number
+  }
+
+  export type LocationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | LocationCountOutputTypeCountUserArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * LocationCountOutputType without action
+   */
+  export type LocationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the LocationCountOutputType
+     */
+    select?: LocationCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * LocationCountOutputType without action
+   */
+  export type LocationCountOutputTypeCountUserArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: UserWhereInput
+  }
+
+
+  /**
+   * Count Type AdminCountOutputType
+   */
+
+  export type AdminCountOutputType = {
+    subAdmins: number
+  }
+
+  export type AdminCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    subAdmins?: boolean | AdminCountOutputTypeCountSubAdminsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * AdminCountOutputType without action
+   */
+  export type AdminCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the AdminCountOutputType
+     */
+    select?: AdminCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * AdminCountOutputType without action
+   */
+  export type AdminCountOutputTypeCountSubAdminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AdminWhereInput
+  }
+
 
   /**
    * Count Type DoctorCountOutputType
@@ -2673,6 +3017,7 @@ export namespace Prisma {
     comments: number
     ratings: number
     withdrawals: number
+    doctorQualifications: number
   }
 
   export type DoctorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -2683,6 +3028,7 @@ export namespace Prisma {
     comments?: boolean | DoctorCountOutputTypeCountCommentsArgs
     ratings?: boolean | DoctorCountOutputTypeCountRatingsArgs
     withdrawals?: boolean | DoctorCountOutputTypeCountWithdrawalsArgs
+    doctorQualifications?: boolean | DoctorCountOutputTypeCountDoctorQualificationsArgs
   }
 
   // Custom InputTypes
@@ -2743,6 +3089,13 @@ export namespace Prisma {
    */
   export type DoctorCountOutputTypeCountWithdrawalsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WithdrawalWhereInput
+  }
+
+  /**
+   * DoctorCountOutputType without action
+   */
+  export type DoctorCountOutputTypeCountDoctorQualificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DoctorQualificationWhereInput
   }
 
 
@@ -2853,13 +3206,12 @@ export namespace Prisma {
     gender: $Enums.Gender | null
     role: $Enums.Role | null
     address: string | null
-    city: string | null
-    state: string | null
     pinCode: number | null
     profileImageUrl: string | null
     emailVerified: boolean | null
-    createdAt: Date | null
+    isActive: boolean | null
     updatedAt: Date | null
+    createdAt: Date | null
   }
 
   export type UserMaxAggregateOutputType = {
@@ -2872,13 +3224,12 @@ export namespace Prisma {
     gender: $Enums.Gender | null
     role: $Enums.Role | null
     address: string | null
-    city: string | null
-    state: string | null
     pinCode: number | null
     profileImageUrl: string | null
     emailVerified: boolean | null
-    createdAt: Date | null
+    isActive: boolean | null
     updatedAt: Date | null
+    createdAt: Date | null
   }
 
   export type UserCountAggregateOutputType = {
@@ -2891,13 +3242,12 @@ export namespace Prisma {
     gender: number
     role: number
     address: number
-    city: number
-    state: number
     pinCode: number
     profileImageUrl: number
     emailVerified: number
-    createdAt: number
+    isActive: number
     updatedAt: number
+    createdAt: number
     _all: number
   }
 
@@ -2922,13 +3272,12 @@ export namespace Prisma {
     gender?: true
     role?: true
     address?: true
-    city?: true
-    state?: true
     pinCode?: true
     profileImageUrl?: true
     emailVerified?: true
-    createdAt?: true
+    isActive?: true
     updatedAt?: true
+    createdAt?: true
   }
 
   export type UserMaxAggregateInputType = {
@@ -2941,13 +3290,12 @@ export namespace Prisma {
     gender?: true
     role?: true
     address?: true
-    city?: true
-    state?: true
     pinCode?: true
     profileImageUrl?: true
     emailVerified?: true
-    createdAt?: true
+    isActive?: true
     updatedAt?: true
+    createdAt?: true
   }
 
   export type UserCountAggregateInputType = {
@@ -2960,13 +3308,12 @@ export namespace Prisma {
     gender?: true
     role?: true
     address?: true
-    city?: true
-    state?: true
     pinCode?: true
     profileImageUrl?: true
     emailVerified?: true
-    createdAt?: true
+    isActive?: true
     updatedAt?: true
+    createdAt?: true
     _all?: true
   }
 
@@ -3066,13 +3413,12 @@ export namespace Prisma {
     gender: $Enums.Gender
     role: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl: string | null
     emailVerified: boolean
-    createdAt: Date
+    isActive: boolean
     updatedAt: Date
+    createdAt: Date
     _count: UserCountAggregateOutputType | null
     _avg: UserAvgAggregateOutputType | null
     _sum: UserSumAggregateOutputType | null
@@ -3104,13 +3450,12 @@ export namespace Prisma {
     gender?: boolean
     role?: boolean
     address?: boolean
-    city?: boolean
-    state?: boolean
     pinCode?: boolean
     profileImageUrl?: boolean
     emailVerified?: boolean
-    createdAt?: boolean
+    isActive?: boolean
     updatedAt?: boolean
+    createdAt?: boolean
     admin?: boolean | User$adminArgs<ExtArgs>
     doctor?: boolean | User$doctorArgs<ExtArgs>
     patient?: boolean | User$patientArgs<ExtArgs>
@@ -3122,6 +3467,8 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
     ratings?: boolean | User$ratingsArgs<ExtArgs>
+    location?: boolean | LocationDefaultArgs<ExtArgs>
+    bankAccounts?: boolean | User$bankAccountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
@@ -3135,13 +3482,13 @@ export namespace Prisma {
     gender?: boolean
     role?: boolean
     address?: boolean
-    city?: boolean
-    state?: boolean
     pinCode?: boolean
     profileImageUrl?: boolean
     emailVerified?: boolean
-    createdAt?: boolean
+    isActive?: boolean
     updatedAt?: boolean
+    createdAt?: boolean
+    location?: boolean | LocationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -3154,13 +3501,13 @@ export namespace Prisma {
     gender?: boolean
     role?: boolean
     address?: boolean
-    city?: boolean
-    state?: boolean
     pinCode?: boolean
     profileImageUrl?: boolean
     emailVerified?: boolean
-    createdAt?: boolean
+    isActive?: boolean
     updatedAt?: boolean
+    createdAt?: boolean
+    location?: boolean | LocationDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["user"]>
 
   export type UserSelectScalar = {
@@ -3173,16 +3520,15 @@ export namespace Prisma {
     gender?: boolean
     role?: boolean
     address?: boolean
-    city?: boolean
-    state?: boolean
     pinCode?: boolean
     profileImageUrl?: boolean
     emailVerified?: boolean
-    createdAt?: boolean
+    isActive?: boolean
     updatedAt?: boolean
+    createdAt?: boolean
   }
 
-  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phoneNo" | "name" | "password" | "age" | "gender" | "role" | "address" | "city" | "state" | "pinCode" | "profileImageUrl" | "emailVerified" | "createdAt" | "updatedAt", ExtArgs["result"]["user"]>
+  export type UserOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "email" | "phoneNo" | "name" | "password" | "age" | "gender" | "role" | "address" | "pinCode" | "profileImageUrl" | "emailVerified" | "isActive" | "updatedAt" | "createdAt", ExtArgs["result"]["user"]>
   export type UserInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     admin?: boolean | User$adminArgs<ExtArgs>
     doctor?: boolean | User$doctorArgs<ExtArgs>
@@ -3195,10 +3541,16 @@ export namespace Prisma {
     notifications?: boolean | User$notificationsArgs<ExtArgs>
     comments?: boolean | User$commentsArgs<ExtArgs>
     ratings?: boolean | User$ratingsArgs<ExtArgs>
+    location?: boolean | LocationDefaultArgs<ExtArgs>
+    bankAccounts?: boolean | User$bankAccountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
   }
-  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
-  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type UserIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    location?: boolean | LocationDefaultArgs<ExtArgs>
+  }
+  export type UserIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    location?: boolean | LocationDefaultArgs<ExtArgs>
+  }
 
   export type $UserPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "User"
@@ -3214,6 +3566,8 @@ export namespace Prisma {
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
+      location: Prisma.$LocationPayload<ExtArgs>
+      bankAccounts: Prisma.$BankAccountPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -3225,13 +3579,12 @@ export namespace Prisma {
       gender: $Enums.Gender
       role: $Enums.Role
       address: string
-      city: string
-      state: string
       pinCode: number
       profileImageUrl: string | null
       emailVerified: boolean
-      createdAt: Date
+      isActive: boolean
       updatedAt: Date
+      createdAt: Date
     }, ExtArgs["result"]["user"]>
     composites: {}
   }
@@ -3637,6 +3990,8 @@ export namespace Prisma {
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     comments<T extends User$commentsArgs<ExtArgs> = {}>(args?: Subset<T, User$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ratings<T extends User$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, User$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    location<T extends LocationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LocationDefaultArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    bankAccounts<T extends User$bankAccountsArgs<ExtArgs> = {}>(args?: Subset<T, User$bankAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -3675,13 +4030,12 @@ export namespace Prisma {
     readonly gender: FieldRef<"User", 'Gender'>
     readonly role: FieldRef<"User", 'Role'>
     readonly address: FieldRef<"User", 'String'>
-    readonly city: FieldRef<"User", 'String'>
-    readonly state: FieldRef<"User", 'String'>
     readonly pinCode: FieldRef<"User", 'Int'>
     readonly profileImageUrl: FieldRef<"User", 'String'>
     readonly emailVerified: FieldRef<"User", 'Boolean'>
-    readonly createdAt: FieldRef<"User", 'DateTime'>
+    readonly isActive: FieldRef<"User", 'Boolean'>
     readonly updatedAt: FieldRef<"User", 'DateTime'>
+    readonly createdAt: FieldRef<"User", 'DateTime'>
   }
     
 
@@ -3931,6 +4285,10 @@ export namespace Prisma {
      */
     data: UserCreateManyInput | UserCreateManyInput[]
     skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4001,6 +4359,10 @@ export namespace Prisma {
      * Limit how many Users to update.
      */
     limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -4319,6 +4681,30 @@ export namespace Prisma {
   }
 
   /**
+   * User.bankAccounts
+   */
+  export type User$bankAccountsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    where?: BankAccountWhereInput
+    orderBy?: BankAccountOrderByWithRelationInput | BankAccountOrderByWithRelationInput[]
+    cursor?: BankAccountWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: BankAccountScalarFieldEnum | BankAccountScalarFieldEnum[]
+  }
+
+  /**
    * User without action
    */
   export type UserDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -4338,6 +4724,1084 @@ export namespace Prisma {
 
 
   /**
+   * Model Location
+   */
+
+  export type AggregateLocation = {
+    _count: LocationCountAggregateOutputType | null
+    _avg: LocationAvgAggregateOutputType | null
+    _sum: LocationSumAggregateOutputType | null
+    _min: LocationMinAggregateOutputType | null
+    _max: LocationMaxAggregateOutputType | null
+  }
+
+  export type LocationAvgAggregateOutputType = {
+    pincode: number | null
+  }
+
+  export type LocationSumAggregateOutputType = {
+    pincode: number | null
+  }
+
+  export type LocationMinAggregateOutputType = {
+    pincode: number | null
+    city: string | null
+    state: string | null
+  }
+
+  export type LocationMaxAggregateOutputType = {
+    pincode: number | null
+    city: string | null
+    state: string | null
+  }
+
+  export type LocationCountAggregateOutputType = {
+    pincode: number
+    city: number
+    state: number
+    _all: number
+  }
+
+
+  export type LocationAvgAggregateInputType = {
+    pincode?: true
+  }
+
+  export type LocationSumAggregateInputType = {
+    pincode?: true
+  }
+
+  export type LocationMinAggregateInputType = {
+    pincode?: true
+    city?: true
+    state?: true
+  }
+
+  export type LocationMaxAggregateInputType = {
+    pincode?: true
+    city?: true
+    state?: true
+  }
+
+  export type LocationCountAggregateInputType = {
+    pincode?: true
+    city?: true
+    state?: true
+    _all?: true
+  }
+
+  export type LocationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Location to aggregate.
+     */
+    where?: LocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Locations to fetch.
+     */
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: LocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Locations
+    **/
+    _count?: true | LocationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: LocationAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: LocationSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: LocationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: LocationMaxAggregateInputType
+  }
+
+  export type GetLocationAggregateType<T extends LocationAggregateArgs> = {
+        [P in keyof T & keyof AggregateLocation]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateLocation[P]>
+      : GetScalarType<T[P], AggregateLocation[P]>
+  }
+
+
+
+
+  export type LocationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: LocationWhereInput
+    orderBy?: LocationOrderByWithAggregationInput | LocationOrderByWithAggregationInput[]
+    by: LocationScalarFieldEnum[] | LocationScalarFieldEnum
+    having?: LocationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: LocationCountAggregateInputType | true
+    _avg?: LocationAvgAggregateInputType
+    _sum?: LocationSumAggregateInputType
+    _min?: LocationMinAggregateInputType
+    _max?: LocationMaxAggregateInputType
+  }
+
+  export type LocationGroupByOutputType = {
+    pincode: number
+    city: string
+    state: string
+    _count: LocationCountAggregateOutputType | null
+    _avg: LocationAvgAggregateOutputType | null
+    _sum: LocationSumAggregateOutputType | null
+    _min: LocationMinAggregateOutputType | null
+    _max: LocationMaxAggregateOutputType | null
+  }
+
+  type GetLocationGroupByPayload<T extends LocationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<LocationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof LocationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], LocationGroupByOutputType[P]>
+            : GetScalarType<T[P], LocationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type LocationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    pincode?: boolean
+    city?: boolean
+    state?: boolean
+    user?: boolean | Location$userArgs<ExtArgs>
+    _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["location"]>
+
+  export type LocationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    pincode?: boolean
+    city?: boolean
+    state?: boolean
+  }, ExtArgs["result"]["location"]>
+
+  export type LocationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    pincode?: boolean
+    city?: boolean
+    state?: boolean
+  }, ExtArgs["result"]["location"]>
+
+  export type LocationSelectScalar = {
+    pincode?: boolean
+    city?: boolean
+    state?: boolean
+  }
+
+  export type LocationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"pincode" | "city" | "state", ExtArgs["result"]["location"]>
+  export type LocationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | Location$userArgs<ExtArgs>
+    _count?: boolean | LocationCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type LocationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type LocationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $LocationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Location"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      pincode: number
+      city: string
+      state: string
+    }, ExtArgs["result"]["location"]>
+    composites: {}
+  }
+
+  type LocationGetPayload<S extends boolean | null | undefined | LocationDefaultArgs> = $Result.GetResult<Prisma.$LocationPayload, S>
+
+  type LocationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<LocationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: LocationCountAggregateInputType | true
+    }
+
+  export interface LocationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Location'], meta: { name: 'Location' } }
+    /**
+     * Find zero or one Location that matches the filter.
+     * @param {LocationFindUniqueArgs} args - Arguments to find a Location
+     * @example
+     * // Get one Location
+     * const location = await prisma.location.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends LocationFindUniqueArgs>(args: SelectSubset<T, LocationFindUniqueArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Location that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {LocationFindUniqueOrThrowArgs} args - Arguments to find a Location
+     * @example
+     * // Get one Location
+     * const location = await prisma.location.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends LocationFindUniqueOrThrowArgs>(args: SelectSubset<T, LocationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Location that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationFindFirstArgs} args - Arguments to find a Location
+     * @example
+     * // Get one Location
+     * const location = await prisma.location.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends LocationFindFirstArgs>(args?: SelectSubset<T, LocationFindFirstArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Location that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationFindFirstOrThrowArgs} args - Arguments to find a Location
+     * @example
+     * // Get one Location
+     * const location = await prisma.location.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends LocationFindFirstOrThrowArgs>(args?: SelectSubset<T, LocationFindFirstOrThrowArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Locations that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Locations
+     * const locations = await prisma.location.findMany()
+     * 
+     * // Get first 10 Locations
+     * const locations = await prisma.location.findMany({ take: 10 })
+     * 
+     * // Only select the `pincode`
+     * const locationWithPincodeOnly = await prisma.location.findMany({ select: { pincode: true } })
+     * 
+     */
+    findMany<T extends LocationFindManyArgs>(args?: SelectSubset<T, LocationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Location.
+     * @param {LocationCreateArgs} args - Arguments to create a Location.
+     * @example
+     * // Create one Location
+     * const Location = await prisma.location.create({
+     *   data: {
+     *     // ... data to create a Location
+     *   }
+     * })
+     * 
+     */
+    create<T extends LocationCreateArgs>(args: SelectSubset<T, LocationCreateArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Locations.
+     * @param {LocationCreateManyArgs} args - Arguments to create many Locations.
+     * @example
+     * // Create many Locations
+     * const location = await prisma.location.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends LocationCreateManyArgs>(args?: SelectSubset<T, LocationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Locations and returns the data saved in the database.
+     * @param {LocationCreateManyAndReturnArgs} args - Arguments to create many Locations.
+     * @example
+     * // Create many Locations
+     * const location = await prisma.location.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Locations and only return the `pincode`
+     * const locationWithPincodeOnly = await prisma.location.createManyAndReturn({
+     *   select: { pincode: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends LocationCreateManyAndReturnArgs>(args?: SelectSubset<T, LocationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Location.
+     * @param {LocationDeleteArgs} args - Arguments to delete one Location.
+     * @example
+     * // Delete one Location
+     * const Location = await prisma.location.delete({
+     *   where: {
+     *     // ... filter to delete one Location
+     *   }
+     * })
+     * 
+     */
+    delete<T extends LocationDeleteArgs>(args: SelectSubset<T, LocationDeleteArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Location.
+     * @param {LocationUpdateArgs} args - Arguments to update one Location.
+     * @example
+     * // Update one Location
+     * const location = await prisma.location.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends LocationUpdateArgs>(args: SelectSubset<T, LocationUpdateArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Locations.
+     * @param {LocationDeleteManyArgs} args - Arguments to filter Locations to delete.
+     * @example
+     * // Delete a few Locations
+     * const { count } = await prisma.location.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends LocationDeleteManyArgs>(args?: SelectSubset<T, LocationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Locations
+     * const location = await prisma.location.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends LocationUpdateManyArgs>(args: SelectSubset<T, LocationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Locations and returns the data updated in the database.
+     * @param {LocationUpdateManyAndReturnArgs} args - Arguments to update many Locations.
+     * @example
+     * // Update many Locations
+     * const location = await prisma.location.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Locations and only return the `pincode`
+     * const locationWithPincodeOnly = await prisma.location.updateManyAndReturn({
+     *   select: { pincode: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends LocationUpdateManyAndReturnArgs>(args: SelectSubset<T, LocationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Location.
+     * @param {LocationUpsertArgs} args - Arguments to update or create a Location.
+     * @example
+     * // Update or create a Location
+     * const location = await prisma.location.upsert({
+     *   create: {
+     *     // ... data to create a Location
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Location we want to update
+     *   }
+     * })
+     */
+    upsert<T extends LocationUpsertArgs>(args: SelectSubset<T, LocationUpsertArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Locations.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationCountArgs} args - Arguments to filter Locations to count.
+     * @example
+     * // Count the number of Locations
+     * const count = await prisma.location.count({
+     *   where: {
+     *     // ... the filter for the Locations we want to count
+     *   }
+     * })
+    **/
+    count<T extends LocationCountArgs>(
+      args?: Subset<T, LocationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], LocationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Location.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends LocationAggregateArgs>(args: Subset<T, LocationAggregateArgs>): Prisma.PrismaPromise<GetLocationAggregateType<T>>
+
+    /**
+     * Group by Location.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {LocationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends LocationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: LocationGroupByArgs['orderBy'] }
+        : { orderBy?: LocationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, LocationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetLocationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Location model
+   */
+  readonly fields: LocationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Location.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__LocationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends Location$userArgs<ExtArgs> = {}>(args?: Subset<T, Location$userArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Location model
+   */
+  interface LocationFieldRefs {
+    readonly pincode: FieldRef<"Location", 'Int'>
+    readonly city: FieldRef<"Location", 'String'>
+    readonly state: FieldRef<"Location", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Location findUnique
+   */
+  export type LocationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter, which Location to fetch.
+     */
+    where: LocationWhereUniqueInput
+  }
+
+  /**
+   * Location findUniqueOrThrow
+   */
+  export type LocationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter, which Location to fetch.
+     */
+    where: LocationWhereUniqueInput
+  }
+
+  /**
+   * Location findFirst
+   */
+  export type LocationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter, which Location to fetch.
+     */
+    where?: LocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Locations to fetch.
+     */
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Locations.
+     */
+    cursor?: LocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Locations.
+     */
+    distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * Location findFirstOrThrow
+   */
+  export type LocationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter, which Location to fetch.
+     */
+    where?: LocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Locations to fetch.
+     */
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Locations.
+     */
+    cursor?: LocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Locations.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Locations.
+     */
+    distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * Location findMany
+   */
+  export type LocationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter, which Locations to fetch.
+     */
+    where?: LocationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Locations to fetch.
+     */
+    orderBy?: LocationOrderByWithRelationInput | LocationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Locations.
+     */
+    cursor?: LocationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Locations from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Locations.
+     */
+    skip?: number
+    distinct?: LocationScalarFieldEnum | LocationScalarFieldEnum[]
+  }
+
+  /**
+   * Location create
+   */
+  export type LocationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Location.
+     */
+    data: XOR<LocationCreateInput, LocationUncheckedCreateInput>
+  }
+
+  /**
+   * Location createMany
+   */
+  export type LocationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Locations.
+     */
+    data: LocationCreateManyInput | LocationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Location createManyAndReturn
+   */
+  export type LocationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * The data used to create many Locations.
+     */
+    data: LocationCreateManyInput | LocationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Location update
+   */
+  export type LocationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Location.
+     */
+    data: XOR<LocationUpdateInput, LocationUncheckedUpdateInput>
+    /**
+     * Choose, which Location to update.
+     */
+    where: LocationWhereUniqueInput
+  }
+
+  /**
+   * Location updateMany
+   */
+  export type LocationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Locations.
+     */
+    data: XOR<LocationUpdateManyMutationInput, LocationUncheckedUpdateManyInput>
+    /**
+     * Filter which Locations to update
+     */
+    where?: LocationWhereInput
+    /**
+     * Limit how many Locations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Location updateManyAndReturn
+   */
+  export type LocationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * The data used to update Locations.
+     */
+    data: XOR<LocationUpdateManyMutationInput, LocationUncheckedUpdateManyInput>
+    /**
+     * Filter which Locations to update
+     */
+    where?: LocationWhereInput
+    /**
+     * Limit how many Locations to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Location upsert
+   */
+  export type LocationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Location to update in case it exists.
+     */
+    where: LocationWhereUniqueInput
+    /**
+     * In case the Location found by the `where` argument doesn't exist, create a new Location with this data.
+     */
+    create: XOR<LocationCreateInput, LocationUncheckedCreateInput>
+    /**
+     * In case the Location was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<LocationUpdateInput, LocationUncheckedUpdateInput>
+  }
+
+  /**
+   * Location delete
+   */
+  export type LocationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+    /**
+     * Filter which Location to delete.
+     */
+    where: LocationWhereUniqueInput
+  }
+
+  /**
+   * Location deleteMany
+   */
+  export type LocationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Locations to delete
+     */
+    where?: LocationWhereInput
+    /**
+     * Limit how many Locations to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Location.user
+   */
+  export type Location$userArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the User
+     */
+    select?: UserSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the User
+     */
+    omit?: UserOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: UserInclude<ExtArgs> | null
+    where?: UserWhereInput
+    orderBy?: UserOrderByWithRelationInput | UserOrderByWithRelationInput[]
+    cursor?: UserWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: UserScalarFieldEnum | UserScalarFieldEnum[]
+  }
+
+  /**
+   * Location without action
+   */
+  export type LocationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Location
+     */
+    select?: LocationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Location
+     */
+    omit?: LocationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: LocationInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Admin
    */
 
@@ -4350,6 +5814,7 @@ export namespace Prisma {
   export type AdminMinAggregateOutputType = {
     id: string | null
     userId: string | null
+    managerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4357,6 +5822,7 @@ export namespace Prisma {
   export type AdminMaxAggregateOutputType = {
     id: string | null
     userId: string | null
+    managerId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -4364,6 +5830,7 @@ export namespace Prisma {
   export type AdminCountAggregateOutputType = {
     id: number
     userId: number
+    managerId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -4373,6 +5840,7 @@ export namespace Prisma {
   export type AdminMinAggregateInputType = {
     id?: true
     userId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4380,6 +5848,7 @@ export namespace Prisma {
   export type AdminMaxAggregateInputType = {
     id?: true
     userId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -4387,6 +5856,7 @@ export namespace Prisma {
   export type AdminCountAggregateInputType = {
     id?: true
     userId?: true
+    managerId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -4467,6 +5937,7 @@ export namespace Prisma {
   export type AdminGroupByOutputType = {
     id: string
     userId: string
+    managerId: string | null
     createdAt: Date
     updatedAt: Date
     _count: AdminCountAggregateOutputType | null
@@ -4491,53 +5962,70 @@ export namespace Prisma {
   export type AdminSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
+    subAdmins?: boolean | Admin$subAdminsArgs<ExtArgs>
+    _count?: boolean | AdminCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["admin"]>
 
   export type AdminSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
   }, ExtArgs["result"]["admin"]>
 
   export type AdminSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     userId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
   }, ExtArgs["result"]["admin"]>
 
   export type AdminSelectScalar = {
     id?: boolean
     userId?: boolean
+    managerId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type AdminOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "createdAt" | "updatedAt", ExtArgs["result"]["admin"]>
+  export type AdminOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "managerId" | "createdAt" | "updatedAt", ExtArgs["result"]["admin"]>
   export type AdminInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
+    subAdmins?: boolean | Admin$subAdminsArgs<ExtArgs>
+    _count?: boolean | AdminCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type AdminIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
   }
   export type AdminIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    manager?: boolean | Admin$managerArgs<ExtArgs>
   }
 
   export type $AdminPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Admin"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      manager: Prisma.$AdminPayload<ExtArgs> | null
+      subAdmins: Prisma.$AdminPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
+      managerId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["admin"]>
@@ -4935,6 +6423,8 @@ export namespace Prisma {
   export interface Prisma__AdminClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    manager<T extends Admin$managerArgs<ExtArgs> = {}>(args?: Subset<T, Admin$managerArgs<ExtArgs>>): Prisma__AdminClient<$Result.GetResult<Prisma.$AdminPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    subAdmins<T extends Admin$subAdminsArgs<ExtArgs> = {}>(args?: Subset<T, Admin$subAdminsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AdminPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -4966,6 +6456,7 @@ export namespace Prisma {
   interface AdminFieldRefs {
     readonly id: FieldRef<"Admin", 'String'>
     readonly userId: FieldRef<"Admin", 'String'>
+    readonly managerId: FieldRef<"Admin", 'String'>
     readonly createdAt: FieldRef<"Admin", 'DateTime'>
     readonly updatedAt: FieldRef<"Admin", 'DateTime'>
   }
@@ -5364,6 +6855,49 @@ export namespace Prisma {
   }
 
   /**
+   * Admin.manager
+   */
+  export type Admin$managerArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Admin
+     */
+    select?: AdminSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Admin
+     */
+    omit?: AdminOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminInclude<ExtArgs> | null
+    where?: AdminWhereInput
+  }
+
+  /**
+   * Admin.subAdmins
+   */
+  export type Admin$subAdminsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Admin
+     */
+    select?: AdminSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Admin
+     */
+    omit?: AdminOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AdminInclude<ExtArgs> | null
+    where?: AdminWhereInput
+    orderBy?: AdminOrderByWithRelationInput | AdminOrderByWithRelationInput[]
+    cursor?: AdminWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AdminScalarFieldEnum | AdminScalarFieldEnum[]
+  }
+
+  /**
    * Admin without action
    */
   export type AdminDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5414,10 +6948,6 @@ export namespace Prisma {
     fees: number | null
     doctorBio: string | null
     balance: number | null
-    bankAccountNumber: string | null
-    bankIFSC: string | null
-    bankAccountHolderName: string | null
-    bankName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5430,10 +6960,6 @@ export namespace Prisma {
     fees: number | null
     doctorBio: string | null
     balance: number | null
-    bankAccountNumber: string | null
-    bankIFSC: string | null
-    bankAccountHolderName: string | null
-    bankName: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -5443,14 +6969,9 @@ export namespace Prisma {
     userId: number
     specialty: number
     experience: number
-    qualifications: number
     fees: number
     doctorBio: number
     balance: number
-    bankAccountNumber: number
-    bankIFSC: number
-    bankAccountHolderName: number
-    bankName: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -5477,10 +6998,6 @@ export namespace Prisma {
     fees?: true
     doctorBio?: true
     balance?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5493,10 +7010,6 @@ export namespace Prisma {
     fees?: true
     doctorBio?: true
     balance?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -5506,14 +7019,9 @@ export namespace Prisma {
     userId?: true
     specialty?: true
     experience?: true
-    qualifications?: true
     fees?: true
     doctorBio?: true
     balance?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -5610,14 +7118,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience: number
-    qualifications: $Enums.Qualification[]
     fees: number
     doctorBio: string | null
     balance: number
-    bankAccountNumber: string | null
-    bankIFSC: string | null
-    bankAccountHolderName: string | null
-    bankName: string | null
     createdAt: Date
     updatedAt: Date
     _count: DoctorCountAggregateOutputType | null
@@ -5646,14 +7149,9 @@ export namespace Prisma {
     userId?: boolean
     specialty?: boolean
     experience?: boolean
-    qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5665,6 +7163,7 @@ export namespace Prisma {
     comments?: boolean | Doctor$commentsArgs<ExtArgs>
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
     withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
+    doctorQualifications?: boolean | Doctor$doctorQualificationsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["doctor"]>
 
@@ -5673,14 +7172,9 @@ export namespace Prisma {
     userId?: boolean
     specialty?: boolean
     experience?: boolean
-    qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5691,14 +7185,9 @@ export namespace Prisma {
     userId?: boolean
     specialty?: boolean
     experience?: boolean
-    qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -5709,19 +7198,14 @@ export namespace Prisma {
     userId?: boolean
     specialty?: boolean
     experience?: boolean
-    qualifications?: boolean
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "qualifications" | "fees" | "doctorBio" | "balance" | "bankAccountNumber" | "bankIFSC" | "bankAccountHolderName" | "bankName" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
+  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "fees" | "doctorBio" | "balance" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
   export type DoctorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     leaves?: boolean | Doctor$leavesArgs<ExtArgs>
@@ -5732,6 +7216,7 @@ export namespace Prisma {
     comments?: boolean | Doctor$commentsArgs<ExtArgs>
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
     withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
+    doctorQualifications?: boolean | Doctor$doctorQualificationsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DoctorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -5753,20 +7238,16 @@ export namespace Prisma {
       comments: Prisma.$CommentPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
       withdrawals: Prisma.$WithdrawalPayload<ExtArgs>[]
+      doctorQualifications: Prisma.$DoctorQualificationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       userId: string
       specialty: $Enums.Specialty
       experience: number
-      qualifications: $Enums.Qualification[]
       fees: number
       doctorBio: string | null
       balance: number
-      bankAccountNumber: string | null
-      bankIFSC: string | null
-      bankAccountHolderName: string | null
-      bankName: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["doctor"]>
@@ -6172,6 +7653,7 @@ export namespace Prisma {
     comments<T extends Doctor$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ratings<T extends Doctor$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     withdrawals<T extends Doctor$withdrawalsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$withdrawalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    doctorQualifications<T extends Doctor$doctorQualificationsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$doctorQualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -6205,14 +7687,9 @@ export namespace Prisma {
     readonly userId: FieldRef<"Doctor", 'String'>
     readonly specialty: FieldRef<"Doctor", 'Specialty'>
     readonly experience: FieldRef<"Doctor", 'Int'>
-    readonly qualifications: FieldRef<"Doctor", 'Qualification[]'>
     readonly fees: FieldRef<"Doctor", 'Int'>
     readonly doctorBio: FieldRef<"Doctor", 'String'>
     readonly balance: FieldRef<"Doctor", 'Int'>
-    readonly bankAccountNumber: FieldRef<"Doctor", 'String'>
-    readonly bankIFSC: FieldRef<"Doctor", 'String'>
-    readonly bankAccountHolderName: FieldRef<"Doctor", 'String'>
-    readonly bankName: FieldRef<"Doctor", 'String'>
     readonly createdAt: FieldRef<"Doctor", 'DateTime'>
     readonly updatedAt: FieldRef<"Doctor", 'DateTime'>
   }
@@ -6798,6 +8275,30 @@ export namespace Prisma {
   }
 
   /**
+   * Doctor.doctorQualifications
+   */
+  export type Doctor$doctorQualificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    where?: DoctorQualificationWhereInput
+    orderBy?: DoctorQualificationOrderByWithRelationInput | DoctorQualificationOrderByWithRelationInput[]
+    cursor?: DoctorQualificationWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DoctorQualificationScalarFieldEnum | DoctorQualificationScalarFieldEnum[]
+  }
+
+  /**
    * Doctor without action
    */
   export type DoctorDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -6813,6 +8314,1038 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: DoctorInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DoctorQualification
+   */
+
+  export type AggregateDoctorQualification = {
+    _count: DoctorQualificationCountAggregateOutputType | null
+    _min: DoctorQualificationMinAggregateOutputType | null
+    _max: DoctorQualificationMaxAggregateOutputType | null
+  }
+
+  export type DoctorQualificationMinAggregateOutputType = {
+    id: string | null
+    doctorId: string | null
+    qualification: $Enums.Qualification | null
+  }
+
+  export type DoctorQualificationMaxAggregateOutputType = {
+    id: string | null
+    doctorId: string | null
+    qualification: $Enums.Qualification | null
+  }
+
+  export type DoctorQualificationCountAggregateOutputType = {
+    id: number
+    doctorId: number
+    qualification: number
+    _all: number
+  }
+
+
+  export type DoctorQualificationMinAggregateInputType = {
+    id?: true
+    doctorId?: true
+    qualification?: true
+  }
+
+  export type DoctorQualificationMaxAggregateInputType = {
+    id?: true
+    doctorId?: true
+    qualification?: true
+  }
+
+  export type DoctorQualificationCountAggregateInputType = {
+    id?: true
+    doctorId?: true
+    qualification?: true
+    _all?: true
+  }
+
+  export type DoctorQualificationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DoctorQualification to aggregate.
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DoctorQualifications to fetch.
+     */
+    orderBy?: DoctorQualificationOrderByWithRelationInput | DoctorQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DoctorQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DoctorQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DoctorQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DoctorQualifications
+    **/
+    _count?: true | DoctorQualificationCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DoctorQualificationMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DoctorQualificationMaxAggregateInputType
+  }
+
+  export type GetDoctorQualificationAggregateType<T extends DoctorQualificationAggregateArgs> = {
+        [P in keyof T & keyof AggregateDoctorQualification]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDoctorQualification[P]>
+      : GetScalarType<T[P], AggregateDoctorQualification[P]>
+  }
+
+
+
+
+  export type DoctorQualificationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DoctorQualificationWhereInput
+    orderBy?: DoctorQualificationOrderByWithAggregationInput | DoctorQualificationOrderByWithAggregationInput[]
+    by: DoctorQualificationScalarFieldEnum[] | DoctorQualificationScalarFieldEnum
+    having?: DoctorQualificationScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DoctorQualificationCountAggregateInputType | true
+    _min?: DoctorQualificationMinAggregateInputType
+    _max?: DoctorQualificationMaxAggregateInputType
+  }
+
+  export type DoctorQualificationGroupByOutputType = {
+    id: string
+    doctorId: string
+    qualification: $Enums.Qualification
+    _count: DoctorQualificationCountAggregateOutputType | null
+    _min: DoctorQualificationMinAggregateOutputType | null
+    _max: DoctorQualificationMaxAggregateOutputType | null
+  }
+
+  type GetDoctorQualificationGroupByPayload<T extends DoctorQualificationGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DoctorQualificationGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DoctorQualificationGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DoctorQualificationGroupByOutputType[P]>
+            : GetScalarType<T[P], DoctorQualificationGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DoctorQualificationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    qualification?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["doctorQualification"]>
+
+  export type DoctorQualificationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    qualification?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["doctorQualification"]>
+
+  export type DoctorQualificationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    doctorId?: boolean
+    qualification?: boolean
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["doctorQualification"]>
+
+  export type DoctorQualificationSelectScalar = {
+    id?: boolean
+    doctorId?: boolean
+    qualification?: boolean
+  }
+
+  export type DoctorQualificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "qualification", ExtArgs["result"]["doctorQualification"]>
+  export type DoctorQualificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+  export type DoctorQualificationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+  export type DoctorQualificationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+  }
+
+  export type $DoctorQualificationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DoctorQualification"
+    objects: {
+      doctor: Prisma.$DoctorPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      doctorId: string
+      qualification: $Enums.Qualification
+    }, ExtArgs["result"]["doctorQualification"]>
+    composites: {}
+  }
+
+  type DoctorQualificationGetPayload<S extends boolean | null | undefined | DoctorQualificationDefaultArgs> = $Result.GetResult<Prisma.$DoctorQualificationPayload, S>
+
+  type DoctorQualificationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DoctorQualificationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DoctorQualificationCountAggregateInputType | true
+    }
+
+  export interface DoctorQualificationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DoctorQualification'], meta: { name: 'DoctorQualification' } }
+    /**
+     * Find zero or one DoctorQualification that matches the filter.
+     * @param {DoctorQualificationFindUniqueArgs} args - Arguments to find a DoctorQualification
+     * @example
+     * // Get one DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DoctorQualificationFindUniqueArgs>(args: SelectSubset<T, DoctorQualificationFindUniqueArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DoctorQualification that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DoctorQualificationFindUniqueOrThrowArgs} args - Arguments to find a DoctorQualification
+     * @example
+     * // Get one DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DoctorQualificationFindUniqueOrThrowArgs>(args: SelectSubset<T, DoctorQualificationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DoctorQualification that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationFindFirstArgs} args - Arguments to find a DoctorQualification
+     * @example
+     * // Get one DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DoctorQualificationFindFirstArgs>(args?: SelectSubset<T, DoctorQualificationFindFirstArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DoctorQualification that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationFindFirstOrThrowArgs} args - Arguments to find a DoctorQualification
+     * @example
+     * // Get one DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DoctorQualificationFindFirstOrThrowArgs>(args?: SelectSubset<T, DoctorQualificationFindFirstOrThrowArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DoctorQualifications that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DoctorQualifications
+     * const doctorQualifications = await prisma.doctorQualification.findMany()
+     * 
+     * // Get first 10 DoctorQualifications
+     * const doctorQualifications = await prisma.doctorQualification.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const doctorQualificationWithIdOnly = await prisma.doctorQualification.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends DoctorQualificationFindManyArgs>(args?: SelectSubset<T, DoctorQualificationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DoctorQualification.
+     * @param {DoctorQualificationCreateArgs} args - Arguments to create a DoctorQualification.
+     * @example
+     * // Create one DoctorQualification
+     * const DoctorQualification = await prisma.doctorQualification.create({
+     *   data: {
+     *     // ... data to create a DoctorQualification
+     *   }
+     * })
+     * 
+     */
+    create<T extends DoctorQualificationCreateArgs>(args: SelectSubset<T, DoctorQualificationCreateArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DoctorQualifications.
+     * @param {DoctorQualificationCreateManyArgs} args - Arguments to create many DoctorQualifications.
+     * @example
+     * // Create many DoctorQualifications
+     * const doctorQualification = await prisma.doctorQualification.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DoctorQualificationCreateManyArgs>(args?: SelectSubset<T, DoctorQualificationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DoctorQualifications and returns the data saved in the database.
+     * @param {DoctorQualificationCreateManyAndReturnArgs} args - Arguments to create many DoctorQualifications.
+     * @example
+     * // Create many DoctorQualifications
+     * const doctorQualification = await prisma.doctorQualification.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DoctorQualifications and only return the `id`
+     * const doctorQualificationWithIdOnly = await prisma.doctorQualification.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DoctorQualificationCreateManyAndReturnArgs>(args?: SelectSubset<T, DoctorQualificationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DoctorQualification.
+     * @param {DoctorQualificationDeleteArgs} args - Arguments to delete one DoctorQualification.
+     * @example
+     * // Delete one DoctorQualification
+     * const DoctorQualification = await prisma.doctorQualification.delete({
+     *   where: {
+     *     // ... filter to delete one DoctorQualification
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DoctorQualificationDeleteArgs>(args: SelectSubset<T, DoctorQualificationDeleteArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DoctorQualification.
+     * @param {DoctorQualificationUpdateArgs} args - Arguments to update one DoctorQualification.
+     * @example
+     * // Update one DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DoctorQualificationUpdateArgs>(args: SelectSubset<T, DoctorQualificationUpdateArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DoctorQualifications.
+     * @param {DoctorQualificationDeleteManyArgs} args - Arguments to filter DoctorQualifications to delete.
+     * @example
+     * // Delete a few DoctorQualifications
+     * const { count } = await prisma.doctorQualification.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DoctorQualificationDeleteManyArgs>(args?: SelectSubset<T, DoctorQualificationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DoctorQualifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DoctorQualifications
+     * const doctorQualification = await prisma.doctorQualification.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DoctorQualificationUpdateManyArgs>(args: SelectSubset<T, DoctorQualificationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DoctorQualifications and returns the data updated in the database.
+     * @param {DoctorQualificationUpdateManyAndReturnArgs} args - Arguments to update many DoctorQualifications.
+     * @example
+     * // Update many DoctorQualifications
+     * const doctorQualification = await prisma.doctorQualification.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DoctorQualifications and only return the `id`
+     * const doctorQualificationWithIdOnly = await prisma.doctorQualification.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DoctorQualificationUpdateManyAndReturnArgs>(args: SelectSubset<T, DoctorQualificationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DoctorQualification.
+     * @param {DoctorQualificationUpsertArgs} args - Arguments to update or create a DoctorQualification.
+     * @example
+     * // Update or create a DoctorQualification
+     * const doctorQualification = await prisma.doctorQualification.upsert({
+     *   create: {
+     *     // ... data to create a DoctorQualification
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DoctorQualification we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DoctorQualificationUpsertArgs>(args: SelectSubset<T, DoctorQualificationUpsertArgs<ExtArgs>>): Prisma__DoctorQualificationClient<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DoctorQualifications.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationCountArgs} args - Arguments to filter DoctorQualifications to count.
+     * @example
+     * // Count the number of DoctorQualifications
+     * const count = await prisma.doctorQualification.count({
+     *   where: {
+     *     // ... the filter for the DoctorQualifications we want to count
+     *   }
+     * })
+    **/
+    count<T extends DoctorQualificationCountArgs>(
+      args?: Subset<T, DoctorQualificationCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DoctorQualificationCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DoctorQualification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DoctorQualificationAggregateArgs>(args: Subset<T, DoctorQualificationAggregateArgs>): Prisma.PrismaPromise<GetDoctorQualificationAggregateType<T>>
+
+    /**
+     * Group by DoctorQualification.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DoctorQualificationGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DoctorQualificationGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DoctorQualificationGroupByArgs['orderBy'] }
+        : { orderBy?: DoctorQualificationGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DoctorQualificationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDoctorQualificationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DoctorQualification model
+   */
+  readonly fields: DoctorQualificationFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DoctorQualification.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DoctorQualificationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DoctorQualification model
+   */
+  interface DoctorQualificationFieldRefs {
+    readonly id: FieldRef<"DoctorQualification", 'String'>
+    readonly doctorId: FieldRef<"DoctorQualification", 'String'>
+    readonly qualification: FieldRef<"DoctorQualification", 'Qualification'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DoctorQualification findUnique
+   */
+  export type DoctorQualificationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which DoctorQualification to fetch.
+     */
+    where: DoctorQualificationWhereUniqueInput
+  }
+
+  /**
+   * DoctorQualification findUniqueOrThrow
+   */
+  export type DoctorQualificationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which DoctorQualification to fetch.
+     */
+    where: DoctorQualificationWhereUniqueInput
+  }
+
+  /**
+   * DoctorQualification findFirst
+   */
+  export type DoctorQualificationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which DoctorQualification to fetch.
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DoctorQualifications to fetch.
+     */
+    orderBy?: DoctorQualificationOrderByWithRelationInput | DoctorQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DoctorQualifications.
+     */
+    cursor?: DoctorQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DoctorQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DoctorQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DoctorQualifications.
+     */
+    distinct?: DoctorQualificationScalarFieldEnum | DoctorQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * DoctorQualification findFirstOrThrow
+   */
+  export type DoctorQualificationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which DoctorQualification to fetch.
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DoctorQualifications to fetch.
+     */
+    orderBy?: DoctorQualificationOrderByWithRelationInput | DoctorQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DoctorQualifications.
+     */
+    cursor?: DoctorQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DoctorQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DoctorQualifications.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DoctorQualifications.
+     */
+    distinct?: DoctorQualificationScalarFieldEnum | DoctorQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * DoctorQualification findMany
+   */
+  export type DoctorQualificationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter, which DoctorQualifications to fetch.
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DoctorQualifications to fetch.
+     */
+    orderBy?: DoctorQualificationOrderByWithRelationInput | DoctorQualificationOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DoctorQualifications.
+     */
+    cursor?: DoctorQualificationWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DoctorQualifications from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DoctorQualifications.
+     */
+    skip?: number
+    distinct?: DoctorQualificationScalarFieldEnum | DoctorQualificationScalarFieldEnum[]
+  }
+
+  /**
+   * DoctorQualification create
+   */
+  export type DoctorQualificationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DoctorQualification.
+     */
+    data: XOR<DoctorQualificationCreateInput, DoctorQualificationUncheckedCreateInput>
+  }
+
+  /**
+   * DoctorQualification createMany
+   */
+  export type DoctorQualificationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DoctorQualifications.
+     */
+    data: DoctorQualificationCreateManyInput | DoctorQualificationCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DoctorQualification createManyAndReturn
+   */
+  export type DoctorQualificationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * The data used to create many DoctorQualifications.
+     */
+    data: DoctorQualificationCreateManyInput | DoctorQualificationCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DoctorQualification update
+   */
+  export type DoctorQualificationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DoctorQualification.
+     */
+    data: XOR<DoctorQualificationUpdateInput, DoctorQualificationUncheckedUpdateInput>
+    /**
+     * Choose, which DoctorQualification to update.
+     */
+    where: DoctorQualificationWhereUniqueInput
+  }
+
+  /**
+   * DoctorQualification updateMany
+   */
+  export type DoctorQualificationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DoctorQualifications.
+     */
+    data: XOR<DoctorQualificationUpdateManyMutationInput, DoctorQualificationUncheckedUpdateManyInput>
+    /**
+     * Filter which DoctorQualifications to update
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * Limit how many DoctorQualifications to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DoctorQualification updateManyAndReturn
+   */
+  export type DoctorQualificationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * The data used to update DoctorQualifications.
+     */
+    data: XOR<DoctorQualificationUpdateManyMutationInput, DoctorQualificationUncheckedUpdateManyInput>
+    /**
+     * Filter which DoctorQualifications to update
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * Limit how many DoctorQualifications to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DoctorQualification upsert
+   */
+  export type DoctorQualificationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DoctorQualification to update in case it exists.
+     */
+    where: DoctorQualificationWhereUniqueInput
+    /**
+     * In case the DoctorQualification found by the `where` argument doesn't exist, create a new DoctorQualification with this data.
+     */
+    create: XOR<DoctorQualificationCreateInput, DoctorQualificationUncheckedCreateInput>
+    /**
+     * In case the DoctorQualification was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DoctorQualificationUpdateInput, DoctorQualificationUncheckedUpdateInput>
+  }
+
+  /**
+   * DoctorQualification delete
+   */
+  export type DoctorQualificationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
+    /**
+     * Filter which DoctorQualification to delete.
+     */
+    where: DoctorQualificationWhereUniqueInput
+  }
+
+  /**
+   * DoctorQualification deleteMany
+   */
+  export type DoctorQualificationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DoctorQualifications to delete
+     */
+    where?: DoctorQualificationWhereInput
+    /**
+     * Limit how many DoctorQualifications to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DoctorQualification without action
+   */
+  export type DoctorQualificationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DoctorQualification
+     */
+    select?: DoctorQualificationSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DoctorQualification
+     */
+    omit?: DoctorQualificationOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DoctorQualificationInclude<ExtArgs> | null
   }
 
 
@@ -16797,10 +19330,6 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     status: $Enums.WithdrawalStatus | null
-    bankAccountNumber: string | null
-    bankIFSC: string | null
-    bankAccountHolderName: string | null
-    bankName: string | null
     razorpayPayoutId: string | null
     failureReason: string | null
     createdAt: Date | null
@@ -16814,10 +19343,6 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     status: $Enums.WithdrawalStatus | null
-    bankAccountNumber: string | null
-    bankIFSC: string | null
-    bankAccountHolderName: string | null
-    bankName: string | null
     razorpayPayoutId: string | null
     failureReason: string | null
     createdAt: Date | null
@@ -16831,10 +19356,6 @@ export namespace Prisma {
     amount: number
     currency: number
     status: number
-    bankAccountNumber: number
-    bankIFSC: number
-    bankAccountHolderName: number
-    bankName: number
     razorpayPayoutId: number
     failureReason: number
     createdAt: number
@@ -16858,10 +19379,6 @@ export namespace Prisma {
     amount?: true
     currency?: true
     status?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     razorpayPayoutId?: true
     failureReason?: true
     createdAt?: true
@@ -16875,10 +19392,6 @@ export namespace Prisma {
     amount?: true
     currency?: true
     status?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     razorpayPayoutId?: true
     failureReason?: true
     createdAt?: true
@@ -16892,10 +19405,6 @@ export namespace Prisma {
     amount?: true
     currency?: true
     status?: true
-    bankAccountNumber?: true
-    bankIFSC?: true
-    bankAccountHolderName?: true
-    bankName?: true
     razorpayPayoutId?: true
     failureReason?: true
     createdAt?: true
@@ -16996,10 +19505,6 @@ export namespace Prisma {
     amount: number
     currency: string
     status: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId: string | null
     failureReason: string | null
     createdAt: Date
@@ -17032,10 +19537,6 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     status?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     razorpayPayoutId?: boolean
     failureReason?: boolean
     createdAt?: boolean
@@ -17050,10 +19551,6 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     status?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     razorpayPayoutId?: boolean
     failureReason?: boolean
     createdAt?: boolean
@@ -17068,10 +19565,6 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     status?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     razorpayPayoutId?: boolean
     failureReason?: boolean
     createdAt?: boolean
@@ -17086,10 +19579,6 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     status?: boolean
-    bankAccountNumber?: boolean
-    bankIFSC?: boolean
-    bankAccountHolderName?: boolean
-    bankName?: boolean
     razorpayPayoutId?: boolean
     failureReason?: boolean
     createdAt?: boolean
@@ -17097,7 +19586,7 @@ export namespace Prisma {
     processedAt?: boolean
   }
 
-  export type WithdrawalOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "amount" | "currency" | "status" | "bankAccountNumber" | "bankIFSC" | "bankAccountHolderName" | "bankName" | "razorpayPayoutId" | "failureReason" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["withdrawal"]>
+  export type WithdrawalOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "amount" | "currency" | "status" | "razorpayPayoutId" | "failureReason" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["withdrawal"]>
   export type WithdrawalInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
   }
@@ -17119,10 +19608,6 @@ export namespace Prisma {
       amount: number
       currency: string
       status: $Enums.WithdrawalStatus
-      bankAccountNumber: string
-      bankIFSC: string
-      bankAccountHolderName: string
-      bankName: string
       razorpayPayoutId: string | null
       failureReason: string | null
       createdAt: Date
@@ -17557,10 +20042,6 @@ export namespace Prisma {
     readonly amount: FieldRef<"Withdrawal", 'Int'>
     readonly currency: FieldRef<"Withdrawal", 'String'>
     readonly status: FieldRef<"Withdrawal", 'WithdrawalStatus'>
-    readonly bankAccountNumber: FieldRef<"Withdrawal", 'String'>
-    readonly bankIFSC: FieldRef<"Withdrawal", 'String'>
-    readonly bankAccountHolderName: FieldRef<"Withdrawal", 'String'>
-    readonly bankName: FieldRef<"Withdrawal", 'String'>
     readonly razorpayPayoutId: FieldRef<"Withdrawal", 'String'>
     readonly failureReason: FieldRef<"Withdrawal", 'String'>
     readonly createdAt: FieldRef<"Withdrawal", 'DateTime'>
@@ -17977,6 +20458,1077 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: WithdrawalInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model BankAccount
+   */
+
+  export type AggregateBankAccount = {
+    _count: BankAccountCountAggregateOutputType | null
+    _min: BankAccountMinAggregateOutputType | null
+    _max: BankAccountMaxAggregateOutputType | null
+  }
+
+  export type BankAccountMinAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
+  }
+
+  export type BankAccountMaxAggregateOutputType = {
+    id: string | null
+    userId: string | null
+    bankAccountNumber: string | null
+    bankIFSC: string | null
+    bankAccountHolderName: string | null
+    bankName: string | null
+  }
+
+  export type BankAccountCountAggregateOutputType = {
+    id: number
+    userId: number
+    bankAccountNumber: number
+    bankIFSC: number
+    bankAccountHolderName: number
+    bankName: number
+    _all: number
+  }
+
+
+  export type BankAccountMinAggregateInputType = {
+    id?: true
+    userId?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+  }
+
+  export type BankAccountMaxAggregateInputType = {
+    id?: true
+    userId?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+  }
+
+  export type BankAccountCountAggregateInputType = {
+    id?: true
+    userId?: true
+    bankAccountNumber?: true
+    bankIFSC?: true
+    bankAccountHolderName?: true
+    bankName?: true
+    _all?: true
+  }
+
+  export type BankAccountAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BankAccount to aggregate.
+     */
+    where?: BankAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankAccounts to fetch.
+     */
+    orderBy?: BankAccountOrderByWithRelationInput | BankAccountOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: BankAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned BankAccounts
+    **/
+    _count?: true | BankAccountCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: BankAccountMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: BankAccountMaxAggregateInputType
+  }
+
+  export type GetBankAccountAggregateType<T extends BankAccountAggregateArgs> = {
+        [P in keyof T & keyof AggregateBankAccount]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateBankAccount[P]>
+      : GetScalarType<T[P], AggregateBankAccount[P]>
+  }
+
+
+
+
+  export type BankAccountGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: BankAccountWhereInput
+    orderBy?: BankAccountOrderByWithAggregationInput | BankAccountOrderByWithAggregationInput[]
+    by: BankAccountScalarFieldEnum[] | BankAccountScalarFieldEnum
+    having?: BankAccountScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: BankAccountCountAggregateInputType | true
+    _min?: BankAccountMinAggregateInputType
+    _max?: BankAccountMaxAggregateInputType
+  }
+
+  export type BankAccountGroupByOutputType = {
+    id: string
+    userId: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    _count: BankAccountCountAggregateOutputType | null
+    _min: BankAccountMinAggregateOutputType | null
+    _max: BankAccountMaxAggregateOutputType | null
+  }
+
+  type GetBankAccountGroupByPayload<T extends BankAccountGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<BankAccountGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof BankAccountGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], BankAccountGroupByOutputType[P]>
+            : GetScalarType<T[P], BankAccountGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type BankAccountSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bankAccount"]>
+
+  export type BankAccountSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bankAccount"]>
+
+  export type BankAccountSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    userId?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["bankAccount"]>
+
+  export type BankAccountSelectScalar = {
+    id?: boolean
+    userId?: boolean
+    bankAccountNumber?: boolean
+    bankIFSC?: boolean
+    bankAccountHolderName?: boolean
+    bankName?: boolean
+  }
+
+  export type BankAccountOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "bankAccountNumber" | "bankIFSC" | "bankAccountHolderName" | "bankName", ExtArgs["result"]["bankAccount"]>
+  export type BankAccountInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type BankAccountIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+  export type BankAccountIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    user?: boolean | UserDefaultArgs<ExtArgs>
+  }
+
+  export type $BankAccountPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "BankAccount"
+    objects: {
+      user: Prisma.$UserPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      userId: string
+      bankAccountNumber: string
+      bankIFSC: string
+      bankAccountHolderName: string
+      bankName: string
+    }, ExtArgs["result"]["bankAccount"]>
+    composites: {}
+  }
+
+  type BankAccountGetPayload<S extends boolean | null | undefined | BankAccountDefaultArgs> = $Result.GetResult<Prisma.$BankAccountPayload, S>
+
+  type BankAccountCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<BankAccountFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: BankAccountCountAggregateInputType | true
+    }
+
+  export interface BankAccountDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['BankAccount'], meta: { name: 'BankAccount' } }
+    /**
+     * Find zero or one BankAccount that matches the filter.
+     * @param {BankAccountFindUniqueArgs} args - Arguments to find a BankAccount
+     * @example
+     * // Get one BankAccount
+     * const bankAccount = await prisma.bankAccount.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends BankAccountFindUniqueArgs>(args: SelectSubset<T, BankAccountFindUniqueArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one BankAccount that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {BankAccountFindUniqueOrThrowArgs} args - Arguments to find a BankAccount
+     * @example
+     * // Get one BankAccount
+     * const bankAccount = await prisma.bankAccount.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends BankAccountFindUniqueOrThrowArgs>(args: SelectSubset<T, BankAccountFindUniqueOrThrowArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BankAccount that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountFindFirstArgs} args - Arguments to find a BankAccount
+     * @example
+     * // Get one BankAccount
+     * const bankAccount = await prisma.bankAccount.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends BankAccountFindFirstArgs>(args?: SelectSubset<T, BankAccountFindFirstArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first BankAccount that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountFindFirstOrThrowArgs} args - Arguments to find a BankAccount
+     * @example
+     * // Get one BankAccount
+     * const bankAccount = await prisma.bankAccount.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends BankAccountFindFirstOrThrowArgs>(args?: SelectSubset<T, BankAccountFindFirstOrThrowArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more BankAccounts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all BankAccounts
+     * const bankAccounts = await prisma.bankAccount.findMany()
+     * 
+     * // Get first 10 BankAccounts
+     * const bankAccounts = await prisma.bankAccount.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const bankAccountWithIdOnly = await prisma.bankAccount.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends BankAccountFindManyArgs>(args?: SelectSubset<T, BankAccountFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a BankAccount.
+     * @param {BankAccountCreateArgs} args - Arguments to create a BankAccount.
+     * @example
+     * // Create one BankAccount
+     * const BankAccount = await prisma.bankAccount.create({
+     *   data: {
+     *     // ... data to create a BankAccount
+     *   }
+     * })
+     * 
+     */
+    create<T extends BankAccountCreateArgs>(args: SelectSubset<T, BankAccountCreateArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many BankAccounts.
+     * @param {BankAccountCreateManyArgs} args - Arguments to create many BankAccounts.
+     * @example
+     * // Create many BankAccounts
+     * const bankAccount = await prisma.bankAccount.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends BankAccountCreateManyArgs>(args?: SelectSubset<T, BankAccountCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many BankAccounts and returns the data saved in the database.
+     * @param {BankAccountCreateManyAndReturnArgs} args - Arguments to create many BankAccounts.
+     * @example
+     * // Create many BankAccounts
+     * const bankAccount = await prisma.bankAccount.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many BankAccounts and only return the `id`
+     * const bankAccountWithIdOnly = await prisma.bankAccount.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends BankAccountCreateManyAndReturnArgs>(args?: SelectSubset<T, BankAccountCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a BankAccount.
+     * @param {BankAccountDeleteArgs} args - Arguments to delete one BankAccount.
+     * @example
+     * // Delete one BankAccount
+     * const BankAccount = await prisma.bankAccount.delete({
+     *   where: {
+     *     // ... filter to delete one BankAccount
+     *   }
+     * })
+     * 
+     */
+    delete<T extends BankAccountDeleteArgs>(args: SelectSubset<T, BankAccountDeleteArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one BankAccount.
+     * @param {BankAccountUpdateArgs} args - Arguments to update one BankAccount.
+     * @example
+     * // Update one BankAccount
+     * const bankAccount = await prisma.bankAccount.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends BankAccountUpdateArgs>(args: SelectSubset<T, BankAccountUpdateArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more BankAccounts.
+     * @param {BankAccountDeleteManyArgs} args - Arguments to filter BankAccounts to delete.
+     * @example
+     * // Delete a few BankAccounts
+     * const { count } = await prisma.bankAccount.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends BankAccountDeleteManyArgs>(args?: SelectSubset<T, BankAccountDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BankAccounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many BankAccounts
+     * const bankAccount = await prisma.bankAccount.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends BankAccountUpdateManyArgs>(args: SelectSubset<T, BankAccountUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more BankAccounts and returns the data updated in the database.
+     * @param {BankAccountUpdateManyAndReturnArgs} args - Arguments to update many BankAccounts.
+     * @example
+     * // Update many BankAccounts
+     * const bankAccount = await prisma.bankAccount.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more BankAccounts and only return the `id`
+     * const bankAccountWithIdOnly = await prisma.bankAccount.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends BankAccountUpdateManyAndReturnArgs>(args: SelectSubset<T, BankAccountUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one BankAccount.
+     * @param {BankAccountUpsertArgs} args - Arguments to update or create a BankAccount.
+     * @example
+     * // Update or create a BankAccount
+     * const bankAccount = await prisma.bankAccount.upsert({
+     *   create: {
+     *     // ... data to create a BankAccount
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the BankAccount we want to update
+     *   }
+     * })
+     */
+    upsert<T extends BankAccountUpsertArgs>(args: SelectSubset<T, BankAccountUpsertArgs<ExtArgs>>): Prisma__BankAccountClient<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of BankAccounts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountCountArgs} args - Arguments to filter BankAccounts to count.
+     * @example
+     * // Count the number of BankAccounts
+     * const count = await prisma.bankAccount.count({
+     *   where: {
+     *     // ... the filter for the BankAccounts we want to count
+     *   }
+     * })
+    **/
+    count<T extends BankAccountCountArgs>(
+      args?: Subset<T, BankAccountCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], BankAccountCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a BankAccount.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends BankAccountAggregateArgs>(args: Subset<T, BankAccountAggregateArgs>): Prisma.PrismaPromise<GetBankAccountAggregateType<T>>
+
+    /**
+     * Group by BankAccount.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {BankAccountGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends BankAccountGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: BankAccountGroupByArgs['orderBy'] }
+        : { orderBy?: BankAccountGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, BankAccountGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetBankAccountGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the BankAccount model
+   */
+  readonly fields: BankAccountFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for BankAccount.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__BankAccountClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the BankAccount model
+   */
+  interface BankAccountFieldRefs {
+    readonly id: FieldRef<"BankAccount", 'String'>
+    readonly userId: FieldRef<"BankAccount", 'String'>
+    readonly bankAccountNumber: FieldRef<"BankAccount", 'String'>
+    readonly bankIFSC: FieldRef<"BankAccount", 'String'>
+    readonly bankAccountHolderName: FieldRef<"BankAccount", 'String'>
+    readonly bankName: FieldRef<"BankAccount", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * BankAccount findUnique
+   */
+  export type BankAccountFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which BankAccount to fetch.
+     */
+    where: BankAccountWhereUniqueInput
+  }
+
+  /**
+   * BankAccount findUniqueOrThrow
+   */
+  export type BankAccountFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which BankAccount to fetch.
+     */
+    where: BankAccountWhereUniqueInput
+  }
+
+  /**
+   * BankAccount findFirst
+   */
+  export type BankAccountFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which BankAccount to fetch.
+     */
+    where?: BankAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankAccounts to fetch.
+     */
+    orderBy?: BankAccountOrderByWithRelationInput | BankAccountOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BankAccounts.
+     */
+    cursor?: BankAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BankAccounts.
+     */
+    distinct?: BankAccountScalarFieldEnum | BankAccountScalarFieldEnum[]
+  }
+
+  /**
+   * BankAccount findFirstOrThrow
+   */
+  export type BankAccountFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which BankAccount to fetch.
+     */
+    where?: BankAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankAccounts to fetch.
+     */
+    orderBy?: BankAccountOrderByWithRelationInput | BankAccountOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for BankAccounts.
+     */
+    cursor?: BankAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankAccounts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of BankAccounts.
+     */
+    distinct?: BankAccountScalarFieldEnum | BankAccountScalarFieldEnum[]
+  }
+
+  /**
+   * BankAccount findMany
+   */
+  export type BankAccountFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter, which BankAccounts to fetch.
+     */
+    where?: BankAccountWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of BankAccounts to fetch.
+     */
+    orderBy?: BankAccountOrderByWithRelationInput | BankAccountOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing BankAccounts.
+     */
+    cursor?: BankAccountWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` BankAccounts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` BankAccounts.
+     */
+    skip?: number
+    distinct?: BankAccountScalarFieldEnum | BankAccountScalarFieldEnum[]
+  }
+
+  /**
+   * BankAccount create
+   */
+  export type BankAccountCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * The data needed to create a BankAccount.
+     */
+    data: XOR<BankAccountCreateInput, BankAccountUncheckedCreateInput>
+  }
+
+  /**
+   * BankAccount createMany
+   */
+  export type BankAccountCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many BankAccounts.
+     */
+    data: BankAccountCreateManyInput | BankAccountCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * BankAccount createManyAndReturn
+   */
+  export type BankAccountCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * The data used to create many BankAccounts.
+     */
+    data: BankAccountCreateManyInput | BankAccountCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BankAccount update
+   */
+  export type BankAccountUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * The data needed to update a BankAccount.
+     */
+    data: XOR<BankAccountUpdateInput, BankAccountUncheckedUpdateInput>
+    /**
+     * Choose, which BankAccount to update.
+     */
+    where: BankAccountWhereUniqueInput
+  }
+
+  /**
+   * BankAccount updateMany
+   */
+  export type BankAccountUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update BankAccounts.
+     */
+    data: XOR<BankAccountUpdateManyMutationInput, BankAccountUncheckedUpdateManyInput>
+    /**
+     * Filter which BankAccounts to update
+     */
+    where?: BankAccountWhereInput
+    /**
+     * Limit how many BankAccounts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * BankAccount updateManyAndReturn
+   */
+  export type BankAccountUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * The data used to update BankAccounts.
+     */
+    data: XOR<BankAccountUpdateManyMutationInput, BankAccountUncheckedUpdateManyInput>
+    /**
+     * Filter which BankAccounts to update
+     */
+    where?: BankAccountWhereInput
+    /**
+     * Limit how many BankAccounts to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * BankAccount upsert
+   */
+  export type BankAccountUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * The filter to search for the BankAccount to update in case it exists.
+     */
+    where: BankAccountWhereUniqueInput
+    /**
+     * In case the BankAccount found by the `where` argument doesn't exist, create a new BankAccount with this data.
+     */
+    create: XOR<BankAccountCreateInput, BankAccountUncheckedCreateInput>
+    /**
+     * In case the BankAccount was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<BankAccountUpdateInput, BankAccountUncheckedUpdateInput>
+  }
+
+  /**
+   * BankAccount delete
+   */
+  export type BankAccountDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
+    /**
+     * Filter which BankAccount to delete.
+     */
+    where: BankAccountWhereUniqueInput
+  }
+
+  /**
+   * BankAccount deleteMany
+   */
+  export type BankAccountDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which BankAccounts to delete
+     */
+    where?: BankAccountWhereInput
+    /**
+     * Limit how many BankAccounts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * BankAccount without action
+   */
+  export type BankAccountDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the BankAccount
+     */
+    select?: BankAccountSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the BankAccount
+     */
+    omit?: BankAccountOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: BankAccountInclude<ExtArgs> | null
   }
 
 
@@ -23417,21 +26969,30 @@ export namespace Prisma {
     gender: 'gender',
     role: 'role',
     address: 'address',
-    city: 'city',
-    state: 'state',
     pinCode: 'pinCode',
     profileImageUrl: 'profileImageUrl',
     emailVerified: 'emailVerified',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
+    isActive: 'isActive',
+    updatedAt: 'updatedAt',
+    createdAt: 'createdAt'
   };
 
   export type UserScalarFieldEnum = (typeof UserScalarFieldEnum)[keyof typeof UserScalarFieldEnum]
 
 
+  export const LocationScalarFieldEnum: {
+    pincode: 'pincode',
+    city: 'city',
+    state: 'state'
+  };
+
+  export type LocationScalarFieldEnum = (typeof LocationScalarFieldEnum)[keyof typeof LocationScalarFieldEnum]
+
+
   export const AdminScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
+    managerId: 'managerId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -23444,19 +27005,23 @@ export namespace Prisma {
     userId: 'userId',
     specialty: 'specialty',
     experience: 'experience',
-    qualifications: 'qualifications',
     fees: 'fees',
     doctorBio: 'doctorBio',
     balance: 'balance',
-    bankAccountNumber: 'bankAccountNumber',
-    bankIFSC: 'bankIFSC',
-    bankAccountHolderName: 'bankAccountHolderName',
-    bankName: 'bankName',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
 
   export type DoctorScalarFieldEnum = (typeof DoctorScalarFieldEnum)[keyof typeof DoctorScalarFieldEnum]
+
+
+  export const DoctorQualificationScalarFieldEnum: {
+    id: 'id',
+    doctorId: 'doctorId',
+    qualification: 'qualification'
+  };
+
+  export type DoctorQualificationScalarFieldEnum = (typeof DoctorQualificationScalarFieldEnum)[keyof typeof DoctorQualificationScalarFieldEnum]
 
 
   export const PatientScalarFieldEnum: {
@@ -23584,10 +27149,6 @@ export namespace Prisma {
     amount: 'amount',
     currency: 'currency',
     status: 'status',
-    bankAccountNumber: 'bankAccountNumber',
-    bankIFSC: 'bankIFSC',
-    bankAccountHolderName: 'bankAccountHolderName',
-    bankName: 'bankName',
     razorpayPayoutId: 'razorpayPayoutId',
     failureReason: 'failureReason',
     createdAt: 'createdAt',
@@ -23596,6 +27157,18 @@ export namespace Prisma {
   };
 
   export type WithdrawalScalarFieldEnum = (typeof WithdrawalScalarFieldEnum)[keyof typeof WithdrawalScalarFieldEnum]
+
+
+  export const BankAccountScalarFieldEnum: {
+    id: 'id',
+    userId: 'userId',
+    bankAccountNumber: 'bankAccountNumber',
+    bankIFSC: 'bankIFSC',
+    bankAccountHolderName: 'bankAccountHolderName',
+    bankName: 'bankName'
+  };
+
+  export type BankAccountScalarFieldEnum = (typeof BankAccountScalarFieldEnum)[keyof typeof BankAccountScalarFieldEnum]
 
 
   export const OtpScalarFieldEnum: {
@@ -23801,16 +27374,16 @@ export namespace Prisma {
 
 
   /**
-   * Reference to a field of type 'Qualification[]'
+   * Reference to a field of type 'Qualification'
    */
-  export type ListEnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification[]'>
+  export type EnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification'>
     
 
 
   /**
-   * Reference to a field of type 'Qualification'
+   * Reference to a field of type 'Qualification[]'
    */
-  export type EnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification'>
+  export type ListEnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification[]'>
     
 
 
@@ -23914,13 +27487,12 @@ export namespace Prisma {
     gender?: EnumGenderFilter<"User"> | $Enums.Gender
     role?: EnumRoleFilter<"User"> | $Enums.Role
     address?: StringFilter<"User"> | string
-    city?: StringFilter<"User"> | string
-    state?: StringFilter<"User"> | string
     pinCode?: IntFilter<"User"> | number
     profileImageUrl?: StringNullableFilter<"User"> | string | null
     emailVerified?: BoolFilter<"User"> | boolean
-    createdAt?: DateTimeFilter<"User"> | Date | string
+    isActive?: BoolFilter<"User"> | boolean
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
     admin?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
     doctor?: XOR<DoctorNullableScalarRelationFilter, DoctorWhereInput> | null
     patient?: XOR<PatientNullableScalarRelationFilter, PatientWhereInput> | null
@@ -23932,6 +27504,8 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    location?: XOR<LocationScalarRelationFilter, LocationWhereInput>
+    bankAccounts?: BankAccountListRelationFilter
   }
 
   export type UserOrderByWithRelationInput = {
@@ -23944,13 +27518,12 @@ export namespace Prisma {
     gender?: SortOrder
     role?: SortOrder
     address?: SortOrder
-    city?: SortOrder
-    state?: SortOrder
     pinCode?: SortOrder
     profileImageUrl?: SortOrderInput | SortOrder
     emailVerified?: SortOrder
-    createdAt?: SortOrder
+    isActive?: SortOrder
     updatedAt?: SortOrder
+    createdAt?: SortOrder
     admin?: AdminOrderByWithRelationInput
     doctor?: DoctorOrderByWithRelationInput
     patient?: PatientOrderByWithRelationInput
@@ -23962,6 +27535,8 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
+    location?: LocationOrderByWithRelationInput
+    bankAccounts?: BankAccountOrderByRelationAggregateInput
   }
 
   export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -23977,13 +27552,12 @@ export namespace Prisma {
     gender?: EnumGenderFilter<"User"> | $Enums.Gender
     role?: EnumRoleFilter<"User"> | $Enums.Role
     address?: StringFilter<"User"> | string
-    city?: StringFilter<"User"> | string
-    state?: StringFilter<"User"> | string
     pinCode?: IntFilter<"User"> | number
     profileImageUrl?: StringNullableFilter<"User"> | string | null
     emailVerified?: BoolFilter<"User"> | boolean
-    createdAt?: DateTimeFilter<"User"> | Date | string
+    isActive?: BoolFilter<"User"> | boolean
     updatedAt?: DateTimeFilter<"User"> | Date | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
     admin?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
     doctor?: XOR<DoctorNullableScalarRelationFilter, DoctorWhereInput> | null
     patient?: XOR<PatientNullableScalarRelationFilter, PatientWhereInput> | null
@@ -23995,6 +27569,8 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    location?: XOR<LocationScalarRelationFilter, LocationWhereInput>
+    bankAccounts?: BankAccountListRelationFilter
   }, "id" | "email">
 
   export type UserOrderByWithAggregationInput = {
@@ -24007,13 +27583,12 @@ export namespace Prisma {
     gender?: SortOrder
     role?: SortOrder
     address?: SortOrder
-    city?: SortOrder
-    state?: SortOrder
     pinCode?: SortOrder
     profileImageUrl?: SortOrderInput | SortOrder
     emailVerified?: SortOrder
-    createdAt?: SortOrder
+    isActive?: SortOrder
     updatedAt?: SortOrder
+    createdAt?: SortOrder
     _count?: UserCountOrderByAggregateInput
     _avg?: UserAvgOrderByAggregateInput
     _max?: UserMaxOrderByAggregateInput
@@ -24034,13 +27609,59 @@ export namespace Prisma {
     gender?: EnumGenderWithAggregatesFilter<"User"> | $Enums.Gender
     role?: EnumRoleWithAggregatesFilter<"User"> | $Enums.Role
     address?: StringWithAggregatesFilter<"User"> | string
-    city?: StringWithAggregatesFilter<"User"> | string
-    state?: StringWithAggregatesFilter<"User"> | string
     pinCode?: IntWithAggregatesFilter<"User"> | number
     profileImageUrl?: StringNullableWithAggregatesFilter<"User"> | string | null
     emailVerified?: BoolWithAggregatesFilter<"User"> | boolean
-    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    isActive?: BoolWithAggregatesFilter<"User"> | boolean
     updatedAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+    createdAt?: DateTimeWithAggregatesFilter<"User"> | Date | string
+  }
+
+  export type LocationWhereInput = {
+    AND?: LocationWhereInput | LocationWhereInput[]
+    OR?: LocationWhereInput[]
+    NOT?: LocationWhereInput | LocationWhereInput[]
+    pincode?: IntFilter<"Location"> | number
+    city?: StringFilter<"Location"> | string
+    state?: StringFilter<"Location"> | string
+    user?: UserListRelationFilter
+  }
+
+  export type LocationOrderByWithRelationInput = {
+    pincode?: SortOrder
+    city?: SortOrder
+    state?: SortOrder
+    user?: UserOrderByRelationAggregateInput
+  }
+
+  export type LocationWhereUniqueInput = Prisma.AtLeast<{
+    pincode?: number
+    AND?: LocationWhereInput | LocationWhereInput[]
+    OR?: LocationWhereInput[]
+    NOT?: LocationWhereInput | LocationWhereInput[]
+    city?: StringFilter<"Location"> | string
+    state?: StringFilter<"Location"> | string
+    user?: UserListRelationFilter
+  }, "pincode" | "pincode">
+
+  export type LocationOrderByWithAggregationInput = {
+    pincode?: SortOrder
+    city?: SortOrder
+    state?: SortOrder
+    _count?: LocationCountOrderByAggregateInput
+    _avg?: LocationAvgOrderByAggregateInput
+    _max?: LocationMaxOrderByAggregateInput
+    _min?: LocationMinOrderByAggregateInput
+    _sum?: LocationSumOrderByAggregateInput
+  }
+
+  export type LocationScalarWhereWithAggregatesInput = {
+    AND?: LocationScalarWhereWithAggregatesInput | LocationScalarWhereWithAggregatesInput[]
+    OR?: LocationScalarWhereWithAggregatesInput[]
+    NOT?: LocationScalarWhereWithAggregatesInput | LocationScalarWhereWithAggregatesInput[]
+    pincode?: IntWithAggregatesFilter<"Location"> | number
+    city?: StringWithAggregatesFilter<"Location"> | string
+    state?: StringWithAggregatesFilter<"Location"> | string
   }
 
   export type AdminWhereInput = {
@@ -24049,17 +27670,23 @@ export namespace Prisma {
     NOT?: AdminWhereInput | AdminWhereInput[]
     id?: StringFilter<"Admin"> | string
     userId?: StringFilter<"Admin"> | string
+    managerId?: StringNullableFilter<"Admin"> | string | null
     createdAt?: DateTimeFilter<"Admin"> | Date | string
     updatedAt?: DateTimeFilter<"Admin"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    manager?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
+    subAdmins?: AdminListRelationFilter
   }
 
   export type AdminOrderByWithRelationInput = {
     id?: SortOrder
     userId?: SortOrder
+    managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    manager?: AdminOrderByWithRelationInput
+    subAdmins?: AdminOrderByRelationAggregateInput
   }
 
   export type AdminWhereUniqueInput = Prisma.AtLeast<{
@@ -24068,14 +27695,18 @@ export namespace Prisma {
     AND?: AdminWhereInput | AdminWhereInput[]
     OR?: AdminWhereInput[]
     NOT?: AdminWhereInput | AdminWhereInput[]
+    managerId?: StringNullableFilter<"Admin"> | string | null
     createdAt?: DateTimeFilter<"Admin"> | Date | string
     updatedAt?: DateTimeFilter<"Admin"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    manager?: XOR<AdminNullableScalarRelationFilter, AdminWhereInput> | null
+    subAdmins?: AdminListRelationFilter
   }, "id" | "userId">
 
   export type AdminOrderByWithAggregationInput = {
     id?: SortOrder
     userId?: SortOrder
+    managerId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: AdminCountOrderByAggregateInput
@@ -24089,6 +27720,7 @@ export namespace Prisma {
     NOT?: AdminScalarWhereWithAggregatesInput | AdminScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Admin"> | string
     userId?: StringWithAggregatesFilter<"Admin"> | string
+    managerId?: StringNullableWithAggregatesFilter<"Admin"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Admin"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Admin"> | Date | string
   }
@@ -24101,14 +27733,9 @@ export namespace Prisma {
     userId?: StringFilter<"Doctor"> | string
     specialty?: EnumSpecialtyFilter<"Doctor"> | $Enums.Specialty
     experience?: IntFilter<"Doctor"> | number
-    qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
     balance?: IntFilter<"Doctor"> | number
-    bankAccountNumber?: StringNullableFilter<"Doctor"> | string | null
-    bankIFSC?: StringNullableFilter<"Doctor"> | string | null
-    bankAccountHolderName?: StringNullableFilter<"Doctor"> | string | null
-    bankName?: StringNullableFilter<"Doctor"> | string | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24120,6 +27747,7 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
     withdrawals?: WithdrawalListRelationFilter
+    doctorQualifications?: DoctorQualificationListRelationFilter
   }
 
   export type DoctorOrderByWithRelationInput = {
@@ -24127,14 +27755,9 @@ export namespace Prisma {
     userId?: SortOrder
     specialty?: SortOrder
     experience?: SortOrder
-    qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
     balance?: SortOrder
-    bankAccountNumber?: SortOrderInput | SortOrder
-    bankIFSC?: SortOrderInput | SortOrder
-    bankAccountHolderName?: SortOrderInput | SortOrder
-    bankName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -24146,6 +27769,7 @@ export namespace Prisma {
     comments?: CommentOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
     withdrawals?: WithdrawalOrderByRelationAggregateInput
+    doctorQualifications?: DoctorQualificationOrderByRelationAggregateInput
   }
 
   export type DoctorWhereUniqueInput = Prisma.AtLeast<{
@@ -24156,14 +27780,9 @@ export namespace Prisma {
     NOT?: DoctorWhereInput | DoctorWhereInput[]
     specialty?: EnumSpecialtyFilter<"Doctor"> | $Enums.Specialty
     experience?: IntFilter<"Doctor"> | number
-    qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
     balance?: IntFilter<"Doctor"> | number
-    bankAccountNumber?: StringNullableFilter<"Doctor"> | string | null
-    bankIFSC?: StringNullableFilter<"Doctor"> | string | null
-    bankAccountHolderName?: StringNullableFilter<"Doctor"> | string | null
-    bankName?: StringNullableFilter<"Doctor"> | string | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -24175,6 +27794,7 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
     withdrawals?: WithdrawalListRelationFilter
+    doctorQualifications?: DoctorQualificationListRelationFilter
   }, "id" | "userId">
 
   export type DoctorOrderByWithAggregationInput = {
@@ -24182,14 +27802,9 @@ export namespace Prisma {
     userId?: SortOrder
     specialty?: SortOrder
     experience?: SortOrder
-    qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
     balance?: SortOrder
-    bankAccountNumber?: SortOrderInput | SortOrder
-    bankIFSC?: SortOrderInput | SortOrder
-    bankAccountHolderName?: SortOrderInput | SortOrder
-    bankName?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DoctorCountOrderByAggregateInput
@@ -24207,16 +27822,57 @@ export namespace Prisma {
     userId?: StringWithAggregatesFilter<"Doctor"> | string
     specialty?: EnumSpecialtyWithAggregatesFilter<"Doctor"> | $Enums.Specialty
     experience?: IntWithAggregatesFilter<"Doctor"> | number
-    qualifications?: EnumQualificationNullableListFilter<"Doctor">
     fees?: IntWithAggregatesFilter<"Doctor"> | number
     doctorBio?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
     balance?: IntWithAggregatesFilter<"Doctor"> | number
-    bankAccountNumber?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
-    bankIFSC?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
-    bankAccountHolderName?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
-    bankName?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
+  }
+
+  export type DoctorQualificationWhereInput = {
+    AND?: DoctorQualificationWhereInput | DoctorQualificationWhereInput[]
+    OR?: DoctorQualificationWhereInput[]
+    NOT?: DoctorQualificationWhereInput | DoctorQualificationWhereInput[]
+    id?: StringFilter<"DoctorQualification"> | string
+    doctorId?: StringFilter<"DoctorQualification"> | string
+    qualification?: EnumQualificationFilter<"DoctorQualification"> | $Enums.Qualification
+    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
+  }
+
+  export type DoctorQualificationOrderByWithRelationInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    qualification?: SortOrder
+    doctor?: DoctorOrderByWithRelationInput
+  }
+
+  export type DoctorQualificationWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    doctorId_qualification?: DoctorQualificationDoctorIdQualificationCompoundUniqueInput
+    AND?: DoctorQualificationWhereInput | DoctorQualificationWhereInput[]
+    OR?: DoctorQualificationWhereInput[]
+    NOT?: DoctorQualificationWhereInput | DoctorQualificationWhereInput[]
+    doctorId?: StringFilter<"DoctorQualification"> | string
+    qualification?: EnumQualificationFilter<"DoctorQualification"> | $Enums.Qualification
+    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
+  }, "id" | "doctorId_qualification">
+
+  export type DoctorQualificationOrderByWithAggregationInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    qualification?: SortOrder
+    _count?: DoctorQualificationCountOrderByAggregateInput
+    _max?: DoctorQualificationMaxOrderByAggregateInput
+    _min?: DoctorQualificationMinOrderByAggregateInput
+  }
+
+  export type DoctorQualificationScalarWhereWithAggregatesInput = {
+    AND?: DoctorQualificationScalarWhereWithAggregatesInput | DoctorQualificationScalarWhereWithAggregatesInput[]
+    OR?: DoctorQualificationScalarWhereWithAggregatesInput[]
+    NOT?: DoctorQualificationScalarWhereWithAggregatesInput | DoctorQualificationScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"DoctorQualification"> | string
+    doctorId?: StringWithAggregatesFilter<"DoctorQualification"> | string
+    qualification?: EnumQualificationWithAggregatesFilter<"DoctorQualification"> | $Enums.Qualification
   }
 
   export type PatientWhereInput = {
@@ -24852,10 +28508,6 @@ export namespace Prisma {
     amount?: IntFilter<"Withdrawal"> | number
     currency?: StringFilter<"Withdrawal"> | string
     status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFilter<"Withdrawal"> | string
-    bankIFSC?: StringFilter<"Withdrawal"> | string
-    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
-    bankName?: StringFilter<"Withdrawal"> | string
     razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
     failureReason?: StringNullableFilter<"Withdrawal"> | string | null
     createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
@@ -24870,10 +28522,6 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     razorpayPayoutId?: SortOrderInput | SortOrder
     failureReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -24891,10 +28539,6 @@ export namespace Prisma {
     amount?: IntFilter<"Withdrawal"> | number
     currency?: StringFilter<"Withdrawal"> | string
     status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFilter<"Withdrawal"> | string
-    bankIFSC?: StringFilter<"Withdrawal"> | string
-    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
-    bankName?: StringFilter<"Withdrawal"> | string
     razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
     failureReason?: StringNullableFilter<"Withdrawal"> | string | null
     createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
@@ -24909,10 +28553,6 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     razorpayPayoutId?: SortOrderInput | SortOrder
     failureReason?: SortOrderInput | SortOrder
     createdAt?: SortOrder
@@ -24934,15 +28574,71 @@ export namespace Prisma {
     amount?: IntWithAggregatesFilter<"Withdrawal"> | number
     currency?: StringWithAggregatesFilter<"Withdrawal"> | string
     status?: EnumWithdrawalStatusWithAggregatesFilter<"Withdrawal"> | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringWithAggregatesFilter<"Withdrawal"> | string
-    bankIFSC?: StringWithAggregatesFilter<"Withdrawal"> | string
-    bankAccountHolderName?: StringWithAggregatesFilter<"Withdrawal"> | string
-    bankName?: StringWithAggregatesFilter<"Withdrawal"> | string
     razorpayPayoutId?: StringNullableWithAggregatesFilter<"Withdrawal"> | string | null
     failureReason?: StringNullableWithAggregatesFilter<"Withdrawal"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Withdrawal"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Withdrawal"> | Date | string
     processedAt?: DateTimeNullableWithAggregatesFilter<"Withdrawal"> | Date | string | null
+  }
+
+  export type BankAccountWhereInput = {
+    AND?: BankAccountWhereInput | BankAccountWhereInput[]
+    OR?: BankAccountWhereInput[]
+    NOT?: BankAccountWhereInput | BankAccountWhereInput[]
+    id?: StringFilter<"BankAccount"> | string
+    userId?: StringFilter<"BankAccount"> | string
+    bankAccountNumber?: StringFilter<"BankAccount"> | string
+    bankIFSC?: StringFilter<"BankAccount"> | string
+    bankAccountHolderName?: StringFilter<"BankAccount"> | string
+    bankName?: StringFilter<"BankAccount"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }
+
+  export type BankAccountOrderByWithRelationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    user?: UserOrderByWithRelationInput
+  }
+
+  export type BankAccountWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    bankAccountNumber?: string
+    AND?: BankAccountWhereInput | BankAccountWhereInput[]
+    OR?: BankAccountWhereInput[]
+    NOT?: BankAccountWhereInput | BankAccountWhereInput[]
+    userId?: StringFilter<"BankAccount"> | string
+    bankIFSC?: StringFilter<"BankAccount"> | string
+    bankAccountHolderName?: StringFilter<"BankAccount"> | string
+    bankName?: StringFilter<"BankAccount"> | string
+    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+  }, "id" | "bankAccountNumber">
+
+  export type BankAccountOrderByWithAggregationInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+    _count?: BankAccountCountOrderByAggregateInput
+    _max?: BankAccountMaxOrderByAggregateInput
+    _min?: BankAccountMinOrderByAggregateInput
+  }
+
+  export type BankAccountScalarWhereWithAggregatesInput = {
+    AND?: BankAccountScalarWhereWithAggregatesInput | BankAccountScalarWhereWithAggregatesInput[]
+    OR?: BankAccountScalarWhereWithAggregatesInput[]
+    NOT?: BankAccountScalarWhereWithAggregatesInput | BankAccountScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"BankAccount"> | string
+    userId?: StringWithAggregatesFilter<"BankAccount"> | string
+    bankAccountNumber?: StringWithAggregatesFilter<"BankAccount"> | string
+    bankIFSC?: StringWithAggregatesFilter<"BankAccount"> | string
+    bankAccountHolderName?: StringWithAggregatesFilter<"BankAccount"> | string
+    bankName?: StringWithAggregatesFilter<"BankAccount"> | string
   }
 
   export type OtpWhereInput = {
@@ -25254,13 +28950,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -25272,6 +28966,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateInput = {
@@ -25284,13 +28980,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -25302,6 +28997,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserUpdateInput = {
@@ -25314,13 +29010,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -25332,6 +29026,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateInput = {
@@ -25344,13 +29040,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -25362,6 +29057,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateManyInput = {
@@ -25374,13 +29070,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
   }
 
   export type UserUpdateManyMutationInput = {
@@ -25393,13 +29088,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UserUncheckedUpdateManyInput = {
@@ -25412,13 +29105,58 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type LocationCreateInput = {
+    pincode: number
+    city: string
+    state: string
+    user?: UserCreateNestedManyWithoutLocationInput
+  }
+
+  export type LocationUncheckedCreateInput = {
+    pincode: number
+    city: string
+    state: string
+    user?: UserUncheckedCreateNestedManyWithoutLocationInput
+  }
+
+  export type LocationUpdateInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateManyWithoutLocationNestedInput
+  }
+
+  export type LocationUncheckedUpdateInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+    user?: UserUncheckedUpdateManyWithoutLocationNestedInput
+  }
+
+  export type LocationCreateManyInput = {
+    pincode: number
+    city: string
+    state: string
+  }
+
+  export type LocationUpdateManyMutationInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LocationUncheckedUpdateManyInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
   }
 
   export type AdminCreateInput = {
@@ -25426,13 +29164,17 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutAdminInput
+    manager?: AdminCreateNestedOneWithoutSubAdminsInput
+    subAdmins?: AdminCreateNestedManyWithoutManagerInput
   }
 
   export type AdminUncheckedCreateInput = {
     id?: string
     userId: string
+    managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subAdmins?: AdminUncheckedCreateNestedManyWithoutManagerInput
   }
 
   export type AdminUpdateInput = {
@@ -25440,18 +29182,23 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutAdminNestedInput
+    manager?: AdminUpdateOneWithoutSubAdminsNestedInput
+    subAdmins?: AdminUpdateManyWithoutManagerNestedInput
   }
 
   export type AdminUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subAdmins?: AdminUncheckedUpdateManyWithoutManagerNestedInput
   }
 
   export type AdminCreateManyInput = {
     id?: string
     userId: string
+    managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25465,6 +29212,7 @@ export namespace Prisma {
   export type AdminUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25473,14 +29221,9 @@ export namespace Prisma {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -25492,6 +29235,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateInput = {
@@ -25499,14 +29243,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -25517,20 +29256,16 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -25542,6 +29277,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateInput = {
@@ -25549,14 +29285,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -25567,6 +29298,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateManyInput = {
@@ -25574,14 +29306,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -25590,14 +29317,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -25607,16 +29329,52 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DoctorQualificationCreateInput = {
+    id?: string
+    qualification: $Enums.Qualification
+    doctor: DoctorCreateNestedOneWithoutDoctorQualificationsInput
+  }
+
+  export type DoctorQualificationUncheckedCreateInput = {
+    id?: string
+    doctorId: string
+    qualification: $Enums.Qualification
+  }
+
+  export type DoctorQualificationUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
+    doctor?: DoctorUpdateOneRequiredWithoutDoctorQualificationsNestedInput
+  }
+
+  export type DoctorQualificationUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
+  }
+
+  export type DoctorQualificationCreateManyInput = {
+    id?: string
+    doctorId: string
+    qualification: $Enums.Qualification
+  }
+
+  export type DoctorQualificationUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
+  }
+
+  export type DoctorQualificationUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
   }
 
   export type PatientCreateInput = {
@@ -26271,10 +30029,6 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
@@ -26289,10 +30043,6 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
@@ -26305,10 +30055,6 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26323,10 +30069,6 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26340,10 +30082,6 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
@@ -26356,10 +30094,6 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -26373,15 +30107,73 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type BankAccountCreateInput = {
+    id?: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+    user: UserCreateNestedOneWithoutBankAccountsInput
+  }
+
+  export type BankAccountUncheckedCreateInput = {
+    id?: string
+    userId: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+  }
+
+  export type BankAccountUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+    user?: UserUpdateOneRequiredWithoutBankAccountsNestedInput
+  }
+
+  export type BankAccountUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BankAccountCreateManyInput = {
+    id?: string
+    userId: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+  }
+
+  export type BankAccountUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BankAccountUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
   }
 
   export type OtpCreateInput = {
@@ -26812,6 +30604,17 @@ export namespace Prisma {
     none?: RatingWhereInput
   }
 
+  export type LocationScalarRelationFilter = {
+    is?: LocationWhereInput
+    isNot?: LocationWhereInput
+  }
+
+  export type BankAccountListRelationFilter = {
+    every?: BankAccountWhereInput
+    some?: BankAccountWhereInput
+    none?: BankAccountWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -26849,6 +30652,10 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type BankAccountOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type UserCountOrderByAggregateInput = {
     id?: SortOrder
     email?: SortOrder
@@ -26859,13 +30666,12 @@ export namespace Prisma {
     gender?: SortOrder
     role?: SortOrder
     address?: SortOrder
-    city?: SortOrder
-    state?: SortOrder
     pinCode?: SortOrder
     profileImageUrl?: SortOrder
     emailVerified?: SortOrder
-    createdAt?: SortOrder
+    isActive?: SortOrder
     updatedAt?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type UserAvgOrderByAggregateInput = {
@@ -26883,13 +30689,12 @@ export namespace Prisma {
     gender?: SortOrder
     role?: SortOrder
     address?: SortOrder
-    city?: SortOrder
-    state?: SortOrder
     pinCode?: SortOrder
     profileImageUrl?: SortOrder
     emailVerified?: SortOrder
-    createdAt?: SortOrder
+    isActive?: SortOrder
     updatedAt?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type UserMinOrderByAggregateInput = {
@@ -26902,13 +30707,12 @@ export namespace Prisma {
     gender?: SortOrder
     role?: SortOrder
     address?: SortOrder
-    city?: SortOrder
-    state?: SortOrder
     pinCode?: SortOrder
     profileImageUrl?: SortOrder
     emailVerified?: SortOrder
-    createdAt?: SortOrder
+    isActive?: SortOrder
     updatedAt?: SortOrder
+    createdAt?: SortOrder
   }
 
   export type UserSumOrderByAggregateInput = {
@@ -27010,14 +30814,61 @@ export namespace Prisma {
     _max?: NestedDateTimeFilter<$PrismaModel>
   }
 
+  export type UserListRelationFilter = {
+    every?: UserWhereInput
+    some?: UserWhereInput
+    none?: UserWhereInput
+  }
+
+  export type UserOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type LocationCountOrderByAggregateInput = {
+    pincode?: SortOrder
+    city?: SortOrder
+    state?: SortOrder
+  }
+
+  export type LocationAvgOrderByAggregateInput = {
+    pincode?: SortOrder
+  }
+
+  export type LocationMaxOrderByAggregateInput = {
+    pincode?: SortOrder
+    city?: SortOrder
+    state?: SortOrder
+  }
+
+  export type LocationMinOrderByAggregateInput = {
+    pincode?: SortOrder
+    city?: SortOrder
+    state?: SortOrder
+  }
+
+  export type LocationSumOrderByAggregateInput = {
+    pincode?: SortOrder
+  }
+
   export type UserScalarRelationFilter = {
     is?: UserWhereInput
     isNot?: UserWhereInput
   }
 
+  export type AdminListRelationFilter = {
+    every?: AdminWhereInput
+    some?: AdminWhereInput
+    none?: AdminWhereInput
+  }
+
+  export type AdminOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type AdminCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27025,6 +30876,7 @@ export namespace Prisma {
   export type AdminMaxOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27032,6 +30884,7 @@ export namespace Prisma {
   export type AdminMinOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
+    managerId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27041,14 +30894,6 @@ export namespace Prisma {
     in?: $Enums.Specialty[] | ListEnumSpecialtyFieldRefInput<$PrismaModel>
     notIn?: $Enums.Specialty[] | ListEnumSpecialtyFieldRefInput<$PrismaModel>
     not?: NestedEnumSpecialtyFilter<$PrismaModel> | $Enums.Specialty
-  }
-
-  export type EnumQualificationNullableListFilter<$PrismaModel = never> = {
-    equals?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel> | null
-    has?: $Enums.Qualification | EnumQualificationFieldRefInput<$PrismaModel> | null
-    hasEvery?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
-    hasSome?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
-    isEmpty?: boolean
   }
 
   export type LeaveListRelationFilter = {
@@ -27086,6 +30931,12 @@ export namespace Prisma {
     none?: WithdrawalWhereInput
   }
 
+  export type DoctorQualificationListRelationFilter = {
+    every?: DoctorQualificationWhereInput
+    some?: DoctorQualificationWhereInput
+    none?: DoctorQualificationWhereInput
+  }
+
   export type LeaveOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -27106,19 +30957,18 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
+  export type DoctorQualificationOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type DoctorCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
     experience?: SortOrder
-    qualifications?: SortOrder
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27137,10 +30987,6 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27153,10 +30999,6 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -27175,6 +31017,51 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSpecialtyFilter<$PrismaModel>
     _max?: NestedEnumSpecialtyFilter<$PrismaModel>
+  }
+
+  export type EnumQualificationFilter<$PrismaModel = never> = {
+    equals?: $Enums.Qualification | EnumQualificationFieldRefInput<$PrismaModel>
+    in?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    not?: NestedEnumQualificationFilter<$PrismaModel> | $Enums.Qualification
+  }
+
+  export type DoctorScalarRelationFilter = {
+    is?: DoctorWhereInput
+    isNot?: DoctorWhereInput
+  }
+
+  export type DoctorQualificationDoctorIdQualificationCompoundUniqueInput = {
+    doctorId: string
+    qualification: $Enums.Qualification
+  }
+
+  export type DoctorQualificationCountOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    qualification?: SortOrder
+  }
+
+  export type DoctorQualificationMaxOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    qualification?: SortOrder
+  }
+
+  export type DoctorQualificationMinOrderByAggregateInput = {
+    id?: SortOrder
+    doctorId?: SortOrder
+    qualification?: SortOrder
+  }
+
+  export type EnumQualificationWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Qualification | EnumQualificationFieldRefInput<$PrismaModel>
+    in?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    not?: NestedEnumQualificationWithAggregatesFilter<$PrismaModel> | $Enums.Qualification
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQualificationFilter<$PrismaModel>
+    _max?: NestedEnumQualificationFilter<$PrismaModel>
   }
 
   export type PatientCountOrderByAggregateInput = {
@@ -27260,11 +31147,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
-  }
-
-  export type DoctorScalarRelationFilter = {
-    is?: DoctorWhereInput
-    isNot?: DoctorWhereInput
   }
 
   export type LeaveDoctorIdStartDateEndDateCompoundUniqueInput = {
@@ -27639,10 +31521,6 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     razorpayPayoutId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
@@ -27660,10 +31538,6 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     razorpayPayoutId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
@@ -27677,10 +31551,6 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
-    bankAccountNumber?: SortOrder
-    bankIFSC?: SortOrder
-    bankAccountHolderName?: SortOrder
-    bankName?: SortOrder
     razorpayPayoutId?: SortOrder
     failureReason?: SortOrder
     createdAt?: SortOrder
@@ -27700,6 +31570,33 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
     _max?: NestedEnumWithdrawalStatusFilter<$PrismaModel>
+  }
+
+  export type BankAccountCountOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+  }
+
+  export type BankAccountMaxOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
+  }
+
+  export type BankAccountMinOrderByAggregateInput = {
+    id?: SortOrder
+    userId?: SortOrder
+    bankAccountNumber?: SortOrder
+    bankIFSC?: SortOrder
+    bankAccountHolderName?: SortOrder
+    bankName?: SortOrder
   }
 
   export type OtpCountOrderByAggregateInput = {
@@ -27970,6 +31867,19 @@ export namespace Prisma {
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
+  export type LocationCreateNestedOneWithoutUserInput = {
+    create?: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutUserInput
+    connect?: LocationWhereUniqueInput
+  }
+
+  export type BankAccountCreateNestedManyWithoutUserInput = {
+    create?: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput> | BankAccountCreateWithoutUserInput[] | BankAccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BankAccountCreateOrConnectWithoutUserInput | BankAccountCreateOrConnectWithoutUserInput[]
+    createMany?: BankAccountCreateManyUserInputEnvelope
+    connect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+  }
+
   export type AdminUncheckedCreateNestedOneWithoutUserInput = {
     create?: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
     connectOrCreate?: AdminCreateOrConnectWithoutUserInput
@@ -28042,6 +31952,13 @@ export namespace Prisma {
     connectOrCreate?: RatingCreateOrConnectWithoutUserInput | RatingCreateOrConnectWithoutUserInput[]
     createMany?: RatingCreateManyUserInputEnvelope
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+  }
+
+  export type BankAccountUncheckedCreateNestedManyWithoutUserInput = {
+    create?: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput> | BankAccountCreateWithoutUserInput[] | BankAccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BankAccountCreateOrConnectWithoutUserInput | BankAccountCreateOrConnectWithoutUserInput[]
+    createMany?: BankAccountCreateManyUserInputEnvelope
+    connect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -28218,6 +32135,28 @@ export namespace Prisma {
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
+  export type LocationUpdateOneRequiredWithoutUserNestedInput = {
+    create?: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
+    connectOrCreate?: LocationCreateOrConnectWithoutUserInput
+    upsert?: LocationUpsertWithoutUserInput
+    connect?: LocationWhereUniqueInput
+    update?: XOR<XOR<LocationUpdateToOneWithWhereWithoutUserInput, LocationUpdateWithoutUserInput>, LocationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type BankAccountUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput> | BankAccountCreateWithoutUserInput[] | BankAccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BankAccountCreateOrConnectWithoutUserInput | BankAccountCreateOrConnectWithoutUserInput[]
+    upsert?: BankAccountUpsertWithWhereUniqueWithoutUserInput | BankAccountUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BankAccountCreateManyUserInputEnvelope
+    set?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    disconnect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    delete?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    connect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    update?: BankAccountUpdateWithWhereUniqueWithoutUserInput | BankAccountUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BankAccountUpdateManyWithWhereWithoutUserInput | BankAccountUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BankAccountScalarWhereInput | BankAccountScalarWhereInput[]
+  }
+
   export type AdminUncheckedUpdateOneWithoutUserNestedInput = {
     create?: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
     connectOrCreate?: AdminCreateOrConnectWithoutUserInput
@@ -28360,10 +32299,86 @@ export namespace Prisma {
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
+  export type BankAccountUncheckedUpdateManyWithoutUserNestedInput = {
+    create?: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput> | BankAccountCreateWithoutUserInput[] | BankAccountUncheckedCreateWithoutUserInput[]
+    connectOrCreate?: BankAccountCreateOrConnectWithoutUserInput | BankAccountCreateOrConnectWithoutUserInput[]
+    upsert?: BankAccountUpsertWithWhereUniqueWithoutUserInput | BankAccountUpsertWithWhereUniqueWithoutUserInput[]
+    createMany?: BankAccountCreateManyUserInputEnvelope
+    set?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    disconnect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    delete?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    connect?: BankAccountWhereUniqueInput | BankAccountWhereUniqueInput[]
+    update?: BankAccountUpdateWithWhereUniqueWithoutUserInput | BankAccountUpdateWithWhereUniqueWithoutUserInput[]
+    updateMany?: BankAccountUpdateManyWithWhereWithoutUserInput | BankAccountUpdateManyWithWhereWithoutUserInput[]
+    deleteMany?: BankAccountScalarWhereInput | BankAccountScalarWhereInput[]
+  }
+
+  export type UserCreateNestedManyWithoutLocationInput = {
+    create?: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput> | UserCreateWithoutLocationInput[] | UserUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutLocationInput | UserCreateOrConnectWithoutLocationInput[]
+    createMany?: UserCreateManyLocationInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUncheckedCreateNestedManyWithoutLocationInput = {
+    create?: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput> | UserCreateWithoutLocationInput[] | UserUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutLocationInput | UserCreateOrConnectWithoutLocationInput[]
+    createMany?: UserCreateManyLocationInputEnvelope
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+  }
+
+  export type UserUpdateManyWithoutLocationNestedInput = {
+    create?: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput> | UserCreateWithoutLocationInput[] | UserUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutLocationInput | UserCreateOrConnectWithoutLocationInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutLocationInput | UserUpsertWithWhereUniqueWithoutLocationInput[]
+    createMany?: UserCreateManyLocationInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutLocationInput | UserUpdateWithWhereUniqueWithoutLocationInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutLocationInput | UserUpdateManyWithWhereWithoutLocationInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
+  export type UserUncheckedUpdateManyWithoutLocationNestedInput = {
+    create?: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput> | UserCreateWithoutLocationInput[] | UserUncheckedCreateWithoutLocationInput[]
+    connectOrCreate?: UserCreateOrConnectWithoutLocationInput | UserCreateOrConnectWithoutLocationInput[]
+    upsert?: UserUpsertWithWhereUniqueWithoutLocationInput | UserUpsertWithWhereUniqueWithoutLocationInput[]
+    createMany?: UserCreateManyLocationInputEnvelope
+    set?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    disconnect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    delete?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    connect?: UserWhereUniqueInput | UserWhereUniqueInput[]
+    update?: UserUpdateWithWhereUniqueWithoutLocationInput | UserUpdateWithWhereUniqueWithoutLocationInput[]
+    updateMany?: UserUpdateManyWithWhereWithoutLocationInput | UserUpdateManyWithWhereWithoutLocationInput[]
+    deleteMany?: UserScalarWhereInput | UserScalarWhereInput[]
+  }
+
   export type UserCreateNestedOneWithoutAdminInput = {
     create?: XOR<UserCreateWithoutAdminInput, UserUncheckedCreateWithoutAdminInput>
     connectOrCreate?: UserCreateOrConnectWithoutAdminInput
     connect?: UserWhereUniqueInput
+  }
+
+  export type AdminCreateNestedOneWithoutSubAdminsInput = {
+    create?: XOR<AdminCreateWithoutSubAdminsInput, AdminUncheckedCreateWithoutSubAdminsInput>
+    connectOrCreate?: AdminCreateOrConnectWithoutSubAdminsInput
+    connect?: AdminWhereUniqueInput
+  }
+
+  export type AdminCreateNestedManyWithoutManagerInput = {
+    create?: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput> | AdminCreateWithoutManagerInput[] | AdminUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: AdminCreateOrConnectWithoutManagerInput | AdminCreateOrConnectWithoutManagerInput[]
+    createMany?: AdminCreateManyManagerInputEnvelope
+    connect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+  }
+
+  export type AdminUncheckedCreateNestedManyWithoutManagerInput = {
+    create?: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput> | AdminCreateWithoutManagerInput[] | AdminUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: AdminCreateOrConnectWithoutManagerInput | AdminCreateOrConnectWithoutManagerInput[]
+    createMany?: AdminCreateManyManagerInputEnvelope
+    connect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutAdminNestedInput = {
@@ -28374,8 +32389,42 @@ export namespace Prisma {
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutAdminInput, UserUpdateWithoutAdminInput>, UserUncheckedUpdateWithoutAdminInput>
   }
 
-  export type DoctorCreatequalificationsInput = {
-    set: $Enums.Qualification[]
+  export type AdminUpdateOneWithoutSubAdminsNestedInput = {
+    create?: XOR<AdminCreateWithoutSubAdminsInput, AdminUncheckedCreateWithoutSubAdminsInput>
+    connectOrCreate?: AdminCreateOrConnectWithoutSubAdminsInput
+    upsert?: AdminUpsertWithoutSubAdminsInput
+    disconnect?: AdminWhereInput | boolean
+    delete?: AdminWhereInput | boolean
+    connect?: AdminWhereUniqueInput
+    update?: XOR<XOR<AdminUpdateToOneWithWhereWithoutSubAdminsInput, AdminUpdateWithoutSubAdminsInput>, AdminUncheckedUpdateWithoutSubAdminsInput>
+  }
+
+  export type AdminUpdateManyWithoutManagerNestedInput = {
+    create?: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput> | AdminCreateWithoutManagerInput[] | AdminUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: AdminCreateOrConnectWithoutManagerInput | AdminCreateOrConnectWithoutManagerInput[]
+    upsert?: AdminUpsertWithWhereUniqueWithoutManagerInput | AdminUpsertWithWhereUniqueWithoutManagerInput[]
+    createMany?: AdminCreateManyManagerInputEnvelope
+    set?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    disconnect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    delete?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    connect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    update?: AdminUpdateWithWhereUniqueWithoutManagerInput | AdminUpdateWithWhereUniqueWithoutManagerInput[]
+    updateMany?: AdminUpdateManyWithWhereWithoutManagerInput | AdminUpdateManyWithWhereWithoutManagerInput[]
+    deleteMany?: AdminScalarWhereInput | AdminScalarWhereInput[]
+  }
+
+  export type AdminUncheckedUpdateManyWithoutManagerNestedInput = {
+    create?: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput> | AdminCreateWithoutManagerInput[] | AdminUncheckedCreateWithoutManagerInput[]
+    connectOrCreate?: AdminCreateOrConnectWithoutManagerInput | AdminCreateOrConnectWithoutManagerInput[]
+    upsert?: AdminUpsertWithWhereUniqueWithoutManagerInput | AdminUpsertWithWhereUniqueWithoutManagerInput[]
+    createMany?: AdminCreateManyManagerInputEnvelope
+    set?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    disconnect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    delete?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    connect?: AdminWhereUniqueInput | AdminWhereUniqueInput[]
+    update?: AdminUpdateWithWhereUniqueWithoutManagerInput | AdminUpdateWithWhereUniqueWithoutManagerInput[]
+    updateMany?: AdminUpdateManyWithWhereWithoutManagerInput | AdminUpdateManyWithWhereWithoutManagerInput[]
+    deleteMany?: AdminScalarWhereInput | AdminScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutDoctorInput = {
@@ -28439,6 +32488,13 @@ export namespace Prisma {
     connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
   }
 
+  export type DoctorQualificationCreateNestedManyWithoutDoctorInput = {
+    create?: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput> | DoctorQualificationCreateWithoutDoctorInput[] | DoctorQualificationUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: DoctorQualificationCreateOrConnectWithoutDoctorInput | DoctorQualificationCreateOrConnectWithoutDoctorInput[]
+    createMany?: DoctorQualificationCreateManyDoctorInputEnvelope
+    connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+  }
+
   export type LeaveUncheckedCreateNestedManyWithoutDoctorInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -28494,13 +32550,15 @@ export namespace Prisma {
     connect?: WithdrawalWhereUniqueInput | WithdrawalWhereUniqueInput[]
   }
 
-  export type EnumSpecialtyFieldUpdateOperationsInput = {
-    set?: $Enums.Specialty
+  export type DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput = {
+    create?: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput> | DoctorQualificationCreateWithoutDoctorInput[] | DoctorQualificationUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: DoctorQualificationCreateOrConnectWithoutDoctorInput | DoctorQualificationCreateOrConnectWithoutDoctorInput[]
+    createMany?: DoctorQualificationCreateManyDoctorInputEnvelope
+    connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
   }
 
-  export type DoctorUpdatequalificationsInput = {
-    set?: $Enums.Qualification[]
-    push?: $Enums.Qualification | $Enums.Qualification[]
+  export type EnumSpecialtyFieldUpdateOperationsInput = {
+    set?: $Enums.Specialty
   }
 
   export type UserUpdateOneRequiredWithoutDoctorNestedInput = {
@@ -28619,6 +32677,20 @@ export namespace Prisma {
     deleteMany?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
   }
 
+  export type DoctorQualificationUpdateManyWithoutDoctorNestedInput = {
+    create?: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput> | DoctorQualificationCreateWithoutDoctorInput[] | DoctorQualificationUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: DoctorQualificationCreateOrConnectWithoutDoctorInput | DoctorQualificationCreateOrConnectWithoutDoctorInput[]
+    upsert?: DoctorQualificationUpsertWithWhereUniqueWithoutDoctorInput | DoctorQualificationUpsertWithWhereUniqueWithoutDoctorInput[]
+    createMany?: DoctorQualificationCreateManyDoctorInputEnvelope
+    set?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    disconnect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    delete?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    update?: DoctorQualificationUpdateWithWhereUniqueWithoutDoctorInput | DoctorQualificationUpdateWithWhereUniqueWithoutDoctorInput[]
+    updateMany?: DoctorQualificationUpdateManyWithWhereWithoutDoctorInput | DoctorQualificationUpdateManyWithWhereWithoutDoctorInput[]
+    deleteMany?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
+  }
+
   export type LeaveUncheckedUpdateManyWithoutDoctorNestedInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -28725,6 +32797,38 @@ export namespace Prisma {
     update?: WithdrawalUpdateWithWhereUniqueWithoutDoctorInput | WithdrawalUpdateWithWhereUniqueWithoutDoctorInput[]
     updateMany?: WithdrawalUpdateManyWithWhereWithoutDoctorInput | WithdrawalUpdateManyWithWhereWithoutDoctorInput[]
     deleteMany?: WithdrawalScalarWhereInput | WithdrawalScalarWhereInput[]
+  }
+
+  export type DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput = {
+    create?: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput> | DoctorQualificationCreateWithoutDoctorInput[] | DoctorQualificationUncheckedCreateWithoutDoctorInput[]
+    connectOrCreate?: DoctorQualificationCreateOrConnectWithoutDoctorInput | DoctorQualificationCreateOrConnectWithoutDoctorInput[]
+    upsert?: DoctorQualificationUpsertWithWhereUniqueWithoutDoctorInput | DoctorQualificationUpsertWithWhereUniqueWithoutDoctorInput[]
+    createMany?: DoctorQualificationCreateManyDoctorInputEnvelope
+    set?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    disconnect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    delete?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
+    update?: DoctorQualificationUpdateWithWhereUniqueWithoutDoctorInput | DoctorQualificationUpdateWithWhereUniqueWithoutDoctorInput[]
+    updateMany?: DoctorQualificationUpdateManyWithWhereWithoutDoctorInput | DoctorQualificationUpdateManyWithWhereWithoutDoctorInput[]
+    deleteMany?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
+  }
+
+  export type DoctorCreateNestedOneWithoutDoctorQualificationsInput = {
+    create?: XOR<DoctorCreateWithoutDoctorQualificationsInput, DoctorUncheckedCreateWithoutDoctorQualificationsInput>
+    connectOrCreate?: DoctorCreateOrConnectWithoutDoctorQualificationsInput
+    connect?: DoctorWhereUniqueInput
+  }
+
+  export type EnumQualificationFieldUpdateOperationsInput = {
+    set?: $Enums.Qualification
+  }
+
+  export type DoctorUpdateOneRequiredWithoutDoctorQualificationsNestedInput = {
+    create?: XOR<DoctorCreateWithoutDoctorQualificationsInput, DoctorUncheckedCreateWithoutDoctorQualificationsInput>
+    connectOrCreate?: DoctorCreateOrConnectWithoutDoctorQualificationsInput
+    upsert?: DoctorUpsertWithoutDoctorQualificationsInput
+    connect?: DoctorWhereUniqueInput
+    update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutDoctorQualificationsInput, DoctorUpdateWithoutDoctorQualificationsInput>, DoctorUncheckedUpdateWithoutDoctorQualificationsInput>
   }
 
   export type UserCreateNestedOneWithoutPatientInput = {
@@ -29101,6 +33205,20 @@ export namespace Prisma {
     update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutWithdrawalsInput, DoctorUpdateWithoutWithdrawalsInput>, DoctorUncheckedUpdateWithoutWithdrawalsInput>
   }
 
+  export type UserCreateNestedOneWithoutBankAccountsInput = {
+    create?: XOR<UserCreateWithoutBankAccountsInput, UserUncheckedCreateWithoutBankAccountsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBankAccountsInput
+    connect?: UserWhereUniqueInput
+  }
+
+  export type UserUpdateOneRequiredWithoutBankAccountsNestedInput = {
+    create?: XOR<UserCreateWithoutBankAccountsInput, UserUncheckedCreateWithoutBankAccountsInput>
+    connectOrCreate?: UserCreateOrConnectWithoutBankAccountsInput
+    upsert?: UserUpsertWithoutBankAccountsInput
+    connect?: UserWhereUniqueInput
+    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutBankAccountsInput, UserUpdateWithoutBankAccountsInput>, UserUncheckedUpdateWithoutBankAccountsInput>
+  }
+
   export type UserCreateNestedOneWithoutOtpInput = {
     create?: XOR<UserCreateWithoutOtpInput, UserUncheckedCreateWithoutOtpInput>
     connectOrCreate?: UserCreateOrConnectWithoutOtpInput
@@ -29403,6 +33521,23 @@ export namespace Prisma {
     _max?: NestedEnumSpecialtyFilter<$PrismaModel>
   }
 
+  export type NestedEnumQualificationFilter<$PrismaModel = never> = {
+    equals?: $Enums.Qualification | EnumQualificationFieldRefInput<$PrismaModel>
+    in?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    not?: NestedEnumQualificationFilter<$PrismaModel> | $Enums.Qualification
+  }
+
+  export type NestedEnumQualificationWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.Qualification | EnumQualificationFieldRefInput<$PrismaModel>
+    in?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    notIn?: $Enums.Qualification[] | ListEnumQualificationFieldRefInput<$PrismaModel>
+    not?: NestedEnumQualificationWithAggregatesFilter<$PrismaModel> | $Enums.Qualification
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumQualificationFilter<$PrismaModel>
+    _max?: NestedEnumQualificationFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -29546,12 +33681,16 @@ export namespace Prisma {
     id?: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    manager?: AdminCreateNestedOneWithoutSubAdminsInput
+    subAdmins?: AdminCreateNestedManyWithoutManagerInput
   }
 
   export type AdminUncheckedCreateWithoutUserInput = {
     id?: string
+    managerId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
+    subAdmins?: AdminUncheckedCreateNestedManyWithoutManagerInput
   }
 
   export type AdminCreateOrConnectWithoutUserInput = {
@@ -29563,14 +33702,9 @@ export namespace Prisma {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveCreateNestedManyWithoutDoctorInput
@@ -29581,20 +33715,16 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutUserInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29605,6 +33735,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutUserInput = {
@@ -29849,6 +33980,49 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type LocationCreateWithoutUserInput = {
+    pincode: number
+    city: string
+    state: string
+  }
+
+  export type LocationUncheckedCreateWithoutUserInput = {
+    pincode: number
+    city: string
+    state: string
+  }
+
+  export type LocationCreateOrConnectWithoutUserInput = {
+    where: LocationWhereUniqueInput
+    create: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
+  }
+
+  export type BankAccountCreateWithoutUserInput = {
+    id?: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+  }
+
+  export type BankAccountUncheckedCreateWithoutUserInput = {
+    id?: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
+  }
+
+  export type BankAccountCreateOrConnectWithoutUserInput = {
+    where: BankAccountWhereUniqueInput
+    create: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput>
+  }
+
+  export type BankAccountCreateManyUserInputEnvelope = {
+    data: BankAccountCreateManyUserInput | BankAccountCreateManyUserInput[]
+    skipDuplicates?: boolean
+  }
+
   export type AdminUpsertWithoutUserInput = {
     update: XOR<AdminUpdateWithoutUserInput, AdminUncheckedUpdateWithoutUserInput>
     create: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
@@ -29864,12 +34038,16 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    manager?: AdminUpdateOneWithoutSubAdminsNestedInput
+    subAdmins?: AdminUpdateManyWithoutManagerNestedInput
   }
 
   export type AdminUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subAdmins?: AdminUncheckedUpdateManyWithoutManagerNestedInput
   }
 
   export type DoctorUpsertWithoutUserInput = {
@@ -29887,14 +34065,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUpdateManyWithoutDoctorNestedInput
@@ -29905,20 +34078,16 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29929,6 +34098,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutUserInput = {
@@ -30189,7 +34359,58 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Rating"> | Date | string
   }
 
-  export type UserCreateWithoutAdminInput = {
+  export type LocationUpsertWithoutUserInput = {
+    update: XOR<LocationUpdateWithoutUserInput, LocationUncheckedUpdateWithoutUserInput>
+    create: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
+    where?: LocationWhereInput
+  }
+
+  export type LocationUpdateToOneWithWhereWithoutUserInput = {
+    where?: LocationWhereInput
+    data: XOR<LocationUpdateWithoutUserInput, LocationUncheckedUpdateWithoutUserInput>
+  }
+
+  export type LocationUpdateWithoutUserInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type LocationUncheckedUpdateWithoutUserInput = {
+    pincode?: IntFieldUpdateOperationsInput | number
+    city?: StringFieldUpdateOperationsInput | string
+    state?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BankAccountUpsertWithWhereUniqueWithoutUserInput = {
+    where: BankAccountWhereUniqueInput
+    update: XOR<BankAccountUpdateWithoutUserInput, BankAccountUncheckedUpdateWithoutUserInput>
+    create: XOR<BankAccountCreateWithoutUserInput, BankAccountUncheckedCreateWithoutUserInput>
+  }
+
+  export type BankAccountUpdateWithWhereUniqueWithoutUserInput = {
+    where: BankAccountWhereUniqueInput
+    data: XOR<BankAccountUpdateWithoutUserInput, BankAccountUncheckedUpdateWithoutUserInput>
+  }
+
+  export type BankAccountUpdateManyWithWhereWithoutUserInput = {
+    where: BankAccountScalarWhereInput
+    data: XOR<BankAccountUpdateManyMutationInput, BankAccountUncheckedUpdateManyWithoutUserInput>
+  }
+
+  export type BankAccountScalarWhereInput = {
+    AND?: BankAccountScalarWhereInput | BankAccountScalarWhereInput[]
+    OR?: BankAccountScalarWhereInput[]
+    NOT?: BankAccountScalarWhereInput | BankAccountScalarWhereInput[]
+    id?: StringFilter<"BankAccount"> | string
+    userId?: StringFilter<"BankAccount"> | string
+    bankAccountNumber?: StringFilter<"BankAccount"> | string
+    bankIFSC?: StringFilter<"BankAccount"> | string
+    bankAccountHolderName?: StringFilter<"BankAccount"> | string
+    bankName?: StringFilter<"BankAccount"> | string
+  }
+
+  export type UserCreateWithoutLocationInput = {
     id?: string
     email: string
     phoneNo: string
@@ -30199,13 +34420,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
+    admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
     otp?: OtpCreateNestedManyWithoutUserInput
@@ -30216,6 +34436,112 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutLocationInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    profileImageUrl?: string | null
+    emailVerified?: boolean
+    isActive?: boolean
+    updatedAt?: Date | string
+    createdAt?: Date | string
+    admin?: AdminUncheckedCreateNestedOneWithoutUserInput
+    doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
+    patient?: PatientUncheckedCreateNestedOneWithoutUserInput
+    otp?: OtpUncheckedCreateNestedManyWithoutUserInput
+    accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutLocationInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput>
+  }
+
+  export type UserCreateManyLocationInputEnvelope = {
+    data: UserCreateManyLocationInput | UserCreateManyLocationInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type UserUpsertWithWhereUniqueWithoutLocationInput = {
+    where: UserWhereUniqueInput
+    update: XOR<UserUpdateWithoutLocationInput, UserUncheckedUpdateWithoutLocationInput>
+    create: XOR<UserCreateWithoutLocationInput, UserUncheckedCreateWithoutLocationInput>
+  }
+
+  export type UserUpdateWithWhereUniqueWithoutLocationInput = {
+    where: UserWhereUniqueInput
+    data: XOR<UserUpdateWithoutLocationInput, UserUncheckedUpdateWithoutLocationInput>
+  }
+
+  export type UserUpdateManyWithWhereWithoutLocationInput = {
+    where: UserScalarWhereInput
+    data: XOR<UserUpdateManyMutationInput, UserUncheckedUpdateManyWithoutLocationInput>
+  }
+
+  export type UserScalarWhereInput = {
+    AND?: UserScalarWhereInput | UserScalarWhereInput[]
+    OR?: UserScalarWhereInput[]
+    NOT?: UserScalarWhereInput | UserScalarWhereInput[]
+    id?: StringFilter<"User"> | string
+    email?: StringFilter<"User"> | string
+    phoneNo?: StringFilter<"User"> | string
+    name?: StringFilter<"User"> | string
+    password?: StringFilter<"User"> | string
+    age?: IntFilter<"User"> | number
+    gender?: EnumGenderFilter<"User"> | $Enums.Gender
+    role?: EnumRoleFilter<"User"> | $Enums.Role
+    address?: StringFilter<"User"> | string
+    pinCode?: IntFilter<"User"> | number
+    profileImageUrl?: StringNullableFilter<"User"> | string | null
+    emailVerified?: BoolFilter<"User"> | boolean
+    isActive?: BoolFilter<"User"> | boolean
+    updatedAt?: DateTimeFilter<"User"> | Date | string
+    createdAt?: DateTimeFilter<"User"> | Date | string
+  }
+
+  export type UserCreateWithoutAdminInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    profileImageUrl?: string | null
+    emailVerified?: boolean
+    isActive?: boolean
+    updatedAt?: Date | string
+    createdAt?: Date | string
+    doctor?: DoctorCreateNestedOneWithoutUserInput
+    patient?: PatientCreateNestedOneWithoutUserInput
+    otp?: OtpCreateNestedManyWithoutUserInput
+    accessLogs?: AccessLogCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAdminInput = {
@@ -30228,13 +34554,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     otp?: OtpUncheckedCreateNestedManyWithoutUserInput
@@ -30245,11 +34570,59 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAdminInput = {
     where: UserWhereUniqueInput
     create: XOR<UserCreateWithoutAdminInput, UserUncheckedCreateWithoutAdminInput>
+  }
+
+  export type AdminCreateWithoutSubAdminsInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAdminInput
+    manager?: AdminCreateNestedOneWithoutSubAdminsInput
+  }
+
+  export type AdminUncheckedCreateWithoutSubAdminsInput = {
+    id?: string
+    userId: string
+    managerId?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdminCreateOrConnectWithoutSubAdminsInput = {
+    where: AdminWhereUniqueInput
+    create: XOR<AdminCreateWithoutSubAdminsInput, AdminUncheckedCreateWithoutSubAdminsInput>
+  }
+
+  export type AdminCreateWithoutManagerInput = {
+    id?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutAdminInput
+    subAdmins?: AdminCreateNestedManyWithoutManagerInput
+  }
+
+  export type AdminUncheckedCreateWithoutManagerInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    subAdmins?: AdminUncheckedCreateNestedManyWithoutManagerInput
+  }
+
+  export type AdminCreateOrConnectWithoutManagerInput = {
+    where: AdminWhereUniqueInput
+    create: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput>
+  }
+
+  export type AdminCreateManyManagerInputEnvelope = {
+    data: AdminCreateManyManagerInput | AdminCreateManyManagerInput[]
+    skipDuplicates?: boolean
   }
 
   export type UserUpsertWithoutAdminInput = {
@@ -30273,13 +34646,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
     otp?: OtpUpdateManyWithoutUserNestedInput
@@ -30290,6 +34661,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAdminInput = {
@@ -30302,13 +34675,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
@@ -30319,6 +34691,61 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type AdminUpsertWithoutSubAdminsInput = {
+    update: XOR<AdminUpdateWithoutSubAdminsInput, AdminUncheckedUpdateWithoutSubAdminsInput>
+    create: XOR<AdminCreateWithoutSubAdminsInput, AdminUncheckedCreateWithoutSubAdminsInput>
+    where?: AdminWhereInput
+  }
+
+  export type AdminUpdateToOneWithWhereWithoutSubAdminsInput = {
+    where?: AdminWhereInput
+    data: XOR<AdminUpdateWithoutSubAdminsInput, AdminUncheckedUpdateWithoutSubAdminsInput>
+  }
+
+  export type AdminUpdateWithoutSubAdminsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAdminNestedInput
+    manager?: AdminUpdateOneWithoutSubAdminsNestedInput
+  }
+
+  export type AdminUncheckedUpdateWithoutSubAdminsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    managerId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminUpsertWithWhereUniqueWithoutManagerInput = {
+    where: AdminWhereUniqueInput
+    update: XOR<AdminUpdateWithoutManagerInput, AdminUncheckedUpdateWithoutManagerInput>
+    create: XOR<AdminCreateWithoutManagerInput, AdminUncheckedCreateWithoutManagerInput>
+  }
+
+  export type AdminUpdateWithWhereUniqueWithoutManagerInput = {
+    where: AdminWhereUniqueInput
+    data: XOR<AdminUpdateWithoutManagerInput, AdminUncheckedUpdateWithoutManagerInput>
+  }
+
+  export type AdminUpdateManyWithWhereWithoutManagerInput = {
+    where: AdminScalarWhereInput
+    data: XOR<AdminUpdateManyMutationInput, AdminUncheckedUpdateManyWithoutManagerInput>
+  }
+
+  export type AdminScalarWhereInput = {
+    AND?: AdminScalarWhereInput | AdminScalarWhereInput[]
+    OR?: AdminScalarWhereInput[]
+    NOT?: AdminScalarWhereInput | AdminScalarWhereInput[]
+    id?: StringFilter<"Admin"> | string
+    userId?: StringFilter<"Admin"> | string
+    managerId?: StringNullableFilter<"Admin"> | string | null
+    createdAt?: DateTimeFilter<"Admin"> | Date | string
+    updatedAt?: DateTimeFilter<"Admin"> | Date | string
   }
 
   export type UserCreateWithoutDoctorInput = {
@@ -30331,13 +34758,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
     otp?: OtpCreateNestedManyWithoutUserInput
@@ -30348,6 +34773,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutDoctorInput = {
@@ -30360,13 +34787,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
     otp?: OtpUncheckedCreateNestedManyWithoutUserInput
@@ -30377,6 +34803,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutDoctorInput = {
@@ -30584,10 +35011,6 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
@@ -30600,10 +35023,6 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
@@ -30618,6 +35037,26 @@ export namespace Prisma {
 
   export type WithdrawalCreateManyDoctorInputEnvelope = {
     data: WithdrawalCreateManyDoctorInput | WithdrawalCreateManyDoctorInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DoctorQualificationCreateWithoutDoctorInput = {
+    id?: string
+    qualification: $Enums.Qualification
+  }
+
+  export type DoctorQualificationUncheckedCreateWithoutDoctorInput = {
+    id?: string
+    qualification: $Enums.Qualification
+  }
+
+  export type DoctorQualificationCreateOrConnectWithoutDoctorInput = {
+    where: DoctorQualificationWhereUniqueInput
+    create: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput>
+  }
+
+  export type DoctorQualificationCreateManyDoctorInputEnvelope = {
+    data: DoctorQualificationCreateManyDoctorInput | DoctorQualificationCreateManyDoctorInput[]
     skipDuplicates?: boolean
   }
 
@@ -30642,13 +35081,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
     otp?: OtpUpdateManyWithoutUserNestedInput
@@ -30659,6 +35096,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutDoctorInput = {
@@ -30671,13 +35110,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
     otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
@@ -30688,6 +35126,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type LeaveUpsertWithWhereUniqueWithoutDoctorInput = {
@@ -30892,15 +35331,132 @@ export namespace Prisma {
     amount?: IntFilter<"Withdrawal"> | number
     currency?: StringFilter<"Withdrawal"> | string
     status?: EnumWithdrawalStatusFilter<"Withdrawal"> | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFilter<"Withdrawal"> | string
-    bankIFSC?: StringFilter<"Withdrawal"> | string
-    bankAccountHolderName?: StringFilter<"Withdrawal"> | string
-    bankName?: StringFilter<"Withdrawal"> | string
     razorpayPayoutId?: StringNullableFilter<"Withdrawal"> | string | null
     failureReason?: StringNullableFilter<"Withdrawal"> | string | null
     createdAt?: DateTimeFilter<"Withdrawal"> | Date | string
     updatedAt?: DateTimeFilter<"Withdrawal"> | Date | string
     processedAt?: DateTimeNullableFilter<"Withdrawal"> | Date | string | null
+  }
+
+  export type DoctorQualificationUpsertWithWhereUniqueWithoutDoctorInput = {
+    where: DoctorQualificationWhereUniqueInput
+    update: XOR<DoctorQualificationUpdateWithoutDoctorInput, DoctorQualificationUncheckedUpdateWithoutDoctorInput>
+    create: XOR<DoctorQualificationCreateWithoutDoctorInput, DoctorQualificationUncheckedCreateWithoutDoctorInput>
+  }
+
+  export type DoctorQualificationUpdateWithWhereUniqueWithoutDoctorInput = {
+    where: DoctorQualificationWhereUniqueInput
+    data: XOR<DoctorQualificationUpdateWithoutDoctorInput, DoctorQualificationUncheckedUpdateWithoutDoctorInput>
+  }
+
+  export type DoctorQualificationUpdateManyWithWhereWithoutDoctorInput = {
+    where: DoctorQualificationScalarWhereInput
+    data: XOR<DoctorQualificationUpdateManyMutationInput, DoctorQualificationUncheckedUpdateManyWithoutDoctorInput>
+  }
+
+  export type DoctorQualificationScalarWhereInput = {
+    AND?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
+    OR?: DoctorQualificationScalarWhereInput[]
+    NOT?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
+    id?: StringFilter<"DoctorQualification"> | string
+    doctorId?: StringFilter<"DoctorQualification"> | string
+    qualification?: EnumQualificationFilter<"DoctorQualification"> | $Enums.Qualification
+  }
+
+  export type DoctorCreateWithoutDoctorQualificationsInput = {
+    id?: string
+    specialty: $Enums.Specialty
+    experience?: number
+    fees?: number
+    doctorBio?: string | null
+    balance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutDoctorInput
+    leaves?: LeaveCreateNestedManyWithoutDoctorInput
+    schedule?: ScheduleCreateNestedOneWithoutDoctorInput
+    patientRelations?: DoctorPatientRelationCreateNestedManyWithoutDoctorInput
+    appointments?: AppointmentCreateNestedManyWithoutDoctorInput
+    slots?: SlotCreateNestedManyWithoutDoctorInput
+    comments?: CommentCreateNestedManyWithoutDoctorInput
+    ratings?: RatingCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+  }
+
+  export type DoctorUncheckedCreateWithoutDoctorQualificationsInput = {
+    id?: string
+    userId: string
+    specialty: $Enums.Specialty
+    experience?: number
+    fees?: number
+    doctorBio?: string | null
+    balance?: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
+    schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
+    patientRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutDoctorInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
+    slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
+    comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+  }
+
+  export type DoctorCreateOrConnectWithoutDoctorQualificationsInput = {
+    where: DoctorWhereUniqueInput
+    create: XOR<DoctorCreateWithoutDoctorQualificationsInput, DoctorUncheckedCreateWithoutDoctorQualificationsInput>
+  }
+
+  export type DoctorUpsertWithoutDoctorQualificationsInput = {
+    update: XOR<DoctorUpdateWithoutDoctorQualificationsInput, DoctorUncheckedUpdateWithoutDoctorQualificationsInput>
+    create: XOR<DoctorCreateWithoutDoctorQualificationsInput, DoctorUncheckedCreateWithoutDoctorQualificationsInput>
+    where?: DoctorWhereInput
+  }
+
+  export type DoctorUpdateToOneWithWhereWithoutDoctorQualificationsInput = {
+    where?: DoctorWhereInput
+    data: XOR<DoctorUpdateWithoutDoctorQualificationsInput, DoctorUncheckedUpdateWithoutDoctorQualificationsInput>
+  }
+
+  export type DoctorUpdateWithoutDoctorQualificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
+    experience?: IntFieldUpdateOperationsInput | number
+    fees?: IntFieldUpdateOperationsInput | number
+    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutDoctorNestedInput
+    leaves?: LeaveUpdateManyWithoutDoctorNestedInput
+    schedule?: ScheduleUpdateOneWithoutDoctorNestedInput
+    patientRelations?: DoctorPatientRelationUpdateManyWithoutDoctorNestedInput
+    appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
+    slots?: SlotUpdateManyWithoutDoctorNestedInput
+    comments?: CommentUpdateManyWithoutDoctorNestedInput
+    ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+  }
+
+  export type DoctorUncheckedUpdateWithoutDoctorQualificationsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
+    experience?: IntFieldUpdateOperationsInput | number
+    fees?: IntFieldUpdateOperationsInput | number
+    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
+    balance?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
+    schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
+    patientRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutDoctorNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
+    slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserCreateWithoutPatientInput = {
@@ -30913,13 +35469,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     otp?: OtpCreateNestedManyWithoutUserInput
@@ -30930,6 +35484,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPatientInput = {
@@ -30942,13 +35498,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     otp?: OtpUncheckedCreateNestedManyWithoutUserInput
@@ -30959,6 +35514,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPatientInput = {
@@ -31049,13 +35605,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     otp?: OtpUpdateManyWithoutUserNestedInput
@@ -31066,6 +35620,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPatientInput = {
@@ -31078,13 +35634,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
@@ -31095,6 +35650,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DoctorPatientRelationUpsertWithWhereUniqueWithoutPatientInput = {
@@ -31139,13 +35695,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -31156,6 +35710,8 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutNotificationsInput = {
@@ -31168,13 +35724,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -31185,6 +35740,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutNotificationsInput = {
@@ -31213,13 +35769,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -31230,6 +35784,8 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutNotificationsInput = {
@@ -31242,13 +35798,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -31259,20 +35814,16 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DoctorCreateWithoutLeavesInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -31283,6 +35834,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutLeavesInput = {
@@ -31290,14 +35842,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
@@ -31307,6 +35854,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutLeavesInput = {
@@ -31329,14 +35877,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -31347,6 +35890,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutLeavesInput = {
@@ -31354,14 +35898,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
@@ -31371,20 +35910,16 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateWithoutScheduleInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -31395,6 +35930,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutScheduleInput = {
@@ -31402,14 +35938,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -31419,6 +35950,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutScheduleInput = {
@@ -31441,14 +35973,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -31459,6 +35986,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutScheduleInput = {
@@ -31466,14 +35994,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -31483,6 +36006,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type AppointmentCreateWithoutSlotInput = {
@@ -31520,14 +36044,9 @@ export namespace Prisma {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -31538,6 +36057,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutSlotsInput = {
@@ -31545,14 +36065,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -31562,6 +36077,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutSlotsInput = {
@@ -31621,14 +36137,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -31639,6 +36150,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutSlotsInput = {
@@ -31646,14 +36158,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -31663,6 +36170,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type SlotCreateWithoutAppointmentInput = {
@@ -31700,14 +36208,9 @@ export namespace Prisma {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -31718,6 +36221,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutAppointmentsInput = {
@@ -31725,14 +36229,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -31742,6 +36241,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutAppointmentsInput = {
@@ -31828,14 +36328,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -31846,6 +36341,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutAppointmentsInput = {
@@ -31853,14 +36349,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -31870,6 +36361,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutAppointmentsInput = {
@@ -31935,14 +36427,9 @@ export namespace Prisma {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -31953,6 +36440,7 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutPatientRelationsInput = {
@@ -31960,14 +36448,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -31977,6 +36460,7 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutPatientRelationsInput = {
@@ -32042,14 +36526,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -32060,6 +36539,7 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutPatientRelationsInput = {
@@ -32067,14 +36547,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -32084,6 +36559,7 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutDoctorRelationsInput = {
@@ -32150,13 +36626,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -32167,6 +36641,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutChatMessagesInput = {
@@ -32179,13 +36655,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -32196,6 +36671,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutChatMessagesInput = {
@@ -32251,13 +36727,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -32268,6 +36742,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutChatMessagesInput = {
@@ -32280,13 +36756,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -32297,6 +36772,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutPaymentsInput = {
@@ -32309,13 +36785,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -32326,6 +36800,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutPaymentsInput = {
@@ -32338,13 +36814,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -32355,6 +36830,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutPaymentsInput = {
@@ -32383,13 +36859,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -32400,6 +36874,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutPaymentsInput = {
@@ -32412,13 +36888,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -32429,20 +36904,16 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DoctorCreateWithoutWithdrawalsInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -32453,6 +36924,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutWithdrawalsInput = {
@@ -32460,14 +36932,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -32477,6 +36944,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutWithdrawalsInput = {
@@ -32499,14 +36967,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -32517,6 +36980,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutWithdrawalsInput = {
@@ -32524,14 +36988,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -32541,6 +37000,139 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
+  }
+
+  export type UserCreateWithoutBankAccountsInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    profileImageUrl?: string | null
+    emailVerified?: boolean
+    isActive?: boolean
+    updatedAt?: Date | string
+    createdAt?: Date | string
+    admin?: AdminCreateNestedOneWithoutUserInput
+    doctor?: DoctorCreateNestedOneWithoutUserInput
+    patient?: PatientCreateNestedOneWithoutUserInput
+    otp?: OtpCreateNestedManyWithoutUserInput
+    accessLogs?: AccessLogCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
+    payments?: PaymentCreateNestedManyWithoutUserInput
+    notifications?: NotificationCreateNestedManyWithoutUserInput
+    comments?: CommentCreateNestedManyWithoutUserInput
+    ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+  }
+
+  export type UserUncheckedCreateWithoutBankAccountsInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    pinCode: number
+    profileImageUrl?: string | null
+    emailVerified?: boolean
+    isActive?: boolean
+    updatedAt?: Date | string
+    createdAt?: Date | string
+    admin?: AdminUncheckedCreateNestedOneWithoutUserInput
+    doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
+    patient?: PatientUncheckedCreateNestedOneWithoutUserInput
+    otp?: OtpUncheckedCreateNestedManyWithoutUserInput
+    accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
+    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
+    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
+    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
+    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
+    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+  }
+
+  export type UserCreateOrConnectWithoutBankAccountsInput = {
+    where: UserWhereUniqueInput
+    create: XOR<UserCreateWithoutBankAccountsInput, UserUncheckedCreateWithoutBankAccountsInput>
+  }
+
+  export type UserUpsertWithoutBankAccountsInput = {
+    update: XOR<UserUpdateWithoutBankAccountsInput, UserUncheckedUpdateWithoutBankAccountsInput>
+    create: XOR<UserCreateWithoutBankAccountsInput, UserUncheckedCreateWithoutBankAccountsInput>
+    where?: UserWhereInput
+  }
+
+  export type UserUpdateToOneWithWhereWithoutBankAccountsInput = {
+    where?: UserWhereInput
+    data: XOR<UserUpdateWithoutBankAccountsInput, UserUncheckedUpdateWithoutBankAccountsInput>
+  }
+
+  export type UserUpdateWithoutBankAccountsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUpdateOneWithoutUserNestedInput
+    patient?: PatientUpdateOneWithoutUserNestedInput
+    otp?: OtpUpdateManyWithoutUserNestedInput
+    accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutBankAccountsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    pinCode?: IntFieldUpdateOperationsInput | number
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
+    patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
+    otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
+    accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOtpInput = {
@@ -32553,13 +37145,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -32570,6 +37160,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutOtpInput = {
@@ -32582,13 +37174,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -32599,6 +37190,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutOtpInput = {
@@ -32627,13 +37219,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -32644,6 +37234,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutOtpInput = {
@@ -32656,13 +37248,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -32673,6 +37264,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAccessLogsInput = {
@@ -32685,13 +37277,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -32702,6 +37292,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAccessLogsInput = {
@@ -32714,13 +37306,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -32731,6 +37322,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAccessLogsInput = {
@@ -32759,13 +37351,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -32776,6 +37366,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAccessLogsInput = {
@@ -32788,13 +37380,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -32805,6 +37396,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutAuditLogsInput = {
@@ -32817,13 +37409,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -32834,6 +37424,8 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -32846,13 +37438,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -32863,6 +37454,7 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -32891,13 +37483,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -32908,6 +37498,8 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -32920,13 +37512,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -32937,20 +37528,16 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DoctorCreateWithoutRatingsInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -32961,6 +37548,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     comments?: CommentCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutRatingsInput = {
@@ -32968,14 +37556,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -32985,6 +37568,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutRatingsInput = {
@@ -33002,13 +37586,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -33019,6 +37601,8 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     comments?: CommentCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutRatingsInput = {
@@ -33031,13 +37615,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -33048,6 +37631,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     comments?: CommentUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutRatingsInput = {
@@ -33070,14 +37654,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -33088,6 +37667,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutRatingsInput = {
@@ -33095,14 +37675,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -33112,6 +37687,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserUpsertWithoutRatingsInput = {
@@ -33135,13 +37711,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -33152,6 +37726,8 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     comments?: CommentUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutRatingsInput = {
@@ -33164,13 +37740,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -33181,20 +37756,16 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type DoctorCreateWithoutCommentsInput = {
     id?: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -33205,6 +37776,7 @@ export namespace Prisma {
     slots?: SlotCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutCommentsInput = {
@@ -33212,14 +37784,9 @@ export namespace Prisma {
     userId: string
     specialty: $Enums.Specialty
     experience?: number
-    qualifications?: DoctorCreatequalificationsInput | $Enums.Qualification[]
     fees?: number
     doctorBio?: string | null
     balance?: number
-    bankAccountNumber?: string | null
-    bankIFSC?: string | null
-    bankAccountHolderName?: string | null
-    bankName?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -33229,6 +37796,7 @@ export namespace Prisma {
     slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
+    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutCommentsInput = {
@@ -33246,13 +37814,11 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
-    pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminCreateNestedOneWithoutUserInput
     doctor?: DoctorCreateNestedOneWithoutUserInput
     patient?: PatientCreateNestedOneWithoutUserInput
@@ -33263,6 +37829,8 @@ export namespace Prisma {
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
     ratings?: RatingCreateNestedManyWithoutUserInput
+    location: LocationCreateNestedOneWithoutUserInput
+    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
   export type UserUncheckedCreateWithoutCommentsInput = {
@@ -33275,13 +37843,12 @@ export namespace Prisma {
     gender?: $Enums.Gender
     role?: $Enums.Role
     address: string
-    city: string
-    state: string
     pinCode: number
     profileImageUrl?: string | null
     emailVerified?: boolean
-    createdAt?: Date | string
+    isActive?: boolean
     updatedAt?: Date | string
+    createdAt?: Date | string
     admin?: AdminUncheckedCreateNestedOneWithoutUserInput
     doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
     patient?: PatientUncheckedCreateNestedOneWithoutUserInput
@@ -33292,6 +37859,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
     ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
+    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutCommentsInput = {
@@ -33314,14 +37882,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -33332,6 +37895,7 @@ export namespace Prisma {
     slots?: SlotUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutCommentsInput = {
@@ -33339,14 +37903,9 @@ export namespace Prisma {
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
-    qualifications?: DoctorUpdatequalificationsInput | $Enums.Qualification[]
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
-    bankAccountNumber?: NullableStringFieldUpdateOperationsInput | string | null
-    bankIFSC?: NullableStringFieldUpdateOperationsInput | string | null
-    bankAccountHolderName?: NullableStringFieldUpdateOperationsInput | string | null
-    bankName?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -33356,6 +37915,7 @@ export namespace Prisma {
     slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
+    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserUpsertWithoutCommentsInput = {
@@ -33379,13 +37939,11 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUpdateOneWithoutUserNestedInput
     doctor?: DoctorUpdateOneWithoutUserNestedInput
     patient?: PatientUpdateOneWithoutUserNestedInput
@@ -33396,6 +37954,8 @@ export namespace Prisma {
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
     ratings?: RatingUpdateManyWithoutUserNestedInput
+    location?: LocationUpdateOneRequiredWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
   export type UserUncheckedUpdateWithoutCommentsInput = {
@@ -33408,13 +37968,12 @@ export namespace Prisma {
     gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
     role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
     address?: StringFieldUpdateOperationsInput | string
-    city?: StringFieldUpdateOperationsInput | string
-    state?: StringFieldUpdateOperationsInput | string
     pinCode?: IntFieldUpdateOperationsInput | number
     profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
     emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isActive?: BoolFieldUpdateOperationsInput | boolean
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
     doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
     patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
@@ -33425,6 +37984,7 @@ export namespace Prisma {
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type OtpCreateManyUserInput = {
@@ -33490,6 +38050,14 @@ export namespace Prisma {
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
+  }
+
+  export type BankAccountCreateManyUserInput = {
+    id?: string
+    bankAccountNumber: string
+    bankIFSC: string
+    bankAccountHolderName: string
+    bankName: string
   }
 
   export type OtpUpdateWithoutUserInput = {
@@ -33687,6 +38255,152 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type BankAccountUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BankAccountUncheckedUpdateWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type BankAccountUncheckedUpdateManyWithoutUserInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    bankAccountNumber?: StringFieldUpdateOperationsInput | string
+    bankIFSC?: StringFieldUpdateOperationsInput | string
+    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
+    bankName?: StringFieldUpdateOperationsInput | string
+  }
+
+  export type UserCreateManyLocationInput = {
+    id?: string
+    email: string
+    phoneNo: string
+    name: string
+    password: string
+    age: number
+    gender?: $Enums.Gender
+    role?: $Enums.Role
+    address: string
+    profileImageUrl?: string | null
+    emailVerified?: boolean
+    isActive?: boolean
+    updatedAt?: Date | string
+    createdAt?: Date | string
+  }
+
+  export type UserUpdateWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUpdateOneWithoutUserNestedInput
+    patient?: PatientUpdateOneWithoutUserNestedInput
+    otp?: OtpUpdateManyWithoutUserNestedInput
+    accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUpdateManyWithoutUserNestedInput
+    comments?: CommentUpdateManyWithoutUserNestedInput
+    ratings?: RatingUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
+    doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
+    patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
+    otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
+    accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
+    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
+    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
+    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
+    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
+    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type UserUncheckedUpdateManyWithoutLocationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    email?: StringFieldUpdateOperationsInput | string
+    phoneNo?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    password?: StringFieldUpdateOperationsInput | string
+    age?: IntFieldUpdateOperationsInput | number
+    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
+    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
+    address?: StringFieldUpdateOperationsInput | string
+    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
+    emailVerified?: BoolFieldUpdateOperationsInput | boolean
+    isActive?: BoolFieldUpdateOperationsInput | boolean
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type AdminCreateManyManagerInput = {
+    id?: string
+    userId: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type AdminUpdateWithoutManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutAdminNestedInput
+    subAdmins?: AdminUpdateManyWithoutManagerNestedInput
+  }
+
+  export type AdminUncheckedUpdateWithoutManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    subAdmins?: AdminUncheckedUpdateManyWithoutManagerNestedInput
+  }
+
+  export type AdminUncheckedUpdateManyWithoutManagerInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type LeaveCreateManyDoctorInput = {
     id?: string
     reason: string
@@ -33748,15 +38462,16 @@ export namespace Prisma {
     amount: number
     currency?: string
     status?: $Enums.WithdrawalStatus
-    bankAccountNumber: string
-    bankIFSC: string
-    bankAccountHolderName: string
-    bankName: string
     razorpayPayoutId?: string | null
     failureReason?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
+  }
+
+  export type DoctorQualificationCreateManyDoctorInput = {
+    id?: string
+    qualification: $Enums.Qualification
   }
 
   export type LeaveUpdateWithoutDoctorInput = {
@@ -33936,10 +38651,6 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33952,10 +38663,6 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -33968,15 +38675,26 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumWithdrawalStatusFieldUpdateOperationsInput | $Enums.WithdrawalStatus
-    bankAccountNumber?: StringFieldUpdateOperationsInput | string
-    bankIFSC?: StringFieldUpdateOperationsInput | string
-    bankAccountHolderName?: StringFieldUpdateOperationsInput | string
-    bankName?: StringFieldUpdateOperationsInput | string
     razorpayPayoutId?: NullableStringFieldUpdateOperationsInput | string | null
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type DoctorQualificationUpdateWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
+  }
+
+  export type DoctorQualificationUncheckedUpdateWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
+  }
+
+  export type DoctorQualificationUncheckedUpdateManyWithoutDoctorInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
   }
 
   export type DoctorPatientRelationCreateManyPatientInput = {

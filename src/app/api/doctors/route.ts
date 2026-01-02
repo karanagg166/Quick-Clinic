@@ -1,80 +1,86 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
-import { profile } from "console";
+
 
 
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-
-    // Build root (doctor) and related (user) filters
-    const filtersDoctor: any = {};
-    const filtersUser: any = {};
-
-    if (searchParams.has("city")) {
-      filtersUser.city = searchParams.get("city");
-    }
-    if (searchParams.has("state")) {
-      filtersUser.state = searchParams.get("state");
-    }
-    if (searchParams.has("specialty")) {
-      filtersDoctor.specialty = searchParams.get("specialty");
-    }
-    if (searchParams.has("name")) {
-      filtersUser.name = {
-        contains: searchParams.get("name"),
-        mode: "insensitive",
-      };
-    }
-    if (searchParams.has("gender")) {
-      filtersUser.gender = searchParams.get("gender");
-    }
-    if (searchParams.has("fees")) {
-      const fees = Number(searchParams.get("fees"));
-      if (!Number.isNaN(fees)) filtersDoctor.fees = fees;
-    }
-    if (searchParams.has("experience")) {
-      const exp = Number(searchParams.get("experience"));
-      if (!Number.isNaN(exp)) filtersDoctor.experience = exp;
-    }
-
-    // Compose final where.
-    const where: any = { ...filtersDoctor };
-    if (Object.keys(filtersUser).length > 0) {
-      where.user = { is: filtersUser };
-    }
-
-    const raw = await prisma.doctor.findMany({
-      where,
-      select: {
-        id: true,
-        specialty: true,
-        qualifications: true,
-        fees: true,
-        experience: true,
-        
-        doctorBio: true,
-
-        user: {
-          select: {
-            name: true,
-            gender: true,
-            age: true,
-            city: true,
-            state: true,
-            profileImageUrl: true,
-          },
-        },
+    const filters: any = {
+      user: {
+        location: {}
       },
+
+    };
+    if (searchParams.get("name")) {
+      filters.user.name = {
+        contains: searchParams.get("patientName") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("city")) {
+      filters.user.location.city = {
+        contains: searchParams.get("city") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("state")) {
+      filters.user.location.state = {
+        contains: searchParams.get("state") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("specialty")) {
+      filters.specialty = {
+        contains: searchParams.get("specialty") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("fees")) {
+      filters.fees = {
+        contains: searchParams.get("fees") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("experience")) {
+      filters.experience = {
+        contains: searchParams.get("experience") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("age")) {
+      filters.user.age = {
+        contains: searchParams.get("age") as string,
+        mode: "insensitive",
+      }
+    }
+    if (searchParams.get("gender")) {
+      filters.user.gender = {
+        contains: searchParams.get("gender") as string,
+        mode: "insensitive",
+      }
+    }
+    const raw = await prisma.doctor.findMany({
+      where: filters,
+      include: {
+        user: {
+          include: {
+            location: true,
+          }
+
+        },
+
+        doctorQualifications: true
+      }
     });
-console.log("doctors-raw", raw);
-    // Map raw Prisma result -> your Doctor type
-    const doctors: Doctor[] = raw.map((d:any) => {
+    const doctors: Doctor[] = raw.map((d: any) => {
+      const qualifications = d.doctorQualifications?.map((dq: any) => dq.qualification) ?? [];
+
       return {
         id: String(d.id),
-       
+
         name: d.user?.name ?? "",
         gender: d.user?.gender ?? "",
         age: d.user?.age ?? 0,
@@ -83,11 +89,11 @@ console.log("doctors-raw", raw);
         fees: d.fees ?? 0,
         profileImageUrl: d.user?.profileImageUrl ?? "",
         doctorBio: d.doctorBio ?? "",
-       
-        qualifications: Array.isArray(d.qualifications) ? d.qualifications : (d.qualifications ? [d.qualifications] : []),
-       
-        city: d.user?.city ?? undefined,
-        state: d.user?.state ?? undefined,
+
+        qualifications: qualifications,
+
+        city: d.user?.location?.city ?? undefined,
+        state: d.user?.location?.state ?? undefined,
       };
     });
 
@@ -96,7 +102,7 @@ console.log("doctors-raw", raw);
     console.error("doctors-get-error", err);
     return NextResponse.json(
       { error: err?.message ?? "Server error" },
-      { status: 500}
+      { status: 500 }
     );
   }
 }
@@ -140,8 +146,12 @@ export const POST = async (req: NextRequest) => {
         specialty,
         fees: Number(fees),
         experience: Number(experience),
-        qualifications: Array.isArray(qualifications) ? qualifications : [],
         doctorBio,
+        doctorQualifications: {
+          create: Array.isArray(qualifications)
+            ? qualifications.map((q: string) => ({ qualification: q }))
+            : []
+        }
       },
     });
 

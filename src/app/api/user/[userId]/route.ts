@@ -14,12 +14,13 @@ export async function GET(
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    // 2. Fetch User + Relations (to get doctorId/patientId)
+    // 2. Fetch User + Relations
     const userDB = await prisma.user.findUnique({
-      where: { id: userId }, // Prisma usually uses 'id', not 'userId'
+      where: { id: userId },
       include: {
         doctor: { select: { id: true } },
         patient: { select: { id: true } },
+        location: true,
       },
     });
 
@@ -37,8 +38,8 @@ export async function GET(
       gender: userDB.gender as "MALE" | "FEMALE" | "BINARY",
       role: userDB.role as "ADMIN" | "DOCTOR" | "PATIENT",
       address: userDB.address || "",
-      city: userDB.city || "",
-      state: userDB.state || "",
+      city: userDB.location?.city || "",
+      state: userDB.location?.state || "",
       pinCode: userDB.pinCode || 0,
       profileImageUrl: userDB.profileImageUrl ?? undefined,
       emailVerified: userDB.emailVerified,
@@ -68,23 +69,41 @@ export async function PATCH(
 
     const { name, phoneNo, age, address, city, state, pinCode, gender } = body;
 
+    // Build update data
+    // If pinCode is changing, we use connectOrCreate for location
+    // If only city/state change (correction), we might want to update the Location entry itself,
+    // but for now let's assume changing address implies potential pincode change or linking to appropriate one.
+
+    const updateData: any = {
+      name,
+      phoneNo,
+      age: age ? Number(age) : undefined,
+      address,
+      gender,
+    };
+
+    if (pinCode) {
+      updateData.location = {
+        connectOrCreate: {
+          where: { pincode: Number(pinCode) },
+          create: {
+            pincode: Number(pinCode),
+            city: city || "", // Fallback if user didn't provide city but changed pincode (should validation handle this)
+            state: state || "",
+          },
+        }
+      };
+    }
+
     // Perform Update
     const updatedDB = await prisma.user.update({
       where: { id: userId },
-      data: {
-        name,
-        phoneNo,
-        age: age ? Number(age) : undefined,
-        address,
-        city,
-        state,
-        pinCode: pinCode ? Number(pinCode) : undefined,
-        gender,
-      },
+      data: updateData,
       // Include relations again to return the full User object
       include: {
         doctor: { select: { id: true } },
         patient: { select: { id: true } },
+        location: true,
       },
     });
 
@@ -97,8 +116,8 @@ export async function PATCH(
       gender: updatedDB.gender as "MALE" | "FEMALE" | "BINARY",
       role: updatedDB.role as "ADMIN" | "DOCTOR" | "PATIENT",
       address: updatedDB.address || "",
-      city: updatedDB.city || "",
-      state: updatedDB.state || "",
+      city: updatedDB.location?.city || "",
+      state: updatedDB.location?.state || "",
       pinCode: updatedDB.pinCode || 0,
       profileImageUrl: updatedDB.profileImageUrl ?? undefined,
       emailVerified: updatedDB.emailVerified,
@@ -110,7 +129,7 @@ export async function PATCH(
 
   } catch (error: any) {
     console.error("SERVER ERROR (UPDATE PROFILE):", error);
-    
+
     if (error.code === 'P2025') {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }

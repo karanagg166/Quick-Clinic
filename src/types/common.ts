@@ -18,7 +18,7 @@ export interface UserDetail {
   role: 'ADMIN' | 'DOCTOR' | 'PATIENT';
   patientId?: string | null;
   doctorId?: string | null;
-
+  adminId?: string | null;
   address: string;
   city: string;
   state: string;
@@ -65,6 +65,8 @@ export interface AppointmentDetail {
   paymentMethod: 'OFFLINE' | 'ONLINE';
   transactionId: string | null;
   notes: string | null;
+  city: string | null;
+  state: string | null;
   bookedAt: string;
   updatedAt: string;
   isAppointmentOffline: boolean;
@@ -73,15 +75,15 @@ export interface AppointmentDetail {
   slot: SlotDetail;
 }
 
-export interface Appointment{
-id:string;
-doctorId:string;
-patientId:string;
-patientName:string;
-doctorName:string;
-slotId:string;
-appointmentDate:string;
-appointmentTime:string;
-bookedAt:string;
-status:'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+export interface Appointment {
+  id: string;
+  doctorId: string;
+  patientId: string;
+  patientName: string;
+  doctorName: string;
+  slotId: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  bookedAt: string;
+  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
 }
