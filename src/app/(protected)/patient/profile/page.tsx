@@ -3,23 +3,13 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AvatarUploader from "@/components/general/AvatarUploader";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/lib/toast";
 import { useUserStore } from "@/store/userStore";
-
-type PatientFields = {
-	medicalHistory: string;
-	allergies: string;
-	currentMedications: string;
-};
+import { AccountDetails } from "@/components/patient/profile/AccountDetails";
+import { MedicalDetails } from "@/components/patient/profile/MedicalDetails";
+import type { PatientProfileFormData, PatientMedicalData } from "@/types/patientProfile";
 
 export default function PatientProfilePage() {
 	const router = useRouter();
@@ -27,12 +17,11 @@ export default function PatientProfilePage() {
 
 	const userId = user?.id;
 	const [patientId, setPatientId] = useState<string | null>(storedPatientId ?? user?.patientId ?? null);
-	const isVerified = user?.emailVerified ?? false;
 
 	const [loadingData, setLoadingData] = useState(true);
 	const [saving, setSaving] = useState(false);
 
-	const [formData, setFormData] = useState({
+	const [formData, setFormData] = useState<PatientProfileFormData>({
 		name: "",
 		email: "",
 		phoneNo: "",
@@ -45,7 +34,7 @@ export default function PatientProfilePage() {
 		role: "PATIENT",
 	});
 
-	const [patientData, setPatientData] = useState<PatientFields>({
+	const [patientData, setPatientData] = useState<PatientMedicalData>({
 		medicalHistory: "",
 		allergies: "",
 		currentMedications: "",
@@ -121,7 +110,7 @@ export default function PatientProfilePage() {
 		}));
 	};
 
-	const handlePatientChange = (field: keyof PatientFields, value: string) => {
+	const handlePatientChange = (field: keyof PatientMedicalData, value: string) => {
 		setPatientData((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -234,195 +223,19 @@ export default function PatientProfilePage() {
 				</div>
 
 				<form onSubmit={handleSave} className="space-y-6">
-					<Card className="shadow-sm">
-						<CardHeader className="flex flex-row items-center justify-between">
-							<div>
-								<CardTitle>Account Details</CardTitle>
-								<p className="text-sm text-muted-foreground">Manage your basic information</p>
-							</div>
-							<Button variant="ghost" size="sm" type="button" onClick={() => router.back()}>
-								Cancel
-							</Button>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{userId && (
-								<AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
-							)}
+					<AccountDetails
+						userId={userId}
+						user={user}
+						formData={formData}
+						handleChange={handleChange}
+						isVerified={user?.emailVerified ?? false}
+					/>
 
-							<Card className="border-dashed">
-								<CardContent className="p-4 flex items-center justify-between">
-									<div>
-										<p className="text-sm font-semibold">Email verification</p>
-										<p className="text-xs text-muted-foreground">{formData.email || user?.email}</p>
-									</div>
-									{isVerified ? (
-										<Badge variant="default" className="bg-green-100 text-green-700">Verified</Badge>
-									) : (
-										<Button type="button" size="sm" onClick={() => router.push("/user/verify")}>
-											Verify Email
-										</Button>
-									)}
-								</CardContent>
-							</Card>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="name">Full Name</Label>
-									<Input
-										id="name"
-										name="name"
-										value={formData.name}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="phoneNo">Mobile Number</Label>
-									<Input
-										id="phoneNo"
-										name="phoneNo"
-										value={formData.phoneNo}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-3 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="age">Age</Label>
-									<Input
-										id="age"
-										type="number"
-										name="age"
-										value={formData.age}
-										onChange={handleChange}
-										min={0}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="gender">Gender</Label>
-									<Select
-										value={formData.gender}
-										onValueChange={(value) => handleChange({ target: { name: "gender", value } } as any)}
-										required
-									>
-										<SelectTrigger id="gender">
-											<SelectValue placeholder="Select gender" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="MALE">Male</SelectItem>
-											<SelectItem value="FEMALE">Female</SelectItem>
-											<SelectItem value="BINARY">Binary</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="space-y-2">
-									<Label>Account Type</Label>
-									<Badge variant="secondary" className="h-10 inline-flex items-center">{formData.role}</Badge>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="address">Address</Label>
-									<Input
-										id="address"
-										name="address"
-										value={formData.address}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label htmlFor="city">City</Label>
-										<Input
-											id="city"
-											name="city"
-											value={formData.city}
-											onChange={handleChange}
-											required
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="state">State</Label>
-										<Input
-											id="state"
-											name="state"
-											value={formData.state}
-											onChange={handleChange}
-											required
-										/>
-									</div>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="pinCode">Pincode</Label>
-									<Input
-										id="pinCode"
-										name="pinCode"
-										value={formData.pinCode}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="email">Email</Label>
-									<Input id="email" name="email" value={formData.email} disabled className="bg-muted" />
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card className="shadow-sm">
-						<CardHeader>
-							<div className="flex items-center justify-between">
-								<div>
-									<CardTitle>Medical Details</CardTitle>
-									<p className="text-sm text-muted-foreground">Keep your care team updated</p>
-								</div>
-								{patientId && <Badge variant="outline">Patient ID: {patientId}</Badge>}
-							</div>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="medicalHistory">Medical History</Label>
-								<Textarea
-									id="medicalHistory"
-									value={patientData.medicalHistory}
-									onChange={(e) => handlePatientChange("medicalHistory", e.target.value)}
-									placeholder="Chronic conditions, surgeries, notes"
-									rows={4}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="allergies">Allergies</Label>
-								<Textarea
-									id="allergies"
-									value={patientData.allergies}
-									onChange={(e) => handlePatientChange("allergies", e.target.value)}
-									placeholder="Food, drug, or seasonal allergies"
-									rows={3}
-								/>
-							</div>
-
-							<div className="space-y-2">
-								<Label htmlFor="currentMedications">Current Medications</Label>
-								<Textarea
-									id="currentMedications"
-									value={patientData.currentMedications}
-									onChange={(e) => handlePatientChange("currentMedications", e.target.value)}
-									placeholder="List active prescriptions"
-									rows={3}
-								/>
-							</div>
-						</CardContent>
-					</Card>
+					<MedicalDetails
+						patientId={patientId}
+						patientData={patientData}
+						handlePatientChange={handlePatientChange}
+					/>
 
 					<div className="flex justify-end">
 						<Button type="submit" size="lg" disabled={saving} className="w-full md:w-48">
