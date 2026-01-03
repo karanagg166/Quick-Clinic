@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { logAudit } from "@/lib/logger";
 import type { AppointmentDetail } from '@/types/common';
 
 export async function GET(
@@ -243,6 +244,9 @@ export async function PATCH(
         console.warn('Failed to send status update notification:', notifError);
       }
     }
+
+    // Log Audit
+    await logAudit(doctorId, "Updated Appointment Status", { appointmentId, status: status || appointmentBefore.status, paymentMethod, isAppointmentOffline });
 
     return NextResponse.json({ success: true, status: status || appointmentBefore.status }, { status: 200 });
   } catch (e) {

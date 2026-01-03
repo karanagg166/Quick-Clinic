@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { UserDetail } from "@/types/common";
+import { logAccess, logAudit } from "@/lib/logger";
+import { verifyToken } from "@/lib/auth";
 
 // 1. GET: Fetch User Details
 export async function GET(
@@ -27,6 +29,15 @@ export async function GET(
     if (!userDB) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+
+    // Log Access
+    const token = req.cookies.get("token")?.value;
+    let viewerId = null;
+    if (token) {
+      const { payload } = await verifyToken(token);
+      if (payload) viewerId = (payload as any).id;
+    }
+    await logAccess(viewerId, userId, "Viewed Profile");
 
     // 3. Map DB result to unified UserDetail shape
     const userData: UserDetail = {
@@ -70,10 +81,6 @@ export async function PATCH(
     const { name, phoneNo, age, address, city, state, pinCode, gender } = body;
 
     // Build update data
-    // If pinCode is changing, we use connectOrCreate for location
-    // If only city/state change (correction), we might want to update the Location entry itself,
-    // but for now let's assume changing address implies potential pincode change or linking to appropriate one.
-
     const updateData: any = {
       name,
       phoneNo,
@@ -88,7 +95,7 @@ export async function PATCH(
           where: { pincode: Number(pinCode) },
           create: {
             pincode: Number(pinCode),
-            city: city || "", // Fallback if user didn't provide city but changed pincode (should validation handle this)
+            city: city || "",
             state: state || "",
           },
         }
@@ -99,13 +106,15 @@ export async function PATCH(
     const updatedDB = await prisma.user.update({
       where: { id: userId },
       data: updateData,
-      // Include relations again to return the full User object
       include: {
         doctor: { select: { id: true } },
         patient: { select: { id: true } },
         location: true,
       },
     });
+
+    // Log Audit
+    await logAudit(userId, "Updated Profile", { updatedFields: Object.keys(updateData) });
 
     const updatedUserData: UserDetail = {
       id: updatedDB.id,
