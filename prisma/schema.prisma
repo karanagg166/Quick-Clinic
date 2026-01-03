@@ -128,7 +128,7 @@ model User {
 
   pinCode Int
 
-  // Optional URL to a profile picture (e.g., Cloudinary/S3/local)
+  
   profileImageUrl String?
   emailVerified   Boolean        @default(false)
   isActive        Boolean        @default(true)
@@ -141,8 +141,7 @@ model User {
   chatMessages    ChatMessages[]
   payments        Payment[]
   notifications   Notification[]
-  comments        Comment[]
-  ratings         Rating[]
+  
   updatedAt       DateTime       @updatedAt
   createdAt       DateTime       @default(now())
   location        Location       @relation(fields: [pinCode], references: [pincode])
@@ -216,11 +215,12 @@ model Patient {
   medicalHistory     String @default("")
   allergies          String @default("")
   currentMedications String @default("")
-
+  
   user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorRelations DoctorPatientRelation[]
   appointments    Appointment[]
-
+  comments        Comment[]
+  ratings         Rating[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -300,7 +300,7 @@ model Appointment {
   id                   String            @id @default(cuid())
   doctorId             String
   patientId            String
-  slotId               String            @unique // <— FK lives here
+  slotId               String            @unique 
   status               AppointmentStatus @default(PENDING)
   paymentMethod        PaymentMethod     @default(OFFLINE)
   transactionId        String?
@@ -450,35 +450,35 @@ model AuditLog {
 model Rating {
   id       String @id @default(cuid())
   doctorId String
-  userId   String
+  patientId   String
   rating   Int // 1-5 stars
 
   // Relations
   doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([doctorId, userId]) // One rating per user per doctor
+  @@unique([doctorId, patientId]) // One rating per user per doctor
   @@index([doctorId])
-  @@index([userId])
+  @@index([patientId])
 }
 
 model Comment {
   id       String @id @default(cuid())
   doctorId String
-  userId   String
+  patientId   String
   text     String // Comment text
 
   // Relations
   doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([doctorId])
-  @@index([userId])
+  @@index([patientId])
   @@index([createdAt])
 }
