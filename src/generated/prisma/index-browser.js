@@ -312,7 +312,7 @@ exports.Prisma.AuditLogScalarFieldEnum = {
 exports.Prisma.RatingScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
-  userId: 'userId',
+  patientId: 'patientId',
   rating: 'rating',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
@@ -321,7 +321,7 @@ exports.Prisma.RatingScalarFieldEnum = {
 exports.Prisma.CommentScalarFieldEnum = {
   id: 'id',
   doctorId: 'doctorId',
-  userId: 'userId',
+  patientId: 'patientId',
   text: 'text',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

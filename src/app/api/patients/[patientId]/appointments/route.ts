@@ -55,8 +55,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
                 name: true,
                 email: true,
                 location: {
-                  city: true,
-                  state: true
+                  select: {
+                    city: true,
+                    state: true
+                  }
+
                 }
               },
             },
@@ -80,8 +83,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
       appointmentTime: a.slot?.startTime ?? "",
       doctorName: a.doctor.user.name,
       doctorEmail: a.doctor.user.email,
-      city: a.doctor.user.location.city,
-      state: a.doctor.user.location.state,
+      city: a.doctor.user.location?.city || "N/A",
+      state: a.doctor.user.location?.state || "N/A",
       fees: a.doctor.fees,
       status: a.status,
       specialty: a.doctor.specialty,
