@@ -3,25 +3,13 @@
 import type { ChangeEvent, FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import AvatarUploader from "@/components/general/AvatarUploader";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Textarea } from "@/components/ui/textarea";
 import { showToast } from "@/lib/toast";
 import { useUserStore } from "@/store/userStore";
-
-type DoctorFields = {
-	specialty: string;
-	experience: string;
-	fees: string;
-	qualifications: string[];
-	doctorBio: string;
-};
+import { AccountDetails } from "@/components/doctor/profile/AccountDetails";
+import { ProfessionalDetails } from "@/components/doctor/profile/ProfessionalDetails";
+import type { DoctorProfileFormData, DoctorProfessionalData } from "@/types/doctorProfile";
 
 export default function DoctorProfilePage() {
 	const router = useRouter();
@@ -29,13 +17,12 @@ export default function DoctorProfilePage() {
 
 	const userId = user?.id;
 	const [doctorId, setDoctorId] = useState<string | null>(storedDoctorId ?? user?.doctorId ?? null);
-	const isVerified = user?.emailVerified ?? false;
 
 	const [loadingData, setLoadingData] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [loadingEnums, setLoadingEnums] = useState(true);
 
-	const [formData, setFormData] = useState({
+	const [formData, setFormData] = useState<DoctorProfileFormData>({
 		name: "",
 		email: "",
 		phoneNo: "",
@@ -48,7 +35,7 @@ export default function DoctorProfilePage() {
 		role: "DOCTOR",
 	});
 
-	const [doctorData, setDoctorData] = useState<DoctorFields>({
+	const [doctorData, setDoctorData] = useState<DoctorProfessionalData>({
 		specialty: "",
 		experience: "",
 		fees: "",
@@ -159,7 +146,7 @@ export default function DoctorProfilePage() {
 		}));
 	};
 
-	const handleDoctorChange = (field: keyof DoctorFields, value: string) => {
+	const handleDoctorChange = (field: keyof DoctorProfessionalData, value: string) => {
 		setDoctorData((prev) => ({ ...prev, [field]: value }));
 	};
 
@@ -290,249 +277,23 @@ export default function DoctorProfilePage() {
 				</div>
 
 				<form onSubmit={handleSave} className="space-y-6">
-					<Card className="shadow-sm">
-						<CardHeader className="flex flex-row items-center justify-between">
-							<div>
-								<CardTitle>Account Details</CardTitle>
-								<p className="text-sm text-muted-foreground">Manage your basic information</p>
-							</div>
-							<Button variant="ghost" size="sm" type="button" onClick={() => router.back()}>
-								Cancel
-							</Button>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{userId && (
-								<AvatarUploader userId={userId} initialUrl={user?.profileImageUrl} />
-							)}
+					<AccountDetails
+						userId={userId}
+						user={user}
+						formData={formData}
+						handleChange={handleChange}
+						isVerified={user?.emailVerified ?? false}
+					/>
 
-							<Card className="border-dashed">
-								<CardContent className="p-4 flex items-center justify-between">
-									<div>
-										<p className="text-sm font-semibold">Email verification</p>
-										<p className="text-xs text-muted-foreground">{formData.email || user?.email}</p>
-									</div>
-									{isVerified ? (
-										<Badge variant="default" className="bg-green-100 text-green-700">Verified</Badge>
-									) : (
-										<Button type="button" size="sm" onClick={() => router.push("/user/verify")}>
-											Verify Email
-										</Button>
-									)}
-								</CardContent>
-							</Card>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="name">Full Name</Label>
-									<Input
-										id="name"
-										name="name"
-										value={formData.name}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="phoneNo">Mobile Number</Label>
-									<Input
-										id="phoneNo"
-										name="phoneNo"
-										value={formData.phoneNo}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-3 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="age">Age</Label>
-									<Input
-										id="age"
-										type="number"
-										name="age"
-										value={formData.age}
-										onChange={handleChange}
-										min={0}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="gender">Gender</Label>
-									<Select
-										value={formData.gender}
-										onValueChange={(value) => handleChange({ target: { name: "gender", value } } as any)}
-										required
-									>
-										<SelectTrigger id="gender">
-											<SelectValue placeholder="Select gender" />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="MALE">Male</SelectItem>
-											<SelectItem value="FEMALE">Female</SelectItem>
-											<SelectItem value="BINARY">Binary</SelectItem>
-										</SelectContent>
-									</Select>
-								</div>
-								<div className="space-y-2">
-									<Label>Account Type</Label>
-									<Badge variant="secondary" className="h-10 inline-flex items-center">{formData.role}</Badge>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="address">Address</Label>
-									<Input
-										id="address"
-										name="address"
-										value={formData.address}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="grid grid-cols-2 gap-4">
-									<div className="space-y-2">
-										<Label htmlFor="city">City</Label>
-										<Input
-											id="city"
-											name="city"
-											value={formData.city}
-											onChange={handleChange}
-											required
-										/>
-									</div>
-									<div className="space-y-2">
-										<Label htmlFor="state">State</Label>
-										<Input
-											id="state"
-											name="state"
-											value={formData.state}
-											onChange={handleChange}
-											required
-										/>
-									</div>
-								</div>
-							</div>
-
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="pinCode">Pincode</Label>
-									<Input
-										id="pinCode"
-										name="pinCode"
-										value={formData.pinCode}
-										onChange={handleChange}
-										required
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="email">Email</Label>
-									<Input id="email" name="email" value={formData.email} disabled className="bg-muted" />
-								</div>
-							</div>
-						</CardContent>
-					</Card>
-
-					<Card className="shadow-sm">
-						<CardHeader>
-							<div className="flex items-center justify-between">
-								<div>
-									<CardTitle>Professional Details</CardTitle>
-									<p className="text-sm text-muted-foreground">Help patients understand your expertise</p>
-								</div>
-								{doctorId && <Badge variant="outline">Doctor ID: {doctorId}</Badge>}
-							</div>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							<div className="space-y-2">
-								<Label htmlFor="specialty">Specialty</Label>
-								<Select
-									value={doctorData.specialty}
-									onValueChange={(value) => handleDoctorChange("specialty", value)}
-								>
-									<SelectTrigger id="specialty">
-										<SelectValue placeholder="Select specialty" />
-									</SelectTrigger>
-									<SelectContent>
-										{(loadingEnums ? [] : specialties).map((sp) => (
-											<SelectItem key={sp} value={sp}>
-												{sp}
-											</SelectItem>
-										))}
-									</SelectContent>
-								</Select>
-							</div>
-						<div className="space-y-2">
-							<Label htmlFor="doctorBio">Professional Bio</Label>
-							<Textarea
-								id="doctorBio"
-								placeholder="Tell patients about yourself, your expertise, and your approach to healthcare..."
-								value={doctorData.doctorBio}
-								onChange={(e) => handleDoctorChange("doctorBio", e.target.value)}
-								rows={4}
-								className="resize-none"
-							/>
-							<p className="text-xs text-muted-foreground">
-								A good bio helps patients understand your background and approach to care.
-							</p>
-						</div>
-							<div className="grid md:grid-cols-2 gap-4">
-								<div className="space-y-2">
-									<Label htmlFor="experience">Experience (years)</Label>
-									<Input
-										id="experience"
-										type="number"
-										value={doctorData.experience}
-										onChange={(e) => handleDoctorChange("experience", e.target.value)}
-										min={0}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="fees">Consultation Fees (₹)</Label>
-									<Input
-										id="fees"
-										type="number"
-										value={doctorData.fees}
-										onChange={(e) => handleDoctorChange("fees", e.target.value)}
-										min={0}
-									/>
-								</div>
-							</div>
-
-							<div className="space-y-3">
-								<Label>Qualifications</Label>
-								<Card className="p-4 max-h-64 overflow-y-auto border-dashed">
-									<div className="grid md:grid-cols-2 gap-3">
-										{(loadingEnums ? [] : qualificationsList).map((qualification) => (
-											<label key={qualification} className="flex items-center gap-2 text-sm cursor-pointer">
-												<input
-													type="checkbox"
-													className="h-4 w-4 rounded border-gray-300"
-													checked={doctorData.qualifications.includes(qualification)}
-													onChange={() => toggleQualification(qualification)}
-												/>
-												{qualification}
-											</label>
-										))}
-										{!loadingEnums && qualificationsList.length === 0 && (
-											<p className="text-sm text-muted-foreground">No qualifications found.</p>
-										)}
-									</div>
-								</Card>
-
-								{doctorData.qualifications.length > 0 && (
-									<div className="flex flex-wrap gap-2">
-										{doctorData.qualifications.map((q) => (
-											<Badge key={q} variant="secondary">
-												{q}
-											</Badge>
-										))}
-									</div>
-								)}
-							</div>
-						</CardContent>
-					</Card>
+					<ProfessionalDetails
+						doctorId={doctorId}
+						doctorData={doctorData}
+						handleDoctorChange={handleDoctorChange}
+						toggleQualification={toggleQualification}
+						specialties={specialties}
+						qualificationsList={qualificationsList}
+						loadingEnums={loadingEnums}
+					/>
 
 					<div className="flex justify-end">
 						<Button type="submit" size="lg" disabled={saving} className="w-full md:w-48">

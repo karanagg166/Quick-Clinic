@@ -20,10 +20,10 @@ export async function GET(
       },
       include: {
         doctor: {
-          include: { user: true },
+          include: { user: { include: { location: true } } },
         },
         patient: {
-          include: { user: true },
+          include: { user: { include: { location: true } } },
         },
         slot: true,
       },
@@ -61,9 +61,9 @@ export async function GET(
           gender: String(appointment.doctor.user.gender) as 'MALE' | 'FEMALE' | 'BINARY',
           role: appointment.doctor.user.role as 'ADMIN' | 'DOCTOR' | 'PATIENT',
           address: appointment.doctor.user.address,
-          city: appointment.doctor.user.city,
-          state: appointment.doctor.user.state,
-          pinCode: appointment.doctor.user.pinCode,
+          city: appointment.doctor.user.location?.city || "N/A",
+          state: appointment.doctor.user.location?.state || "N/A",
+          pinCode: appointment.doctor.user.location?.pinCode || 0,
           emailVerified: appointment.doctor.user.emailVerified,
         },
       },
@@ -82,9 +82,9 @@ export async function GET(
           gender: String(appointment.patient.user.gender) as 'MALE' | 'FEMALE' | 'BINARY',
           role: appointment.patient.user.role as 'ADMIN' | 'DOCTOR' | 'PATIENT',
           address: appointment.patient.user.address,
-          city: appointment.patient.user.city,
-          state: appointment.patient.user.state,
-          pinCode: appointment.patient.user.pinCode,
+          city: appointment.patient.user.location?.city || "N/A",
+          state: appointment.patient.user.location?.state || "N/A",
+          pinCode: appointment.patient.user.location?.pinCode || 0,
           emailVerified: appointment.patient.user.emailVerified,
         },
       },
@@ -96,6 +96,8 @@ export async function GET(
         endTime: appointment.slot.endTime.toISOString(),
         status: String(appointment.slot.status) as 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED',
       },
+      city: null,
+      state: null,
     };
 
     return NextResponse.json(result, { status: 200 });
@@ -121,7 +123,7 @@ export async function PATCH(
       paymentMethod?: string;
       isAppointmentOffline?: boolean;
     }
-    
+
     let body: RequestBody = {};
     try {
       body = await req.json();
@@ -201,7 +203,7 @@ export async function PATCH(
         if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
           const doctorFees = appointmentBefore.doctor.fees; // Fees in rupees
           const feesInPaise = doctorFees * 100; // Convert to paise (smallest currency unit)
-          
+
           // Add fees to doctor's balance
           await prisma.doctor.update({
             where: { id: doctorId },
@@ -211,7 +213,7 @@ export async function PATCH(
               },
             },
           });
-          
+
           console.log(`Transferred ₹${doctorFees} to doctor ${doctorId} balance for completed appointment ${appointmentId}`);
         }
       }
@@ -222,7 +224,7 @@ export async function PATCH(
       try {
         const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
         const patientUserId = appointmentBefore.patient.user.id;
-        
+
         await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

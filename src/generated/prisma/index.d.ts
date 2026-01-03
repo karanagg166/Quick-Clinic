@@ -2851,8 +2851,6 @@ export namespace Prisma {
     chatMessages: number
     payments: number
     notifications: number
-    comments: number
-    ratings: number
     bankAccounts: number
   }
 
@@ -2863,8 +2861,6 @@ export namespace Prisma {
     chatMessages?: boolean | UserCountOutputTypeCountChatMessagesArgs
     payments?: boolean | UserCountOutputTypeCountPaymentsArgs
     notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
-    comments?: boolean | UserCountOutputTypeCountCommentsArgs
-    ratings?: boolean | UserCountOutputTypeCountRatingsArgs
     bankAccounts?: boolean | UserCountOutputTypeCountBankAccountsArgs
   }
 
@@ -2919,20 +2915,6 @@ export namespace Prisma {
    */
   export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: NotificationWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: CommentWhereInput
-  }
-
-  /**
-   * UserCountOutputType without action
-   */
-  export type UserCountOutputTypeCountRatingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: RatingWhereInput
   }
 
   /**
@@ -3106,11 +3088,15 @@ export namespace Prisma {
   export type PatientCountOutputType = {
     doctorRelations: number
     appointments: number
+    comments: number
+    ratings: number
   }
 
   export type PatientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctorRelations?: boolean | PatientCountOutputTypeCountDoctorRelationsArgs
     appointments?: boolean | PatientCountOutputTypeCountAppointmentsArgs
+    comments?: boolean | PatientCountOutputTypeCountCommentsArgs
+    ratings?: boolean | PatientCountOutputTypeCountRatingsArgs
   }
 
   // Custom InputTypes
@@ -3136,6 +3122,20 @@ export namespace Prisma {
    */
   export type PatientCountOutputTypeCountAppointmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: AppointmentWhereInput
+  }
+
+  /**
+   * PatientCountOutputType without action
+   */
+  export type PatientCountOutputTypeCountCommentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: CommentWhereInput
+  }
+
+  /**
+   * PatientCountOutputType without action
+   */
+  export type PatientCountOutputTypeCountRatingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RatingWhereInput
   }
 
 
@@ -3465,8 +3465,6 @@ export namespace Prisma {
     chatMessages?: boolean | User$chatMessagesArgs<ExtArgs>
     payments?: boolean | User$paymentsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
-    comments?: boolean | User$commentsArgs<ExtArgs>
-    ratings?: boolean | User$ratingsArgs<ExtArgs>
     location?: boolean | LocationDefaultArgs<ExtArgs>
     bankAccounts?: boolean | User$bankAccountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -3539,8 +3537,6 @@ export namespace Prisma {
     chatMessages?: boolean | User$chatMessagesArgs<ExtArgs>
     payments?: boolean | User$paymentsArgs<ExtArgs>
     notifications?: boolean | User$notificationsArgs<ExtArgs>
-    comments?: boolean | User$commentsArgs<ExtArgs>
-    ratings?: boolean | User$ratingsArgs<ExtArgs>
     location?: boolean | LocationDefaultArgs<ExtArgs>
     bankAccounts?: boolean | User$bankAccountsArgs<ExtArgs>
     _count?: boolean | UserCountOutputTypeDefaultArgs<ExtArgs>
@@ -3564,8 +3560,6 @@ export namespace Prisma {
       chatMessages: Prisma.$ChatMessagesPayload<ExtArgs>[]
       payments: Prisma.$PaymentPayload<ExtArgs>[]
       notifications: Prisma.$NotificationPayload<ExtArgs>[]
-      comments: Prisma.$CommentPayload<ExtArgs>[]
-      ratings: Prisma.$RatingPayload<ExtArgs>[]
       location: Prisma.$LocationPayload<ExtArgs>
       bankAccounts: Prisma.$BankAccountPayload<ExtArgs>[]
     }
@@ -3988,8 +3982,6 @@ export namespace Prisma {
     chatMessages<T extends User$chatMessagesArgs<ExtArgs> = {}>(args?: Subset<T, User$chatMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$ChatMessagesPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     payments<T extends User$paymentsArgs<ExtArgs> = {}>(args?: Subset<T, User$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     notifications<T extends User$notificationsArgs<ExtArgs> = {}>(args?: Subset<T, User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    comments<T extends User$commentsArgs<ExtArgs> = {}>(args?: Subset<T, User$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    ratings<T extends User$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, User$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     location<T extends LocationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, LocationDefaultArgs<ExtArgs>>): Prisma__LocationClient<$Result.GetResult<Prisma.$LocationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     bankAccounts<T extends User$bankAccountsArgs<ExtArgs> = {}>(args?: Subset<T, User$bankAccountsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$BankAccountPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
@@ -4630,54 +4622,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: NotificationScalarFieldEnum | NotificationScalarFieldEnum[]
-  }
-
-  /**
-   * User.comments
-   */
-  export type User$commentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Comment
-     */
-    select?: CommentSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Comment
-     */
-    omit?: CommentOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: CommentInclude<ExtArgs> | null
-    where?: CommentWhereInput
-    orderBy?: CommentOrderByWithRelationInput | CommentOrderByWithRelationInput[]
-    cursor?: CommentWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: CommentScalarFieldEnum | CommentScalarFieldEnum[]
-  }
-
-  /**
-   * User.ratings
-   */
-  export type User$ratingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the Rating
-     */
-    select?: RatingSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the Rating
-     */
-    omit?: RatingOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: RatingInclude<ExtArgs> | null
-    where?: RatingWhereInput
-    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[]
-    cursor?: RatingWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[]
   }
 
   /**
@@ -9532,6 +9476,8 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     doctorRelations?: boolean | Patient$doctorRelationsArgs<ExtArgs>
     appointments?: boolean | Patient$appointmentsArgs<ExtArgs>
+    comments?: boolean | Patient$commentsArgs<ExtArgs>
+    ratings?: boolean | Patient$ratingsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["patient"]>
 
@@ -9572,6 +9518,8 @@ export namespace Prisma {
     user?: boolean | UserDefaultArgs<ExtArgs>
     doctorRelations?: boolean | Patient$doctorRelationsArgs<ExtArgs>
     appointments?: boolean | Patient$appointmentsArgs<ExtArgs>
+    comments?: boolean | Patient$commentsArgs<ExtArgs>
+    ratings?: boolean | Patient$ratingsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PatientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9587,6 +9535,8 @@ export namespace Prisma {
       user: Prisma.$UserPayload<ExtArgs>
       doctorRelations: Prisma.$DoctorPatientRelationPayload<ExtArgs>[]
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
+      comments: Prisma.$CommentPayload<ExtArgs>[]
+      ratings: Prisma.$RatingPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -9993,6 +9943,8 @@ export namespace Prisma {
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     doctorRelations<T extends Patient$doctorRelationsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$doctorRelationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorPatientRelationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     appointments<T extends Patient$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    comments<T extends Patient$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    ratings<T extends Patient$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10470,6 +10422,54 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: AppointmentScalarFieldEnum | AppointmentScalarFieldEnum[]
+  }
+
+  /**
+   * Patient.comments
+   */
+  export type Patient$commentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Comment
+     */
+    select?: CommentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Comment
+     */
+    omit?: CommentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: CommentInclude<ExtArgs> | null
+    where?: CommentWhereInput
+    orderBy?: CommentOrderByWithRelationInput | CommentOrderByWithRelationInput[]
+    cursor?: CommentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: CommentScalarFieldEnum | CommentScalarFieldEnum[]
+  }
+
+  /**
+   * Patient.ratings
+   */
+  export type Patient$ratingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Rating
+     */
+    select?: RatingSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Rating
+     */
+    omit?: RatingOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RatingInclude<ExtArgs> | null
+    where?: RatingWhereInput
+    orderBy?: RatingOrderByWithRelationInput | RatingOrderByWithRelationInput[]
+    cursor?: RatingWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RatingScalarFieldEnum | RatingScalarFieldEnum[]
   }
 
   /**
@@ -24776,7 +24776,7 @@ export namespace Prisma {
   export type RatingMinAggregateOutputType = {
     id: string | null
     doctorId: string | null
-    userId: string | null
+    patientId: string | null
     rating: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -24785,7 +24785,7 @@ export namespace Prisma {
   export type RatingMaxAggregateOutputType = {
     id: string | null
     doctorId: string | null
-    userId: string | null
+    patientId: string | null
     rating: number | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -24794,7 +24794,7 @@ export namespace Prisma {
   export type RatingCountAggregateOutputType = {
     id: number
     doctorId: number
-    userId: number
+    patientId: number
     rating: number
     createdAt: number
     updatedAt: number
@@ -24813,7 +24813,7 @@ export namespace Prisma {
   export type RatingMinAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     rating?: true
     createdAt?: true
     updatedAt?: true
@@ -24822,7 +24822,7 @@ export namespace Prisma {
   export type RatingMaxAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     rating?: true
     createdAt?: true
     updatedAt?: true
@@ -24831,7 +24831,7 @@ export namespace Prisma {
   export type RatingCountAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     rating?: true
     createdAt?: true
     updatedAt?: true
@@ -24927,7 +24927,7 @@ export namespace Prisma {
   export type RatingGroupByOutputType = {
     id: string
     doctorId: string
-    userId: string
+    patientId: string
     rating: number
     createdAt: Date
     updatedAt: Date
@@ -24955,69 +24955,69 @@ export namespace Prisma {
   export type RatingSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     rating?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["rating"]>
 
   export type RatingSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     rating?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["rating"]>
 
   export type RatingSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     rating?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["rating"]>
 
   export type RatingSelectScalar = {
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     rating?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type RatingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "userId" | "rating" | "createdAt" | "updatedAt", ExtArgs["result"]["rating"]>
+  export type RatingOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "rating" | "createdAt" | "updatedAt", ExtArgs["result"]["rating"]>
   export type RatingInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type RatingIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type RatingIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
 
   export type $RatingPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Rating"
     objects: {
       doctor: Prisma.$DoctorPayload<ExtArgs>
-      user: Prisma.$UserPayload<ExtArgs>
+      patient: Prisma.$PatientPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       doctorId: string
-      userId: string
+      patientId: string
       rating: number
       createdAt: Date
       updatedAt: Date
@@ -25416,7 +25416,7 @@ export namespace Prisma {
   export interface Prisma__RatingClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -25448,7 +25448,7 @@ export namespace Prisma {
   interface RatingFieldRefs {
     readonly id: FieldRef<"Rating", 'String'>
     readonly doctorId: FieldRef<"Rating", 'String'>
-    readonly userId: FieldRef<"Rating", 'String'>
+    readonly patientId: FieldRef<"Rating", 'String'>
     readonly rating: FieldRef<"Rating", 'Int'>
     readonly createdAt: FieldRef<"Rating", 'DateTime'>
     readonly updatedAt: FieldRef<"Rating", 'DateTime'>
@@ -25879,7 +25879,7 @@ export namespace Prisma {
   export type CommentMinAggregateOutputType = {
     id: string | null
     doctorId: string | null
-    userId: string | null
+    patientId: string | null
     text: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -25888,7 +25888,7 @@ export namespace Prisma {
   export type CommentMaxAggregateOutputType = {
     id: string | null
     doctorId: string | null
-    userId: string | null
+    patientId: string | null
     text: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -25897,7 +25897,7 @@ export namespace Prisma {
   export type CommentCountAggregateOutputType = {
     id: number
     doctorId: number
-    userId: number
+    patientId: number
     text: number
     createdAt: number
     updatedAt: number
@@ -25908,7 +25908,7 @@ export namespace Prisma {
   export type CommentMinAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     text?: true
     createdAt?: true
     updatedAt?: true
@@ -25917,7 +25917,7 @@ export namespace Prisma {
   export type CommentMaxAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     text?: true
     createdAt?: true
     updatedAt?: true
@@ -25926,7 +25926,7 @@ export namespace Prisma {
   export type CommentCountAggregateInputType = {
     id?: true
     doctorId?: true
-    userId?: true
+    patientId?: true
     text?: true
     createdAt?: true
     updatedAt?: true
@@ -26008,7 +26008,7 @@ export namespace Prisma {
   export type CommentGroupByOutputType = {
     id: string
     doctorId: string
-    userId: string
+    patientId: string
     text: string
     createdAt: Date
     updatedAt: Date
@@ -26034,69 +26034,69 @@ export namespace Prisma {
   export type CommentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     text?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
   export type CommentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     text?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
   export type CommentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     text?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["comment"]>
 
   export type CommentSelectScalar = {
     id?: boolean
     doctorId?: boolean
-    userId?: boolean
+    patientId?: boolean
     text?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "userId" | "text" | "createdAt" | "updatedAt", ExtArgs["result"]["comment"]>
+  export type CommentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "text" | "createdAt" | "updatedAt", ExtArgs["result"]["comment"]>
   export type CommentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type CommentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type CommentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    user?: boolean | UserDefaultArgs<ExtArgs>
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
 
   export type $CommentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Comment"
     objects: {
       doctor: Prisma.$DoctorPayload<ExtArgs>
-      user: Prisma.$UserPayload<ExtArgs>
+      patient: Prisma.$PatientPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       doctorId: string
-      userId: string
+      patientId: string
       text: string
       createdAt: Date
       updatedAt: Date
@@ -26495,7 +26495,7 @@ export namespace Prisma {
   export interface Prisma__CommentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -26527,7 +26527,7 @@ export namespace Prisma {
   interface CommentFieldRefs {
     readonly id: FieldRef<"Comment", 'String'>
     readonly doctorId: FieldRef<"Comment", 'String'>
-    readonly userId: FieldRef<"Comment", 'String'>
+    readonly patientId: FieldRef<"Comment", 'String'>
     readonly text: FieldRef<"Comment", 'String'>
     readonly createdAt: FieldRef<"Comment", 'DateTime'>
     readonly updatedAt: FieldRef<"Comment", 'DateTime'>
@@ -27208,7 +27208,7 @@ export namespace Prisma {
   export const RatingScalarFieldEnum: {
     id: 'id',
     doctorId: 'doctorId',
-    userId: 'userId',
+    patientId: 'patientId',
     rating: 'rating',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -27220,7 +27220,7 @@ export namespace Prisma {
   export const CommentScalarFieldEnum: {
     id: 'id',
     doctorId: 'doctorId',
-    userId: 'userId',
+    patientId: 'patientId',
     text: 'text',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -27502,8 +27502,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesListRelationFilter
     payments?: PaymentListRelationFilter
     notifications?: NotificationListRelationFilter
-    comments?: CommentListRelationFilter
-    ratings?: RatingListRelationFilter
     location?: XOR<LocationScalarRelationFilter, LocationWhereInput>
     bankAccounts?: BankAccountListRelationFilter
   }
@@ -27533,8 +27531,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesOrderByRelationAggregateInput
     payments?: PaymentOrderByRelationAggregateInput
     notifications?: NotificationOrderByRelationAggregateInput
-    comments?: CommentOrderByRelationAggregateInput
-    ratings?: RatingOrderByRelationAggregateInput
     location?: LocationOrderByWithRelationInput
     bankAccounts?: BankAccountOrderByRelationAggregateInput
   }
@@ -27567,8 +27563,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesListRelationFilter
     payments?: PaymentListRelationFilter
     notifications?: NotificationListRelationFilter
-    comments?: CommentListRelationFilter
-    ratings?: RatingListRelationFilter
     location?: XOR<LocationScalarRelationFilter, LocationWhereInput>
     bankAccounts?: BankAccountListRelationFilter
   }, "id" | "email">
@@ -27889,6 +27883,8 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     doctorRelations?: DoctorPatientRelationListRelationFilter
     appointments?: AppointmentListRelationFilter
+    comments?: CommentListRelationFilter
+    ratings?: RatingListRelationFilter
   }
 
   export type PatientOrderByWithRelationInput = {
@@ -27902,6 +27898,8 @@ export namespace Prisma {
     user?: UserOrderByWithRelationInput
     doctorRelations?: DoctorPatientRelationOrderByRelationAggregateInput
     appointments?: AppointmentOrderByRelationAggregateInput
+    comments?: CommentOrderByRelationAggregateInput
+    ratings?: RatingOrderByRelationAggregateInput
   }
 
   export type PatientWhereUniqueInput = Prisma.AtLeast<{
@@ -27918,6 +27916,8 @@ export namespace Prisma {
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
     doctorRelations?: DoctorPatientRelationListRelationFilter
     appointments?: AppointmentListRelationFilter
+    comments?: CommentListRelationFilter
+    ratings?: RatingListRelationFilter
   }, "id" | "userId">
 
   export type PatientOrderByWithAggregationInput = {
@@ -28817,44 +28817,44 @@ export namespace Prisma {
     NOT?: RatingWhereInput | RatingWhereInput[]
     id?: StringFilter<"Rating"> | string
     doctorId?: StringFilter<"Rating"> | string
-    userId?: StringFilter<"Rating"> | string
+    patientId?: StringFilter<"Rating"> | string
     rating?: IntFilter<"Rating"> | number
     createdAt?: DateTimeFilter<"Rating"> | Date | string
     updatedAt?: DateTimeFilter<"Rating"> | Date | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
 
   export type RatingOrderByWithRelationInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     rating?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     doctor?: DoctorOrderByWithRelationInput
-    user?: UserOrderByWithRelationInput
+    patient?: PatientOrderByWithRelationInput
   }
 
   export type RatingWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    doctorId_userId?: RatingDoctorIdUserIdCompoundUniqueInput
+    doctorId_patientId?: RatingDoctorIdPatientIdCompoundUniqueInput
     AND?: RatingWhereInput | RatingWhereInput[]
     OR?: RatingWhereInput[]
     NOT?: RatingWhereInput | RatingWhereInput[]
     doctorId?: StringFilter<"Rating"> | string
-    userId?: StringFilter<"Rating"> | string
+    patientId?: StringFilter<"Rating"> | string
     rating?: IntFilter<"Rating"> | number
     createdAt?: DateTimeFilter<"Rating"> | Date | string
     updatedAt?: DateTimeFilter<"Rating"> | Date | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "doctorId_userId">
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
+  }, "id" | "doctorId_patientId">
 
   export type RatingOrderByWithAggregationInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     rating?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28871,7 +28871,7 @@ export namespace Prisma {
     NOT?: RatingScalarWhereWithAggregatesInput | RatingScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Rating"> | string
     doctorId?: StringWithAggregatesFilter<"Rating"> | string
-    userId?: StringWithAggregatesFilter<"Rating"> | string
+    patientId?: StringWithAggregatesFilter<"Rating"> | string
     rating?: IntWithAggregatesFilter<"Rating"> | number
     createdAt?: DateTimeWithAggregatesFilter<"Rating"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Rating"> | Date | string
@@ -28883,23 +28883,23 @@ export namespace Prisma {
     NOT?: CommentWhereInput | CommentWhereInput[]
     id?: StringFilter<"Comment"> | string
     doctorId?: StringFilter<"Comment"> | string
-    userId?: StringFilter<"Comment"> | string
+    patientId?: StringFilter<"Comment"> | string
     text?: StringFilter<"Comment"> | string
     createdAt?: DateTimeFilter<"Comment"> | Date | string
     updatedAt?: DateTimeFilter<"Comment"> | Date | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
 
   export type CommentOrderByWithRelationInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     text?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     doctor?: DoctorOrderByWithRelationInput
-    user?: UserOrderByWithRelationInput
+    patient?: PatientOrderByWithRelationInput
   }
 
   export type CommentWhereUniqueInput = Prisma.AtLeast<{
@@ -28908,18 +28908,18 @@ export namespace Prisma {
     OR?: CommentWhereInput[]
     NOT?: CommentWhereInput | CommentWhereInput[]
     doctorId?: StringFilter<"Comment"> | string
-    userId?: StringFilter<"Comment"> | string
+    patientId?: StringFilter<"Comment"> | string
     text?: StringFilter<"Comment"> | string
     createdAt?: DateTimeFilter<"Comment"> | Date | string
     updatedAt?: DateTimeFilter<"Comment"> | Date | string
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }, "id">
 
   export type CommentOrderByWithAggregationInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     text?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -28934,7 +28934,7 @@ export namespace Prisma {
     NOT?: CommentScalarWhereWithAggregatesInput | CommentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Comment"> | string
     doctorId?: StringWithAggregatesFilter<"Comment"> | string
-    userId?: StringWithAggregatesFilter<"Comment"> | string
+    patientId?: StringWithAggregatesFilter<"Comment"> | string
     text?: StringWithAggregatesFilter<"Comment"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
@@ -28964,8 +28964,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -28995,8 +28993,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -29024,8 +29020,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -29055,8 +29049,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -29387,6 +29379,8 @@ export namespace Prisma {
     user: UserCreateNestedOneWithoutPatientInput
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateInput = {
@@ -29399,6 +29393,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUpdateInput = {
@@ -29411,6 +29407,8 @@ export namespace Prisma {
     user?: UserUpdateOneRequiredWithoutPatientNestedInput
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateInput = {
@@ -29423,6 +29421,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateManyInput = {
@@ -30354,13 +30354,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     doctor: DoctorCreateNestedOneWithoutRatingsInput
-    user: UserCreateNestedOneWithoutRatingsInput
+    patient: PatientCreateNestedOneWithoutRatingsInput
   }
 
   export type RatingUncheckedCreateInput = {
     id?: string
     doctorId: string
-    userId: string
+    patientId: string
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30372,13 +30372,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUpdateOneRequiredWithoutRatingsNestedInput
-    user?: UserUpdateOneRequiredWithoutRatingsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutRatingsNestedInput
   }
 
   export type RatingUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30387,7 +30387,7 @@ export namespace Prisma {
   export type RatingCreateManyInput = {
     id?: string
     doctorId: string
-    userId: string
+    patientId: string
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30403,7 +30403,7 @@ export namespace Prisma {
   export type RatingUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30415,13 +30415,13 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     doctor: DoctorCreateNestedOneWithoutCommentsInput
-    user: UserCreateNestedOneWithoutCommentsInput
+    patient: PatientCreateNestedOneWithoutCommentsInput
   }
 
   export type CommentUncheckedCreateInput = {
     id?: string
     doctorId: string
-    userId: string
+    patientId: string
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30433,13 +30433,13 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUpdateOneRequiredWithoutCommentsNestedInput
-    user?: UserUpdateOneRequiredWithoutCommentsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutCommentsNestedInput
   }
 
   export type CommentUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30448,7 +30448,7 @@ export namespace Prisma {
   export type CommentCreateManyInput = {
     id?: string
     doctorId: string
-    userId: string
+    patientId: string
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -30464,7 +30464,7 @@ export namespace Prisma {
   export type CommentUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -30592,18 +30592,6 @@ export namespace Prisma {
     none?: NotificationWhereInput
   }
 
-  export type CommentListRelationFilter = {
-    every?: CommentWhereInput
-    some?: CommentWhereInput
-    none?: CommentWhereInput
-  }
-
-  export type RatingListRelationFilter = {
-    every?: RatingWhereInput
-    some?: RatingWhereInput
-    none?: RatingWhereInput
-  }
-
   export type LocationScalarRelationFilter = {
     is?: LocationWhereInput
     isNot?: LocationWhereInput
@@ -30641,14 +30629,6 @@ export namespace Prisma {
   }
 
   export type NotificationOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type CommentOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type RatingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -30925,6 +30905,18 @@ export namespace Prisma {
     none?: SlotWhereInput
   }
 
+  export type CommentListRelationFilter = {
+    every?: CommentWhereInput
+    some?: CommentWhereInput
+    none?: CommentWhereInput
+  }
+
+  export type RatingListRelationFilter = {
+    every?: RatingWhereInput
+    some?: RatingWhereInput
+    none?: RatingWhereInput
+  }
+
   export type WithdrawalListRelationFilter = {
     every?: WithdrawalWhereInput
     some?: WithdrawalWhereInput
@@ -30950,6 +30942,14 @@ export namespace Prisma {
   }
 
   export type SlotOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type CommentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RatingOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -31726,15 +31726,15 @@ export namespace Prisma {
     _max?: NestedJsonNullableFilter<$PrismaModel>
   }
 
-  export type RatingDoctorIdUserIdCompoundUniqueInput = {
+  export type RatingDoctorIdPatientIdCompoundUniqueInput = {
     doctorId: string
-    userId: string
+    patientId: string
   }
 
   export type RatingCountOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     rating?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31747,7 +31747,7 @@ export namespace Prisma {
   export type RatingMaxOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     rating?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31756,7 +31756,7 @@ export namespace Prisma {
   export type RatingMinOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     rating?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31769,7 +31769,7 @@ export namespace Prisma {
   export type CommentCountOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     text?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31778,7 +31778,7 @@ export namespace Prisma {
   export type CommentMaxOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     text?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31787,7 +31787,7 @@ export namespace Prisma {
   export type CommentMinOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
-    userId?: SortOrder
+    patientId?: SortOrder
     text?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -31851,20 +31851,6 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type CommentCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput> | CommentCreateWithoutUserInput[] | CommentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutUserInput | CommentCreateOrConnectWithoutUserInput[]
-    createMany?: CommentCreateManyUserInputEnvelope
-    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-  }
-
-  export type RatingCreateNestedManyWithoutUserInput = {
-    create?: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput> | RatingCreateWithoutUserInput[] | RatingUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: RatingCreateOrConnectWithoutUserInput | RatingCreateOrConnectWithoutUserInput[]
-    createMany?: RatingCreateManyUserInputEnvelope
-    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
   export type LocationCreateNestedOneWithoutUserInput = {
@@ -31938,20 +31924,6 @@ export namespace Prisma {
     connectOrCreate?: NotificationCreateOrConnectWithoutUserInput | NotificationCreateOrConnectWithoutUserInput[]
     createMany?: NotificationCreateManyUserInputEnvelope
     connect?: NotificationWhereUniqueInput | NotificationWhereUniqueInput[]
-  }
-
-  export type CommentUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput> | CommentCreateWithoutUserInput[] | CommentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutUserInput | CommentCreateOrConnectWithoutUserInput[]
-    createMany?: CommentCreateManyUserInputEnvelope
-    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-  }
-
-  export type RatingUncheckedCreateNestedManyWithoutUserInput = {
-    create?: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput> | RatingCreateWithoutUserInput[] | RatingUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: RatingCreateOrConnectWithoutUserInput | RatingCreateOrConnectWithoutUserInput[]
-    createMany?: RatingCreateManyUserInputEnvelope
-    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
   export type BankAccountUncheckedCreateNestedManyWithoutUserInput = {
@@ -32107,34 +32079,6 @@ export namespace Prisma {
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
   }
 
-  export type CommentUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput> | CommentCreateWithoutUserInput[] | CommentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutUserInput | CommentCreateOrConnectWithoutUserInput[]
-    upsert?: CommentUpsertWithWhereUniqueWithoutUserInput | CommentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommentCreateManyUserInputEnvelope
-    set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    update?: CommentUpdateWithWhereUniqueWithoutUserInput | CommentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommentUpdateManyWithWhereWithoutUserInput | CommentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
-  }
-
-  export type RatingUpdateManyWithoutUserNestedInput = {
-    create?: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput> | RatingCreateWithoutUserInput[] | RatingUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: RatingCreateOrConnectWithoutUserInput | RatingCreateOrConnectWithoutUserInput[]
-    upsert?: RatingUpsertWithWhereUniqueWithoutUserInput | RatingUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: RatingCreateManyUserInputEnvelope
-    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    update?: RatingUpdateWithWhereUniqueWithoutUserInput | RatingUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: RatingUpdateManyWithWhereWithoutUserInput | RatingUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
-  }
-
   export type LocationUpdateOneRequiredWithoutUserNestedInput = {
     create?: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
     connectOrCreate?: LocationCreateOrConnectWithoutUserInput
@@ -32269,34 +32213,6 @@ export namespace Prisma {
     update?: NotificationUpdateWithWhereUniqueWithoutUserInput | NotificationUpdateWithWhereUniqueWithoutUserInput[]
     updateMany?: NotificationUpdateManyWithWhereWithoutUserInput | NotificationUpdateManyWithWhereWithoutUserInput[]
     deleteMany?: NotificationScalarWhereInput | NotificationScalarWhereInput[]
-  }
-
-  export type CommentUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput> | CommentCreateWithoutUserInput[] | CommentUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: CommentCreateOrConnectWithoutUserInput | CommentCreateOrConnectWithoutUserInput[]
-    upsert?: CommentUpsertWithWhereUniqueWithoutUserInput | CommentUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: CommentCreateManyUserInputEnvelope
-    set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
-    update?: CommentUpdateWithWhereUniqueWithoutUserInput | CommentUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: CommentUpdateManyWithWhereWithoutUserInput | CommentUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
-  }
-
-  export type RatingUncheckedUpdateManyWithoutUserNestedInput = {
-    create?: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput> | RatingCreateWithoutUserInput[] | RatingUncheckedCreateWithoutUserInput[]
-    connectOrCreate?: RatingCreateOrConnectWithoutUserInput | RatingCreateOrConnectWithoutUserInput[]
-    upsert?: RatingUpsertWithWhereUniqueWithoutUserInput | RatingUpsertWithWhereUniqueWithoutUserInput[]
-    createMany?: RatingCreateManyUserInputEnvelope
-    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
-    update?: RatingUpdateWithWhereUniqueWithoutUserInput | RatingUpdateWithWhereUniqueWithoutUserInput[]
-    updateMany?: RatingUpdateManyWithWhereWithoutUserInput | RatingUpdateManyWithWhereWithoutUserInput[]
-    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
   export type BankAccountUncheckedUpdateManyWithoutUserNestedInput = {
@@ -32851,6 +32767,20 @@ export namespace Prisma {
     connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
   }
 
+  export type CommentCreateNestedManyWithoutPatientInput = {
+    create?: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput> | CommentCreateWithoutPatientInput[] | CommentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPatientInput | CommentCreateOrConnectWithoutPatientInput[]
+    createMany?: CommentCreateManyPatientInputEnvelope
+    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+  }
+
+  export type RatingCreateNestedManyWithoutPatientInput = {
+    create?: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput> | RatingCreateWithoutPatientInput[] | RatingUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: RatingCreateOrConnectWithoutPatientInput | RatingCreateOrConnectWithoutPatientInput[]
+    createMany?: RatingCreateManyPatientInputEnvelope
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+  }
+
   export type DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -32863,6 +32793,20 @@ export namespace Prisma {
     connectOrCreate?: AppointmentCreateOrConnectWithoutPatientInput | AppointmentCreateOrConnectWithoutPatientInput[]
     createMany?: AppointmentCreateManyPatientInputEnvelope
     connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+  }
+
+  export type CommentUncheckedCreateNestedManyWithoutPatientInput = {
+    create?: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput> | CommentCreateWithoutPatientInput[] | CommentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPatientInput | CommentCreateOrConnectWithoutPatientInput[]
+    createMany?: CommentCreateManyPatientInputEnvelope
+    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+  }
+
+  export type RatingUncheckedCreateNestedManyWithoutPatientInput = {
+    create?: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput> | RatingCreateWithoutPatientInput[] | RatingUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: RatingCreateOrConnectWithoutPatientInput | RatingCreateOrConnectWithoutPatientInput[]
+    createMany?: RatingCreateManyPatientInputEnvelope
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutPatientNestedInput = {
@@ -32901,6 +32845,34 @@ export namespace Prisma {
     deleteMany?: AppointmentScalarWhereInput | AppointmentScalarWhereInput[]
   }
 
+  export type CommentUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput> | CommentCreateWithoutPatientInput[] | CommentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPatientInput | CommentCreateOrConnectWithoutPatientInput[]
+    upsert?: CommentUpsertWithWhereUniqueWithoutPatientInput | CommentUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: CommentCreateManyPatientInputEnvelope
+    set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    update?: CommentUpdateWithWhereUniqueWithoutPatientInput | CommentUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: CommentUpdateManyWithWhereWithoutPatientInput | CommentUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
+  }
+
+  export type RatingUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput> | RatingCreateWithoutPatientInput[] | RatingUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: RatingCreateOrConnectWithoutPatientInput | RatingCreateOrConnectWithoutPatientInput[]
+    upsert?: RatingUpsertWithWhereUniqueWithoutPatientInput | RatingUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: RatingCreateManyPatientInputEnvelope
+    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    update?: RatingUpdateWithWhereUniqueWithoutPatientInput | RatingUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: RatingUpdateManyWithWhereWithoutPatientInput | RatingUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
+  }
+
   export type DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -32927,6 +32899,34 @@ export namespace Prisma {
     update?: AppointmentUpdateWithWhereUniqueWithoutPatientInput | AppointmentUpdateWithWhereUniqueWithoutPatientInput[]
     updateMany?: AppointmentUpdateManyWithWhereWithoutPatientInput | AppointmentUpdateManyWithWhereWithoutPatientInput[]
     deleteMany?: AppointmentScalarWhereInput | AppointmentScalarWhereInput[]
+  }
+
+  export type CommentUncheckedUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput> | CommentCreateWithoutPatientInput[] | CommentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: CommentCreateOrConnectWithoutPatientInput | CommentCreateOrConnectWithoutPatientInput[]
+    upsert?: CommentUpsertWithWhereUniqueWithoutPatientInput | CommentUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: CommentCreateManyPatientInputEnvelope
+    set?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    disconnect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    delete?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    connect?: CommentWhereUniqueInput | CommentWhereUniqueInput[]
+    update?: CommentUpdateWithWhereUniqueWithoutPatientInput | CommentUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: CommentUpdateManyWithWhereWithoutPatientInput | CommentUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: CommentScalarWhereInput | CommentScalarWhereInput[]
+  }
+
+  export type RatingUncheckedUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput> | RatingCreateWithoutPatientInput[] | RatingUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: RatingCreateOrConnectWithoutPatientInput | RatingCreateOrConnectWithoutPatientInput[]
+    upsert?: RatingUpsertWithWhereUniqueWithoutPatientInput | RatingUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: RatingCreateManyPatientInputEnvelope
+    set?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    disconnect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    delete?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+    update?: RatingUpdateWithWhereUniqueWithoutPatientInput | RatingUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: RatingUpdateManyWithWhereWithoutPatientInput | RatingUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
   export type UserCreateNestedOneWithoutNotificationsInput = {
@@ -33271,10 +33271,10 @@ export namespace Prisma {
     connect?: DoctorWhereUniqueInput
   }
 
-  export type UserCreateNestedOneWithoutRatingsInput = {
-    create?: XOR<UserCreateWithoutRatingsInput, UserUncheckedCreateWithoutRatingsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutRatingsInput
-    connect?: UserWhereUniqueInput
+  export type PatientCreateNestedOneWithoutRatingsInput = {
+    create?: XOR<PatientCreateWithoutRatingsInput, PatientUncheckedCreateWithoutRatingsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutRatingsInput
+    connect?: PatientWhereUniqueInput
   }
 
   export type DoctorUpdateOneRequiredWithoutRatingsNestedInput = {
@@ -33285,12 +33285,12 @@ export namespace Prisma {
     update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutRatingsInput, DoctorUpdateWithoutRatingsInput>, DoctorUncheckedUpdateWithoutRatingsInput>
   }
 
-  export type UserUpdateOneRequiredWithoutRatingsNestedInput = {
-    create?: XOR<UserCreateWithoutRatingsInput, UserUncheckedCreateWithoutRatingsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutRatingsInput
-    upsert?: UserUpsertWithoutRatingsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutRatingsInput, UserUpdateWithoutRatingsInput>, UserUncheckedUpdateWithoutRatingsInput>
+  export type PatientUpdateOneRequiredWithoutRatingsNestedInput = {
+    create?: XOR<PatientCreateWithoutRatingsInput, PatientUncheckedCreateWithoutRatingsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutRatingsInput
+    upsert?: PatientUpsertWithoutRatingsInput
+    connect?: PatientWhereUniqueInput
+    update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutRatingsInput, PatientUpdateWithoutRatingsInput>, PatientUncheckedUpdateWithoutRatingsInput>
   }
 
   export type DoctorCreateNestedOneWithoutCommentsInput = {
@@ -33299,10 +33299,10 @@ export namespace Prisma {
     connect?: DoctorWhereUniqueInput
   }
 
-  export type UserCreateNestedOneWithoutCommentsInput = {
-    create?: XOR<UserCreateWithoutCommentsInput, UserUncheckedCreateWithoutCommentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommentsInput
-    connect?: UserWhereUniqueInput
+  export type PatientCreateNestedOneWithoutCommentsInput = {
+    create?: XOR<PatientCreateWithoutCommentsInput, PatientUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutCommentsInput
+    connect?: PatientWhereUniqueInput
   }
 
   export type DoctorUpdateOneRequiredWithoutCommentsNestedInput = {
@@ -33313,12 +33313,12 @@ export namespace Prisma {
     update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutCommentsInput, DoctorUpdateWithoutCommentsInput>, DoctorUncheckedUpdateWithoutCommentsInput>
   }
 
-  export type UserUpdateOneRequiredWithoutCommentsNestedInput = {
-    create?: XOR<UserCreateWithoutCommentsInput, UserUncheckedCreateWithoutCommentsInput>
-    connectOrCreate?: UserCreateOrConnectWithoutCommentsInput
-    upsert?: UserUpsertWithoutCommentsInput
-    connect?: UserWhereUniqueInput
-    update?: XOR<XOR<UserUpdateToOneWithWhereWithoutCommentsInput, UserUpdateWithoutCommentsInput>, UserUncheckedUpdateWithoutCommentsInput>
+  export type PatientUpdateOneRequiredWithoutCommentsNestedInput = {
+    create?: XOR<PatientCreateWithoutCommentsInput, PatientUncheckedCreateWithoutCommentsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutCommentsInput
+    upsert?: PatientUpsertWithoutCommentsInput
+    connect?: PatientWhereUniqueInput
+    update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutCommentsInput, PatientUpdateWithoutCommentsInput>, PatientUncheckedUpdateWithoutCommentsInput>
   }
 
   export type NestedStringFilter<$PrismaModel = never> = {
@@ -33752,6 +33752,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutUserInput = {
@@ -33763,6 +33765,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutUserInput = {
@@ -33928,58 +33932,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type CommentCreateWithoutUserInput = {
-    id?: string
-    text: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctor: DoctorCreateNestedOneWithoutCommentsInput
-  }
-
-  export type CommentUncheckedCreateWithoutUserInput = {
-    id?: string
-    doctorId: string
-    text: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type CommentCreateOrConnectWithoutUserInput = {
-    where: CommentWhereUniqueInput
-    create: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput>
-  }
-
-  export type CommentCreateManyUserInputEnvelope = {
-    data: CommentCreateManyUserInput | CommentCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type RatingCreateWithoutUserInput = {
-    id?: string
-    rating: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctor: DoctorCreateNestedOneWithoutRatingsInput
-  }
-
-  export type RatingUncheckedCreateWithoutUserInput = {
-    id?: string
-    doctorId: string
-    rating: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RatingCreateOrConnectWithoutUserInput = {
-    where: RatingWhereUniqueInput
-    create: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
-  }
-
-  export type RatingCreateManyUserInputEnvelope = {
-    data: RatingCreateManyUserInput | RatingCreateManyUserInput[]
-    skipDuplicates?: boolean
-  }
-
   export type LocationCreateWithoutUserInput = {
     pincode: number
     city: string
@@ -34121,6 +34073,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutUserInput = {
@@ -34132,6 +34086,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type OtpUpsertWithWhereUniqueWithoutUserInput = {
@@ -34303,62 +34259,6 @@ export namespace Prisma {
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
-  export type CommentUpsertWithWhereUniqueWithoutUserInput = {
-    where: CommentWhereUniqueInput
-    update: XOR<CommentUpdateWithoutUserInput, CommentUncheckedUpdateWithoutUserInput>
-    create: XOR<CommentCreateWithoutUserInput, CommentUncheckedCreateWithoutUserInput>
-  }
-
-  export type CommentUpdateWithWhereUniqueWithoutUserInput = {
-    where: CommentWhereUniqueInput
-    data: XOR<CommentUpdateWithoutUserInput, CommentUncheckedUpdateWithoutUserInput>
-  }
-
-  export type CommentUpdateManyWithWhereWithoutUserInput = {
-    where: CommentScalarWhereInput
-    data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type CommentScalarWhereInput = {
-    AND?: CommentScalarWhereInput | CommentScalarWhereInput[]
-    OR?: CommentScalarWhereInput[]
-    NOT?: CommentScalarWhereInput | CommentScalarWhereInput[]
-    id?: StringFilter<"Comment"> | string
-    doctorId?: StringFilter<"Comment"> | string
-    userId?: StringFilter<"Comment"> | string
-    text?: StringFilter<"Comment"> | string
-    createdAt?: DateTimeFilter<"Comment"> | Date | string
-    updatedAt?: DateTimeFilter<"Comment"> | Date | string
-  }
-
-  export type RatingUpsertWithWhereUniqueWithoutUserInput = {
-    where: RatingWhereUniqueInput
-    update: XOR<RatingUpdateWithoutUserInput, RatingUncheckedUpdateWithoutUserInput>
-    create: XOR<RatingCreateWithoutUserInput, RatingUncheckedCreateWithoutUserInput>
-  }
-
-  export type RatingUpdateWithWhereUniqueWithoutUserInput = {
-    where: RatingWhereUniqueInput
-    data: XOR<RatingUpdateWithoutUserInput, RatingUncheckedUpdateWithoutUserInput>
-  }
-
-  export type RatingUpdateManyWithWhereWithoutUserInput = {
-    where: RatingScalarWhereInput
-    data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyWithoutUserInput>
-  }
-
-  export type RatingScalarWhereInput = {
-    AND?: RatingScalarWhereInput | RatingScalarWhereInput[]
-    OR?: RatingScalarWhereInput[]
-    NOT?: RatingScalarWhereInput | RatingScalarWhereInput[]
-    id?: StringFilter<"Rating"> | string
-    doctorId?: StringFilter<"Rating"> | string
-    userId?: StringFilter<"Rating"> | string
-    rating?: IntFilter<"Rating"> | number
-    createdAt?: DateTimeFilter<"Rating"> | Date | string
-    updatedAt?: DateTimeFilter<"Rating"> | Date | string
-  }
-
   export type LocationUpsertWithoutUserInput = {
     update: XOR<LocationUpdateWithoutUserInput, LocationUncheckedUpdateWithoutUserInput>
     create: XOR<LocationCreateWithoutUserInput, LocationUncheckedCreateWithoutUserInput>
@@ -34434,8 +34334,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
 
@@ -34463,8 +34361,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -34538,8 +34434,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -34568,8 +34462,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -34659,8 +34551,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -34689,8 +34579,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -34771,8 +34659,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -34801,8 +34687,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -34959,12 +34843,12 @@ export namespace Prisma {
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutCommentsInput
+    patient: PatientCreateNestedOneWithoutCommentsInput
   }
 
   export type CommentUncheckedCreateWithoutDoctorInput = {
     id?: string
-    userId: string
+    patientId: string
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -34985,12 +34869,12 @@ export namespace Prisma {
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutRatingsInput
+    patient: PatientCreateNestedOneWithoutRatingsInput
   }
 
   export type RatingUncheckedCreateWithoutDoctorInput = {
     id?: string
-    userId: string
+    patientId: string
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -35094,8 +34978,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -35124,8 +35006,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -35290,6 +35170,18 @@ export namespace Prisma {
     data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutDoctorInput>
   }
 
+  export type CommentScalarWhereInput = {
+    AND?: CommentScalarWhereInput | CommentScalarWhereInput[]
+    OR?: CommentScalarWhereInput[]
+    NOT?: CommentScalarWhereInput | CommentScalarWhereInput[]
+    id?: StringFilter<"Comment"> | string
+    doctorId?: StringFilter<"Comment"> | string
+    patientId?: StringFilter<"Comment"> | string
+    text?: StringFilter<"Comment"> | string
+    createdAt?: DateTimeFilter<"Comment"> | Date | string
+    updatedAt?: DateTimeFilter<"Comment"> | Date | string
+  }
+
   export type RatingUpsertWithWhereUniqueWithoutDoctorInput = {
     where: RatingWhereUniqueInput
     update: XOR<RatingUpdateWithoutDoctorInput, RatingUncheckedUpdateWithoutDoctorInput>
@@ -35304,6 +35196,18 @@ export namespace Prisma {
   export type RatingUpdateManyWithWhereWithoutDoctorInput = {
     where: RatingScalarWhereInput
     data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyWithoutDoctorInput>
+  }
+
+  export type RatingScalarWhereInput = {
+    AND?: RatingScalarWhereInput | RatingScalarWhereInput[]
+    OR?: RatingScalarWhereInput[]
+    NOT?: RatingScalarWhereInput | RatingScalarWhereInput[]
+    id?: StringFilter<"Rating"> | string
+    doctorId?: StringFilter<"Rating"> | string
+    patientId?: StringFilter<"Rating"> | string
+    rating?: IntFilter<"Rating"> | number
+    createdAt?: DateTimeFilter<"Rating"> | Date | string
+    updatedAt?: DateTimeFilter<"Rating"> | Date | string
   }
 
   export type WithdrawalUpsertWithWhereUniqueWithoutDoctorInput = {
@@ -35482,8 +35386,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -35512,8 +35414,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -35584,6 +35484,58 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type CommentCreateWithoutPatientInput = {
+    id?: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctor: DoctorCreateNestedOneWithoutCommentsInput
+  }
+
+  export type CommentUncheckedCreateWithoutPatientInput = {
+    id?: string
+    doctorId: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type CommentCreateOrConnectWithoutPatientInput = {
+    where: CommentWhereUniqueInput
+    create: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput>
+  }
+
+  export type CommentCreateManyPatientInputEnvelope = {
+    data: CommentCreateManyPatientInput | CommentCreateManyPatientInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RatingCreateWithoutPatientInput = {
+    id?: string
+    rating: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctor: DoctorCreateNestedOneWithoutRatingsInput
+  }
+
+  export type RatingUncheckedCreateWithoutPatientInput = {
+    id?: string
+    doctorId: string
+    rating: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RatingCreateOrConnectWithoutPatientInput = {
+    where: RatingWhereUniqueInput
+    create: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput>
+  }
+
+  export type RatingCreateManyPatientInputEnvelope = {
+    data: RatingCreateManyPatientInput | RatingCreateManyPatientInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutPatientInput = {
     update: XOR<UserUpdateWithoutPatientInput, UserUncheckedUpdateWithoutPatientInput>
     create: XOR<UserCreateWithoutPatientInput, UserUncheckedCreateWithoutPatientInput>
@@ -35618,8 +35570,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -35648,8 +35598,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -35685,6 +35633,38 @@ export namespace Prisma {
     data: XOR<AppointmentUpdateManyMutationInput, AppointmentUncheckedUpdateManyWithoutPatientInput>
   }
 
+  export type CommentUpsertWithWhereUniqueWithoutPatientInput = {
+    where: CommentWhereUniqueInput
+    update: XOR<CommentUpdateWithoutPatientInput, CommentUncheckedUpdateWithoutPatientInput>
+    create: XOR<CommentCreateWithoutPatientInput, CommentUncheckedCreateWithoutPatientInput>
+  }
+
+  export type CommentUpdateWithWhereUniqueWithoutPatientInput = {
+    where: CommentWhereUniqueInput
+    data: XOR<CommentUpdateWithoutPatientInput, CommentUncheckedUpdateWithoutPatientInput>
+  }
+
+  export type CommentUpdateManyWithWhereWithoutPatientInput = {
+    where: CommentScalarWhereInput
+    data: XOR<CommentUpdateManyMutationInput, CommentUncheckedUpdateManyWithoutPatientInput>
+  }
+
+  export type RatingUpsertWithWhereUniqueWithoutPatientInput = {
+    where: RatingWhereUniqueInput
+    update: XOR<RatingUpdateWithoutPatientInput, RatingUncheckedUpdateWithoutPatientInput>
+    create: XOR<RatingCreateWithoutPatientInput, RatingUncheckedCreateWithoutPatientInput>
+  }
+
+  export type RatingUpdateWithWhereUniqueWithoutPatientInput = {
+    where: RatingWhereUniqueInput
+    data: XOR<RatingUpdateWithoutPatientInput, RatingUncheckedUpdateWithoutPatientInput>
+  }
+
+  export type RatingUpdateManyWithWhereWithoutPatientInput = {
+    where: RatingScalarWhereInput
+    data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyWithoutPatientInput>
+  }
+
   export type UserCreateWithoutNotificationsInput = {
     id?: string
     email: string
@@ -35708,8 +35688,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -35738,8 +35716,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -35782,8 +35758,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -35812,8 +35786,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -36258,6 +36230,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPatientInput
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutAppointmentsInput = {
@@ -36269,6 +36243,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutAppointmentsInput = {
@@ -36384,6 +36360,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPatientNestedInput
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutAppointmentsInput = {
@@ -36395,6 +36373,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type ChatMessagesCreateWithoutDoctorPatientRelationInput = {
@@ -36477,6 +36457,8 @@ export namespace Prisma {
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPatientInput
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutDoctorRelationsInput = {
@@ -36488,6 +36470,8 @@ export namespace Prisma {
     createdAt?: Date | string
     updatedAt?: Date | string
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutDoctorRelationsInput = {
@@ -36582,6 +36566,8 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPatientNestedInput
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutDoctorRelationsInput = {
@@ -36593,6 +36579,8 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorPatientRelationCreateWithoutChatMessagesInput = {
@@ -36639,8 +36627,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -36669,8 +36655,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -36740,8 +36724,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -36770,8 +36752,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -36798,8 +36778,6 @@ export namespace Prisma {
     auditLogs?: AuditLogCreateNestedManyWithoutUserInput
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -36828,8 +36806,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -36872,8 +36848,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -36902,8 +36876,6 @@ export namespace Prisma {
     auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -37027,8 +36999,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
   }
 
@@ -37057,8 +37027,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
   }
 
   export type UserCreateOrConnectWithoutBankAccountsInput = {
@@ -37101,8 +37069,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
   }
 
@@ -37131,8 +37097,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
   }
 
   export type UserCreateWithoutOtpInput = {
@@ -37158,8 +37122,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -37188,8 +37150,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -37232,8 +37192,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -37262,8 +37220,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -37290,8 +37246,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -37320,8 +37274,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -37364,8 +37316,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -37394,8 +37344,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -37422,8 +37370,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
     payments?: PaymentCreateNestedManyWithoutUserInput
     notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
     location: LocationCreateNestedOneWithoutUserInput
     bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
   }
@@ -37452,8 +37398,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
     payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
     bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
   }
 
@@ -37496,8 +37440,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     location?: LocationUpdateOneRequiredWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
@@ -37526,8 +37468,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -37576,67 +37516,35 @@ export namespace Prisma {
     create: XOR<DoctorCreateWithoutRatingsInput, DoctorUncheckedCreateWithoutRatingsInput>
   }
 
-  export type UserCreateWithoutRatingsInput = {
+  export type PatientCreateWithoutRatingsInput = {
     id?: string
-    email: string
-    phoneNo: string
-    name: string
-    password: string
-    age: number
-    gender?: $Enums.Gender
-    role?: $Enums.Role
-    address: string
-    profileImageUrl?: string | null
-    emailVerified?: boolean
-    isActive?: boolean
-    updatedAt?: Date | string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
     createdAt?: Date | string
-    admin?: AdminCreateNestedOneWithoutUserInput
-    doctor?: DoctorCreateNestedOneWithoutUserInput
-    patient?: PatientCreateNestedOneWithoutUserInput
-    otp?: OtpCreateNestedManyWithoutUserInput
-    accessLogs?: AccessLogCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
-    payments?: PaymentCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    comments?: CommentCreateNestedManyWithoutUserInput
-    location: LocationCreateNestedOneWithoutUserInput
-    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPatientInput
+    doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
   }
 
-  export type UserUncheckedCreateWithoutRatingsInput = {
+  export type PatientUncheckedCreateWithoutRatingsInput = {
     id?: string
-    email: string
-    phoneNo: string
-    name: string
-    password: string
-    age: number
-    gender?: $Enums.Gender
-    role?: $Enums.Role
-    address: string
-    pinCode: number
-    profileImageUrl?: string | null
-    emailVerified?: boolean
-    isActive?: boolean
-    updatedAt?: Date | string
+    userId: string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
     createdAt?: Date | string
-    admin?: AdminUncheckedCreateNestedOneWithoutUserInput
-    doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
-    patient?: PatientUncheckedCreateNestedOneWithoutUserInput
-    otp?: OtpUncheckedCreateNestedManyWithoutUserInput
-    accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    comments?: CommentUncheckedCreateNestedManyWithoutUserInput
-    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
+    updatedAt?: Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
   }
 
-  export type UserCreateOrConnectWithoutRatingsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutRatingsInput, UserUncheckedCreateWithoutRatingsInput>
+  export type PatientCreateOrConnectWithoutRatingsInput = {
+    where: PatientWhereUniqueInput
+    create: XOR<PatientCreateWithoutRatingsInput, PatientUncheckedCreateWithoutRatingsInput>
   }
 
   export type DoctorUpsertWithoutRatingsInput = {
@@ -37690,73 +37598,41 @@ export namespace Prisma {
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
-  export type UserUpsertWithoutRatingsInput = {
-    update: XOR<UserUpdateWithoutRatingsInput, UserUncheckedUpdateWithoutRatingsInput>
-    create: XOR<UserCreateWithoutRatingsInput, UserUncheckedCreateWithoutRatingsInput>
-    where?: UserWhereInput
+  export type PatientUpsertWithoutRatingsInput = {
+    update: XOR<PatientUpdateWithoutRatingsInput, PatientUncheckedUpdateWithoutRatingsInput>
+    create: XOR<PatientCreateWithoutRatingsInput, PatientUncheckedCreateWithoutRatingsInput>
+    where?: PatientWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutRatingsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutRatingsInput, UserUncheckedUpdateWithoutRatingsInput>
+  export type PatientUpdateToOneWithWhereWithoutRatingsInput = {
+    where?: PatientWhereInput
+    data: XOR<PatientUpdateWithoutRatingsInput, PatientUncheckedUpdateWithoutRatingsInput>
   }
 
-  export type UserUpdateWithoutRatingsInput = {
+  export type PatientUpdateWithoutRatingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNo?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    address?: StringFieldUpdateOperationsInput | string
-    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admin?: AdminUpdateOneWithoutUserNestedInput
-    doctor?: DoctorUpdateOneWithoutUserNestedInput
-    patient?: PatientUpdateOneWithoutUserNestedInput
-    otp?: OtpUpdateManyWithoutUserNestedInput
-    accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
-    payments?: PaymentUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    location?: LocationUpdateOneRequiredWithoutUserNestedInput
-    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPatientNestedInput
+    doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutRatingsInput = {
+  export type PatientUncheckedUpdateWithoutRatingsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNo?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    address?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
-    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
-    doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
-    patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
-    otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
-    accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorCreateWithoutCommentsInput = {
@@ -37804,67 +37680,35 @@ export namespace Prisma {
     create: XOR<DoctorCreateWithoutCommentsInput, DoctorUncheckedCreateWithoutCommentsInput>
   }
 
-  export type UserCreateWithoutCommentsInput = {
+  export type PatientCreateWithoutCommentsInput = {
     id?: string
-    email: string
-    phoneNo: string
-    name: string
-    password: string
-    age: number
-    gender?: $Enums.Gender
-    role?: $Enums.Role
-    address: string
-    profileImageUrl?: string | null
-    emailVerified?: boolean
-    isActive?: boolean
-    updatedAt?: Date | string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
     createdAt?: Date | string
-    admin?: AdminCreateNestedOneWithoutUserInput
-    doctor?: DoctorCreateNestedOneWithoutUserInput
-    patient?: PatientCreateNestedOneWithoutUserInput
-    otp?: OtpCreateNestedManyWithoutUserInput
-    accessLogs?: AccessLogCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessagesCreateNestedManyWithoutSenderInput
-    payments?: PaymentCreateNestedManyWithoutUserInput
-    notifications?: NotificationCreateNestedManyWithoutUserInput
-    ratings?: RatingCreateNestedManyWithoutUserInput
-    location: LocationCreateNestedOneWithoutUserInput
-    bankAccounts?: BankAccountCreateNestedManyWithoutUserInput
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPatientInput
+    doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
   }
 
-  export type UserUncheckedCreateWithoutCommentsInput = {
+  export type PatientUncheckedCreateWithoutCommentsInput = {
     id?: string
-    email: string
-    phoneNo: string
-    name: string
-    password: string
-    age: number
-    gender?: $Enums.Gender
-    role?: $Enums.Role
-    address: string
-    pinCode: number
-    profileImageUrl?: string | null
-    emailVerified?: boolean
-    isActive?: boolean
-    updatedAt?: Date | string
+    userId: string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
     createdAt?: Date | string
-    admin?: AdminUncheckedCreateNestedOneWithoutUserInput
-    doctor?: DoctorUncheckedCreateNestedOneWithoutUserInput
-    patient?: PatientUncheckedCreateNestedOneWithoutUserInput
-    otp?: OtpUncheckedCreateNestedManyWithoutUserInput
-    accessLogs?: AccessLogUncheckedCreateNestedManyWithoutUserInput
-    auditLogs?: AuditLogUncheckedCreateNestedManyWithoutUserInput
-    chatMessages?: ChatMessagesUncheckedCreateNestedManyWithoutSenderInput
-    payments?: PaymentUncheckedCreateNestedManyWithoutUserInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutUserInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutUserInput
-    bankAccounts?: BankAccountUncheckedCreateNestedManyWithoutUserInput
+    updatedAt?: Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
   }
 
-  export type UserCreateOrConnectWithoutCommentsInput = {
-    where: UserWhereUniqueInput
-    create: XOR<UserCreateWithoutCommentsInput, UserUncheckedCreateWithoutCommentsInput>
+  export type PatientCreateOrConnectWithoutCommentsInput = {
+    where: PatientWhereUniqueInput
+    create: XOR<PatientCreateWithoutCommentsInput, PatientUncheckedCreateWithoutCommentsInput>
   }
 
   export type DoctorUpsertWithoutCommentsInput = {
@@ -37918,73 +37762,41 @@ export namespace Prisma {
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
-  export type UserUpsertWithoutCommentsInput = {
-    update: XOR<UserUpdateWithoutCommentsInput, UserUncheckedUpdateWithoutCommentsInput>
-    create: XOR<UserCreateWithoutCommentsInput, UserUncheckedCreateWithoutCommentsInput>
-    where?: UserWhereInput
+  export type PatientUpsertWithoutCommentsInput = {
+    update: XOR<PatientUpdateWithoutCommentsInput, PatientUncheckedUpdateWithoutCommentsInput>
+    create: XOR<PatientCreateWithoutCommentsInput, PatientUncheckedCreateWithoutCommentsInput>
+    where?: PatientWhereInput
   }
 
-  export type UserUpdateToOneWithWhereWithoutCommentsInput = {
-    where?: UserWhereInput
-    data: XOR<UserUpdateWithoutCommentsInput, UserUncheckedUpdateWithoutCommentsInput>
+  export type PatientUpdateToOneWithWhereWithoutCommentsInput = {
+    where?: PatientWhereInput
+    data: XOR<PatientUpdateWithoutCommentsInput, PatientUncheckedUpdateWithoutCommentsInput>
   }
 
-  export type UserUpdateWithoutCommentsInput = {
+  export type PatientUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNo?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    address?: StringFieldUpdateOperationsInput | string
-    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admin?: AdminUpdateOneWithoutUserNestedInput
-    doctor?: DoctorUpdateOneWithoutUserNestedInput
-    patient?: PatientUpdateOneWithoutUserNestedInput
-    otp?: OtpUpdateManyWithoutUserNestedInput
-    accessLogs?: AccessLogUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
-    payments?: PaymentUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
-    location?: LocationUpdateOneRequiredWithoutUserNestedInput
-    bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPatientNestedInput
+    doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
   }
 
-  export type UserUncheckedUpdateWithoutCommentsInput = {
+  export type PatientUncheckedUpdateWithoutCommentsInput = {
     id?: StringFieldUpdateOperationsInput | string
-    email?: StringFieldUpdateOperationsInput | string
-    phoneNo?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    password?: StringFieldUpdateOperationsInput | string
-    age?: IntFieldUpdateOperationsInput | number
-    gender?: EnumGenderFieldUpdateOperationsInput | $Enums.Gender
-    role?: EnumRoleFieldUpdateOperationsInput | $Enums.Role
-    address?: StringFieldUpdateOperationsInput | string
-    pinCode?: IntFieldUpdateOperationsInput | number
-    profileImageUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    emailVerified?: BoolFieldUpdateOperationsInput | boolean
-    isActive?: BoolFieldUpdateOperationsInput | boolean
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    userId?: StringFieldUpdateOperationsInput | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    admin?: AdminUncheckedUpdateOneWithoutUserNestedInput
-    doctor?: DoctorUncheckedUpdateOneWithoutUserNestedInput
-    patient?: PatientUncheckedUpdateOneWithoutUserNestedInput
-    otp?: OtpUncheckedUpdateManyWithoutUserNestedInput
-    accessLogs?: AccessLogUncheckedUpdateManyWithoutUserNestedInput
-    auditLogs?: AuditLogUncheckedUpdateManyWithoutUserNestedInput
-    chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
-    payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
-    bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type OtpCreateManyUserInput = {
@@ -38034,22 +37846,6 @@ export namespace Prisma {
     status?: string
     readAt?: Date | string | null
     createdAt?: Date | string
-  }
-
-  export type CommentCreateManyUserInput = {
-    id?: string
-    doctorId: string
-    text: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type RatingCreateManyUserInput = {
-    id?: string
-    doctorId: string
-    rating: number
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type BankAccountCreateManyUserInput = {
@@ -38207,54 +38003,6 @@ export namespace Prisma {
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type CommentUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    text?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctor?: DoctorUpdateOneRequiredWithoutCommentsNestedInput
-  }
-
-  export type CommentUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    text?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type CommentUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    text?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RatingUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    rating?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctor?: DoctorUpdateOneRequiredWithoutRatingsNestedInput
-  }
-
-  export type RatingUncheckedUpdateWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    rating?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type RatingUncheckedUpdateManyWithoutUserInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    rating?: IntFieldUpdateOperationsInput | number
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type BankAccountUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
     bankAccountNumber?: StringFieldUpdateOperationsInput | string
@@ -38320,8 +38068,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUpdateManyWithoutSenderNestedInput
     payments?: PaymentUpdateManyWithoutUserNestedInput
     notifications?: NotificationUpdateManyWithoutUserNestedInput
-    comments?: CommentUpdateManyWithoutUserNestedInput
-    ratings?: RatingUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUpdateManyWithoutUserNestedInput
   }
 
@@ -38349,8 +38095,6 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     payments?: PaymentUncheckedUpdateManyWithoutUserNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutUserNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
   }
 
@@ -38443,7 +38187,7 @@ export namespace Prisma {
 
   export type CommentCreateManyDoctorInput = {
     id?: string
-    userId: string
+    patientId: string
     text: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38451,7 +38195,7 @@ export namespace Prisma {
 
   export type RatingCreateManyDoctorInput = {
     id?: string
-    userId: string
+    patientId: string
     rating: number
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -38603,12 +38347,12 @@ export namespace Prisma {
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutCommentsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutCommentsNestedInput
   }
 
   export type CommentUncheckedUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38616,7 +38360,7 @@ export namespace Prisma {
 
   export type CommentUncheckedUpdateManyWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38627,12 +38371,12 @@ export namespace Prisma {
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutRatingsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutRatingsNestedInput
   }
 
   export type RatingUncheckedUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38640,7 +38384,7 @@ export namespace Prisma {
 
   export type RatingUncheckedUpdateManyWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38717,6 +38461,22 @@ export namespace Prisma {
     isAppointmentOffline?: boolean
   }
 
+  export type CommentCreateManyPatientInput = {
+    id?: string
+    doctorId: string
+    text: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type RatingCreateManyPatientInput = {
+    id?: string
+    doctorId: string
+    rating: number
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DoctorPatientRelationUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -38777,6 +38537,54 @@ export namespace Prisma {
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type CommentUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctor?: DoctorUpdateOneRequiredWithoutCommentsNestedInput
+  }
+
+  export type CommentUncheckedUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type CommentUncheckedUpdateManyWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    text?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RatingUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctor?: DoctorUpdateOneRequiredWithoutRatingsNestedInput
+  }
+
+  export type RatingUncheckedUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RatingUncheckedUpdateManyWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    rating?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type ChatMessagesCreateManyDoctorPatientRelationInput = {
