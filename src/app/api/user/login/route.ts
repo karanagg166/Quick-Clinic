@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
+import { logAudit } from "@/lib/logger";
 import type { UserDetail } from "@/types/common";
 
 
@@ -9,7 +10,7 @@ import type { UserDetail } from "@/types/common";
 
 
 
-export const maxDuration = 30; // Increase timeout to 30 seconds for Vercel
+export const maxDuration = 30;
 
 export async function POST(req: NextRequest) {
   try {
@@ -24,16 +25,16 @@ export async function POST(req: NextRequest) {
 
     const user = await prisma.user.findUnique({
       where: {
-         email:email    
-       },
-       include:{
-        doctor:{
-          select:{ id:true}
+        email: email
+      },
+      include: {
+        doctor: {
+          select: { id: true }
         }
-        ,patient:{
-          select:{ id:true}
+        , patient: {
+          select: { id: true }
         }
-       }
+      }
     });
 
     if (!user) {
@@ -49,10 +50,10 @@ export async function POST(req: NextRequest) {
     }
 
     // JWT token
-    const token = await createToken({ 
+    const token = await createToken({
       id: user.id,
       email: user.email,
-      role: user.role 
+      role: user.role
     });
 
     const doctorId = user.doctor?.id ?? null;
@@ -66,8 +67,8 @@ export async function POST(req: NextRequest) {
       age: user.age,
 
       gender: user.gender,
-      role: user.role,  
-      
+      role: user.role,
+
       address: user.address,
       city: user.city,
       state: user.state,
@@ -102,9 +103,7 @@ export async function POST(req: NextRequest) {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
-    
-  
-
+    await logAudit(user.id, "User Login", userDetails);
 
     return res;
   } catch (error: unknown) {

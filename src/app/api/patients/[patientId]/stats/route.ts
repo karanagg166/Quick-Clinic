@@ -21,8 +21,10 @@ export async function GET(
     const upcomingAppointments = await prisma.appointment.count({
       where: {
         patientId,
-        appointmentDateTime: {
-          gte: today,
+        slot: {
+          date: {
+            gte: today,
+          },
         },
         status: {
           in: ["CONFIRMED", "PENDING"],
@@ -33,7 +35,9 @@ export async function GET(
     // Assigned doctors
     const assignedDoctors = await prisma.doctorPatientRelation.count({
       where: {
-        patientId,
+        patient: {
+          id: patientId
+        },
       },
     });
 

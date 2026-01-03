@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
+import { logAudit } from "@/lib/logger";
 import type { UserDetail } from "@/types/common";
+import { metadata } from "@/app/layout";
 export const POST = async (req: NextRequest) => {
   try {
     const {
@@ -102,6 +104,7 @@ export const POST = async (req: NextRequest) => {
       secure: process.env.NODE_ENV === "production",
       sameSite: "strict",
     });
+    await logAudit(user.id, "User Created", user);
 
     return res;
 
