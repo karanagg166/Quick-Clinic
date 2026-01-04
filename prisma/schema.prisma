@@ -426,6 +426,7 @@ model AccessLog {
   userId   String?
   targetId String?
   action   String
+  tag      String? @default("SYSTEM") // e.g. AUTH, APPOINTMENT, ADMIN
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -436,6 +437,7 @@ model AuditLog {
   id       String  @id @default(cuid())
   userId   String?
   action   String
+  tag      String? @default("SYSTEM") // e.g. AUTH, SECURITY, ONBOARDING
   metadata Json?
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)

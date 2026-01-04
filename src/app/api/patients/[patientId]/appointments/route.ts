@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logAudit } from "@/lib/logger";
 import type { PatientAppointment } from "@/types/patient";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
@@ -151,6 +152,9 @@ export async function POST(
       // Log but don't fail the appointment creation if notification fails
       console.warn('Failed to send notification:', notifError);
     }
+
+    // Log Audit
+    await logAudit(patientId, "Booked Appointment", { appointmentId: appointment.id, doctorId, slotId });
 
     return NextResponse.json({ appointment, slotUpdate }, { status: 201 });
 

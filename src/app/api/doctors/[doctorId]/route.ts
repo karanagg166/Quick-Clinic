@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
+import { logAccess } from "@/lib/logger";
+import { verifyToken } from "@/lib/auth";
 
 // GET - Fetch doctor by ID
 export const GET = async (
@@ -97,6 +99,15 @@ export const GET = async (
       average: ratingAgg._avg.rating ? Number(ratingAgg._avg.rating.toFixed(1)) : 0,
       count: ratingAgg._count.rating ?? 0,
     };
+
+    // Log Access
+    const token = req.cookies.get("token")?.value;
+    let viewerId = null;
+    if (token) {
+      const { payload } = await verifyToken(token);
+      if (payload) viewerId = (payload as any).id;
+    }
+    await logAccess(viewerId, doctorId, "Viewed Doctor Profile");
 
     return NextResponse.json({ doctor, rating: ratingSummary, comments }, { status: 200 });
   } catch (err: any) {
