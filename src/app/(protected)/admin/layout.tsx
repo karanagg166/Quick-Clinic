@@ -4,20 +4,22 @@ import { useUserStore } from "@/store/userStore";
 import { useRouter, usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
+import AdminSidebar from "@/components/admin/AdminSidebar";
+import AdminNavbar from "@/components/admin/AdminNavbar";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, hasHydrated } = useUserStore();
     const router = useRouter();
-    const pathname = usePathname();
     const [isAuthorized, setIsAuthorized] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     useEffect(() => {
         // Wait for hydration to complete
         if (hasHydrated) {
             if (!user) {
-                router.push("/user/login");
+                router.push("/auth/login");
             } else if (user.role !== "ADMIN") {
-                router.push("/unauthorized"); // Or back to their dashboard
+                router.push("/unauthorized");
             } else {
                 setIsAuthorized(true);
             }
@@ -33,9 +35,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     }
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Assuming there might be a shared sidebar or nav, but for now just children */}
-            {children}
+        <div className="min-h-screen bg-muted/20">
+            <AdminSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+            <AdminNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
+
+            <main className="md:ml-64 pt-24 min-h-screen p-6 bg-background">
+                {children}
+            </main>
         </div>
     );
 }

@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
         // Log the event
         await logAudit(userId, logAction, { managerId, isActive });
 
-        return NextResponse.json({ success: true, isActive }, { status: 200 });
+        return NextResponse.json({ success: true, isActive, managerId }, { status: 200 });
 
     } catch (error: any) {
         console.error("Onboarding Error:", error);
