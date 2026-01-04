@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { logAccess } from "@/lib/logger";
+import { verifyToken } from "@/lib/auth";
 
 // GET - Fetch patient by ID
 export const GET = async (
@@ -21,6 +23,15 @@ export const GET = async (
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
+
+    // Log Access
+    const token = req.cookies.get("token")?.value;
+    let viewerId = null;
+    if (token) {
+      const { payload } = await verifyToken(token);
+      if (payload) viewerId = (payload as any).id;
+    }
+    await logAccess(viewerId, patientId, "Viewed Patient Profile");
 
     return NextResponse.json({ patient }, { status: 200 });
   } catch (err: any) {

@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-import  type { UserDetail } from '@/types/common';
+import type { UserDetail } from '@/types/common';
 
 
 interface UserState {
@@ -9,6 +9,7 @@ interface UserState {
   patientId: string | null;
   doctorId: string | null;
   isLoading: boolean;
+  hasHydrated?: boolean;
 
   // Actions
   setUser: (user: UserDetail, patientId?: string, doctorId?: string) => void;
@@ -61,6 +62,11 @@ export const useUserStore = create<
     {
       name: 'user-store',
       version: 1,
+      onRehydrateStorage: () => (state) => {
+        if (state) {
+          state.hasHydrated = true;
+        }
+      },
       migrate: (persistedState: any, _version: number) => {
         if (!persistedState?.user) return persistedState;
 

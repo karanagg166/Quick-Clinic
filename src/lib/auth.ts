@@ -29,3 +29,25 @@ export async function getUserId(token: string) {
   if (!result.valid) return { valid: false, userId: null };
   return { valid: true, userId: (result.payload as any).id };
 }
+
+export async function requireAdmin(req: Request) {
+  const cookieStore = (req as any).cookies; // NextRequest has cookies
+  const token = cookieStore?.get("token")?.value;
+
+  if (!token) {
+    return null;
+  }
+
+  const { valid, payload } = await verifyToken(token);
+
+  if (!valid || !payload) {
+    return null;
+  }
+
+  // Check role in payload
+  if ((payload as any).role !== "ADMIN") {
+    return null; // Or throw custom error
+  }
+
+  return payload as { id: string; role: string; email: string; name: string };
+}
