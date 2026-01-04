@@ -10,11 +10,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showToast } from "@/lib/toast";
 import { useUserStore } from "@/store/userStore";
+import { useSocket } from "@/hooks/useSocket";
 
 export default function AdminOnboardingForm() {
     const router = useRouter();
     const { user, setUser } = useUserStore();
     const [loading, setLoading] = useState(false);
+    const socket = useSocket();
 
     const [method, setMethod] = useState<"manager" | "code">("manager");
     const [formData, setFormData] = useState({
@@ -62,16 +64,21 @@ export default function AdminOnboardingForm() {
                 throw new Error(data.error || "Onboarding failed");
             }
 
-            // Update local state is tricky since role is same, but isActive changes.
-            // We might want to force a refresh or update store manually if store supports it.
-            // For now, assume backend updated it.
-
             if (data.isActive) {
                 showToast.success("Account approved! Redirecting to dashboard...");
-                router.push("/admin/dashboard");
+                router.push("/admin");
             } else {
+                // Emit Socket Event if linking to manager
+                if (data.managerId && socket) {
+                    socket.emit("request_admin_approval", {
+                        managerId: data.managerId,
+                        requesterId: user.id,
+                        name: formData.name
+                    });
+                }
+
                 showToast.success("Request sent to manager. Waiting for approval.");
-                router.push("/admin/profile"); // Or a 'pending' page
+                router.push("/admin/profile");
             }
 
         } catch (error: any) {

@@ -23,7 +23,17 @@ export async function GET(req: NextRequest) {
         if (action) {
             where.action = { contains: action, mode: "insensitive" };
         }
-        if (date) {
+
+        const tag = searchParams.get("tag");
+        if (tag) {
+            where.tag = tag;
+        }
+
+        const timeRange = searchParams.get("timeRange");
+        if (timeRange === "last5Mins") {
+            const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
+            where.createdAt = { gte: fiveMinsAgo };
+        } else if (date) {
             const startDate = new Date(date);
             const endDate = new Date(date);
             endDate.setDate(endDate.getDate() + 1);
