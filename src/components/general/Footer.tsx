@@ -1,7 +1,9 @@
 "use client";
+// Made by Karan Aggarwal & Harsh Mishra
 
 import Link from "next/link";
 import { Stethoscope, Mail, Phone, MapPin, Github, Linkedin, Instagram } from "lucide-react";
+import Logo from "@/components/general/Logo";
 import { Separator } from "@/components/ui/separator";
 
 export default function Footer() {
@@ -13,12 +15,7 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Section */}
           <div className="space-y-4">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Stethoscope className="w-5 h-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">QuickClinic</span>
-            </div>
+            <Logo />
             <p className="text-sm text-muted-foreground">
               Modern healthcare platform connecting patients with doctors seamlessly.
             </p>
@@ -109,7 +106,7 @@ export default function Footer() {
         <Separator className="my-8" />
 
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
-          <p>© {currentYear} QuickClinic. All rights reserved.</p>
+          <p>© {currentYear} QuickClinic. Made by Karan Aggarwal & Harsh Mishra. All rights reserved.</p>
           <div className="flex gap-6">
             <Link href="#" className="hover:text-foreground transition-colors">
               Privacy Policy

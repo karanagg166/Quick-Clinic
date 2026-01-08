@@ -1,14 +1,16 @@
 'use client';
+// Made by Karan Aggarwal & Harsh Mishra
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Bell, User, LogOut, Menu } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
+import Logo from '@/components/general/Logo';
 
 interface PatientNavbarProps {
-  isSidebarOpen: boolean;
-  setSidebarOpen: (open: boolean) => void;
+    isSidebarOpen: boolean;
+    setSidebarOpen: (open: boolean) => void;
 }
 
 export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: PatientNavbarProps) {
@@ -39,36 +41,31 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                     <Menu className="w-5 h-5 text-gray-600" />
                 </button>
                 <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                        <span className="text-white font-bold text-lg">Q</span>
-                    </div>
-                    <h1 className="text-xl font-bold text-gray-900">
-                        QuickClinic
-                    </h1>
+                    <Logo />
                 </div>
 
                 {/* Navigation Links - Desktop */}
                 <div className="hidden md:flex items-center gap-6">
-                    <Link 
-                        href="/patient" 
+                    <Link
+                        href="/patient"
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
                         Dashboard
                     </Link>
-                    <Link 
-                        href="/patient/appointments" 
+                    <Link
+                        href="/patient/appointments"
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
                         Appointments
                     </Link>
-                    <Link 
-                        href="/patient/findDoctors" 
+                    <Link
+                        href="/patient/findDoctors"
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
                         Find Doctors
                     </Link>
-                    <Link 
-                        href="/patient/chat" 
+                    <Link
+                        href="/patient/chat"
                         className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
                     >
                         Chat
@@ -80,7 +77,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
             <div className="flex items-center gap-4">
                 {/* Notifications */}
                 <Link href="/user/notifications">
-                    <button 
+                    <button
                         className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors"
                     >
                         <Bell className="w-5 h-5 text-gray-600" />
@@ -90,10 +87,10 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                 {/* Profile Section */}
                 <div className="flex items-center gap-3 pl-3 border-gray-200">
                     <Link href="/patient/profile" className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors">
-                        <Avatar 
-                          src={user?.profileImageUrl} 
-                          name={user?.name || "User"}
-                          size="sm"
+                        <Avatar
+                            src={user?.profileImageUrl}
+                            name={user?.name || "User"}
+                            size="sm"
                         />
                         <span className="text-sm font-medium text-gray-700 hidden md:block">
                             {user?.name || "John Doe"}
@@ -102,7 +99,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                 </div>
 
                 {/* Logout */}
-                <button 
+                <button
                     onClick={handleLogout}
                     className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
                     title="Logout"
@@ -112,7 +109,7 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
 
             </div>
 
-            
+
         </nav>
     );
 }
