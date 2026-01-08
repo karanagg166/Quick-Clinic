@@ -58,17 +58,21 @@ export const GET = async (
       where: { doctorId },
       orderBy: { createdAt: "desc" },
       include: {
-        user: {
+        patient: {
           select: {
-            id: true,
-            name: true,
-            profileImageUrl: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profileImageUrl: true,
+              },
+            },
           },
         },
       },
     });
 
-    const [d, ratingAgg, comments] = await Promise.all([
+    const [d, ratingAgg, rawComments] = await Promise.all([
       doctorDataPromise,
       ratingAggPromise,
       commentsPromise,
@@ -99,6 +103,12 @@ export const GET = async (
       average: ratingAgg._avg.rating ? Number(ratingAgg._avg.rating.toFixed(1)) : 0,
       count: ratingAgg._count.rating ?? 0,
     };
+
+    const comments = rawComments.map((c: any) => ({
+      ...c,
+      user: c.patient.user,
+      patient: undefined, // Remove patient structure to match original expected shape if needed, or keep it.
+    }));
 
     // Log Access
     const token = req.cookies.get("token")?.value;
