@@ -2,9 +2,9 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  CalendarDays, 
+import {
+  LayoutDashboard,
+  CalendarDays,
   Users,
   FileClock,
   ClipboardList,
@@ -81,23 +81,18 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     },
     {
       label: 'Doctor Profile',
-      href: '/doctor/info',
+      href: '/doctor/profile',
       icon: UserCircle,
     },
-    {
-      label: 'Settings',
-      href: '/doctor/settings',
-      icon: Settings,
-    },
+
   ];
 
   return (
     <>
       {/* Sidebar */}
-      <aside 
-        className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${
-          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
+      <aside
+        className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
       >
         {/* Header */}
         <Card className="border-0 border-b rounded-none shadow-none">
@@ -133,9 +128,8 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                     <Button
                       asChild
                       variant={isItemActive ? "secondary" : "ghost"}
-                      className={`w-full justify-start ${
-                        isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
-                      }`}
+                      className={`w-full justify-start ${isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
+                        }`}
                       onClick={() => !hasSubmenu && setSidebarOpen(false)}
                     >
                       <Link href={item.href} className="flex items-center gap-3">
@@ -154,9 +148,8 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                         className="h-8 w-8"
                       >
                         <ChevronDown
-                          className={`w-4 h-4 transition-transform ${
-                            isSubmenuOpen ? 'rotate-180' : ''
-                          }`}
+                          className={`w-4 h-4 transition-transform ${isSubmenuOpen ? 'rotate-180' : ''
+                            }`}
                         />
                       </Button>
                     )}
@@ -170,9 +163,8 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                             asChild
                             variant={pathname === subitem.href ? "secondary" : "ghost"}
                             size="sm"
-                            className={`w-full justify-start text-sm ${
-                              pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
-                            }`}
+                            className={`w-full justify-start text-sm ${pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
+                              }`}
                             onClick={() => setSidebarOpen(false)}
                           >
                             <Link href={subitem.href}>

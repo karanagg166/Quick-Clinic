@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Calendar, 
-  Stethoscope, 
-  FileText, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Calendar,
+  Stethoscope,
+  FileText,
+  Settings,
   Heart,
   Clock,
   MessageCircle,
@@ -33,7 +33,14 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
   };
 
   // Updated URLs
-  const menuItems = [
+  interface MenuItem {
+    label: string;
+    href: string;
+    icon: any;
+    submenu?: { label: string; href: string }[];
+  }
+
+  const menuItems: MenuItem[] = [
     {
       label: "Dashboard",
       href: "/patient",
@@ -54,33 +61,15 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
       href: "/patient/chat",          // NEW ITEM
       icon: MessageCircle,
     },
-    {
-      label: "Prescriptions",
-      href: "/patient/prescriptions",
-      icon: FileText,
-    },
-    {
-      label: "Health History",
-      href: "/patient/history",
-      icon: Clock,
-      submenu: [
-        { label: "Allergies", href: "/patient/history/allergies" },
-        { label: "Medications", href: "/patient/history/medications" },
-        { label: "Surgeries", href: "/patient/history/surgeries" },
-      ],
-    },
-    {
-      label: "Settings",
-      href: "/patient/settings",
-      icon: Settings,
-    },
+
+
+
   ];
 
   return (
     <aside
-      className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${
-        isSidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
+      className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
     >
       {/* Header */}
       <Card className="border-0 border-b rounded-none shadow-none">
@@ -116,9 +105,8 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
                   <Button
                     asChild
                     variant={isItemActive ? "secondary" : "ghost"}
-                    className={`w-full justify-start ${
-                      isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
-                    }`}
+                    className={`w-full justify-start ${isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
+                      }`}
                     onClick={() => !hasSubmenu && setSidebarOpen(false)}
                   >
                     <Link href={item.href} className="flex items-center gap-3">
@@ -137,9 +125,8 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
                       className="h-8 w-8"
                     >
                       <ChevronDown
-                        className={`w-4 h-4 transition-transform ${
-                          isSubmenuOpen ? "rotate-180" : ""
-                        }`}
+                        className={`w-4 h-4 transition-transform ${isSubmenuOpen ? "rotate-180" : ""
+                          }`}
                       />
                     </Button>
                   )}
@@ -153,9 +140,8 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
                           asChild
                           variant={pathname === subitem.href ? "secondary" : "ghost"}
                           size="sm"
-                          className={`w-full justify-start text-sm ${
-                            pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
-                          }`}
+                          className={`w-full justify-start text-sm ${pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
+                            }`}
                           onClick={() => setSidebarOpen(false)}
                         >
                           <Link href={subitem.href}>
