@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminNavbar from "@/components/admin/AdminNavbar";
+import Footer from "@/components/general/Footer";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
     const { user, hasHydrated } = useUserStore();
@@ -41,6 +42,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             <main className="md:ml-64 pt-24 min-h-screen p-6 bg-background">
                 {children}
+                <div className="mt-8">
+                    <Footer />
+                </div>
             </main>
         </div>
     );
