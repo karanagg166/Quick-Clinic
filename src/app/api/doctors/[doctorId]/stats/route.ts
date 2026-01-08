@@ -39,7 +39,9 @@ export async function GET(
     // Active patients (patients with at least one appointment)
     const activePatients = await prisma.doctorPatientRelation.count({
       where: {
-        doctorId,
+        doctor: {
+          id: doctorId,
+        },
       },
     });
 
