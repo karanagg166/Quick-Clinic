@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Stethoscope, ArrowRight, LogIn } from "lucide-react";
 import ParticlesBackground from "@/components/general/Particles";
+import Footer from "@/components/general/Footer";
 
 export default function Home() {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function Home() {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-background px-4 py-10 overflow-hidden">
       <ParticlesBackground />
-      
+
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -77,6 +78,9 @@ export default function Home() {
           </CardContent>
         </Card>
       </motion.div>
+      <div className="absolute bottom-0 w-full">
+        <Footer />
+      </div>
     </div>
   );
 }

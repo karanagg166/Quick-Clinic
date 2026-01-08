@@ -6,7 +6,6 @@ import {
   SiTailwindcss,
   SiPrisma,
   SiPostgresql,
-
   SiSocketdotio,
   SiNodedotjs,
   SiDocker,
@@ -15,6 +14,9 @@ import {
   SiInstagram,
   SiLeetcode,
   SiCodeforces,
+  SiCodechef,
+  SiGeeksforgeeks,
+  SiX,
 } from "react-icons/si";
 
 import { Mail, Globe } from "lucide-react";
@@ -95,48 +97,37 @@ function ContributorsSection() {
         Project Contributors
       </h2>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl mx-auto">
 
-        {/* ---------------------- YOUR CARD ---------------------- */}
+        {/* ---------------------- KARAN AGGARWAL ---------------------- */}
         <ContributorCard
           name="Karan Aggarwal"
           role="Full-Stack Developer | Lead Architect | DevOps"
           bio="Built the end-to-end architecture, backend microservices, devops pipeline, and system design for Quick Clinic."
-          instagram="your_instagram_link"
-          linkedin="your_linkedin_link"
-          github="your_github_link"
-          portfolio="your_portfolio_link"
-          mail="your_mail_here"
-          codeforces="your_codeforces"
-          leetcode="your_leetcode"
+          instagram="https://www.instagram.com/karanagg_166/"
+          linkedin="https://www.linkedin.com/in/karan-aggarwal-a13427276/"
+          github="https://github.com/karanagg166"
+          portfolio="https://portfolio-kappa-bay-76.vercel.app/"
+          mail="aggarwalkaran241@gmail.com"
+          codeforces="https://codeforces.com/profile/KaranCipherKnight"
+          leetcode="https://leetcode.com/u/aggarwalkaran241/"
+          codechef="https://www.codechef.com/users/code_rush03"
+          geeksforgeeks="https://www.geeksforgeeks.org/profile/aggarwalkaran241"
+          x="https://x.com/Karanaggrawal1"
+          image="/images/karan.jpg"
         />
 
-        {/* ---------------------- DUMMY CONTRIBUTOR 1 ---------------------- */}
+        {/* ---------------------- HARSH MISHRA ---------------------- */}
         <ContributorCard
-          name="Contributor A"
-          role="Frontend Developer"
-          bio="Worked on UI components, animations, layout systems, and responsive design."
+          name="Harsh Mishra"
+          role="Full-Stack Developer | Frontend Specialist"
+          bio="Responsible for UI/UX design, frontend implementation, and component architecture."
           instagram="#"
           linkedin="#"
           github="#"
           portfolio="#"
           mail="#"
-          codeforces="#"
-          leetcode="#"
-        />
-
-        {/* ---------------------- DUMMY CONTRIBUTOR 2 ---------------------- */}
-        <ContributorCard
-          name="Contributor B"
-          role="Backend Engineer"
-          bio="Responsible for database schema designs, API integrations, and performance optimization."
-          instagram="#"
-          linkedin="#"
-          github="#"
-          portfolio="#"
-          mail="#"
-          codeforces="#"
-          leetcode="#"
+        // Add other links if available
         />
       </div>
     </section>
@@ -146,6 +137,7 @@ function ContributorsSection() {
 /* -------------------------------------------------------------------------- */
 /*                           CONTRIBUTOR CARD                                   */
 /* -------------------------------------------------------------------------- */
+
 
 function ContributorCard({
   name,
@@ -158,25 +150,38 @@ function ContributorCard({
   mail,
   codeforces,
   leetcode,
+  codechef,
+  geeksforgeeks,
+  x,
+  image,
 }: any) {
   return (
-    <Card className="hover:shadow-md transition-shadow border">
+    <Card className="hover:shadow-md transition-shadow border overflow-hidden">
+      {image && (
+        <div className="w-full h-64 bg-muted relative">
+          {/* Placeholder for image - user needs to add image to public/images/karan.jpg */}
+          <img src={image} alt={name} className="w-full h-full object-contain" onError={(e) => (e.currentTarget.style.display = 'none')} />
+        </div>
+      )}
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-foreground">
           {name}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground mb-3 text-sm">{role}</p>
+        <p className="text-muted-foreground mb-3 text-sm font-medium text-primary">{role}</p>
         <p className="text-muted-foreground text-sm mb-6">{bio}</p>
         <div className="flex flex-wrap gap-3 text-lg">
-          <a href={github} target="_blank" rel="noopener noreferrer"><SiGithub /></a>
-          <a href={linkedin} target="_blank" rel="noopener noreferrer"><SiLinkedin color="#0A66C2" /></a>
-          <a href={instagram} target="_blank" rel="noopener noreferrer"><SiInstagram color="#E1306C" /></a>
-          <a href={portfolio} target="_blank" rel="noopener noreferrer"><Globe /></a>
-          <a href={`mailto:${mail}`}><Mail /></a>
-          <a href={leetcode} target="_blank" rel="noopener noreferrer"><SiLeetcode color="#FFA116" /></a>
-          <a href={codeforces} target="_blank" rel="noopener noreferrer"><SiCodeforces color="#1F8ACB" /></a>
+          {github && <a href={github} target="_blank" rel="noopener noreferrer" title="GitHub"><SiGithub /></a>}
+          {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><SiLinkedin color="#0A66C2" /></a>}
+          {instagram && <a href={instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><SiInstagram color="#E1306C" /></a>}
+          {x && <a href={x} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><SiX /></a>}
+          {portfolio && <a href={portfolio} target="_blank" rel="noopener noreferrer" title="Portfolio"><Globe /></a>}
+          {mail && <a href={`mailto:${mail}`} title="Email"><Mail /></a>}
+          {leetcode && <a href={leetcode} target="_blank" rel="noopener noreferrer" title="LeetCode"><SiLeetcode color="#FFA116" /></a>}
+          {codeforces && <a href={codeforces} target="_blank" rel="noopener noreferrer" title="CodeForces"><SiCodeforces color="#1F8ACB" /></a>}
+          {codechef && <a href={codechef} target="_blank" rel="noopener noreferrer" title="CodeChef"><SiCodechef color="#5B4638" /></a>}
+          {geeksforgeeks && <a href={geeksforgeeks} target="_blank" rel="noopener noreferrer" title="GeeksForGeeks"><SiGeeksforgeeks color="#2F8D46" /></a>}
         </div>
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
 'use client';
+// Made by Karan Aggarwal & Harsh Mishra
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -6,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { Bell, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
+import Logo from '@/components/general/Logo';
 
 interface DoctorNavbarProps {
   isSidebarOpen: boolean;
@@ -64,7 +66,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
 
       {/* LEFT SECTION — Logo + Sidebar Toggle + Nav Links */}
       <div className="flex items-center gap-8">
-        
+
         {/* Menu Button */}
         <button
           onClick={() => setSidebarOpen(!isSidebarOpen)}
@@ -75,12 +77,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </button>
 
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-lg">Q</span>
-          </div>
-          <h1 className="text-xl font-bold text-gray-900">QuickClinic</h1>
-        </div>
+        <Logo />
 
         {/* Desktop Navigation */}
         <div className="hidden md:flex items-center gap-6">
@@ -157,14 +154,14 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         </Link>
 
         {/* Profile */}
-        
+
         <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
           <Link
             href="/doctor/profile"
             className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
           >
-            <Avatar 
-              src={user?.profileImageUrl} 
+            <Avatar
+              src={user?.profileImageUrl}
               name={user?.name || "Doctor"}
               size="sm"
             />
@@ -174,7 +171,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
           </Link>
         </div>
 
-        
+
 
         {/* Logout */}
         <button
