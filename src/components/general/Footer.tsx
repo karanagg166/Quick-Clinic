@@ -35,8 +35,8 @@ export default function Footer() {
 
   return (
     <footer className="bg-muted/30 border-t mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-1 space-y-4">
             <Logo />
@@ -119,7 +119,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="border-t pt-8 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
+        <div className="border-t pt-4 flex flex-col md:flex-row items-center justify-between text-sm text-muted-foreground">
           <p>© {currentYear} QuickClinic. All rights reserved.</p>
           <p className="mt-2 md:mt-0 font-medium">
             Made with ❤️ by <span className="text-foreground">Karan Aggarwal</span> & <span className="text-foreground">Harsh Mishra</span>
