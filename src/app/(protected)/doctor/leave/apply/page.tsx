@@ -3,6 +3,12 @@
 import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import { showToast } from "@/lib/toast";
+import {
+  getTodayInUserTimezone,
+  getCurrentTimeInUserTimezone,
+  combineDateTimeInUserTimezone,
+  formatUTCToUserTimezone,
+} from "@/lib/dateUtils";
 
 export default function DoctorLeave() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -20,20 +26,20 @@ export default function DoctorLeave() {
   const [todayTime, setTodayTime] = useState("");
 
   useEffect(() => {
-    // compute local date/time so it matches user's timezone
-    const now = new Date();
-    now.setMinutes(now.getMinutes() - now.getTimezoneOffset()); // adjust to local for ISO
-    setTodayDate(now.toISOString().slice(0, 10)); // "YYYY-MM-DD"
-    setTodayTime(now.toISOString().slice(11, 16)); // "HH:MM"
+    // Get current date/time in user's local timezone
+    setTodayDate(getTodayInUserTimezone());
+    setTodayTime(getCurrentTimeInUserTimezone());
     setMounted(true);
   }, []);
 
   const combineDateTime = (date: string, time: string) => {
     if (!date || !time) return null;
-    // using new Date(`${date}T${time}`) produces a Date in local timezone
-    const iso = new Date(`${date}T${time}`);
-    if (isNaN(iso.getTime())) return null;
-    return iso;
+    try {
+      // Convert user's local time input to UTC for server storage
+      return combineDateTimeInUserTimezone(date, time);
+    } catch {
+      return null;
+    }
   };
 
   const validateLeave = () => {

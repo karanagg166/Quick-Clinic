@@ -13,12 +13,12 @@ export async function GET(
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    today.setUTCHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
-    const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-    const nextMonthStart = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const thisMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
+    const nextMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
 
     // Today's appointments
     const todayAppointments = await prisma.appointment.count({
