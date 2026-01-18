@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showToast } from '@/lib/toast';
+import { getTodayInUserTimezone, formatUTCToUserTimezone } from '@/lib/dateUtils';
 
 interface BookTimeSlotProps {
   doctorId: string;
@@ -27,8 +28,8 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
 
   useEffect(() => {
-    const today = new Date();
-    const formattedDate = today.toISOString().split('T')[0];
+    // Get today's date in user's local timezone (YYYY-MM-DD)
+    const formattedDate = getTodayInUserTimezone();
     setDate(formattedDate);
   }, []);
   
@@ -148,6 +149,14 @@ const throttledBookOffline = useThrottledCallback((slotId: string) => {
     // The base function (handleBookSlot) is stable because it's wrapped in useCallback (as shown in the prior response).
     return handleBookSlot(slotId, 'OFFLINE');
 }, 3000); // Set delay to 3000ms (3 seconds)
+
+
+
+
+
+
+
+
 
 // 2. Throttled function for "Pay Online" button
 // It wraps the handleOnlinePayment logic.

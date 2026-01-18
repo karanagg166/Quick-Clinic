@@ -49,8 +49,8 @@ export async function GET(
       );
     }
 
-    const date = new Date(dateStr);
-    date.setHours(0, 0, 0, 0); // normalize to start of day
+    // Parse as UTC midnight
+    const date = new Date(`${dateStr}T00:00:00.000Z`);
 
     // Check if slots already exist for this date
     const existingSlots = await prisma.slot.findMany({
@@ -108,7 +108,7 @@ export async function GET(
       // Generate 10-minute slots within this time range
       for (let min = startMin; min < endMin; min += SLOT_DURATION_MINUTES) {
         const startTime = new Date(date);
-        startTime.setHours(Math.floor(min / 60), min % 60, 0, 0);
+        startTime.setUTCHours(Math.floor(min / 60), min % 60, 0, 0);
 
         const endTime = new Date(startTime);
         endTime.setMinutes(endTime.getMinutes() + SLOT_DURATION_MINUTES);
@@ -240,15 +240,14 @@ export async function POST(
       );
     }
 
-    const start = new Date(`${date}T${startTime}`);
-    const end = new Date(`${date}T${endTime}`);
+    const start = new Date(`${date}T${startTime}:00.000Z`);
+    const end = new Date(`${date}T${endTime}:00.000Z`);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
       return NextResponse.json({ error: "Invalid time range" }, { status: 400 });
     }
 
-    const dayDate = new Date(date);
-    dayDate.setHours(0, 0, 0, 0);
+    const dayDate = new Date(`${date}T00:00:00.000Z`);
 
     // Overlap check with existing slots for that doctor/date
     const existing = await prisma.slot.findMany({
