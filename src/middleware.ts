@@ -31,8 +31,31 @@ export async function middleware(request: NextRequest) {
         }
     }
 
-    // 2. Doctor/Patient Protections (Optional, can add later if requested)
-    // ...
+    // 2. Doctor Route Protection
+    if (pathname.startsWith('/doctor') && !pathname.startsWith('/doctor/login')) {
+        const token = request.cookies.get('token')?.value;
+        if (!token) return NextResponse.redirect(new URL('/auth/login', request.url));
+
+        const { valid, payload } = await verifyToken(token);
+        if (!valid || !payload) return NextResponse.redirect(new URL('/auth/login', request.url));
+
+        if ((payload as any).role !== "DOCTOR") {
+            return NextResponse.redirect(new URL('/unauthorized', request.url));
+        }
+    }
+
+    // 3. Patient Route Protection
+    if (pathname.startsWith('/patient') && !pathname.startsWith('/patient/login')) {
+        const token = request.cookies.get('token')?.value;
+        if (!token) return NextResponse.redirect(new URL('/auth/login', request.url));
+
+        const { valid, payload } = await verifyToken(token);
+        if (!valid || !payload) return NextResponse.redirect(new URL('/auth/login', request.url));
+
+        if ((payload as any).role !== "PATIENT") {
+            return NextResponse.redirect(new URL('/unauthorized', request.url));
+        }
+    }
 
     return NextResponse.next();
 }
@@ -40,6 +63,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
     matcher: [
         '/admin/:path*',
-        // Add other protected routes
+        '/doctor/:path*',
+        '/patient/:path*',
     ],
 };

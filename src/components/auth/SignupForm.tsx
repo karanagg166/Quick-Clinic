@@ -81,7 +81,9 @@ export function SignupForm() {
             });
 
             const data = await response.json();
-            console.log("Signup Data:", data);
+            // console.log("Signup Data:", data);
+            // ...
+            // console.log("Setting user in store:", userDetails);
 
             if (!response.ok) {
                 showToast.error(data?.error || "Signup failed");
