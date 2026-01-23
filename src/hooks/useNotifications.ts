@@ -28,9 +28,9 @@ export function useNotifications() {
     }
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
-    
-    console.log('Connecting to Socket.IO for notifications:', socketUrl);
-    
+
+    // console.log('Connecting to Socket.IO for notifications:', socketUrl);
+
     const socket = io(socketUrl, {
       auth: {
         userId, // Only userId, no relationId for notifications
@@ -57,7 +57,7 @@ export function useNotifications() {
     });
 
     socket.on('new_notification', (data: { notification: Notification }) => {
-      console.log('Received new notification:', data.notification);
+      // console.log('Received new notification:', data.notification);
       setNotifications((prev) => [data.notification, ...prev]);
     });
 
