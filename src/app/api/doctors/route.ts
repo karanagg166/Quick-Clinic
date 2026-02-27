@@ -2,9 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 
-
-
-
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;

@@ -103,6 +103,7 @@ export default function PatientAppointmentsPage() {
                 <SelectItem value="CONFIRMED">Confirmed</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="EXPIRED">Expired</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={fetchAppointments} className="w-full">

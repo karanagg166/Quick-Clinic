@@ -39,7 +39,7 @@ export async function GET(
       doctorId: appointment.doctorId,
       patientId: appointment.patientId,
       slotId: appointment.slotId,
-      status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED',
+      status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED',
       paymentMethod: appointment.paymentMethod as 'OFFLINE' | 'ONLINE',
       transactionId: appointment.transactionId ?? null,
       notes: appointment.notes ?? null,
@@ -146,7 +146,7 @@ export async function PATCH(
     }
 
     // Validate status if provided
-    if (status && !['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'RESCHEDULED'].includes(status)) {
+    if (status && !['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'RESCHEDULED', 'EXPIRED'].includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 

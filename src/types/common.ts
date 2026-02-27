@@ -61,7 +61,7 @@ export interface AppointmentDetail {
   doctorId: string;
   patientId: string;
   slotId: string;
-  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED';
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED';
   paymentMethod: 'OFFLINE' | 'ONLINE';
   transactionId: string | null;
   notes: string | null;

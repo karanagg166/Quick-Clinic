@@ -102,6 +102,7 @@ enum AppointmentStatus {
   CANCELLED
   NO_SHOW
   RESCHEDULED
+  EXPIRED
 }
 
 enum PaymentMethod {
@@ -177,10 +178,9 @@ model Doctor {
   userId     String    @unique
   specialty  Specialty
   experience Int       @default(0)
-
-  fees      Int     @default(0)
-  doctorBio String?
-  balance   Int     @default(0) // Balance in paise (smallest currency unit)
+  fees       Int       @default(0)
+  doctorBio  String?
+  balance    Int       @default(0)
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -425,6 +425,7 @@ model AccessLog {
   userId   String?
   targetId String?
   action   String
+  tag      String? @default("SYSTEM") // e.g. AUTH, APPOINTMENT, ADMIN
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
@@ -435,6 +436,7 @@ model AuditLog {
   id       String  @id @default(cuid())
   userId   String?
   action   String
+  tag      String? @default("SYSTEM") // e.g. AUTH, SECURITY, ONBOARDING
   metadata Json?
 
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)

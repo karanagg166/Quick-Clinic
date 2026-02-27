@@ -298,6 +298,7 @@ exports.Prisma.AccessLogScalarFieldEnum = {
   userId: 'userId',
   targetId: 'targetId',
   action: 'action',
+  tag: 'tag',
   createdAt: 'createdAt'
 };
 
@@ -305,6 +306,7 @@ exports.Prisma.AuditLogScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
   action: 'action',
+  tag: 'tag',
   metadata: 'metadata',
   createdAt: 'createdAt'
 };
@@ -442,7 +444,8 @@ exports.AppointmentStatus = exports.$Enums.AppointmentStatus = {
   COMPLETED: 'COMPLETED',
   CANCELLED: 'CANCELLED',
   NO_SHOW: 'NO_SHOW',
-  RESCHEDULED: 'RESCHEDULED'
+  RESCHEDULED: 'RESCHEDULED',
+  EXPIRED: 'EXPIRED'
 };
 
 exports.PaymentMethod = exports.$Enums.PaymentMethod = {

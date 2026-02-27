@@ -43,7 +43,7 @@ export async function GET(
 			doctorId: appointment.doctorId,
 			patientId: appointment.patientId,
 			slotId: appointment.slotId,
-			status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED',
+			status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED',
 			paymentMethod: appointment.paymentMethod as 'OFFLINE' | 'ONLINE',
 			transactionId: appointment.transactionId ?? null,
 			notes: appointment.notes ?? null,

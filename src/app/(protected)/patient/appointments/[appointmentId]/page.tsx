@@ -113,13 +113,13 @@ export default function AppointmentPage() {
     return (
         <div className="p-6 max-w-4xl mx-auto">
             <h1 className="text-2xl font-bold text-gray-900 mb-6">Appointment Details</h1>
-            
+
             {/* Appointment Core Info */}
             <div className="bg-white rounded-lg shadow-md border p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Appointment Information</h2>
                 <div className="grid grid-cols-2 gap-4">
                     <p><span className="font-semibold">ID:</span> {appointment.id}</p>
-                    <p><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-white ${appointment.status === 'CONFIRMED' ? 'bg-green-500' : appointment.status === 'PENDING' ? 'bg-yellow-500' : appointment.status === 'CANCELLED' ? 'bg-red-500' : 'bg-blue-500'}`}>{appointment.status}</span></p>
+                    <p><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-white ${appointment.status === 'CONFIRMED' ? 'bg-green-500' : appointment.status === 'PENDING' ? 'bg-yellow-500' : appointment.status === 'CANCELLED' || appointment.status === 'EXPIRED' ? 'bg-red-500' : 'bg-blue-500'}`}>{appointment.status}</span></p>
                     <p><span className="font-semibold">Booked At:</span> {new Date(appointment.bookedAt).toLocaleString()}</p>
                     <p><span className="font-semibold">Payment Method:</span> {appointment.paymentMethod}</p>
                     <p><span className="font-semibold">Appointment Mode:</span> {appointment.isAppointmentOffline ? 'Offline' : 'Online'}</p>

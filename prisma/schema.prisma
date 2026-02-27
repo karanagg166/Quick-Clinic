@@ -102,6 +102,7 @@ enum AppointmentStatus {
   CANCELLED
   NO_SHOW
   RESCHEDULED
+  EXPIRED
 }
 
 enum PaymentMethod {
@@ -178,10 +179,9 @@ model Doctor {
   userId     String    @unique
   specialty  Specialty
   experience Int       @default(0)
-
   fees      Int     @default(0)
   doctorBio String?
-  balance   Int     @default(0) // Balance in paise (smallest currency unit)
+  balance   Int     @default(0) 
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -270,7 +270,7 @@ model Schedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
+ 
   @@index([doctorId])
 }
 
@@ -289,7 +289,6 @@ model Slot {
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date, status])
   @@index([startTime, status])

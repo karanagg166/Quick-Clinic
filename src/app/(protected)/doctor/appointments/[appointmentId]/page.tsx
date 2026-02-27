@@ -18,8 +18,8 @@ export default function DoctorAppointmentDetailPage() {
   const appointmentId = typeof params.appointmentId === 'string'
     ? params.appointmentId
     : Array.isArray(params.appointmentId)
-    ? params.appointmentId[0]
-    : '';
+      ? params.appointmentId[0]
+      : '';
 
   const [appointment, setAppointment] = useState<AppointmentDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,7 +30,7 @@ export default function DoctorAppointmentDetailPage() {
   const [isOffline, setIsOffline] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
 
-  const statusOptions = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED'];
+  const statusOptions = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED', 'EXPIRED'];
   const paymentOptions = ['OFFLINE', 'ONLINE'];
 
   useEffect(() => {
@@ -163,6 +163,7 @@ export default function DoctorAppointmentDetailPage() {
       case 'PENDING':
         return 'outline';
       case 'CANCELLED':
+      case 'EXPIRED':
         return 'destructive';
       default:
         return 'secondary';

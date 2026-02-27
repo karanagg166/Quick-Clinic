@@ -22,6 +22,7 @@ export default function AppointmentCard({
   const getStatusVariant = (status: string) => {
     switch (status) {
       case "CANCELLED":
+      case "EXPIRED":
         return "destructive";
       case "COMPLETED":
         return "default";
@@ -36,7 +37,7 @@ export default function AppointmentCard({
     <Card className="hover:shadow-lg transition-shadow">
       <CardHeader>
         <div className="flex items-start gap-3">
-          <Avatar 
+          <Avatar
             src={role === "patient" ? appointment.doctorImage : appointment.patientImage}
             name={role === "patient" ? appointment.doctorName : (appointment.patientName || "Patient")}
             size="md"
@@ -93,7 +94,7 @@ export default function AppointmentCard({
         )}
 
         {/* Patient Actions */}
-        {role === "patient" && appointment.status !== "CANCELLED" && (
+        {role === "patient" && appointment.status !== "CANCELLED" && appointment.status !== "EXPIRED" && (
           <Button
             variant="destructive"
             size="sm"
@@ -119,7 +120,8 @@ export default function AppointmentCard({
             )}
 
             {appointment.status !== "COMPLETED" &&
-              appointment.status !== "CANCELLED" && (
+              appointment.status !== "CANCELLED" &&
+              appointment.status !== "EXPIRED" && (
                 <Button
                   variant="default"
                   size="sm"
@@ -130,7 +132,7 @@ export default function AppointmentCard({
                 </Button>
               )}
 
-            {appointment.status !== "CANCELLED" && (
+            {appointment.status !== "CANCELLED" && appointment.status !== "EXPIRED" && (
               <Button
                 variant="destructive"
                 size="sm"

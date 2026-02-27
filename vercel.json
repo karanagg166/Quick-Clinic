@@ -3,6 +3,11 @@
     "src/app/api/**/*.ts": {
       "maxDuration": 30
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/expire-appointments",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }
-

@@ -94,9 +94,9 @@ export default function DoctorAppointmentsPage() {
     }
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
-    
+
     console.log('Connecting to Socket.IO for appointment requests:', socketUrl);
-    
+
     const socket = io(socketUrl, {
       auth: {
         userId, // Only userId, no relationId for notifications
@@ -124,14 +124,14 @@ export default function DoctorAppointmentsPage() {
     // Listen for new appointment requests
     socket.on('new_appointment_request', (data: { appointment: DoctorAppointment }) => {
       console.log('Received new appointment request:', data.appointment);
-      
+
       // Add the new appointment to the list (if it's pending and matches filters)
       setAppointments((prev) => {
         // Check if appointment already exists
         const exists = prev.some((apt) => apt.id === data.appointment.id);
         if (exists) {
           // Update existing appointment
-          return prev.map((apt) => 
+          return prev.map((apt) =>
             apt.id === data.appointment.id ? data.appointment : apt
           );
         }
@@ -268,6 +268,7 @@ export default function DoctorAppointmentsPage() {
                 <SelectItem value="CONFIRMED">Confirmed</SelectItem>
                 <SelectItem value="COMPLETED">Completed</SelectItem>
                 <SelectItem value="CANCELLED">Cancelled</SelectItem>
+                <SelectItem value="EXPIRED">Expired</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={fetchAppointments} className="w-full">
@@ -293,8 +294,8 @@ export default function DoctorAppointmentsPage() {
             </div>
           ) : (
             appointments.map((a) => (
-              <AppointmentCard 
-                appointment={a} 
+              <AppointmentCard
+                appointment={a}
                 key={a.id}
                 onStatusUpdate={fetchAppointments}
               />
