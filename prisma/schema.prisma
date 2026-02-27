@@ -93,6 +93,7 @@ enum SlotStatus {
   BOOKED
   UNAVAILABLE
   CANCELLED
+  ON_LEAVE
 }
 
 enum AppointmentStatus {

@@ -212,7 +212,8 @@ export const SlotStatus: {
   HELD: 'HELD',
   BOOKED: 'BOOKED',
   UNAVAILABLE: 'UNAVAILABLE',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  ON_LEAVE: 'ON_LEAVE'
 };
 
 export type SlotStatus = (typeof SlotStatus)[keyof typeof SlotStatus]

@@ -1,42 +1,37 @@
 "use client";
 
-import { useState} from "react";
+import { useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import { showToast } from "@/lib/toast";
 
 export default function DoctorLeaveSearch() {
-  // selector form — reactive
   const doctorId = useUserStore((state) => state.doctorId);
 
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [reason, setReason] = useState("");
-  const [startTime, setStartTime] = useState(""); // NEW
-  const [endTime, setEndTime] = useState(""); // NEW
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // reactive flag that causes re-render when doctorId becomes available
   const doctorReady = Boolean(doctorId && doctorId.length > 0);
-  const combineDateTime = (date: string, time: string) => { 
-   if(!time){
-    const iso = new Date(`${date}T00:00`);
-   if(isNaN(iso.getTime())) return null;
-   return iso;
-   }
-   if(!date) return null;
-   const iso = new Date(`${date}T${time}`);
-   if(isNaN(iso.getTime())) return null;
-   return iso;
 
-
-  }
- 
+  const combineDateTime = (date: string, time: string) => {
+    if (!time) {
+      const iso = new Date(`${date}T00:00`);
+      if (isNaN(iso.getTime())) return null;
+      return iso;
+    }
+    if (!date) return null;
+    const iso = new Date(`${date}T${time}`);
+    if (isNaN(iso.getTime())) return null;
+    return iso;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     setErrorMsg(null);
 
     if (!doctorReady) {
@@ -48,14 +43,13 @@ export default function DoctorLeaveSearch() {
 
     try {
       const params = new URLSearchParams();
-      const start=combineDateTime(startDate, startTime);
-      const end=combineDateTime(endDate, endTime);
-      
-      if(start) params.append("startDate", start.toISOString());
-      if(end) params.append("endDate", end.toISOString());
-      
+      const start = combineDateTime(startDate, startTime);
+      const end = combineDateTime(endDate, endTime);
+
+      if (start) params.append("startDate", start.toISOString());
+      if (end) params.append("endDate", end.toISOString());
       if (reason) params.append("reason", reason);
-      console.log(start,end);
+
       const url = `/api/doctors/${doctorId}/leave?${params.toString()}`;
 
       const response = await fetch(url, {
@@ -80,7 +74,41 @@ export default function DoctorLeaveSearch() {
     }
   };
 
+  const handleCancelLeave = async (leaveId: string) => {
+    if (!doctorId) return;
+
+    const confirmed = window.confirm(
+      "Are you sure you want to cancel this leave? Affected slots will be restored."
+    );
+    if (!confirmed) return;
+
+    try {
+      const response = await fetch(
+        `/api/doctors/${doctorId}/leave?leaveId=${leaveId}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Failed to cancel leave");
+      }
+
+      showToast.success("Leave cancelled and slots restored!");
+      // Remove from results
+      setResults((prev) => prev.filter((l) => l.id !== leaveId));
+    } catch (err: any) {
+      showToast.error(err.message || "Failed to cancel leave");
+    }
+  };
+
   const buttonDisabled = loading || !doctorReady;
+
+  const isLeaveFuture = (leave: any) => {
+    return new Date(leave.endDate) > new Date();
+  };
 
   return (
     <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
@@ -115,7 +143,7 @@ export default function DoctorLeaveSearch() {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-       <div>
+        <div>
           <label className="block font-semibold mb-1">End Time</label>
           <input
             type="time"
@@ -137,17 +165,16 @@ export default function DoctorLeaveSearch() {
         <button
           type="submit"
           disabled={buttonDisabled}
-          className={`w-full py-2 rounded text-white ${
-            buttonDisabled
+          className={`w-full py-2 rounded text-white ${buttonDisabled
               ? "bg-gray-400 cursor-not-allowed"
               : "bg-blue-600 hover:bg-blue-700"
-          }`}
+            }`}
         >
           {loading
             ? "Searching..."
             : !doctorReady
-            ? "Waiting for Doctor ID..."
-            : "Search Leave Requests"}
+              ? "Waiting for Doctor ID..."
+              : "Search Leave Requests"}
         </button>
       </form>
 
@@ -166,20 +193,39 @@ export default function DoctorLeaveSearch() {
                   <th className="border p-2">End Date</th>
                   <th className="border p-2">Reason</th>
                   <th className="border p-2">Applied At</th>
+                  <th className="border p-2">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((leave: any, idx) => (
                   <tr key={idx} className="hover:bg-gray-50">
                     <td className="border p-2">
-                      {leave.startDate ? new Date(leave.startDate).toLocaleDateString() : "-"}
+                      {leave.startDate
+                        ? new Date(leave.startDate).toLocaleString()
+                        : "-"}
                     </td>
                     <td className="border p-2">
-                      {leave.endDate ? new Date(leave.endDate).toLocaleDateString() : "-"}
+                      {leave.endDate
+                        ? new Date(leave.endDate).toLocaleString()
+                        : "-"}
                     </td>
                     <td className="border p-2">{leave.reason ?? "-"}</td>
                     <td className="border p-2">
-                      {leave.applyAt ? new Date(leave.applyAt).toLocaleDateString() : "-"}
+                      {leave.applyAt
+                        ? new Date(leave.applyAt).toLocaleDateString()
+                        : "-"}
+                    </td>
+                    <td className="border p-2 text-center">
+                      {isLeaveFuture(leave) ? (
+                        <button
+                          onClick={() => handleCancelLeave(leave.id)}
+                          className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm"
+                        >
+                          Cancel Leave
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Past</span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -188,7 +234,9 @@ export default function DoctorLeaveSearch() {
           </div>
         </div>
       ) : (
-        !loading && <p className="text-gray-500 text-center py-4">No results found</p>
+        !loading && (
+          <p className="text-gray-500 text-center py-4">No results found</p>
+        )
       )}
     </div>
   );

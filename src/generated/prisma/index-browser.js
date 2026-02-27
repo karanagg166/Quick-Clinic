@@ -435,7 +435,8 @@ exports.SlotStatus = exports.$Enums.SlotStatus = {
   HELD: 'HELD',
   BOOKED: 'BOOKED',
   UNAVAILABLE: 'UNAVAILABLE',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  ON_LEAVE: 'ON_LEAVE'
 };
 
 exports.AppointmentStatus = exports.$Enums.AppointmentStatus = {

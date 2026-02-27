@@ -32,7 +32,7 @@ export async function GET(
     const { doctorId } = await params;
     const { searchParams } = req.nextUrl;
     const dateStr = searchParams.get("date");
-    
+
     console.log("DoctorId:", doctorId, "Date:", dateStr);
 
     if (!doctorId) {
@@ -54,7 +54,7 @@ export async function GET(
 
     // Check if slots already exist for this date
     const existingSlots = await prisma.slot.findMany({
-      where: { 
+      where: {
         doctorId,
         date,
       },
@@ -96,6 +96,15 @@ export async function GET(
       );
     }
 
+    // Check for active leaves on this date
+    const activeLeaves = await prisma.leave.findMany({
+      where: {
+        doctorId,
+        startDate: { lte: new Date(`${dateStr}T23:59:59.999Z`) },
+        endDate: { gte: new Date(`${dateStr}T00:00:00.000Z`) },
+      },
+    });
+
     // Generate slots for each time slot in the schedule
     const generatedSlots = [];
 
@@ -111,7 +120,12 @@ export async function GET(
         startTime.setUTCHours(Math.floor(min / 60), min % 60, 0, 0);
 
         const endTime = new Date(startTime);
-        endTime.setMinutes(endTime.getMinutes() + SLOT_DURATION_MINUTES);
+        endTime.setUTCMinutes(endTime.getUTCMinutes() + SLOT_DURATION_MINUTES);
+
+        // Check if this slot overlaps with any active leave
+        const isOnLeave = activeLeaves.some(
+          (leave: { startDate: Date; endDate: Date }) => startTime < leave.endDate && endTime > leave.startDate
+        );
 
         const slot = await prisma.slot.create({
           data: {
@@ -119,7 +133,7 @@ export async function GET(
             date,
             startTime,
             endTime,
-            status: "AVAILABLE",
+            status: isOnLeave ? "ON_LEAVE" : "AVAILABLE",
           },
         });
 
@@ -155,7 +169,7 @@ export async function PATCH(
       );
     }
 
-    const allowedStatuses = ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE", "CANCELLED"];
+    const allowedStatuses = ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE", "CANCELLED", "ON_LEAVE"];
     if (!allowedStatuses.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
     }
@@ -255,7 +269,7 @@ export async function POST(
       orderBy: { startTime: "asc" },
     });
 
-    const hasOverlap = existing.some((s:any) => start < s.endTime && end > s.startTime);
+    const hasOverlap = existing.some((s: any) => start < s.endTime && end > s.startTime);
     if (hasOverlap) {
       return NextResponse.json(
         { error: "New slot overlaps with an existing slot" },
