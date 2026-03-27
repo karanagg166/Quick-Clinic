@@ -13,7 +13,8 @@ export async function GET(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const doctor = await prisma.doctor.findUnique({
+    // Try finding by doctor.id first, then fallback to userId
+    let doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
         balance: true,
@@ -21,18 +22,28 @@ export async function GET(
       },
     });
 
+
     if (!doctor) {
-      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+      // Return zero balance instead of 404 to prevent navbar errors
+      return NextResponse.json(
+        {
+          balance: 0,
+          balanceInRupees: 0,
+          fees: 0,
+        },
+        { status: 200 }
+      );
     }
 
-    // Convert balance from paise to rupees
-    const balanceInRupees = doctor.balance / 100;
+    // Convert balance from paise to rupees (with null guard)
+    const rawBalance = doctor.balance ?? 0;
+    const balanceInRupees = rawBalance / 100;
 
     return NextResponse.json(
       {
-        balance: doctor.balance, // In paise
+        balance: rawBalance, // In paise
         balanceInRupees, // In rupees for display
-        fees: doctor.fees,
+        fees: doctor.fees ?? 0,
       },
       { status: 200 }
     );

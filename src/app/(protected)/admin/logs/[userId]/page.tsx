@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { RecentLogsWidget } from "@/components/admin/dashboard/RecentLogsWidget";
-import { format } from "date-fns";
 
 export default function UserLogsPage() {
     const params = useParams();

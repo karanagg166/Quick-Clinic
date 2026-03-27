@@ -4,7 +4,6 @@ import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
 import { logAudit } from "@/lib/logger";
 import type { UserDetail } from "@/types/common";
-import { metadata } from "@/app/layout";
 export const POST = async (req: NextRequest) => {
   try {
     const {

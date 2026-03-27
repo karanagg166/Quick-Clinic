@@ -13,7 +13,7 @@ export async function GET(req: NextRequest) {
     };
     if (searchParams.get("name")) {
       filters.user.name = {
-        contains: searchParams.get("patientName") as string,
+        contains: searchParams.get("name") as string,
         mode: "insensitive",
       }
     }
@@ -36,22 +36,13 @@ export async function GET(req: NextRequest) {
       }
     }
     if (searchParams.get("fees")) {
-      filters.fees = {
-        contains: searchParams.get("fees") as string,
-        mode: "insensitive",
-      }
+      filters.fees = Number(searchParams.get("fees"));
     }
     if (searchParams.get("experience")) {
-      filters.experience = {
-        contains: searchParams.get("experience") as string,
-        mode: "insensitive",
-      }
+      filters.experience = Number(searchParams.get("experience"));
     }
     if (searchParams.get("age")) {
-      filters.user.age = {
-        contains: searchParams.get("age") as string,
-        mode: "insensitive",
-      }
+      filters.user.age = Number(searchParams.get("age"));
     }
     if (searchParams.get("gender")) {
       filters.user.gender = {

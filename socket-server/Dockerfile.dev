@@ -1,10 +1,10 @@
 # Development Dockerfile for Socket Server
-FROM node:24.11.1-alpine
+FROM node:24-slim
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Copy root package.json (for Prisma client dependencies)
 COPY package*.json ./

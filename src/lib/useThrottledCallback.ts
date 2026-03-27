@@ -1,11 +1,12 @@
 "use client";
-import {useEffect,useRef,useCallback} from "react";
-type ThrottledCallback<T extends (...args: any[]) => any> = {   
+import { useEffect, useRef, useCallback, useMemo } from "react";
+
+type ThrottledCallback<T extends (...args: Parameters<T>) => ReturnType<T>> = {
     (...args: Parameters<T>): void;
     cancel: () => void;
 };
 
-export function useThrottledCallback<T extends (...args: any[]) => any>(
+export function useThrottledCallback<T extends (...args: Parameters<T>) => ReturnType<T>>(
     callback: T,
     delay: number
 ): ThrottledCallback<T> {
@@ -44,8 +45,11 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
             }
-        }               
+        };
     }, []);
-    
-    return Object.assign(throttledFunction, { cancel });
+
+    return useMemo(
+        () => Object.assign(throttledFunction, { cancel }),
+        [throttledFunction, cancel]
+    );
 }

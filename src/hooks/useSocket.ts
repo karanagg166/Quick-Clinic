@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 
 export const useSocket = () => {
-    const [socket, setSocket] = useState<Socket | null>(null);
+    const socketRef = useRef<Socket | null>(null);
 
     useEffect(() => {
-        // Assuming socket server is on same origin or specified via env
-        // NEXT_PUBLIC_SOCKET_URL
         const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
 
         const socketInstance = io(socketUrl, {
@@ -21,12 +19,12 @@ export const useSocket = () => {
             console.log("Socket connected:", socketInstance.id);
         });
 
-        setSocket(socketInstance);
+        socketRef.current = socketInstance;
 
         return () => {
             socketInstance.disconnect();
         };
     }, []);
 
-    return socket;
+    return socketRef.current;
 };

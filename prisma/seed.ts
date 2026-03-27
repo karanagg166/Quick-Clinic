@@ -1,8 +1,15 @@
 // prisma/seed.ts
-import { PrismaClient } from "../src/generated/prisma/index.js";
+import 'dotenv/config';
+import { PrismaClient } from "../src/generated/prisma/client.js";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { hash } from "bcryptjs";
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error('DATABASE_URL is not set');
+}
+const adapter = new PrismaPg({ connectionString });
+const prisma = new PrismaClient({ adapter });
 
 async function main() {
   console.log("Start seeding...");
@@ -34,6 +41,9 @@ async function main() {
       name: "Karan Aggarwal",
       phoneNo: "7838222130",
       age: 22,
+      role: "PATIENT",
+      gender: "MALE",
+      pinCode: 121004,
     },
     create: {
       email: patientEmail,
@@ -79,6 +89,9 @@ async function main() {
       name: "Dr. Priyanshu",
       phoneNo: "9520183169",
       age: 21,
+      role: "DOCTOR",
+      pinCode: 560001,
+      gender: "MALE",
     },
     create: {
       email: doctorEmail,
@@ -96,65 +109,78 @@ async function main() {
   console.log("User ensured for doctor:", doctorUser.id);
 
   // create / upsert doctor row using userId
-  await prisma.doctor.upsert({
+  const doctorRecord = await prisma.doctor.upsert({
     where: { userId: doctorUser.id },
     update: {
       specialty: "GENERAL_PHYSICIAN",
       experience: 12,
-      // qualifications: ["MBBS", "MD"], // Removed in schema, handled via relation if needed
       fees: 700,
     },
     create: {
       userId: doctorUser.id,
       specialty: "GENERAL_PHYSICIAN",
       experience: 12,
-      // qualifications: ["MBBS", "MD"],
       fees: 700,
     },
   });
 
-  console.log("Doctor record ensured for user:", doctorUser.id);
+  console.log("Doctor record ensured:", doctorRecord.id);
 
   // weekly schedule JSON
-  const weeklySchedule = {
-    monday: [
-      { start: "09:00", end: "12:00" },
-      { start: "16:00", end: "19:00" },
-    ],
-    tuesday: [{ start: "09:00", end: "12:00" }],
-    wednesday: [],
-    thursday: [{ start: "10:00", end: "14:00" }],
-    friday: [
-      { start: "09:00", end: "12:00" },
-      { start: "16:00", end: "18:00" },
-    ],
-    saturday: [{ start: "09:00", end: "13:00" }],
-    sunday: [],
-  };
+  const weeklySchedule = [
+    {
+      day: "Monday",
+      slots: [
+        { slotNo: 1, start: "09:00", end: "12:00" },
+        { slotNo: 2, start: "16:00", end: "19:00" },
+      ],
+    },
+    {
+      day: "Tuesday",
+      slots: [{ slotNo: 1, start: "09:00", end: "12:00" }],
+    },
+    { day: "Wednesday", slots: [] },
+    {
+      day: "Thursday",
+      slots: [{ slotNo: 1, start: "10:00", end: "14:00" }],
+    },
+    {
+      day: "Friday",
+      slots: [
+        { slotNo: 1, start: "09:00", end: "12:00" },
+        { slotNo: 2, start: "16:00", end: "18:00" },
+      ],
+    },
+    {
+      day: "Saturday",
+      slots: [{ slotNo: 1, start: "09:00", end: "13:00" }],
+    },
+    { day: "Sunday", slots: [] },
+  ];
 
   // ensure schedule exists
   await prisma.schedule.upsert({
-    where: { doctorId: doctorUser.id },
+    where: { doctorId: doctorRecord.id },
     update: { weeklySchedule },
-    create: { doctorId: doctorUser.id, weeklySchedule },
+    create: { doctorId: doctorRecord.id, weeklySchedule },
   });
 
-  console.log("Schedule ensured for doctor:", doctorUser.id);
+  console.log("Schedule ensured for doctor:", doctorRecord.id);
 
   // ---------- ADMIN (Super Admin) ----------
-  const adminEmail = "admin@quickclinic.com";
-  const adminPlain = "admin123"; // Change this in production!
+  const adminEmail = "harsh@gmail.com";
+  const adminPlain = "harsh166"; // Change this in production!
   const adminHashed = await hash(adminPlain, 10);
 
   const adminUser = await prisma.user.upsert({
     where: { email: adminEmail },
     update: {
       name: "Super Admin",
-      // admin user doesn't necessarily need personal details like address,
-      // but schema requires them currently on 'User' model:
       phoneNo: "9999999999",
       age: 30,
       role: "ADMIN",
+      gender: "BINARY",
+      pinCode: 110001,
     },
     create: {
       email: adminEmail,

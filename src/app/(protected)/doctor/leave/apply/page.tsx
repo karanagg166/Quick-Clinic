@@ -7,7 +7,6 @@ import {
   getTodayInUserTimezone,
   getCurrentTimeInUserTimezone,
   combineDateTimeInUserTimezone,
-  formatUTCToUserTimezone,
 } from "@/lib/dateUtils";
 
 export default function DoctorLeave() {
@@ -15,9 +14,9 @@ export default function DoctorLeave() {
   const userId=useUserStore((s)=> s.user?.id);
   const [reason, setReason] = useState("");
   const [startDate, setStartDate] = useState("");
-  const [startTime, setStartTime] = useState("");
+  const [startTime, setStartTime] = useState("00:00");
   const [endDate, setEndDate] = useState("");
-  const [endTime, setEndTime] = useState("");
+  const [endTime, setEndTime] = useState("23:59");
   const [submitting, setSubmitting] = useState(false);
 
   // client-only computed today values (avoid SSR mismatch)
@@ -150,7 +149,11 @@ export default function DoctorLeave() {
               className="w-full border p-2 rounded"
               value={startDate}
               min={computedStartDateMin}
-              onChange={(e) => setStartDate(e.target.value)}
+              onChange={(e) => {
+                setStartDate(e.target.value);
+                // Auto-fill end date if not already set
+                if (!endDate) setEndDate(e.target.value);
+              }}
               required
             />
           </div>

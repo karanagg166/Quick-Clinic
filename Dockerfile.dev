@@ -1,5 +1,6 @@
-# Base image
-FROM node:24.11.1-alpine
+# Base image — use Debian slim (not Alpine) so Next.js 16 Turbopack
+# native SWC bindings work (they require glibc, which Alpine lacks)
+FROM node:24-slim
 
 WORKDIR /app
 
@@ -8,7 +9,7 @@ ARG NODE_ENV=development
 ENV NODE_ENV=${NODE_ENV}
 
 # Prisma needs openssl
-RUN apk add --no-cache openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
 COPY package*.json ./

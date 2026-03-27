@@ -220,11 +220,51 @@ export async function PATCH(
       }
     }
 
-    // If status was updated, send socket notification to patient
+    // If status was updated, create DB notifications and send socket notification
     if (status && status !== appointmentBefore.status) {
+      const patientUserId = appointmentBefore.patient.user.id;
+      const doctorUserId = appointmentBefore.doctor.user.id;
+      const patientName = appointmentBefore.patient.user.name || 'Patient';
+      const doctorName = appointmentBefore.doctor.user.name || 'Doctor';
+      const apptDate = appointmentBefore.slot.date.toISOString().split('T')[0];
+
+      const statusLabels: Record<string, string> = {
+        CONFIRMED: 'confirmed',
+        CANCELLED: 'cancelled',
+        COMPLETED: 'completed',
+        NO_SHOW: 'marked as no-show',
+        RESCHEDULED: 'rescheduled',
+        EXPIRED: 'expired',
+      };
+      const statusLabel = statusLabels[status] || status.toLowerCase();
+
+      // Notification for patient
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: patientUserId,
+            message: `Your appointment on ${apptDate} with ${doctorName} has been ${statusLabel}.`,
+          },
+        });
+      } catch (notifErr) {
+        console.warn('Failed to create patient notification:', notifErr);
+      }
+
+      // Notification for doctor
+      try {
+        await prisma.notification.create({
+          data: {
+            userId: doctorUserId,
+            message: `Appointment with ${patientName} on ${apptDate} has been ${statusLabel}.`,
+          },
+        });
+      } catch (notifErr) {
+        console.warn('Failed to create doctor notification:', notifErr);
+      }
+
+      // Also send socket notification to patient (non-critical)
       try {
         const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-        const patientUserId = appointmentBefore.patient.user.id;
 
         await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
           method: 'POST',
@@ -235,7 +275,7 @@ export async function PATCH(
             status,
             appointmentDate: appointmentBefore.slot.date.toISOString(),
             appointmentTime: appointmentBefore.slot.startTime.toISOString(),
-            doctorName: appointmentBefore.doctor.user.name,
+            doctorName,
           }),
         }).catch((err) => {
           console.warn('Socket server notification failed (this is non-critical):', err);

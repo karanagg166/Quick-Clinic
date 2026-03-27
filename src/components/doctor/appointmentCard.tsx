@@ -27,8 +27,10 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
   })();
 
   const isPending = appointment.status.toUpperCase() === 'PENDING';
+  const isConfirmed = appointment.status.toUpperCase() === 'CONFIRMED';
+  const isTerminal = ['COMPLETED', 'CANCELLED', 'EXPIRED', 'NO_SHOW'].includes(appointment.status.toUpperCase());
 
-  const handleStatusUpdate = async (newStatus: 'CONFIRMED' | 'CANCELLED') => {
+  const handleStatusUpdate = async (newStatus: 'CONFIRMED' | 'CANCELLED' | 'COMPLETED' | 'NO_SHOW') => {
     if (!doctorId || updating) return;
 
     try {
@@ -47,17 +49,19 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
         throw new Error(error.error || 'Failed to update appointment');
       }
 
-      showToast.success(
-        newStatus === 'CONFIRMED' 
-          ? 'Appointment confirmed successfully' 
-          : 'Appointment cancelled successfully'
-      );
+      const statusLabels: Record<string, string> = {
+        CONFIRMED: 'Appointment confirmed',
+        CANCELLED: 'Appointment cancelled',
+        COMPLETED: 'Appointment marked as completed',
+        NO_SHOW: 'Appointment marked as no-show',
+      };
+
+      showToast.success(statusLabels[newStatus] || 'Status updated');
 
       // Call callback to refresh appointments list
       if (onStatusUpdate) {
         onStatusUpdate();
       } else {
-        // Reload page if no callback provided
         window.location.reload();
       }
     } catch (error: any) {
@@ -71,6 +75,8 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
     <div className={`p-5 rounded-xl shadow border transition ${
       isPending 
         ? 'bg-yellow-50 border-yellow-200 ring-2 ring-yellow-100' 
+        : isConfirmed
+        ? 'bg-blue-50 border-blue-200'
         : 'bg-white hover:shadow-lg'
     }`}>
       <div className="flex items-start justify-between mb-3">
@@ -146,8 +152,53 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
         </div>
       )}
 
-      {/* View details link for non-pending appointments */}
-      {!isPending && (
+      {/* Action buttons for confirmed appointments */}
+      {isConfirmed && (
+        <div className="flex gap-2 pt-3 border-t border-blue-200">
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleStatusUpdate('COMPLETED');
+            }}
+            disabled={updating}
+            className="flex-1 bg-green-600 hover:bg-green-700"
+          >
+            {updating ? 'Updating...' : 'Complete'}
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleStatusUpdate('NO_SHOW');
+            }}
+            disabled={updating}
+            className="flex-1 bg-orange-500 hover:bg-orange-600"
+          >
+            {updating ? 'Updating...' : 'No Show'}
+          </Button>
+          <Button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleStatusUpdate('CANCELLED');
+            }}
+            disabled={updating}
+            variant="destructive"
+            className="flex-1"
+          >
+            {updating ? 'Updating...' : 'Cancel'}
+          </Button>
+          <Link href={`/doctor/appointments/${appointment.id}`} className="flex-1">
+            <Button variant="outline" className="w-full">
+              View Details
+            </Button>
+          </Link>
+        </div>
+      )}
+
+      {/* View details link for terminal status appointments */}
+      {isTerminal && (
         <Link href={`/doctor/appointments/${appointment.id}`} className="block mt-3 pt-3 border-t">
           <Button variant="outline" className="w-full">
             View Details

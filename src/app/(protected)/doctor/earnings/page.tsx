@@ -10,7 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { showToast } from "@/lib/toast";
 import EarningsChart from "@/components/doctor/EarningsChart";
 import EmptyState from "@/components/general/EmptyState";
-import { Wallet, CreditCard, ArrowDownCircle, History } from "lucide-react";
+import { Wallet, CreditCard, ArrowDownCircle, History, TrendingUp, CalendarDays } from "lucide-react";
 import EnhancedSkeleton from "@/components/general/EnhancedSkeleton";
 import StatusBadge from "@/components/general/StatusBadge";
 
@@ -58,6 +58,10 @@ export default function DoctorEarnings() {
   const [loadingBankDetails, setLoadingBankDetails] = useState(true);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [loadingWithdrawals, setLoadingWithdrawals] = useState(true);
+
+  // Summary state
+  const [summaryData, setSummaryData] = useState({ today: 0, week: 0, month: 0, year: 0 });
+  const [loadingSummary, setLoadingSummary] = useState(true);
   
   // Form states
   const [showBankForm, setShowBankForm] = useState(false);
@@ -93,6 +97,49 @@ export default function DoctorEarnings() {
     else showToast.error(json.error || "Failed to fetch earnings");
 
     setLoading(false);
+  };
+
+  const fetchEarningsSummary = async () => {
+    if (!doctorId) return;
+    setLoadingSummary(true);
+
+    const now = new Date();
+    const today = now.toISOString().split("T")[0];
+
+    // Week start (Sunday)
+    const weekStart = new Date(now);
+    weekStart.setDate(now.getDate() - now.getDay());
+    const week = weekStart.toISOString().split("T")[0];
+
+    // Month start
+    const month = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+
+    // Year start
+    const year = new Date(now.getFullYear(), 0, 1).toISOString().split("T")[0];
+
+    try {
+      const [todayRes, weekRes, monthRes, yearRes] = await Promise.all([
+        fetch(`/api/doctors/${doctorId}/earnings?startDate=${today}`),
+        fetch(`/api/doctors/${doctorId}/earnings?startDate=${week}`),
+        fetch(`/api/doctors/${doctorId}/earnings?startDate=${month}`),
+        fetch(`/api/doctors/${doctorId}/earnings?startDate=${year}`),
+      ]);
+
+      const [t, w, m, y] = await Promise.all([
+        todayRes.json(), weekRes.json(), monthRes.json(), yearRes.json()
+      ]);
+
+      setSummaryData({
+        today: t.total || 0,
+        week: w.total || 0,
+        month: m.total || 0,
+        year: y.total || 0,
+      });
+    } catch (e) {
+      console.error("Failed to fetch earnings summary", e);
+    } finally {
+      setLoadingSummary(false);
+    }
   };
 
   // Fetch balance
@@ -248,6 +295,7 @@ export default function DoctorEarnings() {
     fetchBalance();
     fetchBankDetails();
     fetchWithdrawals();
+    fetchEarningsSummary();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [doctorId]);
 
@@ -256,6 +304,32 @@ export default function DoctorEarnings() {
       <div>
         <h1 className="text-3xl font-semibold mb-2">Earnings & Wallet</h1>
         <p className="text-muted-foreground">Manage your earnings, balance, and withdrawals</p>
+      </div>
+
+      {/* Earnings Summary Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {[
+          { label: "Today", value: summaryData.today, icon: <TrendingUp className="w-5 h-5 text-blue-500" /> },
+          { label: "This Week", value: summaryData.week, icon: <CalendarDays className="w-5 h-5 text-green-500" /> },
+          { label: "This Month", value: summaryData.month, icon: <CalendarDays className="w-5 h-5 text-purple-500" /> },
+          { label: "This Year", value: summaryData.year, icon: <CalendarDays className="w-5 h-5 text-orange-500" /> },
+        ].map((stat, i) => (
+          <Card key={i} className="border shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </CardTitle>
+              {stat.icon}
+            </CardHeader>
+            <CardContent>
+              {loadingSummary ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <div className="text-2xl font-bold">₹{stat.value.toLocaleString()}</div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Balance Card */}

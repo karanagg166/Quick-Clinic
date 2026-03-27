@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { useUserStore } from "@/store/userStore";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { MessageCircle, AlertCircle, Users } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { AlertCircle, Users } from "lucide-react";
 import LoadingSpinner from "@/components/general/LoadingSpinner";
 import EmptyState from "@/components/general/EmptyState";
 

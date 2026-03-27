@@ -30,10 +30,11 @@ export async function POST(req: NextRequest) {
       include: {
         doctor: {
           select: { id: true }
-        }
-        , patient: {
+        },
+        patient: {
           select: { id: true }
-        }
+        },
+        location: true
       }
     });
 
@@ -70,8 +71,8 @@ export async function POST(req: NextRequest) {
       role: user.role,
 
       address: user.address,
-      city: user.city,
-      state: user.state,
+      city: user.location?.city ?? "",
+      state: user.location?.state ?? "",
       pinCode: user.pinCode,
 
       profileImageUrl: user.profileImageUrl,

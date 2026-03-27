@@ -45,9 +45,11 @@ export async function GET(
     }
 
     if (searchParams.get("city")) {
-      where.patient.user.city = {
-        contains: searchParams.get("city") as string,
-        mode: "insensitive",
+      where.patient.user.location = {
+        city: {
+          contains: searchParams.get("city") as string,
+          mode: "insensitive",
+        }
       };
     }
 
@@ -89,7 +91,11 @@ export async function GET(
       include: {
         slot: true,
         patient: {
-          include: { user: true },
+          include: {
+            user: {
+              include: { location: true }
+            }
+          },
         },
       },
     });
@@ -102,7 +108,7 @@ export async function GET(
       patientName: a.patient.user.name,
       patientString: a.patient.user.email,
       gender: a.patient.user.gender,
-      city: a.patient.user.city,
+      city: a.patient.user.location?.city ?? "N/A",
       age: a.patient.user.age,
       appointmentDate: a.slot?.date?.toISOString() ?? "",
       appointmentTime: a.slot?.startTime ?? "",

@@ -17,7 +17,7 @@ export const GET = async (
     }
     console.log(doctorId);
 
-    const doctorDataPromise = await prisma.doctor.findUnique({
+    const doctorDataPromise = prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
         id: true,
@@ -48,13 +48,13 @@ export const GET = async (
       },
     });
 
-    const ratingAggPromise = await prisma.rating.aggregate({
+    const ratingAggPromise = prisma.rating.aggregate({
       where: { doctorId },
       _avg: { rating: true },
       _count: { rating: true },
     });
 
-    const commentsPromise = await prisma.comment.findMany({
+    const commentsPromise = prisma.comment.findMany({
       where: { doctorId },
       orderBy: { createdAt: "desc" },
       include: {

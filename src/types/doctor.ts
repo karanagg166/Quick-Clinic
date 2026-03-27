@@ -25,6 +25,6 @@ appointmentDate:string;
 appointmentTime:string;
 status:string;
 city:string;
-age:Number;
+age:number;
 paymentMethod:string;
 }
