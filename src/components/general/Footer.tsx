@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Logo from "@/components/general/Logo";
-import { SiGithub, SiLinkedin, SiInstagram, SiX } from "react-icons/si";
+import { FaGithub, FaLinkedin, FaInstagram, FaTwitter } from "react-icons/fa";
 import { Mail } from "lucide-react";
 
 // Made by Karan Aggarwal & Harsh Mishra
@@ -12,22 +12,22 @@ export default function Footer() {
 
   const socialLinks = [
     {
-      icon: <SiGithub size={20} />,
+      icon: <FaGithub size={20} />,
       href: "https://github.com/karanagg166",
       label: "GitHub",
     },
     {
-      icon: <SiLinkedin size={20} color="#0A66C2" />,
+      icon: <FaLinkedin size={20} color="#0A66C2" />,
       href: "https://www.linkedin.com/in/karan-aggarwal-a13427276/",
       label: "LinkedIn",
     },
     {
-      icon: <SiInstagram size={20} color="#E1306C" />,
+      icon: <FaInstagram size={20} color="#E1306C" />,
       href: "https://www.instagram.com/karanagg_166/",
       label: "Instagram",
     },
     {
-      icon: <SiX size={20} />,
+      icon: <FaTwitter size={20} />,
       href: "https://x.com/Karanaggrawal1",
       label: "X (Twitter)",
     },

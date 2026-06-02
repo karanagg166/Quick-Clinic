@@ -1,53 +1,92 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
+import { Gender, Specialty } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
-    const filters: any = {
-      user: {
-        location: {}
-      },
+    const filters: any = {};
+    const userFilters: any = {};
+    const locationFilters: any = {};
 
-    };
+    console.log("searchParams", searchParams.toString());
+
     if (searchParams.get("name")) {
-      filters.user.name = {
-        contains: searchParams.get("name") as string,
-        mode: "insensitive",
+      const nameParam = searchParams.get("name")?.trim();
+      if (nameParam) {
+        userFilters.name = {
+          contains: nameParam,
+          mode: "insensitive",
+        };
       }
     }
+
     if (searchParams.get("city")) {
-      filters.user.location.city = {
-        contains: searchParams.get("city") as string,
-        mode: "insensitive",
+      const cityParam = searchParams.get("city")?.trim();
+      if (cityParam) {
+        locationFilters.city = {
+          contains: cityParam,
+          mode: "insensitive",
+        };
       }
     }
+
     if (searchParams.get("state")) {
-      filters.user.location.state = {
-        contains: searchParams.get("state") as string,
-        mode: "insensitive",
+      const stateParam = searchParams.get("state")?.trim();
+      if (stateParam) {
+        locationFilters.state = {
+          contains: stateParam,
+          mode: "insensitive",
+        };
       }
     }
-    if (searchParams.get("specialty")) {
-      filters.specialty = {
-        contains: searchParams.get("specialty") as string,
-        mode: "insensitive",
+
+    if (Object.keys(locationFilters).length > 0) {
+      userFilters.location = locationFilters;
+    }
+
+    const genderInput = searchParams.get("gender")?.trim();
+    if (genderInput && genderInput !== "all") {
+      const genderUpper = genderInput.toUpperCase();
+      if (Object.values(Gender).includes(genderUpper as Gender)) {
+        userFilters.gender = genderUpper as Gender;
       }
     }
-    if (searchParams.get("fees")) {
-      filters.fees = Number(searchParams.get("fees"));
+
+    const ageVal = searchParams.get("age");
+    if (ageVal) {
+      const ageNum = Number(ageVal);
+      if (!isNaN(ageNum)) {
+        userFilters.age = ageNum;
+      }
     }
-    if (searchParams.get("experience")) {
-      filters.experience = Number(searchParams.get("experience"));
+
+    if (Object.keys(userFilters).length > 0) {
+      filters.user = userFilters;
     }
-    if (searchParams.get("age")) {
-      filters.user.age = Number(searchParams.get("age"));
+
+    const specialtyVal = searchParams.get("specialty")?.trim() || searchParams.get("specialization")?.trim();
+    if (specialtyVal && specialtyVal !== "all") {
+      const specialtyUpper = specialtyVal.toUpperCase();
+      if (Object.values(Specialty).includes(specialtyUpper as Specialty)) {
+        filters.specialty = specialtyUpper as Specialty;
+      }
     }
-    if (searchParams.get("gender")) {
-      filters.user.gender = {
-        contains: searchParams.get("gender") as string,
-        mode: "insensitive",
+
+    const feesVal = searchParams.get("fees");
+    if (feesVal) {
+      const feesNum = Number(feesVal);
+      if (!isNaN(feesNum)) {
+        filters.fees = { lte: feesNum };
+      }
+    }
+
+    const expVal = searchParams.get("experience");
+    if (expVal) {
+      const expNum = Number(expVal);
+      if (!isNaN(expNum)) {
+        filters.experience = { gte: expNum };
       }
     }
     const raw = await prisma.doctor.findMany({

@@ -10,7 +10,6 @@ import {
   SiNodedotjs,
   SiDocker,
   SiGithub,
-  SiLinkedin,
   SiInstagram,
   SiLeetcode,
   SiCodeforces,
@@ -18,6 +17,7 @@ import {
   SiGeeksforgeeks,
   SiX,
 } from "react-icons/si";
+import { FaLinkedin } from "react-icons/fa";
 
 import { Mail, Globe } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -173,7 +173,7 @@ function ContributorCard({
         <p className="text-muted-foreground text-sm mb-6">{bio}</p>
         <div className="flex flex-wrap gap-3 text-lg">
           {github && <a href={github} target="_blank" rel="noopener noreferrer" title="GitHub"><SiGithub /></a>}
-          {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><SiLinkedin color="#0A66C2" /></a>}
+          {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><FaLinkedin color="#0A66C2" /></a>}
           {instagram && <a href={instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><SiInstagram color="#E1306C" /></a>}
           {x && <a href={x} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><SiX /></a>}
           {portfolio && <a href={portfolio} target="_blank" rel="noopener noreferrer" title="Portfolio"><Globe /></a>}

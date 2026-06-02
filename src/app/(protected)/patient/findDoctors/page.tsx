@@ -53,20 +53,38 @@ export default function FindDoctorsPage() {
     };
   }, []);
 
-  const handleSearch = async () => {
+  const handleSearch = async (overrideFilters?: {
+    city?: string;
+    state?: string;
+    specialty?: string;
+    gender?: string;
+    name?: string;
+    fees?: string;
+    experience?: string;
+    age?: string;
+  }) => {
     setLoading(true);
     setSearched(true);
 
     try {
       const params = new URLSearchParams();
-      if (city) params.append("city", city);
-      if (state) params.append("state", state);
-      if (specialty && specialty !== "all") params.append("specialization", specialty);
-      if (gender && gender !== "all") params.append("gender", gender);
-      if (name) params.append("name", name);
-      if (fees) params.append("fees", fees);
-      if (experience) params.append("experience", experience);
-      if (age) params.append("age", age);
+      const actualCity = overrideFilters ? (overrideFilters.city ?? "") : city;
+      const actualState = overrideFilters ? (overrideFilters.state ?? "") : state;
+      const actualSpecialty = overrideFilters ? (overrideFilters.specialty ?? "") : specialty;
+      const actualGender = overrideFilters ? (overrideFilters.gender ?? "") : gender;
+      const actualName = overrideFilters ? (overrideFilters.name ?? "") : name;
+      const actualFees = overrideFilters ? (overrideFilters.fees ?? "") : fees;
+      const actualExperience = overrideFilters ? (overrideFilters.experience ?? "") : experience;
+      const actualAge = overrideFilters ? (overrideFilters.age ?? "") : age;
+
+      if (actualCity) params.append("city", actualCity);
+      if (actualState) params.append("state", actualState);
+      if (actualSpecialty && actualSpecialty !== "all") params.append("specialization", actualSpecialty);
+      if (actualGender && actualGender !== "all") params.append("gender", actualGender);
+      if (actualName) params.append("name", actualName);
+      if (actualFees) params.append("fees", actualFees);
+      if (actualExperience) params.append("experience", actualExperience);
+      if (actualAge) params.append("age", actualAge);
       // console.log("Fetching doctors with params:", params.toString());
       const res = await fetch(`/api/doctors?${params.toString()}`, {
         method: "GET",
@@ -94,6 +112,32 @@ export default function FindDoctorsPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Load doctors on mount
+  useEffect(() => {
+    handleSearch();
+  }, []);
+
+  const handleClear = () => {
+    setCity("");
+    setState("");
+    setName("");
+    setFees("");
+    setExperience("");
+    setSpecialty("");
+    setGender("");
+    setAge("");
+    handleSearch({
+      city: "",
+      state: "",
+      specialty: "",
+      gender: "",
+      name: "",
+      fees: "",
+      experience: "",
+      age: "",
+    });
   };
 
   return (
@@ -137,7 +181,7 @@ export default function FindDoctorsPage() {
                 <SelectItem value="all">All Specializations</SelectItem>
                 {specializations.map((spec) => (
                   <SelectItem key={spec} value={spec}>
-                    {spec}
+                    {spec.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase())}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -171,13 +215,22 @@ export default function FindDoctorsPage() {
               value={age}
               onChange={(e) => setAge(e.target.value)}
             />
-            <Button
-              onClick={handleSearch}
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "Searching..." : "Search"}
-            </Button>
+            <div className="flex gap-2 w-full col-span-1">
+              <Button
+                onClick={() => handleSearch()}
+                className="flex-1"
+                disabled={loading}
+              >
+                {loading ? "Searching..." : "Search"}
+              </Button>
+              <Button
+                onClick={handleClear}
+                variant="outline"
+                disabled={loading}
+              >
+                Clear
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
