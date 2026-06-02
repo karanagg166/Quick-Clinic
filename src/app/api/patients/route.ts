@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Patient } from "@/types/patient";
+import { Gender } from "@/generated/prisma";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -59,34 +60,49 @@ export const GET = async (req: NextRequest) => {
 
     // --- build patient & user filters ---
     const patientFilter: any = {};
-    if (searchParams.get("medicalHistory")) {
-      patientFilter.medicalHistory = { contains: searchParams.get("medicalHistory") || "", mode: "insensitive" };
+    const medHistoryParam = searchParams.get("medicalHistory")?.trim();
+    if (medHistoryParam) {
+      patientFilter.medicalHistory = { contains: medHistoryParam, mode: "insensitive" };
     }
-    if (searchParams.get("allergy")) {
-      patientFilter.allergies = { contains: searchParams.get("allergy") || "", mode: "insensitive" };
+    const allergyParam = searchParams.get("allergy")?.trim();
+    if (allergyParam) {
+      patientFilter.allergies = { contains: allergyParam, mode: "insensitive" };
     }
-    if (searchParams.get("currentMedications")) {
-      patientFilter.currentMedications = { contains: searchParams.get("currentMedications") || "", mode: "insensitive" };
+    const curMedParam = searchParams.get("currentMedications")?.trim();
+    if (curMedParam) {
+      patientFilter.currentMedications = { contains: curMedParam, mode: "insensitive" };
     }
 
     const userFilter: any = {};
     const locationFilter: any = {};
 
-    if (searchParams.get("name")) {
-      userFilter.name = { contains: searchParams.get("name") || "", mode: "insensitive" };
+    const nameParam = searchParams.get("name")?.trim();
+    if (nameParam) {
+      userFilter.name = { contains: nameParam, mode: "insensitive" };
     }
-    if (searchParams.get("age")) {
-      const age = Number(searchParams.get("age"));
-      if (!Number.isNaN(age)) userFilter.age = age;
+    const ageVal = searchParams.get("age");
+    if (ageVal) {
+      const ageNum = Number(ageVal);
+      if (!isNaN(ageNum)) {
+        userFilter.age = ageNum;
+      }
     }
-    if (searchParams.get("gender")) userFilter.gender = searchParams.get("gender");
+    const genderInput = searchParams.get("gender")?.trim();
+    if (genderInput && genderInput !== "all") {
+      const genderUpper = genderInput.toUpperCase();
+      if (Object.values(Gender).includes(genderUpper as Gender)) {
+        userFilter.gender = genderUpper as Gender;
+      }
+    }
 
     // Location filters
-    if (searchParams.get("city")) {
-      locationFilter.city = { contains: searchParams.get("city") || "", mode: "insensitive" };
+    const cityParam = searchParams.get("city")?.trim();
+    if (cityParam) {
+      locationFilter.city = { contains: cityParam, mode: "insensitive" };
     }
-    if (searchParams.get("state")) {
-      locationFilter.state = { contains: searchParams.get("state") || "", mode: "insensitive" };
+    const stateParam = searchParams.get("state")?.trim();
+    if (stateParam) {
+      locationFilter.state = { contains: stateParam, mode: "insensitive" };
     }
 
     if (Object.keys(locationFilter).length > 0) {
@@ -198,6 +214,10 @@ export const PATCH = async (req: NextRequest) => {
     return NextResponse.json({ patient: updatedPatient }, { status: 200 });
   }
   catch (err: any) {
-
+    console.error("patients-patch-error", err);
+    return NextResponse.json(
+      { error: err?.message ?? "Server error" },
+      { status: 500 }
+    );
   }
 }

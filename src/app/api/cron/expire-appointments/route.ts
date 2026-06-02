@@ -15,9 +15,8 @@ export async function GET(req: Request) {
             return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
         }
 
-        const now = new Date();
-        // Set to start of today (UTC) so we expire anything before today
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const today = new Date();
+        today.setUTCHours(0, 0, 0, 0);
 
         // Find all PENDING appointments whose slot date is in the past
         const expiredAppointments = await prisma.appointment.findMany({
