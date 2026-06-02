@@ -16,8 +16,10 @@ export default function FindDoctorsPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [name, setName] = useState("");
-  const [fees, setFees] = useState("");
-  const [experience, setExperience] = useState("");
+  const [minFees, setMinFees] = useState("");
+  const [maxFees, setMaxFees] = useState("");
+  const [minExperience, setMinExperience] = useState("");
+  const [maxExperience, setMaxExperience] = useState("");
   const [specialty, setSpecialty] = useState("");
   const [gender, setGender] = useState("");
   const [age, setAge] = useState("");
@@ -59,8 +61,10 @@ export default function FindDoctorsPage() {
     specialty?: string;
     gender?: string;
     name?: string;
-    fees?: string;
-    experience?: string;
+    minFees?: string;
+    maxFees?: string;
+    minExperience?: string;
+    maxExperience?: string;
     age?: string;
   }) => {
     setLoading(true);
@@ -73,8 +77,10 @@ export default function FindDoctorsPage() {
       const actualSpecialty = overrideFilters ? (overrideFilters.specialty ?? "") : specialty;
       const actualGender = overrideFilters ? (overrideFilters.gender ?? "") : gender;
       const actualName = overrideFilters ? (overrideFilters.name ?? "") : name;
-      const actualFees = overrideFilters ? (overrideFilters.fees ?? "") : fees;
-      const actualExperience = overrideFilters ? (overrideFilters.experience ?? "") : experience;
+      const actualMinFees = overrideFilters ? (overrideFilters.minFees ?? "") : minFees;
+      const actualMaxFees = overrideFilters ? (overrideFilters.maxFees ?? "") : maxFees;
+      const actualMinExperience = overrideFilters ? (overrideFilters.minExperience ?? "") : minExperience;
+      const actualMaxExperience = overrideFilters ? (overrideFilters.maxExperience ?? "") : maxExperience;
       const actualAge = overrideFilters ? (overrideFilters.age ?? "") : age;
 
       if (actualCity) params.append("city", actualCity);
@@ -82,8 +88,10 @@ export default function FindDoctorsPage() {
       if (actualSpecialty && actualSpecialty !== "all") params.append("specialization", actualSpecialty);
       if (actualGender && actualGender !== "all") params.append("gender", actualGender);
       if (actualName) params.append("name", actualName);
-      if (actualFees) params.append("fees", actualFees);
-      if (actualExperience) params.append("experience", actualExperience);
+      if (actualMinFees) params.append("minFees", actualMinFees);
+      if (actualMaxFees) params.append("maxFees", actualMaxFees);
+      if (actualMinExperience) params.append("minExperience", actualMinExperience);
+      if (actualMaxExperience) params.append("maxExperience", actualMaxExperience);
       if (actualAge) params.append("age", actualAge);
       // console.log("Fetching doctors with params:", params.toString());
       const res = await fetch(`/api/doctors?${params.toString()}`, {
@@ -123,8 +131,10 @@ export default function FindDoctorsPage() {
     setCity("");
     setState("");
     setName("");
-    setFees("");
-    setExperience("");
+    setMinFees("");
+    setMaxFees("");
+    setMinExperience("");
+    setMaxExperience("");
     setSpecialty("");
     setGender("");
     setAge("");
@@ -134,8 +144,10 @@ export default function FindDoctorsPage() {
       specialty: "",
       gender: "",
       name: "",
-      fees: "",
-      experience: "",
+      minFees: "",
+      maxFees: "",
+      minExperience: "",
+      maxExperience: "",
       age: "",
     });
   };
@@ -199,15 +211,27 @@ export default function FindDoctorsPage() {
             </Select>
             <Input
               type="number"
+              placeholder="Min Fees"
+              value={minFees}
+              onChange={(e) => setMinFees(e.target.value)}
+            />
+            <Input
+              type="number"
               placeholder="Max Fees"
-              value={fees}
-              onChange={(e) => setFees(e.target.value)}
+              value={maxFees}
+              onChange={(e) => setMaxFees(e.target.value)}
             />
             <Input
               type="number"
               placeholder="Min Experience (years)"
-              value={experience}
-              onChange={(e) => setExperience(e.target.value)}
+              value={minExperience}
+              onChange={(e) => setMinExperience(e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Max Experience (years)"
+              value={maxExperience}
+              onChange={(e) => setMaxExperience(e.target.value)}
             />
             <Input
               type="number"

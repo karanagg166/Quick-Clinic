@@ -99,8 +99,21 @@ test("GET /api/doctors - ignores gender when value is 'all'", async () => {
   assert.ok(doctors.length > 1);
 });
 
+test("GET /api/doctors - filters by min fees (greater than or equal)", async () => {
+  const req = new NextRequest("http://localhost:3000/api/doctors?minFees=800");
+  const res = await GET(req);
+  assert.strictEqual(res.status, 200);
+
+  const doctors = await res.json();
+  assert.ok(Array.isArray(doctors));
+  assert.ok(doctors.length > 0);
+  doctors.forEach((doc: any) => {
+    assert.ok(doc.fees >= 800);
+  });
+});
+
 test("GET /api/doctors - filters by max fees (less than or equal)", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?fees=800");
+  const req = new NextRequest("http://localhost:3000/api/doctors?maxFees=800");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 
@@ -112,8 +125,21 @@ test("GET /api/doctors - filters by max fees (less than or equal)", async () => 
   });
 });
 
+test("GET /api/doctors - filters by fees range (minFees & maxFees)", async () => {
+  const req = new NextRequest("http://localhost:3000/api/doctors?minFees=700&maxFees=2000");
+  const res = await GET(req);
+  assert.strictEqual(res.status, 200);
+
+  const doctors = await res.json();
+  assert.ok(Array.isArray(doctors));
+  assert.ok(doctors.length > 0);
+  doctors.forEach((doc: any) => {
+    assert.ok(doc.fees >= 700 && doc.fees <= 2000);
+  });
+});
+
 test("GET /api/doctors - filters by min experience (greater than or equal)", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?experience=15");
+  const req = new NextRequest("http://localhost:3000/api/doctors?minExperience=15");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 
@@ -122,6 +148,32 @@ test("GET /api/doctors - filters by min experience (greater than or equal)", asy
   assert.ok(doctors.length > 0);
   doctors.forEach((doc: any) => {
     assert.ok(doc.experience >= 15);
+  });
+});
+
+test("GET /api/doctors - filters by max experience (less than or equal)", async () => {
+  const req = new NextRequest("http://localhost:3000/api/doctors?maxExperience=15");
+  const res = await GET(req);
+  assert.strictEqual(res.status, 200);
+
+  const doctors = await res.json();
+  assert.ok(Array.isArray(doctors));
+  assert.ok(doctors.length > 0);
+  doctors.forEach((doc: any) => {
+    assert.ok(doc.experience <= 15);
+  });
+});
+
+test("GET /api/doctors - filters by experience range (minExperience & maxExperience)", async () => {
+  const req = new NextRequest("http://localhost:3000/api/doctors?minExperience=5&maxExperience=20");
+  const res = await GET(req);
+  assert.strictEqual(res.status, 200);
+
+  const doctors = await res.json();
+  assert.ok(Array.isArray(doctors));
+  assert.ok(doctors.length > 0);
+  doctors.forEach((doc: any) => {
+    assert.ok(doc.experience >= 5 && doc.experience <= 20);
   });
 });
 
@@ -139,7 +191,7 @@ test("GET /api/doctors - filters by exact age", async () => {
 });
 
 test("GET /api/doctors - handles non-numeric age, fees, and experience gracefully", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?age=invalid&fees=invalid&experience=invalid");
+  const req = new NextRequest("http://localhost:3000/api/doctors?age=invalid&minFees=invalid&maxFees=invalid&minExperience=invalid&maxExperience=invalid");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 

@@ -74,20 +74,44 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    const feesVal = searchParams.get("fees");
-    if (feesVal) {
-      const feesNum = Number(feesVal);
-      if (!isNaN(feesNum)) {
-        filters.fees = { lte: feesNum };
+    // Fees filter
+    const maxFeesVal = searchParams.get("maxFees") || searchParams.get("fees");
+    const minFeesVal = searchParams.get("minFees");
+    const feesFilter: any = {};
+    if (maxFeesVal) {
+      const maxFeesNum = Number(maxFeesVal);
+      if (!isNaN(maxFeesNum)) {
+        feesFilter.lte = maxFeesNum;
       }
     }
-
-    const expVal = searchParams.get("experience");
-    if (expVal) {
-      const expNum = Number(expVal);
-      if (!isNaN(expNum)) {
-        filters.experience = { gte: expNum };
+    if (minFeesVal) {
+      const minFeesNum = Number(minFeesVal);
+      if (!isNaN(minFeesNum)) {
+        feesFilter.gte = minFeesNum;
       }
+    }
+    if (Object.keys(feesFilter).length > 0) {
+      filters.fees = feesFilter;
+    }
+
+    // Experience filter
+    const minExpVal = searchParams.get("minExperience") || searchParams.get("experience");
+    const maxExpVal = searchParams.get("maxExperience");
+    const expFilter: any = {};
+    if (minExpVal) {
+      const minExpNum = Number(minExpVal);
+      if (!isNaN(minExpNum)) {
+        expFilter.gte = minExpNum;
+      }
+    }
+    if (maxExpVal) {
+      const maxExpNum = Number(maxExpVal);
+      if (!isNaN(maxExpNum)) {
+        expFilter.lte = maxExpNum;
+      }
+    }
+    if (Object.keys(expFilter).length > 0) {
+      filters.experience = expFilter;
     }
     const raw = await prisma.doctor.findMany({
       where: filters,
