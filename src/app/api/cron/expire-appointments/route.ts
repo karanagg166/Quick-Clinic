@@ -2,10 +2,11 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
 /**
- * Vercel Cron Job: Auto-expire PENDING appointments whose slot date has passed.
+ * Vercel Cron Job: Auto-expire appointments whose slot date has passed.
+ * Handles both PENDING and CONFIRMED appointments where the slot date is in the past.
  * Schedule: Runs daily at midnight UTC (configured in vercel.json)
  *
- * For online-paid appointments, a Razorpay refund is attempted automatically.
+ * For online-paid PENDING appointments, a Razorpay refund is attempted automatically.
  */
 export async function GET(req: Request) {
     try {
@@ -18,10 +19,12 @@ export async function GET(req: Request) {
         const today = new Date();
         today.setUTCHours(0, 0, 0, 0);
 
-        // Find all PENDING appointments whose slot date is in the past
+        // Find all PENDING and CONFIRMED appointments whose slot date is in the past
         const expiredAppointments = await prisma.appointment.findMany({
             where: {
-                status: 'PENDING',
+                status: {
+                    in: ['PENDING', 'CONFIRMED'],
+                },
                 slot: {
                     date: {
                         lt: today,
@@ -43,6 +46,7 @@ export async function GET(req: Request) {
             return NextResponse.json({
                 message: 'No expired appointments found',
                 expired: 0,
+                refunded: 0,
             });
         }
 
@@ -52,10 +56,17 @@ export async function GET(req: Request) {
 
         for (const appointment of expiredAppointments) {
             try {
+                const previousStatus = appointment.status;
+
                 // 1. Mark appointment as EXPIRED
                 await prisma.appointment.update({
                     where: { id: appointment.id },
-                    data: { status: 'EXPIRED' },
+                    data: {
+                        status: 'EXPIRED',
+                        notes: appointment.notes
+                            ? `${appointment.notes} | Auto-expired: appointment date passed without completion.`
+                            : 'Auto-expired: appointment date passed without completion.',
+                    },
                 });
 
                 // 2. Release the slot back to AVAILABLE
@@ -66,8 +77,8 @@ export async function GET(req: Request) {
 
                 expiredCount++;
 
-                // 3. Process refund if payment was online
-                if (appointment.paymentMethod === 'ONLINE' && appointment.transactionId) {
+                // 3. Process refund for online-paid PENDING appointments (doctor never confirmed)
+                if (previousStatus === 'PENDING' && appointment.paymentMethod === 'ONLINE' && appointment.transactionId) {
                     try {
                         const payment = await prisma.payment.findFirst({
                             where: {
@@ -99,9 +110,7 @@ export async function GET(req: Request) {
                                 });
 
                                 refundedCount++;
-                                console.log(`Refund processed for expired appointment ${appointment.id}`);
                             } else {
-                                console.warn('Razorpay credentials missing, skipping refund for appointment:', appointment.id);
                                 refundFailedCount++;
                             }
                         }
@@ -111,7 +120,35 @@ export async function GET(req: Request) {
                     }
                 }
 
-                // 4. Send notification to patient about expiry
+                // 4. Send database notification to patient
+                try {
+                    const patientUserId = appointment.patient?.user?.id;
+                    const doctorName = appointment.doctor?.user?.name || 'Doctor';
+                    const apptDate = appointment.slot?.date?.toISOString().split('T')[0] || '';
+
+                    if (patientUserId) {
+                        await prisma.notification.create({
+                            data: {
+                                userId: patientUserId,
+                                message: `Your appointment with ${doctorName} on ${apptDate} has expired as the appointment date passed.`,
+                            },
+                        });
+                    }
+
+                    const doctorUserId = appointment.doctor?.user?.id;
+                    if (doctorUserId && previousStatus === 'CONFIRMED') {
+                        await prisma.notification.create({
+                            data: {
+                                userId: doctorUserId,
+                                message: `Your appointment with ${appointment.patient?.user?.name || 'Patient'} on ${apptDate} was marked expired as the scheduled date passed.`,
+                            },
+                        });
+                    }
+                } catch {
+                    // Non-critical notification failure
+                }
+
+                // 5. Send socket notification if socket server is configured
                 try {
                     const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
                     await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
@@ -135,7 +172,7 @@ export async function GET(req: Request) {
         }
 
         return NextResponse.json({
-            message: `Expired ${expiredCount} appointments`,
+            message: `Processed ${expiredCount} expired appointments`,
             expired: expiredCount,
             refunded: refundedCount,
             refundFailed: refundFailedCount,

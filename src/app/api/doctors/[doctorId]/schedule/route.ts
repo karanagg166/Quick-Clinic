@@ -15,8 +15,8 @@ export async function POST(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
   
-    const { weeklySchedule } = await req.json();
-    console.log(weeklySchedule);
+    const body = await req.json().catch(() => ({}));
+    const { weeklySchedule } = body;
 
     if (!weeklySchedule) {
       return NextResponse.json(

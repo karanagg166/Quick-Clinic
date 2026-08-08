@@ -14,10 +14,8 @@ export async function GET(
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
-    const tomorrow = new Date(today);
-    tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
 
-    // Upcoming appointments
+    // Upcoming appointments (PENDING or CONFIRMED on or after today)
     const upcomingAppointments = await prisma.appointment.count({
       where: {
         patientId,
@@ -36,7 +34,7 @@ export async function GET(
     const assignedDoctors = await prisma.doctorPatientRelation.count({
       where: {
         patient: {
-          id: patientId
+          id: patientId,
         },
       },
     });
@@ -49,7 +47,7 @@ export async function GET(
       },
     });
 
-    // Wellness score (placeholder - can be calculated based on completed appointments, follow-ups, etc.)
+    // Completed appointments for wellness score calculation
     const completedAppointments = await prisma.appointment.count({
       where: {
         patientId,
@@ -65,13 +63,12 @@ export async function GET(
       assignedDoctors,
       pendingApprovals,
       wellnessScore,
-    });
+    }, { status: 200 });
   } catch (error: any) {
-    console.error("Stats GET Error:", error);
+    console.error("Patient Stats GET Error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to fetch stats" },
+      { error: error?.message || "Failed to fetch stats" },
       { status: 500 }
     );
   }
 }
-

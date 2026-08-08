@@ -10,8 +10,6 @@ export async function GET(req: NextRequest) {
     const userFilters: any = {};
     const locationFilters: any = {};
 
-    console.log("searchParams", searchParams.toString());
-
     if (searchParams.get("name")) {
       const nameParam = searchParams.get("name")?.trim();
       if (nameParam) {
@@ -113,25 +111,24 @@ export async function GET(req: NextRequest) {
     if (Object.keys(expFilter).length > 0) {
       filters.experience = expFilter;
     }
+
     const raw = await prisma.doctor.findMany({
       where: filters,
       include: {
         user: {
           include: {
             location: true,
-          }
-
+          },
         },
-
-        doctorQualifications: true
-      }
+        doctorQualifications: true,
+      },
     });
+
     const doctors: Doctor[] = raw.map((d: any) => {
       const qualifications = d.doctorQualifications?.map((dq: any) => dq.qualification) ?? [];
 
       return {
         id: String(d.id),
-
         name: d.user?.name ?? "",
         gender: d.user?.gender ?? "",
         age: d.user?.age ?? 0,
@@ -140,9 +137,7 @@ export async function GET(req: NextRequest) {
         fees: d.fees ?? 0,
         profileImageUrl: d.user?.profileImageUrl ?? "",
         doctorBio: d.doctorBio ?? "",
-
         qualifications: qualifications,
-
         city: d.user?.location?.city ?? undefined,
         state: d.user?.location?.state ?? undefined,
       };
@@ -201,8 +196,11 @@ export const POST = async (req: NextRequest) => {
         doctorQualifications: {
           create: Array.isArray(qualifications)
             ? qualifications.map((q: string) => ({ qualification: q }))
-            : []
-        }
+            : [],
+        },
+      },
+      include: {
+        doctorQualifications: true,
       },
     });
 
@@ -215,4 +213,3 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
-

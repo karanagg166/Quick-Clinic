@@ -21,7 +21,10 @@ export async function GET(
       },
       include: {
         doctor: {
-          include: { user: { include: { location: true } } },
+          include: {
+            user: { include: { location: true } },
+            doctorQualifications: true,
+          },
         },
         patient: {
           include: { user: { include: { location: true } } },
@@ -34,12 +37,14 @@ export async function GET(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
+    const qualifications = appointment.doctor.doctorQualifications?.map((dq) => String(dq.qualification)) ?? [];
+
     const result: AppointmentDetail = {
       id: appointment.id,
       doctorId: appointment.doctorId,
       patientId: appointment.patientId,
       slotId: appointment.slotId,
-      status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED',
+      status: appointment.status as any,
       paymentMethod: appointment.paymentMethod as 'OFFLINE' | 'ONLINE',
       transactionId: appointment.transactionId ?? null,
       notes: appointment.notes ?? null,
@@ -51,7 +56,7 @@ export async function GET(
         userId: appointment.doctor.userId,
         specialty: String(appointment.doctor.specialty),
         experience: appointment.doctor.experience,
-        qualifications: appointment.doctor.qualifications,
+        qualifications: qualifications,
         fees: appointment.doctor.fees,
         user: {
           id: appointment.doctor.user.id,
@@ -64,7 +69,7 @@ export async function GET(
           address: appointment.doctor.user.address,
           city: appointment.doctor.user.location?.city || "N/A",
           state: appointment.doctor.user.location?.state || "N/A",
-          pinCode: appointment.doctor.user.location?.pinCode || 0,
+          pinCode: appointment.doctor.user.location?.pincode || 0,
           emailVerified: appointment.doctor.user.emailVerified,
         },
       },
@@ -85,7 +90,7 @@ export async function GET(
           address: appointment.patient.user.address,
           city: appointment.patient.user.location?.city || "N/A",
           state: appointment.patient.user.location?.state || "N/A",
-          pinCode: appointment.patient.user.location?.pinCode || 0,
+          pinCode: appointment.patient.user.location?.pincode || 0,
           emailVerified: appointment.patient.user.emailVerified,
         },
       },
@@ -95,7 +100,7 @@ export async function GET(
         date: appointment.slot.date.toISOString().split('T')[0],
         startTime: appointment.slot.startTime.toISOString(),
         endTime: appointment.slot.endTime.toISOString(),
-        status: String(appointment.slot.status) as 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED',
+        status: String(appointment.slot.status) as any,
       },
       city: null,
       state: null,
@@ -118,7 +123,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
     }
 
-    // Try to get from body first, fallback to query params for backward compatibility
     interface RequestBody {
       status?: string;
       paymentMethod?: string;
@@ -129,7 +133,6 @@ export async function PATCH(
     try {
       body = await req.json();
     } catch {
-      // If body parsing fails, use query params
       const url = new URL(req.url);
       body.status = url.searchParams.get('status') || undefined;
       body.paymentMethod = url.searchParams.get('paymentMethod') || undefined;
@@ -145,24 +148,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'No fields provided to update' }, { status: 400 });
     }
 
-    // Validate status if provided
-    if (status && !['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'RESCHEDULED', 'EXPIRED'].includes(status)) {
+    const allowedStatuses = ['PENDING', 'CONFIRMED', 'CANCELLED', 'COMPLETED', 'NO_SHOW', 'RESCHEDULED', 'EXPIRED'];
+    if (status && !allowedStatuses.includes(status)) {
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const data: {
-      status?: string;
-      paymentMethod?: string;
-      isAppointmentOffline?: boolean;
-    } = {};
-
-    if (status) data.status = status;
-    if (paymentMethod) data.paymentMethod = paymentMethod;
-    if (isAppointmentOffline !== undefined) {
-      data.isAppointmentOffline = isAppointmentOffline;
-    }
-
-    // Get appointment before update to get patient info for socket notification
     const appointmentBefore = await prisma.appointment.findFirst({
       where: { id: appointmentId, doctorId },
       include: {
@@ -176,14 +166,17 @@ export async function PATCH(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    const updated = await prisma.appointment.updateMany({
-      where: { id: appointmentId, doctorId },
+    const data: Record<string, any> = {};
+    if (status) data.status = status;
+    if (paymentMethod) data.paymentMethod = paymentMethod;
+    if (isAppointmentOffline !== undefined) {
+      data.isAppointmentOffline = isAppointmentOffline;
+    }
+
+    const updatedAppointment = await prisma.appointment.update({
+      where: { id: appointmentId },
       data,
     });
-
-    if (updated.count === 0) {
-      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
-    }
 
     // Update slot status based on appointment status
     if (status && status !== appointmentBefore.status) {
@@ -193,8 +186,8 @@ export async function PATCH(
           where: { id: appointmentBefore.slotId },
           data: { status: 'AVAILABLE' },
         });
-      } else if (status === 'CONFIRMED' && appointmentBefore.status === 'PENDING') {
-        // If confirmed from pending, ensure slot is marked as booked
+      } else if (status === 'CONFIRMED') {
+        // If confirmed, ensure slot is marked as booked
         await prisma.slot.update({
           where: { id: appointmentBefore.slotId },
           data: { status: 'BOOKED' },
@@ -202,10 +195,9 @@ export async function PATCH(
       } else if (status === 'COMPLETED' && appointmentBefore.status !== 'COMPLETED') {
         // When appointment is completed, transfer payment to doctor's balance if payment was online
         if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
-          const doctorFees = appointmentBefore.doctor.fees; // Fees in rupees
-          const feesInPaise = doctorFees * 100; // Convert to paise (smallest currency unit)
+          const doctorFees = appointmentBefore.doctor.fees;
+          const feesInPaise = doctorFees * 100;
 
-          // Add fees to doctor's balance
           await prisma.doctor.update({
             where: { id: doctorId },
             data: {
@@ -214,13 +206,11 @@ export async function PATCH(
               },
             },
           });
-
-          console.log(`Transferred ₹${doctorFees} to doctor ${doctorId} balance for completed appointment ${appointmentId}`);
         }
       }
     }
 
-    // If status was updated, create DB notifications and send socket notification
+    // Notifications
     if (status && status !== appointmentBefore.status) {
       const patientUserId = appointmentBefore.patient.user.id;
       const doctorUserId = appointmentBefore.doctor.user.id;
@@ -238,7 +228,6 @@ export async function PATCH(
       };
       const statusLabel = statusLabels[status] || status.toLowerCase();
 
-      // Notification for patient
       try {
         await prisma.notification.create({
           data: {
@@ -246,11 +235,8 @@ export async function PATCH(
             message: `Your appointment on ${apptDate} with ${doctorName} has been ${statusLabel}.`,
           },
         });
-      } catch (notifErr) {
-        console.warn('Failed to create patient notification:', notifErr);
-      }
+      } catch {}
 
-      // Notification for doctor
       try {
         await prisma.notification.create({
           data: {
@@ -258,14 +244,10 @@ export async function PATCH(
             message: `Appointment with ${patientName} on ${apptDate} has been ${statusLabel}.`,
           },
         });
-      } catch (notifErr) {
-        console.warn('Failed to create doctor notification:', notifErr);
-      }
+      } catch {}
 
-      // Also send socket notification to patient (non-critical)
       try {
         const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-
         await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -277,18 +259,13 @@ export async function PATCH(
             appointmentTime: appointmentBefore.slot.startTime.toISOString(),
             doctorName,
           }),
-        }).catch((err) => {
-          console.warn('Socket server notification failed (this is non-critical):', err);
-        });
-      } catch (notifError) {
-        console.warn('Failed to send status update notification:', notifError);
-      }
+        }).catch(() => {});
+      } catch {}
     }
 
-    // Log Audit
     await logAudit(doctorId, "Updated Appointment Status", { appointmentId, status: status || appointmentBefore.status, paymentMethod, isAppointmentOffline });
 
-    return NextResponse.json({ success: true, status: status || appointmentBefore.status }, { status: 200 });
+    return NextResponse.json({ success: true, status: status || appointmentBefore.status, appointment: updatedAppointment }, { status: 200 });
   } catch (e) {
     console.error('Error updating appointment detail:', e);
     return NextResponse.json({ error: 'Failed to update appointment' }, { status: 500 });

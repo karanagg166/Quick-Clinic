@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-
 // GET → list relations for a user (patient or doctor) with last message
 export async function GET(req: NextRequest) {
     try {
@@ -49,11 +48,13 @@ export async function GET(req: NextRequest) {
             orderBy: { updatedAt: "desc" },
         });
 
-        const mapped = relations.map((r: (typeof relations)[number]) => {
+        const mapped = relations.map((r) => {
             const last = r.chatMessages?.[0];
 
             return {
                 id: r.id,
+                doctorsUserId: r.doctorsUserId,
+                patientsUserId: r.patientsUserId,
                 doctorName: r.doctor?.user?.name ?? "Doctor",
                 patientName: r.patient?.user?.name ?? "Patient",
                 lastMessage: last?.text ?? null,
@@ -68,11 +69,10 @@ export async function GET(req: NextRequest) {
     }
 }
 
-
 export async function POST(req: NextRequest) {  
-    try{
-        const body =  await req.json();
-        const {doctorsUserId, patientsUserId} = body;
+    try {
+        const body = await req.json();
+        const { doctorsUserId, patientsUserId } = body;
 
         if (!doctorsUserId || !patientsUserId) {
             return NextResponse.json({ error: "doctorsUserId and patientsUserId are required" }, { status: 400 });
@@ -98,19 +98,19 @@ export async function POST(req: NextRequest) {
 
         // Check if relation already exists
         let existingRelation = await prisma.doctorPatientRelation.findUnique({
-            where:{
+            where: {
                 doctorsUserId_patientsUserId: {
                     doctorsUserId,
-                    patientsUserId
-                }
-            }
+                    patientsUserId,
+                },
+            },
         });
 
         // If exists, return it
         if (existingRelation) {
             return NextResponse.json({ 
                 relation: existingRelation,
-                isNew: false 
+                isNew: false,
             }, { status: 200 });
         }
 
@@ -118,17 +118,17 @@ export async function POST(req: NextRequest) {
         const newRelation = await prisma.doctorPatientRelation.create({
             data: {
                 doctorsUserId,
-                patientsUserId
-            }
+                patientsUserId,
+            },
         });
 
         return NextResponse.json({ 
             relation: newRelation,
-            isNew: true 
+            isNew: true,
         }, { status: 201 });
     }
-    catch(error){
+    catch (error) {
         console.error("Error creating/fetching relation:", error);
-        return NextResponse.json({error:"Internal Server Error"}, {status:500})
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

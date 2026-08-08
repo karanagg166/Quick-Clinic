@@ -19,6 +19,7 @@ export async function GET(
 				doctor: {
 					include: {
 						user: true,
+						doctorQualifications: true,
 					},
 				},
 				patient: {
@@ -38,12 +39,14 @@ export async function GET(
 			return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
 		}
 
+		const qualifications = appointment.doctor.doctorQualifications?.map((dq) => String(dq.qualification)) ?? [];
+
 		const result: AppointmentDetail = {
 			id: appointment.id,
 			doctorId: appointment.doctorId,
 			patientId: appointment.patientId,
 			slotId: appointment.slotId,
-			status: appointment.status as 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED',
+			status: appointment.status as any,
 			paymentMethod: appointment.paymentMethod as 'OFFLINE' | 'ONLINE',
 			transactionId: appointment.transactionId ?? null,
 			notes: appointment.notes ?? null,
@@ -55,7 +58,7 @@ export async function GET(
 				userId: appointment.doctor.userId,
 				specialty: String(appointment.doctor.specialty),
 				experience: appointment.doctor.experience,
-				qualifications: appointment.doctor.qualifications,
+				qualifications: qualifications,
 				fees: appointment.doctor.fees,
 				user: {
 					id: appointment.doctor.user.id,
@@ -68,7 +71,7 @@ export async function GET(
 					address: appointment.doctor.user.address,
 					city: appointment.doctor.user.location?.city || "N/A",
 					state: appointment.doctor.user.location?.state || "N/A",
-					pinCode: appointment.doctor.user.location?.pinCode || 0,
+					pinCode: appointment.doctor.user.location?.pincode || 0,
 					emailVerified: appointment.doctor.user.emailVerified,
 				},
 			},
@@ -89,7 +92,7 @@ export async function GET(
 					address: appointment.patient.user.address,
 					city: appointment.patient.user.location?.city || "N/A",
 					state: appointment.patient.user.location?.state || "N/A",
-					pinCode: appointment.patient.user.location?.pinCode || 0,
+					pinCode: appointment.patient.user.location?.pincode || 0,
 					emailVerified: appointment.patient.user.emailVerified,
 				},
 			},
@@ -99,7 +102,7 @@ export async function GET(
 				date: appointment.slot.date.toISOString().split('T')[0],
 				startTime: appointment.slot.startTime.toISOString(),
 				endTime: appointment.slot.endTime.toISOString(),
-				status: String(appointment.slot.status) as 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED',
+				status: String(appointment.slot.status) as any,
 			},
 			city: null,
 			state: null
@@ -157,20 +160,18 @@ export async function PATCH(
 		let refundProcessed = false;
 		if (appointment.paymentMethod === 'ONLINE' && appointment.transactionId) {
 			try {
-				// Find the payment record
+				// Find the payment record using the patient's User ID
+				const patientUserId = appointment.patient.user.id;
 				const payment = await prisma.payment.findFirst({
 					where: {
 						razorpayPaymentId: appointment.transactionId,
-						userId: patientId,
+						userId: patientUserId,
 						status: 'SUCCESS',
 					},
 				});
 
 				if (payment && payment.razorpayPaymentId) {
-					// Process refund via Razorpay
-					if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
-						console.warn('Razorpay credentials missing, cannot process refund');
-					} else {
+					if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
 						const RazorpayModule = await import('razorpay');
 						const Razorpay = RazorpayModule.default;
 						const razorpay = new Razorpay({
@@ -178,19 +179,16 @@ export async function PATCH(
 							key_secret: process.env.RAZORPAY_KEY_SECRET,
 						});
 
-						// Create refund
 						const refund = await razorpay.payments.refund(payment.razorpayPaymentId, {
-							amount: payment.amount, // Full refund
+							amount: payment.amount,
 							notes: {
 								reason: 'Appointment cancelled by patient',
 								appointmentId: appointmentId,
 							},
 						});
 
-						console.log('Refund processed:', refund.id);
 						refundProcessed = true;
 
-						// Update payment status
 						await prisma.payment.update({
 							where: { id: payment.id },
 							data: {
@@ -201,23 +199,7 @@ export async function PATCH(
 				}
 			} catch (refundError: unknown) {
 				console.error('Refund error:', refundError);
-				// Don't fail the cancellation if refund fails, but log it
-				// In production, you might want to queue this for retry
 			}
-		}
-
-		// If appointment was COMPLETED and doctor already received balance, deduct it
-		// (This shouldn't happen for PENDING/CONFIRMED, but adding as safeguard)
-		if (appointment.status === 'COMPLETED' && appointment.paymentMethod === 'ONLINE') {
-			const doctorFees = appointment.doctor.fees * 100; // Convert to paise
-			await prisma.doctor.update({
-				where: { id: appointment.doctorId },
-				data: {
-					balance: {
-						decrement: doctorFees,
-					},
-				},
-			});
 		}
 
 		// Update appointment status to CANCELLED
@@ -236,7 +218,19 @@ export async function PATCH(
 			},
 		});
 
-		// Send notification to doctor via Socket.IO
+		// Send notification to doctor
+		try {
+			const doctorUserId = appointment.doctor.user.id;
+			const apptDate = appointment.slot.date.toISOString().split('T')[0];
+			await prisma.notification.create({
+				data: {
+					userId: doctorUserId,
+					message: `Appointment with ${appointment.patient.user.name || 'Patient'} on ${apptDate} was cancelled by the patient.`,
+				},
+			});
+		} catch {}
+
+		// Send notification via socket if available
 		try {
 			const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
 
@@ -251,12 +245,8 @@ export async function PATCH(
 					appointmentTime: appointment.slot.startTime.toISOString(),
 					doctorName: appointment.doctor.user.name,
 				}),
-			}).catch((err) => {
-				console.warn('Socket server notification failed:', err);
-			});
-		} catch (notifError) {
-			console.warn('Failed to send cancellation notification:', notifError);
-		}
+			}).catch(() => {});
+		} catch {}
 
 		return NextResponse.json(
 			{

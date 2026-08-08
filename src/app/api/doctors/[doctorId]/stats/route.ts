@@ -36,7 +36,7 @@ export async function GET(
       },
     });
 
-    // Active patients (patients with at least one appointment)
+    // Active patients (patients with at least one relation)
     const activePatients = await prisma.doctorPatientRelation.count({
       where: {
         doctor: {
@@ -53,7 +53,7 @@ export async function GET(
       },
     });
 
-    // This month's earnings
+    // This month's completed earnings count
     const thisMonthEarnings = await prisma.appointment.findMany({
       where: {
         doctorId,
@@ -82,14 +82,13 @@ export async function GET(
       activePatients,
       pendingConsults,
       monthlyEarnings,
-    });
+    }, { status: 200 });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : "Failed to fetch stats";
-    console.error("Stats GET Error:", error);
+    console.error("Doctor Stats GET Error:", error);
     return NextResponse.json(
       { error: errorMessage },
       { status: 500 }
     );
   }
 }
-

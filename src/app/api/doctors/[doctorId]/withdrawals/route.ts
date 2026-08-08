@@ -13,44 +13,44 @@ export async function GET(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const withdrawals = await prisma.withdrawal.findMany({
-      where: { doctorId },
-      orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        amount: true,
-        currency: true,
-        status: true,
-        bankAccountNumber: true,
-        bankIFSC: true,
-        bankAccountHolderName: true,
-        bankName: true,
-        razorpayPayoutId: true,
-        failureReason: true,
-        createdAt: true,
-        updatedAt: true,
-        processedAt: true,
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      include: {
+        user: {
+          include: {
+            bankAccounts: true,
+          },
+        },
       },
     });
 
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    const bankAccount = doctor.user?.bankAccounts?.[0] || null;
+
+    const withdrawals = await prisma.withdrawal.findMany({
+      where: { doctorId },
+      orderBy: { createdAt: "desc" },
+    });
+
     return NextResponse.json(
-      withdrawals.map((w: {
-        id: string;
-        amount: number;
-        currency: string;
-        status: string;
-        bankAccountNumber: string;
-        bankIFSC: string;
-        bankAccountHolderName: string;
-        bankName: string;
-        razorpayPayoutId: string | null;
-        failureReason: string | null;
-        createdAt: Date;
-        updatedAt: Date;
-        processedAt: Date | null;
-      }) => ({
-        ...w,
+      withdrawals.map((w) => ({
+        id: w.id,
+        amount: w.amount,
         amountInRupees: w.amount / 100, // Convert from paise to rupees
+        currency: w.currency,
+        status: w.status,
+        bankAccountNumber: bankAccount?.bankAccountNumber || "N/A",
+        bankIFSC: bankAccount?.bankIFSC || "N/A",
+        bankAccountHolderName: bankAccount?.bankAccountHolderName || "N/A",
+        bankName: bankAccount?.bankName || "N/A",
+        razorpayPayoutId: w.razorpayPayoutId,
+        failureReason: w.failureReason,
+        createdAt: w.createdAt,
+        updatedAt: w.updatedAt,
+        processedAt: w.processedAt,
       })),
       { status: 200 }
     );
@@ -85,15 +85,15 @@ export async function POST(
       );
     }
 
-    // Get doctor's current balance and bank details
+    // Get doctor's current balance and bank details from BankAccount
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      select: {
-        balance: true,
-        bankAccountNumber: true,
-        bankIFSC: true,
-        bankAccountHolderName: true,
-        bankName: true,
+      include: {
+        user: {
+          include: {
+            bankAccounts: true,
+          },
+        },
       },
     });
 
@@ -101,8 +101,10 @@ export async function POST(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
+    const bankAccount = doctor.user?.bankAccounts?.[0];
+
     // Check if bank details are set
-    if (!doctor.bankAccountNumber || !doctor.bankIFSC || !doctor.bankAccountHolderName || !doctor.bankName) {
+    if (!bankAccount || !bankAccount.bankAccountNumber || !bankAccount.bankIFSC) {
       return NextResponse.json(
         { error: "Bank details not set. Please add bank details first." },
         { status: 400 }
@@ -135,10 +137,6 @@ export async function POST(
         amount: amountInPaise,
         currency: "INR",
         status: "PENDING",
-        bankAccountNumber: doctor.bankAccountNumber,
-        bankIFSC: doctor.bankIFSC,
-        bankAccountHolderName: doctor.bankAccountHolderName,
-        bankName: doctor.bankName,
       },
     });
 
@@ -152,16 +150,16 @@ export async function POST(
       },
     });
 
-    // TODO: Integrate with Razorpay Payouts API to process the withdrawal
-    // For now, we'll mark it as PROCESSING and handle it manually or via cron job
-    // You can implement Razorpay Payouts API integration here
-
     return NextResponse.json(
       {
         message: "Withdrawal request created successfully",
         withdrawal: {
           ...withdrawal,
           amountInRupees: withdrawal.amount / 100,
+          bankAccountNumber: bankAccount.bankAccountNumber,
+          bankIFSC: bankAccount.bankIFSC,
+          bankAccountHolderName: bankAccount.bankAccountHolderName,
+          bankName: bankAccount.bankName,
         },
       },
       { status: 201 }
@@ -174,4 +172,3 @@ export async function POST(
     );
   }
 }
-

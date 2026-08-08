@@ -1,9 +1,8 @@
-
 export interface Slot {
   id: string;
   startTime: string;
   endTime: string;
-  status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED';
+  status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED' | 'ON_LEAVE';
   date: string;
 }
 
@@ -53,7 +52,7 @@ export interface SlotDetail {
   date: string;
   startTime: string;
   endTime: string;
-  status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED';
+  status: 'AVAILABLE' | 'HELD' | 'BOOKED' | 'UNAVAILABLE' | 'CANCELLED' | 'ON_LEAVE';
 }
 
 export interface AppointmentDetail {
@@ -85,5 +84,5 @@ export interface Appointment {
   appointmentDate: string;
   appointmentTime: string;
   bookedAt: string;
-  status: 'SCHEDULED' | 'COMPLETED' | 'CANCELLED';
+  status: 'PENDING' | 'CONFIRMED' | 'COMPLETED' | 'CANCELLED' | 'NO_SHOW' | 'RESCHEDULED' | 'EXPIRED';
 }

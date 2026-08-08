@@ -9,8 +9,8 @@ function timeStringToMinutes(timeStr: string): number {
   return hours * 60 + minutes;
 }
 
-// Helper: get day name from date
-function getDayName(date: Date): string {
+// Helper: get day name from UTC date
+function getDayNameUTC(date: Date): string {
   const days = [
     "Sunday",
     "Monday",
@@ -20,20 +20,17 @@ function getDayName(date: Date): string {
     "Friday",
     "Saturday",
   ];
-  return days[date.getDay()];
+  return days[date.getUTCDay()];
 }
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
-  console.log("Slots API called");
   try {
     const { doctorId } = await params;
     const { searchParams } = req.nextUrl;
     const dateStr = searchParams.get("date");
-
-    console.log("DoctorId:", doctorId, "Date:", dateStr);
 
     if (!doctorId) {
       return NextResponse.json(
@@ -51,6 +48,12 @@ export async function GET(
 
     // Parse as UTC midnight
     const date = new Date(`${dateStr}T00:00:00.000Z`);
+    if (isNaN(date.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid date format" },
+        { status: 400 }
+      );
+    }
 
     // Check if slots already exist for this date
     const existingSlots = await prisma.slot.findMany({
@@ -73,15 +76,15 @@ export async function GET(
 
     if (!schedule) {
       return NextResponse.json(
-        { error: "Doctors Schedule Doesnt Exist" },
+        { error: "Doctor schedule does not exist" },
         { status: 404 }
       );
     }
 
-    // Get day name
-    const dayName = getDayName(date);
+    // Get day name based on UTC day
+    const dayName = getDayNameUTC(date);
 
-    // Get schedule for this day - schedule is an array format
+    // Get schedule for this day
     const weeklySchedule = schedule.weeklySchedule as Array<{
       day: string;
       slots: Array<{ slotNo: number; start: string; end: string }>;

@@ -30,9 +30,6 @@ export function getUserTimezone(): string | null {
 /**
  * Convert user's local date+time input to UTC Date object
  * 
- * Example: User in India (IST=UTC+5:30) inputs "2026-01-20" and "14:00"
- * This converts 2:00 PM IST → 8:30 AM UTC
- * 
  * @param dateStr - Date string in YYYY-MM-DD format (user's local date)
  * @param timeStr - Time string in HH:MM format (user's local time)
  * @returns Date object in UTC
@@ -42,42 +39,36 @@ export function combineDateTimeInUserTimezone(dateStr: string, timeStr: string):
     throw new Error('Date and time are required');
   }
 
-  // Create a date object interpreting the input as LOCAL time
-  // new Date("2026-01-20T14:00") creates a date in browser's local timezone
+  // Parse local date & time safely
   const localDate = new Date(`${dateStr}T${timeStr}:00`);
   if (isNaN(localDate.getTime())) {
     throw new Error(`Invalid date/time combination: ${dateStr} ${timeStr}`);
   }
 
-  // Convert local time to UTC by accounting for timezone offset
-  // getTimezoneOffset() returns offset in minutes (negative for east of UTC)
-  // E.g., for IST (UTC+5:30), it returns -330
-  const utcDate = new Date(
-    localDate.getTime() - getUserTimezoneOffset() * 60 * 1000
-  );
-
-  return utcDate;
+  return localDate;
 }
 
 /**
  * Format a UTC Date object back to user's local timezone
  * 
- * Example: Server sends "2026-01-20T08:30:00.000Z" (UTC)
- * User in India sees "2026-01-20" and "14:00" (IST)
- * 
- * @param utcDate - Date object in UTC
+ * @param utcDate - Date object
  * @returns Object with { date: "YYYY-MM-DD", time: "HH:MM" } in user's timezone
  */
 export function formatUTCToUserTimezone(utcDate: Date): { date: string; time: string } {
-  // Convert UTC to local time
-  const localDate = new Date(
-    utcDate.getTime() + getUserTimezoneOffset() * 60 * 1000
-  );
+  if (!utcDate || isNaN(utcDate.getTime())) {
+    throw new Error('Valid date object is required');
+  }
 
-  const date = localDate.toISOString().split('T')[0]; // "YYYY-MM-DD"
-  const time = localDate.toISOString().slice(11, 16); // "HH:MM"
+  const year = utcDate.getFullYear();
+  const month = String(utcDate.getMonth() + 1).padStart(2, '0');
+  const day = String(utcDate.getDate()).padStart(2, '0');
+  const hours = String(utcDate.getHours()).padStart(2, '0');
+  const minutes = String(utcDate.getMinutes()).padStart(2, '0');
 
-  return { date, time };
+  return {
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}`,
+  };
 }
 
 /**
@@ -86,10 +77,10 @@ export function formatUTCToUserTimezone(utcDate: Date): { date: string; time: st
  */
 export function getTodayInUserTimezone(): string {
   const now = new Date();
-  const localDate = new Date(
-    now.getTime() + getUserTimezoneOffset() * 60 * 1000
-  );
-  return localDate.toISOString().split('T')[0];
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 /**
@@ -98,10 +89,9 @@ export function getTodayInUserTimezone(): string {
  */
 export function getCurrentTimeInUserTimezone(): string {
   const now = new Date();
-  const localDate = new Date(
-    now.getTime() + getUserTimezoneOffset() * 60 * 1000
-  );
-  return localDate.toISOString().slice(11, 16);
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
 }
 
 /**
@@ -110,6 +100,9 @@ export function getCurrentTimeInUserTimezone(): string {
  * @returns Date object set to UTC midnight
  */
 export function parseUTCDate(dateStr: string): Date {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    throw new Error(`Invalid date string: ${dateStr}`);
+  }
   const date = new Date(`${dateStr}T00:00:00.000Z`);
   if (isNaN(date.getTime())) {
     throw new Error(`Invalid date string: ${dateStr}`);
@@ -123,6 +116,9 @@ export function parseUTCDate(dateStr: string): Date {
  * @returns Date string in YYYY-MM-DD format
  */
 export function formatDateUTC(date: Date): string {
+  if (!date || isNaN(date.getTime())) {
+    throw new Error('Valid date is required');
+  }
   return date.toISOString().split('T')[0];
 }
 
@@ -132,5 +128,8 @@ export function formatDateUTC(date: Date): string {
  * @returns Time string in HH:MM format
  */
 export function formatTimeUTC(date: Date): string {
+  if (!date || isNaN(date.getTime())) {
+    throw new Error('Valid date is required');
+  }
   return date.toISOString().slice(11, 16);
 }

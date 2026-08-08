@@ -5,20 +5,19 @@ export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
-  const { doctorId } = await params;
-
-  if (!doctorId) {
-    return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
-  }
-
-  const url = req.nextUrl.searchParams;
-
-  const startDate = url.get("startDate");
-  const endDate = url.get("endDate");
-  const startTime = url.get("startTime");
-  const endTime = url.get("endTime");
-
   try {
+    const { doctorId } = await params;
+
+    if (!doctorId) {
+      return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    }
+
+    const url = req.nextUrl.searchParams;
+    const startDate = url.get("startDate");
+    const endDate = url.get("endDate");
+    const startTime = url.get("startTime");
+    const endTime = url.get("endTime");
+
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: { fees: true },
@@ -43,14 +42,13 @@ export async function GET(
     };
 
     if (startDate || endDate) {
+      const gteDate = startDate ? new Date(`${startDate}T${startTime || "00:00:00"}`) : undefined;
+      const lteDate = endDate ? new Date(`${endDate}T${endTime || "23:59:59"}`) : undefined;
+
       filter.slot = {
         startTime: {
-          ...(startDate && {
-            gte: new Date(`${startDate}T${startTime || "00:00"}`),
-          }),
-          ...(endDate && {
-            lte: new Date(`${endDate}T${endTime || "23:59"}`),
-          }),
+          ...(gteDate && !isNaN(gteDate.getTime()) && { gte: gteDate }),
+          ...(lteDate && !isNaN(lteDate.getTime()) && { lte: lteDate }),
         },
       };
     }
@@ -76,7 +74,6 @@ export async function GET(
 
     // Map appointments to earnings format
     const earnings = appointments.map((a: any) => {
-      // Construct appointmentDateTime from slot.date and slot.startTime
       const appointmentDateTime = a.slot?.startTime 
         ? new Date(a.slot.startTime)
         : a.slot?.date 
@@ -86,7 +83,7 @@ export async function GET(
       return {
         id: a.id,
         earned: doctor.fees,
-        patientName: a.patient?.user?.name || "Unknown",
+        patientName: a.patient?.user?.name || "Patient",
         appointmentDateTime: appointmentDateTime.toISOString(),
       };
     });

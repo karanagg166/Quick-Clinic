@@ -23,7 +23,6 @@ async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Da
   const dates = getDatesBetween(leaveStart, leaveEnd);
 
   for (const date of dates) {
-    // Find all AVAILABLE slots for this doctor on this date
     const slots = await prisma.slot.findMany({
       where: {
         doctorId,
@@ -32,9 +31,7 @@ async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Da
       },
     });
 
-    // Mark slots whose time range overlaps with the leave period
     for (const slot of slots) {
-      // A slot overlaps with leave if: slot.startTime < leaveEnd AND slot.endTime > leaveStart
       if (slot.startTime < leaveEnd && slot.endTime > leaveStart) {
         await prisma.slot.update({
           where: { id: slot.id },
@@ -46,7 +43,7 @@ async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Da
 }
 
 /**
- * Restore ON_LEAVE slots back to AVAILABLE when a leave is cancelled.
+ * Restore ON_LEAVE slots back to AVAILABLE when a leave is cancelled or shrunk.
  * Only restores if they don't overlap with another active leave.
  */
 async function restoreSlotsFromLeave(doctorId: string, leaveStart: Date, leaveEnd: Date, excludeLeaveId: string) {
@@ -63,7 +60,7 @@ async function restoreSlotsFromLeave(doctorId: string, leaveStart: Date, leaveEn
 
     for (const slot of slots) {
       if (slot.startTime < leaveEnd && slot.endTime > leaveStart) {
-        // Check if any OTHER active leave still covers this slot
+        // Check if any other leave covers this slot
         const otherLeave = await prisma.leave.findFirst({
           where: {
             doctorId,
@@ -108,14 +105,16 @@ export async function POST(
       return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
     }
 
-    // Check for conflicting leaves
+    if (endDateTime < startDateTime) {
+      return NextResponse.json({ error: "End date cannot be before start date" }, { status: 400 });
+    }
+
+    // Check for conflicting leaves (any overlap)
     const checkLeaveConflict = await prisma.leave.findFirst({
       where: {
         doctorId,
-        OR: [
-          { startDate: { gte: startDateTime, lte: endDateTime } },
-          { endDate: { gte: startDateTime, lte: endDateTime } },
-        ],
+        startDate: { lt: endDateTime },
+        endDate: { gt: startDateTime },
       },
     });
 
@@ -157,46 +156,46 @@ export async function POST(
     const doctorName = overlappingAppointments[0]?.doctor?.user?.name || "your doctor";
 
     for (const appt of overlappingAppointments) {
-      // Cancel the appointment
       await prisma.appointment.update({
         where: { id: appt.id },
         data: {
           status: "CANCELLED",
-          notes: `Doctor has cancelled due to leave. Reason: ${reason}`,
+          notes: `Doctor cancelled due to leave. Reason: ${reason}`,
         },
       });
 
-      // Mark the slot as ON_LEAVE (instead of BOOKED)
       await prisma.slot.update({
         where: { id: appt.slotId },
         data: { status: "ON_LEAVE" },
       });
 
-      // Notify the patient
       const patientUserId = appt.patient?.user?.id;
       if (patientUserId) {
         const apptDate = appt.slot.date.toISOString().split("T")[0];
-        await prisma.notification.create({
-          data: {
-            userId: patientUserId,
-            message: `Your appointment on ${apptDate} with ${doctorName} has been cancelled. Reason: Doctor is on leave — ${reason}`,
-          },
-        });
+        try {
+          await prisma.notification.create({
+            data: {
+              userId: patientUserId,
+              message: `Your appointment on ${apptDate} with ${doctorName} has been cancelled. Reason: Doctor is on leave — ${reason}`,
+            },
+          });
+        } catch {}
       }
     }
 
-    // Notify the doctor about cancelled appointments
     if (userId) {
       const message = cancelledCount > 0
         ? `Leave request submitted. ${cancelledCount} appointment(s) for this period have been cancelled and patients have been notified.`
         : "Leave request has been successfully added. No existing appointments were affected.";
 
-      await prisma.notification.create({
-        data: {
-          userId,
-          message,
-        },
-      });
+      try {
+        await prisma.notification.create({
+          data: {
+            userId,
+            message,
+          },
+        });
+      } catch {}
     }
 
     return NextResponse.json({ ...leaveRequest, cancelledAppointments: cancelledCount }, { status: 201 });
@@ -237,7 +236,7 @@ export async function GET(
       if (isNaN(d.getTime())) {
         return NextResponse.json({ error: "Invalid endDate" }, { status: 400 });
       }
-      where.startDate = { ...(where.startDate ?? {}), lte: d };
+      where.endDate = { ...(where.endDate ?? {}), lte: d };
     }
 
     if (reason) {
@@ -274,7 +273,6 @@ export async function DELETE(
       return NextResponse.json({ error: "Missing leaveId" }, { status: 400 });
     }
 
-    // Find the leave to get its date range
     const leave = await prisma.leave.findUnique({
       where: { id: leaveId },
     });
@@ -287,7 +285,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
     }
 
-    // Restore ON_LEAVE slots back to AVAILABLE (checking for other overlapping leaves)
+    // Restore ON_LEAVE slots back to AVAILABLE
     await restoreSlotsFromLeave(doctorId, leave.startDate, leave.endDate, leaveId);
 
     // Delete the leave
@@ -302,7 +300,7 @@ export async function DELETE(
   }
 }
 
-/* PATCH - modify leave dates (e.g., end leave early) */
+/* PATCH - modify leave dates */
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ doctorId: string }> }
@@ -345,7 +343,20 @@ export async function PATCH(
       return NextResponse.json({ error: "End date cannot be before start date" }, { status: 400 });
     }
 
-    // Update the leave record
+    // Check conflict with other leaves
+    const conflict = await prisma.leave.findFirst({
+      where: {
+        doctorId,
+        id: { not: leaveId },
+        startDate: { lt: updatedEnd },
+        endDate: { gt: updatedStart },
+      },
+    });
+
+    if (conflict) {
+      return NextResponse.json({ error: "Updated dates conflict with another leave" }, { status: 409 });
+    }
+
     const updatedLeave = await prisma.leave.update({
       where: { id: leaveId },
       data: {
@@ -354,17 +365,15 @@ export async function PATCH(
       },
     });
 
-    // If end date moved earlier, restore ON_LEAVE slots in the freed period
+    // Handle freed slots
     if (updatedEnd < oldEnd) {
       await restoreSlotsFromLeave(doctorId, updatedEnd, oldEnd, leaveId);
     }
-
-    // If start date moved later, restore ON_LEAVE slots in the freed period
     if (updatedStart > oldStart) {
       await restoreSlotsFromLeave(doctorId, oldStart, updatedStart, leaveId);
     }
 
-    // If dates expanded, mark new overlapping slots as ON_LEAVE
+    // Handle new covered slots
     if (updatedEnd > oldEnd) {
       await markSlotsOnLeave(doctorId, oldEnd, updatedEnd);
     }
@@ -374,7 +383,7 @@ export async function PATCH(
 
     return NextResponse.json({
       ok: true,
-      message: "Leave updated. Previously cancelled appointments remain cancelled. Freed slots have been restored.",
+      message: "Leave updated. Freed slots have been restored.",
       leave: updatedLeave,
     }, { status: 200 });
   } catch (err: any) {

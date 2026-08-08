@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import type { Patient } from "@/types/patient";
 import { Gender } from "@/generated/prisma";
 
 export const POST = async (req: NextRequest) => {
@@ -106,7 +105,7 @@ export const GET = async (req: NextRequest) => {
     }
 
     if (Object.keys(locationFilter).length > 0) {
-      userFilter.location = { is: locationFilter };
+      userFilter.location = locationFilter;
     }
 
     // --- get appointment rows for the doctor ---
@@ -115,18 +114,11 @@ export const GET = async (req: NextRequest) => {
       select: { patientId: true },
     });
 
-    // defensive check & debug logging
-    if (!Array.isArray(appointmentRows)) {
-      console.error("patients-get-error: appointmentRows is not an array:", appointmentRows);
-      return NextResponse.json({ error: "Unexpected DB response" }, { status: 500 });
-    }
-
-    // convert to array of unique, non-null IDs
     const patientIds = Array.from(
       new Set(
         appointmentRows
-          .map((r) => r?.patientId)        // r could be null-safe
-          .filter((id): id is string => !!id) // remove null/undefined and narrow type
+          .map((r) => r?.patientId)
+          .filter((id): id is string => !!id)
       )
     );
 
@@ -139,7 +131,7 @@ export const GET = async (req: NextRequest) => {
       id: { in: patientIds },
       ...patientFilter,
     };
-    if (Object.keys(userFilter).length > 0) where.user = { is: userFilter };
+    if (Object.keys(userFilter).length > 0) where.user = userFilter;
 
     // --- query patients with selected fields only ---
     const patients = await prisma.patient.findMany({
@@ -161,8 +153,8 @@ export const GET = async (req: NextRequest) => {
               select: {
                 city: true,
                 state: true,
-              }
-            }
+              },
+            },
           },
         },
       },
@@ -170,28 +162,24 @@ export const GET = async (req: NextRequest) => {
 
     const formatted = patients.map((p: any) => ({
       id: p.id,
-      name: p.user.name,
-      gender: p.user.gender,
-      age: p.user.age,
-      email: p.user.email,
-      city: p.user.location?.city ?? "",
-      state: p.user.location?.state ?? "",
-      phoneNo: p.user.phoneNo,
-
+      name: p.user?.name || "Patient",
+      gender: p.user?.gender || "",
+      age: p.user?.age || 0,
+      email: p.user?.email || "",
+      city: p.user?.location?.city ?? "",
+      state: p.user?.location?.state ?? "",
+      phoneNo: p.user?.phoneNo || "",
       medicalHistory: p.medicalHistory ?? "",
       allergies: p.allergies ?? "",
       currentMedications: p.currentMedications ?? "",
     }));
 
     return NextResponse.json(formatted, { status: 200 });
-
-
   } catch (err: any) {
     console.error("patients-get-error", err);
     return NextResponse.json({ error: err?.message ?? "Server error" }, { status: 500 });
   }
 };
-
 
 export const PATCH = async (req: NextRequest) => {
   try {
@@ -209,15 +197,14 @@ export const PATCH = async (req: NextRequest) => {
         medicalHistory: medicalHistory ?? existingPatient.medicalHistory,
         allergies: allergies ?? existingPatient.allergies,
         currentMedications: currentMedications ?? existingPatient.currentMedications,
-      }
+      },
     });
     return NextResponse.json({ patient: updatedPatient }, { status: 200 });
-  }
-  catch (err: any) {
+  } catch (err: any) {
     console.error("patients-patch-error", err);
     return NextResponse.json(
       { error: err?.message ?? "Server error" },
       { status: 500 }
     );
   }
-}
+};

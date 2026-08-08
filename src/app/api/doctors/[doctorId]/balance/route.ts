@@ -13,8 +13,7 @@ export async function GET(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    // Try finding by doctor.id first, then fallback to userId
-    let doctor = await prisma.doctor.findUnique({
+    const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
         balance: true,
@@ -22,9 +21,7 @@ export async function GET(
       },
     });
 
-
     if (!doctor) {
-      // Return zero balance instead of 404 to prevent navbar errors
       return NextResponse.json(
         {
           balance: 0,
@@ -35,7 +32,6 @@ export async function GET(
       );
     }
 
-    // Convert balance from paise to rupees (with null guard)
     const rawBalance = doctor.balance ?? 0;
     const balanceInRupees = rawBalance / 100;
 
@@ -55,4 +51,3 @@ export async function GET(
     );
   }
 }
-

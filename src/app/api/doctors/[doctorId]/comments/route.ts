@@ -2,7 +2,45 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ doctorId: string }> }) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
+  try {
+    const { doctorId } = await params;
+    if (!doctorId) {
+      return NextResponse.json({ message: "doctorId is required" }, { status: 400 });
+    }
+
+    const comments = await prisma.comment.findMany({
+      where: { doctorId },
+      include: {
+        patient: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                profileImageUrl: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    return NextResponse.json({ comments }, { status: 200 });
+  } catch (error: any) {
+    console.error("comments-get-error", error);
+    return NextResponse.json({ message: error?.message || "Server error" }, { status: 500 });
+  }
+}
+
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ doctorId: string }> }
+) {
   try {
     const { doctorId } = await params;
     const authHeader = req.headers.get("authorization");
@@ -32,18 +70,32 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ doc
       return NextResponse.json({ message: "Doctor not found" }, { status: 404 });
     }
 
+    // Find the patient corresponding to the logged in user
+    let patient = await prisma.patient.findUnique({ where: { userId } });
+    if (!patient && body.patientId) {
+      patient = await prisma.patient.findUnique({ where: { id: body.patientId } });
+    }
+
+    if (!patient) {
+      return NextResponse.json({ message: "Patient profile required to post a comment" }, { status: 403 });
+    }
+
     const created = await prisma.comment.create({
       data: {
         doctorId,
-        userId,
+        patientId: patient.id,
         text,
       },
       include: {
-        user: { select: { id: true, name: true, profileImageUrl: true } },
+        patient: {
+          include: {
+            user: { select: { id: true, name: true, profileImageUrl: true } },
+          },
+        },
       },
     });
 
-    return NextResponse.json({ comment: created });
+    return NextResponse.json({ comment: created }, { status: 201 });
   } catch (error: any) {
     console.error("comment-post-error", error);
     return NextResponse.json({ message: error?.message || "Server error" }, { status: 500 });

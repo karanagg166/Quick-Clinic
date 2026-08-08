@@ -49,12 +49,15 @@ export async function GET(
         city: {
           contains: searchParams.get("city") as string,
           mode: "insensitive",
-        }
+        },
       };
     }
 
     if (searchParams.get("age")) {
-      where.patient.user.age = Number(searchParams.get("age"));
+      const ageNum = Number(searchParams.get("age"));
+      if (!isNaN(ageNum)) {
+        where.patient.user.age = ageNum;
+      }
     }
 
     if (searchParams.get("patientEmail")) {
@@ -72,15 +75,17 @@ export async function GET(
     const endDate = searchParams.get("endDate");
     const endTime = searchParams.get("endTime");
 
-    if (startDate && startTime && endDate && endTime) {
-      const startDateTime = new Date(`${startDate}T${startTime}`);
-      const endDateTime = new Date(`${endDate}T${endTime}`);
+    if (startDate && endDate) {
+      const startDateTime = new Date(`${startDate}T${startTime || "00:00:00"}`);
+      const endDateTime = new Date(`${endDate}T${endTime || "23:59:59"}`);
 
-      where.slot = {
-        ...where.slot,
-        startTime: { gte: startDateTime },
-        endTime: { lte: endDateTime },
-      };
+      if (!isNaN(startDateTime.getTime()) && !isNaN(endDateTime.getTime())) {
+        where.slot = {
+          ...where.slot,
+          startTime: { gte: startDateTime },
+          endTime: { lte: endDateTime },
+        };
+      }
     }
 
     // ---------------------
@@ -93,9 +98,14 @@ export async function GET(
         patient: {
           include: {
             user: {
-              include: { location: true }
-            }
+              include: { location: true },
+            },
           },
+        },
+      },
+      orderBy: {
+        slot: {
+          startTime: "asc",
         },
       },
     });
@@ -105,21 +115,20 @@ export async function GET(
     // ---------------------
     const doctorAppointments: DoctorAppointment[] = appointments.map((a: any) => ({
       id: a.id,
-      patientName: a.patient.user.name,
-      patientString: a.patient.user.email,
-      gender: a.patient.user.gender,
-      city: a.patient.user.location?.city ?? "N/A",
-      age: a.patient.user.age,
+      patientName: a.patient?.user?.name || "Patient",
+      patientString: a.patient?.user?.email || "",
+      gender: a.patient?.user?.gender || "",
+      city: a.patient?.user?.location?.city ?? "N/A",
+      age: a.patient?.user?.age || 0,
       appointmentDate: a.slot?.date?.toISOString() ?? "",
-      appointmentTime: a.slot?.startTime ?? "",
+      appointmentTime: a.slot?.startTime?.toISOString() ?? "",
       status: a.status,
-      paymentMethod:a.paymentMethod
-      
+      paymentMethod: a.paymentMethod,
     }));
 
     return NextResponse.json(doctorAppointments, { status: 200 });
-
   } catch (err) {
+    console.error("Doctor appointments GET error:", err);
     return NextResponse.json(
       { error: "Failed to fetch appointments" },
       { status: 500 }

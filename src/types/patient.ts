@@ -11,6 +11,7 @@ export interface Patient {
   currentMedications: string[];
   profileImageUrl?: string;
 }
+
 export interface PatientAppointment {
   id: string;
   appointmentDate: string;
@@ -19,7 +20,7 @@ export interface PatientAppointment {
   doctorEmail: string;
   city: string;
   state: string;
-  fees: string;
+  fees: number;
   status: string;
   specialty: string;
 }

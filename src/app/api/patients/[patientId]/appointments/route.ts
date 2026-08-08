@@ -6,7 +6,7 @@ import type { PatientAppointment } from "@/types/patient";
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
     const { patientId } = await params;
-    // console.log(patientId);
+
     if (!patientId) {
       return NextResponse.json({ error: "patientId required" }, { status: 400 });
     }
@@ -33,7 +33,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
     }
 
     if (searchParams.get("fees")) {
-      where.doctor.fees = Number(searchParams.get("fees"));
+      const feesNum = Number(searchParams.get("fees"));
+      if (!isNaN(feesNum)) {
+        where.doctor.fees = feesNum;
+      }
     }
 
     if (searchParams.get("specialty")) {
@@ -41,7 +44,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
     }
 
     if (searchParams.get("date")) {
-      where.slot.date = new Date(searchParams.get("date") as string);
+      const dateVal = new Date(searchParams.get("date") as string);
+      if (!isNaN(dateVal.getTime())) {
+        where.slot.date = dateVal;
+      }
     }
 
     const appointments = await prisma.appointment.findMany({
@@ -58,10 +64,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
                 location: {
                   select: {
                     city: true,
-                    state: true
-                  }
-
-                }
+                    state: true,
+                  },
+                },
               },
             },
             fees: true,
@@ -75,39 +80,42 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
           },
         },
       },
+      orderBy: {
+        slot: {
+          startTime: "desc",
+        },
+      },
     });
-    console.log("hhgfgdshjhkjhl");
-    console.log(appointments);
+
     const patientAppointments: PatientAppointment[] = appointments.map((a: any) => ({
       id: a.id,
       appointmentDate: a.slot?.date?.toISOString() ?? "",
-      appointmentTime: a.slot?.startTime ?? "",
-      doctorName: a.doctor.user.name,
-      doctorEmail: a.doctor.user.email,
-      city: a.doctor.user.location?.city || "N/A",
-      state: a.doctor.user.location?.state || "N/A",
-      fees: a.doctor.fees,
+      appointmentTime: a.slot?.startTime?.toISOString() ?? "",
+      doctorName: a.doctor?.user?.name || "Doctor",
+      doctorEmail: a.doctor?.user?.email || "",
+      city: a.doctor?.user?.location?.city || "N/A",
+      state: a.doctor?.user?.location?.state || "N/A",
+      fees: a.doctor?.fees || 0,
       status: a.status,
-      specialty: a.doctor.specialty,
+      specialty: a.doctor?.specialty || "",
     }));
 
     return NextResponse.json(patientAppointments, { status: 200 });
-  } catch (err) {
-    console.log(err);
-    return NextResponse.json({ error: err }, { status: 500 });
+  } catch (err: any) {
+    console.error("Patient appointments GET error:", err);
+    return NextResponse.json({ error: "Failed to fetch appointments" }, { status: 500 });
   }
 }
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
-    // 1. Destructure the new optional fields
-    // paymentId comes from the frontend when paymentMethod is 'ONLINE'
     const { doctorId, slotId, paymentMethod, transactionId } = await req.json();
     const { patientId } = await params;
 
-    // 2. Validation
+    // Validation
     if (!doctorId || !slotId) {
       return NextResponse.json(
         { message: "Doctor ID and Slot ID are required" },
@@ -115,26 +123,44 @@ export async function POST(
       );
     }
 
-    // 3. Create appointment with payment details
+    // Verify slot is available
+    const slot = await prisma.slot.findUnique({
+      where: { id: slotId },
+    });
+
+    if (!slot || slot.doctorId !== doctorId) {
+      return NextResponse.json(
+        { message: "Slot not found" },
+        { status: 404 }
+      );
+    }
+
+    if (slot.status !== "AVAILABLE") {
+      return NextResponse.json(
+        { message: `Slot is not available (current status: ${slot.status})` },
+        { status: 409 }
+      );
+    }
+
+    // Create appointment with payment details
     const appointment = await prisma.appointment.create({
       data: {
         doctorId,
         patientId,
         slotId,
         status: 'PENDING',
-        // Save the payment info
-        paymentMethod: paymentMethod || 'OFFLINE', // Default to OFFLINE if not sent
-        transactionId           // Optional: Store the transaction ID
+        paymentMethod: paymentMethod || 'OFFLINE',
+        transactionId: transactionId || null,
       },
     });
 
-    // 4. Update the slot status
+    // Update slot status to BOOKED
     const slotUpdate = await prisma.slot.update({
       where: { id: slotId },
       data: { status: 'BOOKED' },
     });
 
-    // 5. Send notification to doctor via Socket.IO
+    // Send notification to doctor via Socket.IO
     try {
       const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
       await fetch(`${socketServerUrl}/api/notifications/appointment`, {
@@ -144,14 +170,8 @@ export async function POST(
           doctorId,
           appointmentId: appointment.id,
         }),
-      }).catch((err) => {
-        // Silently fail if socket server is not available
-        console.warn('Socket server notification failed (this is non-critical):', err);
-      });
-    } catch (notifError) {
-      // Log but don't fail the appointment creation if notification fails
-      console.warn('Failed to send notification:', notifError);
-    }
+      }).catch(() => {});
+    } catch {}
 
     // Log Audit
     await logAudit(patientId, "Booked Appointment", { appointmentId: appointment.id, doctorId, slotId });
@@ -161,7 +181,7 @@ export async function POST(
   } catch (err: any) {
     console.error("Booking Error:", err);
     return NextResponse.json(
-      { message: "Internal server error", error: err.message },
+      { message: "Internal server error", error: err?.message || "Failed to book appointment" },
       { status: 500 }
     );
   }
