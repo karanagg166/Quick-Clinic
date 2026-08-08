@@ -1,34 +1,25 @@
-FROM node:24.11.1-alpine
+FROM node:24-slim
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apk add --no-cache openssl
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy root package.json (for Prisma client)
-COPY package*.json ./
+# Enable and configure pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy root package.json and lockfile (for Prisma client)
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
 
 # Copy socket-server package files
 COPY socket-server/package*.json ./socket-server/
-
-# Install root dependencies (including dev dependencies for TypeScript)
-RUN npm ci --include=dev
-
-# Install socket-server dependencies
-WORKDIR /app/socket-server
-RUN npm ci --include=dev
-WORKDIR /app
+RUN cd socket-server && npm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-# Ensure src directory exists, then generate Prisma client
-RUN mkdir -p src/generated && npx prisma generate
-
-# Verify Prisma client was generated and show structure
-RUN echo "=== Prisma client verification ===" && \
-    ls -la src/generated/prisma/ | head -10 && \
-    test -f src/generated/prisma/client.js && echo "✓ client.js exists" || echo "✗ client.js missing"
+RUN mkdir -p src/generated && pnpm dlx prisma generate
 
 # Copy Prisma client to socket-server so relative paths work
 RUN mkdir -p socket-server/src/generated && \
@@ -46,15 +37,7 @@ EXPOSE 4000
 
 ENV NODE_ENV=production
 ENV PORT=4000
-# Add root node_modules to module resolution path
 ENV NODE_PATH=/app/node_modules
 
-# Verify paths before running
-RUN echo "=== Final verification ===" && \
-    pwd && \
-    ls -la /app/src/generated/prisma/ 2>/dev/null | head -5 && \
-    ls -la /app/socket-server/dist/ 2>/dev/null | head -5
-
-# Run from socket-server directory to match local development paths
 WORKDIR /app/socket-server
 CMD ["node", "dist/main.js"]

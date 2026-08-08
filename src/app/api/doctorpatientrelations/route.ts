@@ -48,7 +48,7 @@ export async function GET(req: NextRequest) {
             orderBy: { updatedAt: "desc" },
         });
 
-        const mapped = relations.map((r) => {
+        const mapped = relations.map((r: any) => {
             const last = r.chatMessages?.[0];
 
             return {

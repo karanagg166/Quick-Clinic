@@ -36,7 +36,7 @@ export async function GET(
     });
 
     return NextResponse.json(
-      withdrawals.map((w) => ({
+      withdrawals.map((w: any) => ({
         id: w.id,
         amount: w.amount,
         amountInRupees: w.amount / 100, // Convert from paise to rupees

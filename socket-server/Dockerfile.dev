@@ -6,21 +6,21 @@ WORKDIR /app
 # Install runtime dependencies
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy root package.json (for Prisma client dependencies)
-COPY package*.json ./
+# Enable and configure pnpm
+RUN corepack enable && corepack prepare pnpm@latest --activate
+
+# Copy root package.json and lockfile (for Prisma client dependencies)
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install
 
 # Copy socket-server package files
 COPY socket-server/package*.json ./socket-server/
-
-# Install all dependencies (including dev dependencies)
-RUN npm install
 RUN cd socket-server && npm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-# Prisma generate doesn't need actual DATABASE_URL connection
-RUN npx prisma generate
+RUN pnpm dlx prisma generate
 
 # Copy socket server files
 COPY socket-server ./socket-server/

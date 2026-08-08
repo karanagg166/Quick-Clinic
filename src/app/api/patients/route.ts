@@ -117,8 +117,8 @@ export const GET = async (req: NextRequest) => {
     const patientIds = Array.from(
       new Set(
         appointmentRows
-          .map((r) => r?.patientId)
-          .filter((id): id is string => !!id)
+          .map((r: any) => r?.patientId)
+          .filter((id: string | null | undefined): id is string => !!id)
       )
     );
 

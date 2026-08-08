@@ -37,7 +37,7 @@ export async function GET(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    const qualifications = appointment.doctor.doctorQualifications?.map((dq) => String(dq.qualification)) ?? [];
+    const qualifications = appointment.doctor.doctorQualifications?.map((dq: any) => String(dq.qualification)) ?? [];
 
     const result: AppointmentDetail = {
       id: appointment.id,
