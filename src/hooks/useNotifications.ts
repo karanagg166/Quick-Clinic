@@ -7,6 +7,8 @@ import { useUserStore } from '@/store/userStore';
 interface Notification {
   id: string;
   message: string;
+  actionHref: string | null;
+  actionLabel: string | null;
   createdAt: string;
   isRead: boolean;
 }
@@ -87,4 +89,3 @@ export function useNotifications() {
     isConnected,
   };
 }
-

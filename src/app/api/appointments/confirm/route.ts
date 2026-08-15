@@ -35,17 +35,19 @@ export async function POST(req: NextRequest) {
 
     // Notify doctor & patient in database, chat, and sockets
     try {
-      const doctor = await prisma.doctor.findUnique({
-        where: { id: body.data.doctorId },
-        include: { user: true },
-      });
-      const slot = await prisma.slot.findUnique({
-        where: { id: body.data.slotId },
-      });
-      const patientUser = await prisma.user.findUnique({
-        where: { id: patient.userId },
-        include: { location: true },
-      });
+      const [doctor, slot, patientUser] = await Promise.all([
+        prisma.doctor.findUnique({
+          where: { id: body.data.doctorId },
+          include: { user: true },
+        }),
+        prisma.slot.findUnique({
+          where: { id: body.data.slotId },
+        }),
+        prisma.user.findUnique({
+          where: { id: patient.userId },
+          include: { location: true },
+        }),
+      ]);
 
       if (doctor?.user?.id && patientUser) {
         const patientName = patientUser.name || "Patient";
@@ -87,21 +89,25 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        // 3. Create Notification for Doctor
-        await prisma.notification.create({
-          data: {
-            userId: doctor.user.id,
-            message: `New appointment confirmed with ${patientName} on ${formattedDate} at ${formattedTime}. If you need to cancel: /doctor/appointments`,
-          },
-        });
-
-        // 4. Create Notification for Patient
-        await prisma.notification.create({
-          data: {
-            userId: patientUser.id,
-            message: `Your appointment with Dr. ${doctorName} is confirmed for ${formattedDate} at ${formattedTime}. If you need to cancel: /patient/appointments`,
-          },
-        });
+        // 3. Create Notifications for Doctor and Patient in parallel
+        const [doctorNotification, patientNotification] = await Promise.all([
+          prisma.notification.create({
+            data: {
+              userId: doctor.user.id,
+              message: `New appointment confirmed with ${patientName} on ${formattedDate} at ${formattedTime}.`,
+              actionHref: `/doctor/appointments/${appointment.id}`,
+              actionLabel: "View appointment",
+            },
+          }),
+          prisma.notification.create({
+            data: {
+              userId: patientUser.id,
+              message: `Your appointment with Dr. ${doctorName} is confirmed for ${formattedDate} at ${formattedTime}.`,
+              actionHref: `/patient/appointments/${appointment.id}`,
+              actionLabel: "View appointment",
+            },
+          }),
+        ]);
 
         // 5. Send real-time updates via Socket Server
         const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
@@ -112,6 +118,14 @@ export async function POST(req: NextRequest) {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             doctorUserId: doctor.user.id,
+            notification: {
+              id: doctorNotification.id,
+              message: doctorNotification.message,
+              actionHref: doctorNotification.actionHref,
+              actionLabel: doctorNotification.actionLabel,
+              createdAt: doctorNotification.createdAt.toISOString(),
+              isRead: doctorNotification.isRead,
+            },
             appointmentId: appointment.id,
             appointment: {
               id: appointment.id,
@@ -129,16 +143,19 @@ export async function POST(req: NextRequest) {
         }).catch(() => {});
 
         // Notify patient via socket
-        fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
+        fetch(`${socketServerUrl}/api/notifications/broadcast`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            patientUserId: patientUser.id,
-            appointmentId: appointment.id,
-            status: "CONFIRMED",
-            appointmentDate: slot?.date?.toISOString() || "",
-            appointmentTime: slot?.startTime?.toISOString() || "",
-            doctorName,
+            userId: patientUser.id,
+            notification: {
+              id: patientNotification.id,
+              message: patientNotification.message,
+              actionHref: patientNotification.actionHref,
+              actionLabel: patientNotification.actionLabel,
+              createdAt: patientNotification.createdAt.toISOString(),
+              isRead: patientNotification.isRead,
+            },
           }),
         }).catch(() => {});
       }

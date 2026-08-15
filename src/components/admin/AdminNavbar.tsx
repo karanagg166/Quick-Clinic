@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, Menu, LayoutDashboard, FileText, ShieldAlert, UserCircle } from 'lucide-react';
+import { LogOut, Menu, LayoutDashboard, FileText, ShieldAlert } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
+import NotificationMenu from '@/components/general/NotificationMenu';
 
 interface AdminNavbarProps {
     isSidebarOpen: boolean;
@@ -79,11 +79,7 @@ export default function AdminNavbar({ isSidebarOpen, setSidebarOpen }: AdminNavb
             {/* RIGHT SECTION — Notifications + Profile + Logout */}
             <div className="flex items-center gap-4">
 
-                <Link href="/user/notifications">
-                    <button className="relative p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                        <Bell className="w-5 h-5 text-gray-600" />
-                    </button>
-                </Link>
+                <NotificationMenu />
 
                 {/* Profile */}
                 <div className="flex items-center gap-3 pl-3 border-l border-gray-200">

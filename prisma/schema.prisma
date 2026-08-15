@@ -236,9 +236,11 @@ model Patient {
 // ======================================================
 
 model Notification {
-  id      String    @id @default(cuid())
-  userId  String
-  message String
+  id          String    @id @default(cuid())
+  userId      String
+  message     String
+  actionHref  String?
+  actionLabel String?
   user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   isRead  Boolean   @default(false)
   status  String    @default("UNREAD")

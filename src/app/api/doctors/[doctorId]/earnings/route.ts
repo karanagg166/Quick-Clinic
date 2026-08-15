@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { AppointmentStatus } from "@/generated/prisma";
 
 export async function GET(
   req: NextRequest,
@@ -29,7 +30,7 @@ export async function GET(
 
     const filter: {
       doctorId: string;
-      status: string;
+      status: AppointmentStatus;
       slot?: {
         startTime?: {
           gte?: Date;
@@ -38,7 +39,7 @@ export async function GET(
       };
     } = {
       doctorId,
-      status: "COMPLETED",
+      status: AppointmentStatus.COMPLETED,
     };
 
     if (startDate || endDate) {

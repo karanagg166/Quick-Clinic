@@ -14,7 +14,15 @@ const loadRazorpayScript = (src: string) => {
   });
 };
 
-export async function processOnlinePayment(amount: number, userId: string) {
+export async function processOnlinePayment({
+  doctorId,
+  slotId,
+  userId,
+}: {
+  doctorId: string;
+  slotId: string;
+  userId: string;
+}) {
   return new Promise<{ success: boolean; transactionId: string | null; error?: string }>(async (resolve) => {
     try {
       // 2. Load the Razorpay SDK Script explicitly
@@ -28,7 +36,7 @@ export async function processOnlinePayment(amount: number, userId: string) {
       const orderRes = await fetch(`/api/user/${userId}/payments/createOrder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount }),
+        body: JSON.stringify({ doctorId, slotId }),
       });
       
       const data = await orderRes.json();
@@ -37,7 +45,6 @@ export async function processOnlinePayment(amount: number, userId: string) {
       // 4. Initialize Razorpay Options
       const options = {
         key: data.keyId, 
-        amount: data.order.amount,
         currency: "INR",
         name: "Quick Clinic",
         description: "Medical Consultation",

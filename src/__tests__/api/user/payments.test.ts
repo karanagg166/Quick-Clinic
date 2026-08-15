@@ -3,7 +3,7 @@ import { NextRequest } from "next/server";
 import { POST as createOrderPOST } from "@/app/api/user/[userId]/payments/createOrder/route";
 import { POST as verifyOrderPOST } from "@/app/api/user/[userId]/payments/verifyOrder/route";
 
-test("POST /api/user/[userId]/payments/createOrder - rejects request when amount is missing", async () => {
+test("POST /api/user/[userId]/payments/createOrder - rejects a request without appointment details", async () => {
   const req = new NextRequest("http://localhost:3000/api/user/test_user/payments/createOrder", {
     method: "POST",
     body: JSON.stringify({}),
@@ -15,7 +15,7 @@ test("POST /api/user/[userId]/payments/createOrder - rejects request when amount
   expect(res.status).toBe(400);
 
   const data = await res.json();
-  expect(data.message).toBe("Amount required");
+  expect(data.message).toBe("doctorId and slotId are required");
 });
 
 test("POST /api/user/[userId]/payments/verifyOrder - rejects missing payment details", async () => {

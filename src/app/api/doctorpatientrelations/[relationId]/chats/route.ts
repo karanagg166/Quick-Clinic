@@ -45,24 +45,24 @@ export async function GET(
         // Calculate skip for pagination
         const skip = (page - 1) * limit;
 
-        // Get total count of messages
-        const totalMessages = await prisma.chatMessages.count({
-            where: {
-                doctorPatientRelationId,
-            },
-        });
-
-        // Fetch paginated messages
-        const chats = await prisma.chatMessages.findMany({
-            where: {
-                doctorPatientRelationId,
-            },
-            orderBy: {
-                createdAt: "asc",
-            },
-            skip,
-            take: limit,
-        });
+        // Fetch total count and paginated messages concurrently
+        const [totalMessages, chats] = await Promise.all([
+            prisma.chatMessages.count({
+                where: {
+                    doctorPatientRelationId,
+                },
+            }),
+            prisma.chatMessages.findMany({
+                where: {
+                    doctorPatientRelationId,
+                },
+                orderBy: {
+                    createdAt: "asc",
+                },
+                skip,
+                take: limit,
+            }),
+        ]);
 
         // Calculate total pages
         const totalPages = Math.ceil(totalMessages / limit) || 1;

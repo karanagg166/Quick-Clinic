@@ -9,11 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Bell, Wifi, WifiOff } from "lucide-react";
 import EmptyState from "@/components/general/EmptyState";
+import Link from "next/link";
+
+type Notification = {
+    id: string;
+    message: string;
+    actionHref?: string | null;
+    actionLabel?: string | null;
+    createdAt: string;
+    isRead: boolean;
+};
 
 export default function NotificationsPage(){
     const userId = useUserStore((state) => state.user?.id);
     const { notifications: socketNotifications, isConnected } = useNotifications();
-    const [notifications, setNotifications] = useState<any[]>([]);
+    const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(false);
     const [showAll, setShowAll] = useState(false);
     
@@ -26,6 +36,7 @@ export default function NotificationsPage(){
     const fetchNotifications = async () => {
         setLoading(true);
 
+        if (!userId) return;
         const response = await fetch(`/api/user/${userId}/notification`);
         if (!response.ok) {
             setLoading(false);
@@ -133,6 +144,11 @@ export default function NotificationsPage(){
                                             </span>
                                         </div>
                                         <div className="flex gap-2">
+                                            {n.actionHref && (
+                                                <Button asChild size="sm" onClick={() => markRead(n.id)}>
+                                                    <Link href={n.actionHref}>{n.actionLabel || "Open"}</Link>
+                                                </Button>
+                                            )}
                                             {!n.isRead && (
                                                 <Button
                                                     onClick={() => markRead(n.id)}

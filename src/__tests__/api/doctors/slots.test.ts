@@ -9,6 +9,7 @@ vi.mock('@/lib/prisma', () => ({
       findMany: vi.fn(),
       findUnique: vi.fn(),
       create: vi.fn(),
+      createMany: vi.fn(),
       update: vi.fn(),
       updateMany: vi.fn(),
       delete: vi.fn(),
@@ -47,7 +48,15 @@ describe('Doctor Slots Route', () => {
   });
 
   it('GET generates slots from weekly schedule and marks active leaves as ON_LEAVE', async () => {
-    vi.mocked(prisma.slot.findMany).mockResolvedValueOnce([]); // No existing slots
+    const generated = [
+      { id: 's_1', startTime: new Date('2026-05-15T09:00:00Z'), endTime: new Date('2026-05-15T09:10:00Z'), status: 'AVAILABLE' },
+      { id: 's_2', startTime: new Date('2026-05-15T09:10:00Z'), endTime: new Date('2026-05-15T09:20:00Z'), status: 'ON_LEAVE' },
+    ];
+
+    vi.mocked(prisma.slot.findMany)
+      .mockResolvedValueOnce([]) // No existing slots initially
+      .mockResolvedValueOnce(generated as any); // Generated slots returned
+
     vi.mocked(prisma.schedule.findUnique).mockResolvedValueOnce({
       doctorId: 'doc_1',
       weeklySchedule: [
@@ -66,7 +75,7 @@ describe('Doctor Slots Route', () => {
       },
     ] as any);
 
-    vi.mocked(prisma.slot.create).mockImplementation(({ data }: any) => Promise.resolve({ id: 's_' + data.startTime, ...data }));
+    vi.mocked(prisma.slot.createMany).mockResolvedValueOnce({ count: 2 });
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots?date=2026-05-15');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });

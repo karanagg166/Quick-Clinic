@@ -1,6 +1,21 @@
 import { prisma } from "@/lib/prisma";
 
-export async function autoExpirePastAppointments() {
+let lastAutoExpireRun = 0;
+const AUTO_EXPIRE_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
+
+export async function autoExpirePastAppointments(force = false) {
+  const now = Date.now();
+  // Vitest can run inside the development container where NODE_ENV remains
+  // "development". Background expiry is disabled in tests; cron tests opt in
+  // with `force` so route mocks do not receive unrelated writes.
+  const isTestEnvironment = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
+  if (isTestEnvironment && !force) {
+    return { expired: 0, refunded: 0, refundFailed: 0 };
+  }
+  if (!force && !isTestEnvironment && now - lastAutoExpireRun < AUTO_EXPIRE_COOLDOWN_MS) {
+    return { expired: 0, refunded: 0, refundFailed: 0 };
+  }
+  lastAutoExpireRun = now;
   try {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);

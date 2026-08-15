@@ -262,21 +262,45 @@ export async function PATCH(
 
       // 2. In-App Notifications
       let patientNotificationMessage = `Your appointment on ${apptDate} with Dr. ${doctorName} has been updated to ${status.toLowerCase()}.`;
+      let patientActionHref = `/patient/appointments/${appointmentId}`;
+      let patientActionLabel = 'View appointment';
       if (status === 'COMPLETED') {
-        patientNotificationMessage = `Your consultation with Dr. ${doctorName} is completed. Please rate and review: /patient/doctor/${doctorId}`;
+        patientNotificationMessage = `Your consultation with Dr. ${doctorName} is completed. Share your experience with Dr. ${doctorName}.`;
+        patientActionHref = `/patient/doctor/${doctorId}`;
+        patientActionLabel = 'Rate and review';
       } else if (status === 'NO_SHOW') {
-        patientNotificationMessage = `You were marked as no-show for your appointment with Dr. ${doctorName}. Click here to rebook: /patient/doctor/${doctorId}`;
+        patientNotificationMessage = `You were marked as no-show for your appointment with Dr. ${doctorName}.`;
+        patientActionHref = `/patient/doctor/${doctorId}`;
+        patientActionLabel = 'Book another visit';
       } else if (status === 'CANCELLED') {
         patientNotificationMessage = `Your appointment on ${apptDate} with Dr. ${doctorName} has been cancelled.`;
       }
 
       try {
-        await prisma.notification.create({
+        const patientNotification = await prisma.notification.create({
           data: {
             userId: patientUserId,
             message: patientNotificationMessage,
+            actionHref: patientActionHref,
+            actionLabel: patientActionLabel,
           },
         });
+        const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
+        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: patientUserId,
+            notification: {
+              id: patientNotification.id,
+              message: patientNotification.message,
+              actionHref: patientNotification.actionHref,
+              actionLabel: patientNotification.actionLabel,
+              createdAt: patientNotification.createdAt.toISOString(),
+              isRead: patientNotification.isRead,
+            },
+          }),
+        }).catch(() => {});
       } catch {}
 
       try {
@@ -288,21 +312,6 @@ export async function PATCH(
         });
       } catch {}
 
-      try {
-        const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-        await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            patientUserId,
-            appointmentId,
-            status,
-            appointmentDate: appointmentBefore.slot.date.toISOString(),
-            appointmentTime: appointmentBefore.slot.startTime.toISOString(),
-            doctorName,
-          }),
-        }).catch(() => {});
-      } catch {}
     }
 
     await logAudit(doctorId, "Updated Appointment Status", { appointmentId, status: status || appointmentBefore.status, paymentMethod, isAppointmentOffline });

@@ -31,8 +31,15 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
-    // 3. Update Database
-    // Note: We use 'razorpayOrderId' because that is the unique field in your schema
+    const payment = await prisma.payment.findUnique({
+      where: { razorpayOrderId: orderId },
+      select: { userId: true },
+    });
+    if (!payment || payment.userId !== userId) {
+      return NextResponse.json({ error: "Payment order not found" }, { status: 404 });
+    }
+
+    // 3. Update the payment record only after verifying both signature and owner.
     await prisma.payment.update({
       where: { 
         razorpayOrderId: orderId 

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
-import { Gender, Prisma, Specialty } from "@/generated/prisma";
+import { Gender, Prisma, Specialty, Qualification } from "@/generated/prisma";
 import { parseSearchCoordinates, calculateHaversineDistanceKm, estimateTravelTimeMinutes } from "@/lib/coordinates";
 import { getRouteMetrics } from "@/lib/routing";
 
@@ -275,7 +275,7 @@ export const POST = async (req: NextRequest) => {
     const doctor = await prisma.doctor.create({
       data: {
         userId,
-        specialty,
+        specialty: specialty as Specialty,
         fees: Number(fees),
         experience: Number(experience),
         doctorBio,
@@ -283,7 +283,7 @@ export const POST = async (req: NextRequest) => {
         longitude: hasCoordinates ? longitude : null,
         doctorQualifications: {
           create: Array.isArray(qualifications)
-            ? qualifications.map((q: string) => ({ qualification: q }))
+            ? qualifications.map((q: string) => ({ qualification: q as Qualification }))
             : [],
         },
       },

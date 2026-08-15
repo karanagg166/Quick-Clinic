@@ -20,60 +20,56 @@ export async function GET(
     const thisMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
     const nextMonthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
 
-    // Today's appointments
-    const todayAppointments = await prisma.appointment.count({
-      where: {
-        doctorId,
-        slot: {
-          startTime: {
-            gte: today,
-            lt: tomorrow,
+    // Run queries concurrently for fast response times
+    const [todayAppointments, activePatients, pendingConsults, thisMonthEarnings, doctor] =
+      await Promise.all([
+        prisma.appointment.count({
+          where: {
+            doctorId,
+            slot: {
+              startTime: {
+                gte: today,
+                lt: tomorrow,
+              },
+            },
+            status: {
+              in: ["CONFIRMED", "PENDING"],
+            },
           },
-        },
-        status: {
-          in: ["CONFIRMED", "PENDING"],
-        },
-      },
-    });
-
-    // Active patients (patients with at least one relation)
-    const activePatients = await prisma.doctorPatientRelation.count({
-      where: {
-        doctor: {
-          id: doctorId,
-        },
-      },
-    });
-
-    // Pending consults (appointments with PENDING status)
-    const pendingConsults = await prisma.appointment.count({
-      where: {
-        doctorId,
-        status: "PENDING",
-      },
-    });
-
-    // This month's completed earnings count
-    const thisMonthEarnings = await prisma.appointment.findMany({
-      where: {
-        doctorId,
-        status: "COMPLETED",
-        slot: {
-          startTime: {
-            gte: thisMonthStart,
-            lt: nextMonthStart,
+        }),
+        prisma.doctorPatientRelation.count({
+          where: {
+            doctor: {
+              id: doctorId,
+            },
           },
-        },
-      },
-      select: {
-        id: true,
-      },
-    });
-
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: doctorId },
-      select: { fees: true },
-    });
+        }),
+        prisma.appointment.count({
+          where: {
+            doctorId,
+            status: "PENDING",
+          },
+        }),
+        prisma.appointment.findMany({
+          where: {
+            doctorId,
+            status: "COMPLETED",
+            slot: {
+              startTime: {
+                gte: thisMonthStart,
+                lt: nextMonthStart,
+              },
+            },
+          },
+          select: {
+            id: true,
+          },
+        }),
+        prisma.doctor.findUnique({
+          where: { id: doctorId },
+          select: { fees: true },
+        }),
+      ]);
 
     const monthlyEarnings = (doctor?.fees || 0) * thisMonthEarnings.length;
 

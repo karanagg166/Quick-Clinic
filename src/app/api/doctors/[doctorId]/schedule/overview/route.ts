@@ -85,6 +85,14 @@ export async function GET(
               },
             });
 
+            const slotsToCreate: Array<{
+              doctorId: string;
+              date: Date;
+              startTime: Date;
+              endTime: Date;
+              status: "ON_LEAVE" | "AVAILABLE";
+            }> = [];
+
             for (const timeSlot of daySchedule.slots) {
               if (!timeSlot.start || !timeSlot.end) continue;
               const [sH, sM] = timeSlot.start.split(":").map(Number);
@@ -104,16 +112,21 @@ export async function GET(
                     startTime < leave.endDate && endTime > leave.startDate
                 );
 
-                await prisma.slot.create({
-                  data: {
-                    doctorId,
-                    date: startOfDay,
-                    startTime,
-                    endTime,
-                    status: isOnLeave ? "ON_LEAVE" : "AVAILABLE",
-                  },
+                slotsToCreate.push({
+                  doctorId,
+                  date: startOfDay,
+                  startTime,
+                  endTime,
+                  status: isOnLeave ? "ON_LEAVE" : "AVAILABLE",
                 });
               }
+            }
+
+            if (slotsToCreate.length > 0) {
+              await prisma.slot.createMany({
+                data: slotsToCreate,
+                skipDuplicates: true,
+              });
             }
 
             // Re-query newly created slots

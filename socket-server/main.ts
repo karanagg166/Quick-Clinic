@@ -98,6 +98,44 @@ const io = new Server(httpServer, {
 // Initialize Socket.IO server with event handlers
 const socketServer = new SocketServer(io, prisma);
 
+type SocketNotification = {
+  id: string;
+  message: string;
+  actionHref?: string | null;
+  actionLabel?: string | null;
+  createdAt: string;
+  isRead: boolean;
+};
+
+// Notification records are persisted by the Next.js API. This endpoint only
+// broadcasts that record, preventing a second database notification per event.
+app.post('/api/notifications/broadcast', (req: express.Request, res: express.Response) => {
+  const { userId, notification } = req.body as { userId?: string; notification?: SocketNotification };
+  if (!userId || !notification?.id || !notification.message) {
+    return res.status(400).json({ error: 'userId and a notification are required' });
+  }
+
+  socketServer.sendNotificationToUser(userId, notification);
+  return res.json({ success: true });
+});
+
+// A newly-booked appointment has already been persisted by Next.js. Emit its
+// notification and appointment payload so the doctor's list updates instantly.
+app.post('/api/notifications/new-appointment', (req: express.Request, res: express.Response) => {
+  const { doctorUserId, notification, appointment } = req.body as {
+    doctorUserId?: string;
+    notification?: SocketNotification;
+    appointment?: Parameters<SocketServer['sendAppointmentRequest']>[1];
+  };
+  if (!doctorUserId || !notification?.id || !appointment?.id) {
+    return res.status(400).json({ error: 'doctorUserId, notification, and appointment are required' });
+  }
+
+  socketServer.sendNotificationToUser(doctorUserId, notification);
+  socketServer.sendAppointmentRequest(doctorUserId, appointment);
+  return res.json({ success: true });
+});
+
 // API endpoint to send appointment status update (called from Next.js API routes)
 app.post('/api/notifications/appointment-status', async (req: express.Request, res: express.Response) => {
   try {
@@ -265,4 +303,3 @@ httpServer.listen(PORT, HOST, () => {
   console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
   console.log(`🌐 Frontend allowed from: ${frontendUrl}`);
 });
-

@@ -16,7 +16,8 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const result = await autoExpirePastAppointments();
+    // Cron is the explicit expiry entry point, including during its test suite.
+    const result = await autoExpirePastAppointments(true);
 
     return NextResponse.json({
       message: `Processed ${result.expired} expired appointments`,

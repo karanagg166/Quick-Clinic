@@ -173,6 +173,8 @@ export class SocketServer {
     notification: {
       id: string;
       message: string;
+      actionHref?: string | null;
+      actionLabel?: string | null;
       createdAt: string;
       isRead: boolean;
     }
@@ -401,4 +403,3 @@ export class SocketServer {
     });
   }
 }
-

@@ -15,45 +15,42 @@ export async function GET(
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    // Upcoming appointments (PENDING or CONFIRMED on or after today)
-    const upcomingAppointments = await prisma.appointment.count({
-      where: {
-        patientId,
-        slot: {
-          date: {
-            gte: today,
+    // Run counts concurrently for fast response times
+    const [upcomingAppointments, assignedDoctors, pendingApprovals, completedAppointments] =
+      await Promise.all([
+        prisma.appointment.count({
+          where: {
+            patientId,
+            slot: {
+              date: {
+                gte: today,
+              },
+            },
+            status: {
+              in: ["CONFIRMED", "PENDING"],
+            },
           },
-        },
-        status: {
-          in: ["CONFIRMED", "PENDING"],
-        },
-      },
-    });
-
-    // Assigned doctors
-    const assignedDoctors = await prisma.doctorPatientRelation.count({
-      where: {
-        patient: {
-          id: patientId,
-        },
-      },
-    });
-
-    // Pending approvals (appointments with PENDING status)
-    const pendingApprovals = await prisma.appointment.count({
-      where: {
-        patientId,
-        status: "PENDING",
-      },
-    });
-
-    // Completed appointments for wellness score calculation
-    const completedAppointments = await prisma.appointment.count({
-      where: {
-        patientId,
-        status: "COMPLETED",
-      },
-    });
+        }),
+        prisma.doctorPatientRelation.count({
+          where: {
+            patient: {
+              id: patientId,
+            },
+          },
+        }),
+        prisma.appointment.count({
+          where: {
+            patientId,
+            status: "PENDING",
+          },
+        }),
+        prisma.appointment.count({
+          where: {
+            patientId,
+            status: "COMPLETED",
+          },
+        }),
+      ]);
 
     // Simple wellness score calculation (0-100)
     const wellnessScore = Math.min(100, Math.max(0, completedAppointments * 10));

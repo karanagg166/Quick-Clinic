@@ -14,6 +14,8 @@ test("GET /api/user/[userId]/notification - fetches notifications for user", asy
     data: {
       userId: user!.id,
       message: "Test notification message",
+      actionHref: "/patient/appointments/test-appointment",
+      actionLabel: "View appointment",
     },
   });
 
@@ -26,6 +28,10 @@ test("GET /api/user/[userId]/notification - fetches notifications for user", asy
   const list = await res.json();
   expect(Array.isArray(list)).toBe(true);
   expect(list.some((n: any) => n.id === notification.id)).toBe(true);
+  expect(list.find((n: any) => n.id === notification.id)).toMatchObject({
+    actionHref: "/patient/appointments/test-appointment",
+    actionLabel: "View appointment",
+  });
 
   // Clean up
   await prisma.notification.delete({ where: { id: notification.id } });

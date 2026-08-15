@@ -111,8 +111,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     try {
       setBooking(true);
       hold = await acquireHold(slotId);
-      const slot = slots.find((item) => item.id === slotId) as { fee?: number; price?: number } | undefined;
-      const payment = await processOnlinePayment(Number(slot?.fee ?? slot?.price ?? 50000), userId);
+      const payment = await processOnlinePayment({ doctorId, slotId, userId });
       if (!payment?.success || !payment.transactionId) throw new Error(payment?.error || 'Payment failed or was cancelled');
       await confirmHold(hold, 'ONLINE', payment.transactionId);
     } catch (cause) {

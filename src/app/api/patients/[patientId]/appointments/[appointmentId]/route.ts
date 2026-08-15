@@ -18,7 +18,11 @@ export async function GET(
 			include: {
 				doctor: {
 					include: {
-						user: true,
+						user: {
+							include: {
+								location: true,
+							},
+						},
 						doctorQualifications: true,
 					},
 				},
@@ -222,28 +226,28 @@ export async function PATCH(
 		try {
 			const doctorUserId = appointment.doctor.user.id;
 			const apptDate = appointment.slot.date.toISOString().split('T')[0];
-			await prisma.notification.create({
+			const notification = await prisma.notification.create({
 				data: {
 					userId: doctorUserId,
 					message: `Appointment with ${appointment.patient.user.name || 'Patient'} on ${apptDate} was cancelled by the patient.`,
+					actionHref: `/doctor/appointments/${appointmentId}`,
+					actionLabel: 'View appointment',
 				},
 			});
-		} catch {}
-
-		// Send notification via socket if available
-		try {
 			const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-
-			await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
+			await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					patientUserId: appointment.patient.user.id,
-					appointmentId,
-					status: 'CANCELLED',
-					appointmentDate: appointment.slot.date.toISOString(),
-					appointmentTime: appointment.slot.startTime.toISOString(),
-					doctorName: appointment.doctor.user.name,
+					userId: doctorUserId,
+					notification: {
+						id: notification.id,
+						message: notification.message,
+						actionHref: notification.actionHref,
+						actionLabel: notification.actionLabel,
+						createdAt: notification.createdAt.toISOString(),
+						isRead: notification.isRead,
+					},
 				}),
 			}).catch(() => {});
 		} catch {}

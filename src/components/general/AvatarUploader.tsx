@@ -6,7 +6,7 @@ import { useUserStore } from "@/store/userStore";
 
 interface Props {
   userId: string;
-  initialUrl?: string;
+  initialUrl?: string | null;
 }
 
 export default function AvatarUploader({ userId, initialUrl }: Props) {

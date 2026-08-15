@@ -23,7 +23,7 @@ export interface UserDetail {
   state: string;
   pinCode: number;
 
-  profileImageUrl?: string;
+  profileImageUrl?: string | null;
   emailVerified: boolean;
 }
 
