@@ -80,6 +80,22 @@ export async function POST(
       return NextResponse.json({ message: "Patient profile required to post a comment" }, { status: 403 });
     }
 
+    // Ensure patient has at least one completed appointment with this doctor
+    const completedAppointment = await prisma.appointment.findFirst({
+      where: {
+        doctorId,
+        patientId: patient.id,
+        status: "COMPLETED",
+      },
+    });
+
+    if (!completedAppointment) {
+      return NextResponse.json(
+        { message: "You can only review a doctor after completing an appointment with them." },
+        { status: 403 }
+      );
+    }
+
     const created = await prisma.comment.create({
       data: {
         doctorId,

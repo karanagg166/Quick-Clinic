@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 import { Gender, Prisma, Specialty } from "@/generated/prisma";
-import { parseSearchCoordinates } from "@/lib/coordinates";
+import { parseSearchCoordinates, calculateHaversineDistanceKm, estimateTravelTimeMinutes } from "@/lib/coordinates";
 import { getRouteMetrics } from "@/lib/routing";
 
 export async function GET(req: NextRequest) {
@@ -165,8 +165,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(raw.map(toDoctor), { status: 200 });
     }
 
-    // Apply all existing filters before the spatial lookup. Legacy doctors without
-    // a saved practice location are deliberately excluded from a nearby result.
+    // Apply all existing filters before the spatial lookup.
     const candidates = raw.filter((doctor: any) =>
       typeof doctor.latitude === "number" && typeof doctor.longitude === "number",
     );
@@ -176,35 +175,46 @@ export async function GET(req: NextRequest) {
 
     let nearbyDoctors: Doctor[];
     try {
-      const nearbyIds = await prisma.$queryRaw(Prisma.sql`
-        SELECT "id"
-        FROM "Doctor"
-        WHERE "id" IN (${Prisma.join(candidates.map((doctor: any) => doctor.id))})
-          AND "practiceLocation" IS NOT NULL
-        ORDER BY "practiceLocation" <-> ST_SetSRID(
-          ST_MakePoint(${patientCoordinates.longitude}, ${patientCoordinates.latitude}),
-          4326
-        )::geography
-        LIMIT 30
-      `) as Array<{ id: string }>;
-      const byId = new Map(raw.map((doctor: any) => [doctor.id, doctor]));
-      const nearby = nearbyIds.map(({ id }: { id: string }) => byId.get(id)).filter(Boolean) as any[];
-      const metrics = await getRouteMetrics(
-        patientCoordinates,
-        nearby.map((doctor: any) => ({ latitude: doctor.latitude, longitude: doctor.longitude })),
-      );
+      let metrics: Array<{ distanceKm: number; durationMinutes: number } | null> | null = null;
+      if (process.env.OPENROUTESERVICE_API_KEY) {
+        try {
+          metrics = await getRouteMetrics(
+            patientCoordinates,
+            candidates.slice(0, 30).map((doctor: any) => ({ latitude: doctor.latitude, longitude: doctor.longitude })),
+          );
+        } catch (routeErr) {
+          console.warn("OpenRouteService unavailable, using Haversine calculation:", routeErr);
+        }
+      }
 
-      nearbyDoctors = nearby
-        .map((doctor: any, index: number): Doctor | null => {
-          const metric = metrics[index];
-          return metric ? { ...toDoctor(doctor), ...metric } : null;
+      nearbyDoctors = candidates
+        .map((doctor: any, index: number): Doctor => {
+          const metric = metrics && metrics[index] ? metrics[index] : null;
+          if (metric) {
+            return { ...toDoctor(doctor), ...metric };
+          }
+          const distanceKm = calculateHaversineDistanceKm(
+            patientCoordinates.latitude,
+            patientCoordinates.longitude,
+            doctor.latitude,
+            doctor.longitude,
+          );
+          const durationMinutes = estimateTravelTimeMinutes(distanceKm);
+          return {
+            ...toDoctor(doctor),
+            distanceKm,
+            durationMinutes,
+          };
         })
-        .filter((doctor: Doctor | null): doctor is Doctor => doctor !== null)
         .sort((a: Doctor, b: Doctor) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+
+      const withoutCoords = raw
+        .filter((doctor: any) => typeof doctor.latitude !== "number" || typeof doctor.longitude !== "number")
+        .map(toDoctor);
+
+      nearbyDoctors = [...nearbyDoctors, ...withoutCoords];
     } catch (error) {
-      // Provider, timeout, or unavailable PostGIS should never hide an otherwise
-      // valid filtered result set.
-      console.error("nearby-doctors-unavailable", error);
+      console.error("nearby-doctors-error", error);
       return NextResponse.json({ doctors: raw.map(toDoctor), distanceUnavailable: true }, { status: 200 });
     }
 

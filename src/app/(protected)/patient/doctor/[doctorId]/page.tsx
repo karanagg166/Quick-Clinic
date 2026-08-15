@@ -16,7 +16,8 @@ import {
   Calendar,
   Award,
   MessageCircle,
-  Stethoscope
+  Stethoscope,
+  Info
 } from "lucide-react";
 import { showToast } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +34,7 @@ export default function DoctorDetails() {
   const [newRating, setNewRating] = useState(5);
   const [ratedOnce, setRatedOnce] = useState(false);
   const [newComment, setNewComment] = useState("");
+  const [canReview, setCanReview] = useState(false);
   const [submittingRating, setSubmittingRating] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -44,7 +46,7 @@ export default function DoctorDetails() {
     const fetchDoctor = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/doctors/${doctorId}`);
+        const res = await fetch(`/api/doctors/${doctorId}`, { credentials: "include" });
         if (!res.ok) {
           throw new Error("Failed to fetch doctor details");
         }
@@ -55,7 +57,11 @@ export default function DoctorDetails() {
         setDoctor(data.doctor);
         setRating(data.rating ?? { average: 0, count: 0 });
         setComments(Array.isArray(data.comments) ? data.comments : []);
-
+        setCanReview(Boolean(data.canReview));
+        if (data.userRating) {
+          setNewRating(data.userRating);
+          setRatedOnce(true);
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
@@ -407,21 +413,33 @@ export default function DoctorDetails() {
             <p className="text-sm text-gray-500">Share your experience with this doctor</p>
           </CardHeader>
           <CardContent className="space-y-6">
+            {!canReview && (
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-sm text-amber-800 flex items-start gap-3">
+                <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-amber-900">Rating & Review Restriction</p>
+                  <p className="text-amber-700 mt-0.5">
+                    Only patients who have attended and completed an appointment with Dr. {doctor.name} can leave ratings and reviews.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Rating Section */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-700 mb-2">Your Rating</p>
-                  <StarInput value={newRating} onChange={setNewRating} disabled={ratedOnce} />
+                  <StarInput value={newRating} onChange={setNewRating} disabled={!canReview || ratedOnce} />
                   <p className="text-xs text-gray-500 mt-1">{newRating} out of 5 stars</p>
                 </div>
                 <Button
                   onClick={handleSubmitRating}
-                  disabled={ratedOnce || submittingRating}
+                  disabled={!canReview || ratedOnce || submittingRating}
                   variant={ratedOnce ? "outline" : "default"}
-                  className={ratedOnce ? "" : "bg-blue-600 hover:bg-blue-700"}
+                  className={ratedOnce ? "" : !canReview ? "opacity-50 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
                 >
-                  {ratedOnce ? "✓ Rated" : submittingRating ? "Submitting..." : "Submit Rating"}
+                  {!canReview ? "Requires Completed Appointment" : ratedOnce ? "✓ Rated" : submittingRating ? "Submitting..." : "Submit Rating"}
                 </Button>
               </div>
             </div>
@@ -433,9 +451,10 @@ export default function DoctorDetails() {
               </label>
               <textarea
                 id="comment"
-                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+                disabled={!canReview}
+                className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:bg-gray-100 disabled:cursor-not-allowed"
                 rows={4}
-                placeholder="Share your experience with this doctor. What did you like? How was the consultation?"
+                placeholder={canReview ? "Share your experience with this doctor. What did you like? How was the consultation?" : "You can write a review after completing your appointment with this doctor."}
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
               />
@@ -443,8 +462,8 @@ export default function DoctorDetails() {
                 <p className="text-xs text-gray-500">{newComment.length} characters</p>
                 <Button
                   onClick={handleSubmitComment}
-                  disabled={submittingComment || !newComment.trim()}
-                  className="bg-blue-600 hover:bg-blue-700"
+                  disabled={!canReview || submittingComment || !newComment.trim()}
+                  className={!canReview ? "opacity-50 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700"}
                 >
                   {submittingComment ? "Posting..." : "Post Review"}
                 </Button>

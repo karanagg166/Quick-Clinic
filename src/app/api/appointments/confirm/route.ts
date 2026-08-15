@@ -3,6 +3,7 @@ import { z } from "zod";
 import { confirmSlotHold } from "@/lib/booking";
 import { getAuthenticatedPatient } from "@/lib/request-auth";
 import { logAudit } from "@/lib/logger";
+import { prisma } from "@/lib/prisma";
 
 const confirmSchema = z.object({
   slotId: z.string().min(1),
@@ -30,6 +31,57 @@ export async function POST(req: NextRequest) {
       doctorId: body.data.doctorId,
       slotId: body.data.slotId,
     });
+
+    // Notify doctor of new pending appointment request
+    try {
+      const doctor = await prisma.doctor.findUnique({
+        where: { id: body.data.doctorId },
+        include: { user: true },
+      });
+      const slot = await prisma.slot.findUnique({
+        where: { id: body.data.slotId },
+      });
+      const patientUser = await prisma.user.findUnique({
+        where: { id: patient.userId },
+        include: { location: true },
+      });
+
+      if (doctor?.user?.id) {
+        const patientName = patientUser?.name || "A patient";
+        const apptDate = slot?.date ? new Date(slot.date).toISOString().split('T')[0] : "";
+        await prisma.notification.create({
+          data: {
+            userId: doctor.user.id,
+            message: `New appointment request received from ${patientName} on ${apptDate}. Please review and confirm.`,
+          },
+        });
+
+        const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
+        await fetch(`${socketServerUrl}/api/notifications/new-appointment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            doctorUserId: doctor.user.id,
+            appointmentId: appointment.id,
+            appointment: {
+              id: appointment.id,
+              patientName: patientUser?.name || "Patient",
+              patientString: patientUser?.email || "",
+              gender: patientUser?.gender || "",
+              city: patientUser?.location?.city || "N/A",
+              age: patientUser?.age || 0,
+              appointmentDate: slot?.date?.toISOString() || "",
+              appointmentTime: slot?.startTime?.toISOString() || "",
+              status: "PENDING",
+              paymentMethod: appointment.paymentMethod,
+            },
+          }),
+        }).catch(() => {});
+      }
+    } catch (e) {
+      console.warn("Non-critical notification failed:", e);
+    }
+
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (error) {
     console.error("appointment-confirm-error", error);

@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { showToast } from "@/lib/toast";
 
 
 
@@ -133,6 +134,7 @@ export default function FindDoctorsPage() {
 
   const handleNearbySearch = () => {
     if (!navigator.geolocation) {
+      showToast.error("Geolocation is not supported by your browser.");
       setDistanceUnavailable(true);
       void handleSearch().then(() => setDistanceUnavailable(true));
       return;
@@ -142,17 +144,25 @@ export default function FindDoctorsPage() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         setRequestingLocation(false);
+        showToast.success("Location acquired. Finding doctors near you...");
         void handleSearch(undefined, {
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
         });
       },
-      () => {
+      (geoError) => {
         setRequestingLocation(false);
         setDistanceUnavailable(true);
+        let msg = "Could not get your location. Please check browser permissions or search by city/state.";
+        if (geoError.code === geoError.PERMISSION_DENIED) {
+          msg = "Location access was denied. Please allow location permissions in your browser or search by city.";
+        } else if (geoError.code === geoError.TIMEOUT) {
+          msg = "Location request timed out. Please try again or search by city.";
+        }
+        showToast.error(msg);
         void handleSearch().then(() => setDistanceUnavailable(true));
       },
-      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 0 },
+      { enableHighAccuracy: true, timeout: 10_000, maximumAge: 60_000 },
     );
   };
 

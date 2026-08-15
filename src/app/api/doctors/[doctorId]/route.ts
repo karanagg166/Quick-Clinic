@@ -115,16 +115,52 @@ export const GET = async (
       patient: undefined, // Remove patient structure to match original expected shape if needed, or keep it.
     }));
 
-    // Log Access
-    const token = req.cookies.get("token")?.value;
+    // Check viewer & review eligibility
+    const authHeader = req.headers.get("authorization");
+    const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+    const cookieToken = req.cookies.get("token")?.value;
+    const token = headerToken || cookieToken;
+
     let viewerId = null;
+    let canReview = false;
+    let userRating: number | null = null;
+
     if (token) {
       const { payload } = await verifyToken(token);
-      if (payload) viewerId = (payload as any).id;
+      if (payload) {
+        viewerId = (payload as any).id;
+        try {
+          const patient = await prisma.patient.findUnique({ where: { userId: viewerId } });
+          if (patient) {
+            const completedAppointment = await prisma.appointment.findFirst({
+              where: {
+                doctorId,
+                patientId: patient.id,
+                status: "COMPLETED",
+              },
+            });
+            canReview = Boolean(completedAppointment);
+
+            const existingRating = await prisma.rating.findUnique({
+              where: {
+                doctorId_patientId: {
+                  doctorId,
+                  patientId: patient.id,
+                },
+              },
+            });
+            if (existingRating) {
+              userRating = existingRating.rating;
+            }
+          }
+        } catch (e) {
+          console.warn("Non-critical patient rating check error:", e);
+        }
+      }
     }
     await logAccess(viewerId, doctorId, "Viewed Doctor Profile");
 
-    return NextResponse.json({ doctor, rating: ratingSummary, comments }, { status: 200 });
+    return NextResponse.json({ doctor, rating: ratingSummary, comments, canReview, userRating }, { status: 200 });
   } catch (err: any) {
     console.error("doctor-get-error", err);
     return NextResponse.json(

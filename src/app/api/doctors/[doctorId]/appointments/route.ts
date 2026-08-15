@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { DoctorAppointment } from "@/types/doctor";
+import { autoExpirePastAppointments } from "@/lib/appointment-expiry";
 
 export async function GET(
   req: NextRequest,
@@ -14,6 +15,10 @@ export async function GET(
         { error: "doctorId required" },
         { status: 400 }
       );
+    }
+
+    if (process.env.NODE_ENV !== "test") {
+      autoExpirePastAppointments().catch((e) => console.warn("Auto-expire appointments warning:", e));
     }
 
     const { searchParams } = req.nextUrl;

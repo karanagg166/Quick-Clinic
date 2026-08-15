@@ -43,6 +43,24 @@ const statusConfig: Record<string, { label: string; variant: "default" | "second
     icon: Calendar,
     className: "bg-purple-500/10 text-purple-700 border-purple-500/20 hover:bg-purple-500/20",
   },
+  expired: {
+    label: "Expired",
+    variant: "destructive",
+    icon: XCircle,
+    className: "bg-gray-500/10 text-gray-700 border-gray-500/20 hover:bg-gray-500/20",
+  },
+  no_show: {
+    label: "No Show",
+    variant: "destructive",
+    icon: AlertCircle,
+    className: "bg-orange-500/10 text-orange-700 border-orange-500/20 hover:bg-orange-500/20",
+  },
+  rescheduled: {
+    label: "Rescheduled",
+    variant: "secondary",
+    icon: Clock,
+    className: "bg-indigo-500/10 text-indigo-700 border-indigo-500/20 hover:bg-indigo-500/20",
+  },
 };
 
 export default function StatusBadge({ status, className, showIcon = true }: StatusBadgeProps) {

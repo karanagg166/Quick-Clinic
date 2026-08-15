@@ -16,6 +16,9 @@ vi.mock('@/lib/prisma', () => ({
     patient: {
       findUnique: vi.fn(),
     },
+    appointment: {
+      findFirst: vi.fn(),
+    },
   },
 }));
 
@@ -63,10 +66,29 @@ describe('Doctor Rating Route', () => {
     expect(data.message).toMatch(/Rating must be between 1 and 5/i);
   });
 
-  it('POST upserts rating for patient and returns aggregate', async () => {
+  it('POST rejects rating if patient has no completed appointment with doctor', async () => {
     const token = await createToken({ id: 'u_patient' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
+    vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
+
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/rating', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}` },
+      body: JSON.stringify({ rating: 5 }),
+    });
+
+    const res = await POST(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
+    expect(res.status).toBe(403);
+    const data = await res.json();
+    expect(data.message).toMatch(/only rate a doctor after completing an appointment/i);
+  });
+
+  it('POST upserts rating for patient with completed appointment and returns aggregate', async () => {
+    const token = await createToken({ id: 'u_patient' });
+    vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
+    vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
+    vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({ id: 'appt_1', status: 'COMPLETED' } as any);
     vi.mocked(prisma.rating.upsert).mockResolvedValueOnce({} as any);
     vi.mocked(prisma.rating.aggregate).mockResolvedValueOnce({
       _avg: { rating: 4.8 },

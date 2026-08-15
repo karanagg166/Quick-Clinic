@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { PatientAppointment } from "@/types/patient";
 import { getAuthenticatedPatient } from "@/lib/request-auth";
+import { autoExpirePastAppointments } from "@/lib/appointment-expiry";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
@@ -9,6 +10,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
 
     if (!patientId) {
       return NextResponse.json({ error: "patientId required" }, { status: 400 });
+    }
+
+    if (process.env.NODE_ENV !== "test") {
+      autoExpirePastAppointments().catch((e) => console.warn("Auto-expire appointments warning:", e));
     }
 
     const { searchParams } = req.nextUrl;
