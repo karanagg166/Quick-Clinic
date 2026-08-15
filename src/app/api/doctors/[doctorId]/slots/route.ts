@@ -24,6 +24,37 @@ function getDayNameUTC(date: Date): string {
   return days[date.getUTCDay()];
 }
 
+// Helper: format slots with real-time appointment availability
+function formatSlotsWithAvailability(slots: any[]) {
+  return slots.map((slot) => {
+    let status = slot.status;
+
+    if (slot.appointment) {
+      const apptStatus = slot.appointment.status;
+      if (apptStatus === "COMPLETED" || apptStatus === "NO_SHOW" || apptStatus === "EXPIRED") {
+        status = "UNAVAILABLE";
+      } else if (apptStatus === "CONFIRMED" || apptStatus === "PENDING") {
+        status = "BOOKED";
+      } else if (apptStatus === "CANCELLED") {
+        if (status !== "ON_LEAVE") {
+          status = "AVAILABLE";
+        }
+      }
+    }
+
+    return {
+      id: slot.id,
+      doctorId: slot.doctorId,
+      date: slot.date,
+      startTime: slot.startTime,
+      endTime: slot.endTime,
+      status,
+      heldByPatientId: slot.heldByPatientId,
+      heldAt: slot.heldAt,
+    };
+  });
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ doctorId: string }> }
@@ -65,11 +96,16 @@ export async function GET(
         doctorId,
         date,
       },
+      include: {
+        appointment: {
+          select: { id: true, status: true },
+        },
+      },
       orderBy: { startTime: "asc" },
     });
 
     if (existingSlots.length > 0) {
-      return NextResponse.json({ slots: existingSlots }, { status: 200 });
+      return NextResponse.json({ slots: formatSlotsWithAvailability(existingSlots) }, { status: 200 });
     }
 
     // Fetch doctor's schedule
@@ -162,10 +198,15 @@ export async function GET(
         doctorId,
         date,
       },
+      include: {
+        appointment: {
+          select: { id: true, status: true },
+        },
+      },
       orderBy: { startTime: "asc" },
     });
 
-    return NextResponse.json({ slots: generatedSlots }, { status: 201 });
+    return NextResponse.json({ slots: formatSlotsWithAvailability(generatedSlots) }, { status: 201 });
   } catch (err: any) {
     console.error("GET Slots Error:", err);
     return NextResponse.json(

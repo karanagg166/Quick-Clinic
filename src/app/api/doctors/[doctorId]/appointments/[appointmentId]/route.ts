@@ -177,7 +177,6 @@ export async function PATCH(
     // Update slot status and process refunds based on appointment status
     if (status && status !== appointmentBefore.status) {
       if (status === 'CANCELLED') {
-        // If cancelled, make slot available again
         await prisma.slot.update({
           where: { id: appointmentBefore.slotId },
           data: { status: 'AVAILABLE' },
@@ -226,9 +225,15 @@ export async function PATCH(
         // If confirmed, ensure slot is marked as booked
         await prisma.slot.update({
           where: { id: appointmentBefore.slotId },
-          data: { status: 'BOOKED' },
+          data: { status: 'BOOKED', heldByPatientId: null, heldAt: null },
         });
       } else if (status === 'COMPLETED' && appointmentBefore.status !== 'COMPLETED') {
+        // When appointment is completed, mark slot UNAVAILABLE so it is consumed and never rebooked
+        await prisma.slot.update({
+          where: { id: appointmentBefore.slotId },
+          data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
+        });
+
         // When appointment is completed, transfer payment to doctor's balance if payment was online
         if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
           const doctorFees = appointmentBefore.doctor.fees;
@@ -243,6 +248,12 @@ export async function PATCH(
             },
           });
         }
+      } else if (status === 'NO_SHOW') {
+        // When no-show, mark slot UNAVAILABLE (consumed)
+        await prisma.slot.update({
+          where: { id: appointmentBefore.slotId },
+          data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
+        });
       }
     }
 

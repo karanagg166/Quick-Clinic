@@ -98,6 +98,17 @@ export async function expireDoctorHolds(doctorId: string) {
 export async function createSlotHold(slotId: string, doctorId: string, patientId: string) {
   await expireSlotHolds(slotId);
 
+  // Verify slot has no active/completed appointment
+  const existingActiveAppt = await prisma.appointment.findFirst({
+    where: {
+      slotId,
+      status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
+    },
+  });
+  if (existingActiveAppt) {
+    return { kind: "conflict" as const };
+  }
+
   const token = randomUUID();
   const client = getRedis();
 
@@ -149,6 +160,32 @@ export async function confirmSlotHold(input: {
         data: { status: "BOOKED", heldByPatientId: null, heldAt: null },
       });
       if (transitioned.count !== 1) throw new Error("SLOT_UNAVAILABLE");
+
+      // Check if an appointment was previously associated with this slot
+      const existingAppt = await tx.appointment.findUnique({
+        where: { slotId: input.slotId },
+      });
+
+      if (existingAppt) {
+        // If an appointment exists and is not CANCELLED, prevent booking
+        if (existingAppt.status !== "CANCELLED") {
+          throw new Error("SLOT_UNAVAILABLE");
+        }
+
+        // If previously cancelled, re-assign the appointment to the new booking
+        return tx.appointment.update({
+          where: { id: existingAppt.id },
+          data: {
+            doctorId: input.doctorId,
+            patientId: input.patientId,
+            status: "CONFIRMED",
+            paymentMethod: input.paymentMethod,
+            transactionId: input.transactionId ?? null,
+            isAppointmentOffline: input.paymentMethod === "OFFLINE",
+            bookedAt: new Date(),
+          },
+        });
+      }
 
       return tx.appointment.create({
         data: {

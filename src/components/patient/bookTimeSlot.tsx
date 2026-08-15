@@ -147,28 +147,71 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {loading ? <div className="text-center py-8 space-y-4"><Skeleton className="h-12 w-12 rounded-full mx-auto" /><Skeleton className="h-4 w-48 mx-auto" /></div>
-          : slots.length === 0 ? <div className="text-center py-8"><p className="text-muted-foreground text-lg">No slots available for this date</p></div>
-          : <div className="space-y-6">
-            <div><h3 className="text-xl font-semibold mb-3">Available Time Slots</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
-                {slots.map((slot) => <Button key={slot.id} onClick={() => { setSelectedSlot(slot.id); setShowPaymentOptions(false); }}
-                  disabled={slot.status !== 'AVAILABLE' || booking} variant={selectedSlot === slot.id ? 'default' : 'outline'}
-                  className={slot.status === 'AVAILABLE' ? selectedSlot === slot.id ? 'bg-blue-600 hover:bg-blue-700' : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-500' : 'opacity-50 cursor-not-allowed'}>
-                  {formatTime(slot.startTime)}
-                </Button>)}
+          : slots.filter((slot) => slot.status === 'AVAILABLE' || (activeHold && slot.id === activeHold.slotId)).length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground text-lg">No available slots for this date</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-xl font-semibold mb-3">Available Time Slots</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                  {slots
+                    .filter((slot) => slot.status === 'AVAILABLE' || (activeHold && slot.id === activeHold.slotId))
+                    .map((slot) => (
+                      <Button
+                        key={slot.id}
+                        onClick={() => {
+                          setSelectedSlot(slot.id);
+                          setShowPaymentOptions(false);
+                        }}
+                        disabled={booking}
+                        variant={selectedSlot === slot.id ? 'default' : 'outline'}
+                        className={
+                          selectedSlot === slot.id
+                            ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
+                            : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-500'
+                        }
+                      >
+                        {formatTime(slot.startTime)}
+                      </Button>
+                    ))}
+                </div>
+              </div>
+              {selectedSlot && (
+                <div className="pt-4 border-t space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <p className="text-muted-foreground">Selected Time:</p>
+                      <p className="text-xl font-semibold">
+                        {formatTime(slots.find((slot) => slot.id === selectedSlot)?.startTime || '')}
+                      </p>
+                    </div>
+                    {!showPaymentOptions ? (
+                      <Button onClick={() => setShowPaymentOptions(true)} size="lg" disabled={booking}>
+                        Proceed to Book
+                      </Button>
+                    ) : (
+                      <div className="flex flex-wrap gap-3">
+                        <Button onClick={() => void handleOnlinePayment(selectedSlot)} disabled={booking} size="lg" className="bg-purple-600 hover:bg-purple-700">
+                          {booking ? 'Booking...' : 'Pay Online'}
+                        </Button>
+                        <Button onClick={() => void handleOfflineBooking(selectedSlot)} disabled={booking} size="lg" className="bg-green-600 hover:bg-green-700">
+                          {booking ? 'Booking...' : 'Pay at Clinic'}
+                        </Button>
+                        <Button onClick={() => { void releaseHold(activeHold); setShowPaymentOptions(false); }} disabled={booking} variant="ghost" size="lg">
+                          Cancel
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="pt-4 border-t text-sm text-muted-foreground">
+                A selected slot is held for up to 10 minutes only while payment is in progress.
               </div>
             </div>
-            {selectedSlot && <div className="pt-4 border-t space-y-4"><div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div><p className="text-muted-foreground">Selected Time:</p><p className="text-xl font-semibold">{formatTime(slots.find((slot) => slot.id === selectedSlot)?.startTime || '')}</p></div>
-              {!showPaymentOptions ? <Button onClick={() => setShowPaymentOptions(true)} size="lg" disabled={booking}>Proceed to Book</Button>
-                : <div className="flex flex-wrap gap-3">
-                  <Button onClick={() => void handleOnlinePayment(selectedSlot)} disabled={booking} size="lg" className="bg-purple-600 hover:bg-purple-700">{booking ? 'Booking...' : 'Pay Online'}</Button>
-                  <Button onClick={() => void handleOfflineBooking(selectedSlot)} disabled={booking} size="lg" className="bg-green-600 hover:bg-green-700">{booking ? 'Booking...' : 'Pay at Clinic'}</Button>
-                  <Button onClick={() => { void releaseHold(activeHold); setShowPaymentOptions(false); }} disabled={booking} variant="ghost" size="lg">Cancel</Button>
-                </div>}
-            </div></div>}
-            <div className="pt-4 border-t text-sm text-muted-foreground">A selected slot is held for up to 10 minutes only while payment is in progress.</div>
-          </div>}
+          )}
         {error && <div className="mt-6 p-4 bg-destructive/10 border border-destructive text-destructive rounded-lg">{error}</div>}
       </CardContent>
     </Card>
