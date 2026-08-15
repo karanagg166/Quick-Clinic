@@ -130,13 +130,14 @@ export async function POST(
       );
     }
 
-    // Create withdrawal request
+    // Create withdrawal request - marked as COMPLETED instantly
     const withdrawal = await prisma.withdrawal.create({
       data: {
         doctorId,
         amount: amountInPaise,
         currency: "INR",
-        status: "PENDING",
+        status: "COMPLETED",
+        processedAt: new Date(),
       },
     });
 

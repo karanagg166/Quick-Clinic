@@ -18,6 +18,7 @@ export default function AppointmentPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [startingChat, setStartingChat] = useState<boolean>(false);
+    const [cancelling, setCancelling] = useState<boolean>(false);
 
     useEffect(() => {
         const fetchAppointment = async () => {
@@ -66,6 +67,40 @@ export default function AppointmentPage() {
         );
     }
 
+    const canCancel = appointment?.status === 'PENDING' || appointment?.status === 'CONFIRMED';
+
+    const handleCancelAppointment = async () => {
+        if (!patientId || cancelling || !appointmentId) return;
+        if (!confirm('Are you sure you want to cancel this appointment? If paid online, a refund will be processed.')) {
+            return;
+        }
+
+        try {
+            setCancelling(true);
+            const res = await fetch(`/api/patients/${patientId}/appointments/${appointmentId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+            });
+
+            if (!res.ok) {
+                const errData = await res.json().catch(() => ({}));
+                throw new Error(errData?.error || 'Failed to cancel appointment');
+            }
+
+            const data = await res.json();
+            showToast.success(
+                data.refundProcessed
+                    ? 'Appointment cancelled successfully. Refund will be processed to your payment method.'
+                    : 'Appointment cancelled successfully.'
+            );
+            setAppointment((prev) => prev ? { ...prev, status: 'CANCELLED' } : null);
+        } catch (e: any) {
+            showToast.error(e?.message || 'Failed to cancel appointment');
+        } finally {
+            setCancelling(false);
+        }
+    };
+
     const startConversation = async () => {
         try {
             if (!user?.id) {
@@ -73,7 +108,7 @@ export default function AppointmentPage() {
                 return;
             }
 
-            const doctorUserId = appointment.doctor?.user?.id;
+            const doctorUserId = appointment?.doctor?.user?.id;
             if (!doctorUserId) {
                 showToast.warning('Doctor details are incomplete. Please try again.');
                 return;
@@ -117,16 +152,15 @@ export default function AppointmentPage() {
             {/* Appointment Core Info */}
             <div className="bg-white rounded-lg shadow-md border p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Appointment Information</h2>
-                <div className="grid grid-cols-2 gap-4">
-                    <p><span className="font-semibold">ID:</span> {appointment.id}</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <p><span className="font-semibold">Status:</span> <span className={`px-2 py-1 rounded text-white ${appointment.status === 'CONFIRMED' ? 'bg-green-500' : appointment.status === 'PENDING' ? 'bg-yellow-500' : appointment.status === 'CANCELLED' || appointment.status === 'EXPIRED' ? 'bg-red-500' : 'bg-blue-500'}`}>{appointment.status}</span></p>
                     <p><span className="font-semibold">Booked At:</span> {new Date(appointment.bookedAt).toLocaleString()}</p>
-                    <p><span className="font-semibold">Payment Method:</span> {appointment.paymentMethod}</p>
-                    <p><span className="font-semibold">Appointment Mode:</span> {appointment.isAppointmentOffline ? 'Offline' : 'Online'}</p>
+                    <p><span className="font-semibold">Payment:</span> <span className="font-medium text-gray-700">{appointment.paymentMethod === 'ONLINE' ? 'Paid Online' : 'Pay at Clinic (Offline)'}</span></p>
+                    <p><span className="font-semibold">Consultation Mode:</span> <span className="font-medium text-gray-700">{appointment.isAppointmentOffline ? '🏥 In-Clinic (Offline)' : '💻 Video / Online'}</span></p>
                     {appointment.transactionId && <p><span className="font-semibold">Transaction ID:</span> {appointment.transactionId}</p>}
-                    {appointment.notes && <p><span className="font-semibold">Notes:</span> {appointment.notes}</p>}
+                    {appointment.notes && <p className="col-span-full"><span className="font-semibold">Notes:</span> {appointment.notes}</p>}
                 </div>
-                <div className="mt-4 flex gap-3">
+                <div className="mt-6 flex flex-wrap gap-3 pt-4 border-t">
                     <button
                         type="button"
                         onClick={startConversation}
@@ -135,6 +169,16 @@ export default function AppointmentPage() {
                     >
                         {startingChat ? 'Starting...' : '💬 Start conversation with doctor'}
                     </button>
+                    {canCancel && (
+                        <button
+                            type="button"
+                            onClick={handleCancelAppointment}
+                            disabled={cancelling}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 text-white font-medium rounded-md shadow hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed transition"
+                        >
+                            {cancelling ? 'Cancelling...' : '🔴 Cancel Appointment'}
+                        </button>
+                    )}
                 </div>
             </div>
 

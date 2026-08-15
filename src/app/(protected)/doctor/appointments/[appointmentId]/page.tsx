@@ -26,12 +26,10 @@ export default function DoctorAppointmentDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [startingChat, setStartingChat] = useState(false);
   const [statusValue, setStatusValue] = useState<string>('');
-  const [paymentMethod, setPaymentMethod] = useState<string>('');
-  const [isOffline, setIsOffline] = useState<boolean>(false);
   const [saving, setSaving] = useState<boolean>(false);
+  const [cancellingAppt, setCancellingAppt] = useState<boolean>(false);
 
   const statusOptions = ['PENDING', 'CONFIRMED', 'COMPLETED', 'CANCELLED', 'NO_SHOW', 'RESCHEDULED', 'EXPIRED'];
-  const paymentOptions = ['OFFLINE', 'ONLINE'];
 
   useEffect(() => {
     const fetchAppointment = async () => {
@@ -42,14 +40,11 @@ export default function DoctorAppointmentDetailPage() {
       }
       try {
         setLoading(true);
-        setError(null);
         const res = await fetch(`/api/doctors/${doctorId}/appointments/${appointmentId}`);
         if (!res.ok) throw new Error('Failed to fetch appointment');
         const data: AppointmentDetail = await res.json();
         setAppointment(data);
         setStatusValue(String(data.status));
-        setPaymentMethod(String(data.paymentMethod));
-        setIsOffline(Boolean(data.isAppointmentOffline));
       } catch (e: any) {
         setError(e?.message || 'Something went wrong');
       } finally {
@@ -63,13 +58,10 @@ export default function DoctorAppointmentDetailPage() {
     if (!doctorId || !appointmentId) return;
     try {
       setSaving(true);
-      const params = new URLSearchParams();
-      if (statusValue) params.append('status', statusValue);
-      if (paymentMethod) params.append('paymentMethod', paymentMethod);
-      params.append('isAppointmentOffline', String(isOffline));
-
-      const res = await fetch(`/api/doctors/${doctorId}/appointments/${appointmentId}?${params.toString()}`, {
+      const res = await fetch(`/api/doctors/${doctorId}/appointments/${appointmentId}`, {
         method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: statusValue }),
       });
 
       if (!res.ok) {
@@ -82,13 +74,38 @@ export default function DoctorAppointmentDetailPage() {
         const data: AppointmentDetail = await fresh.json();
         setAppointment(data);
         setStatusValue(String(data.status));
-        setPaymentMethod(String(data.paymentMethod));
-        setIsOffline(Boolean(data.isAppointmentOffline));
       }
+      showToast.success('Appointment status updated successfully');
     } catch (err: any) {
       showToast.error(err?.message || 'Could not update appointment.');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const isCancellable = appointment?.status === 'PENDING' || appointment?.status === 'CONFIRMED';
+
+  const handleDirectCancel = async () => {
+    if (!doctorId || !appointmentId || cancellingAppt) return;
+    if (!confirm('Are you sure you want to cancel this appointment?')) return;
+    try {
+      setCancellingAppt(true);
+      const res = await fetch(`/api/doctors/${doctorId}/appointments/${appointmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: 'CANCELLED' }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to cancel appointment');
+      }
+      showToast.success('Appointment cancelled successfully.');
+      setAppointment((prev) => prev ? { ...prev, status: 'CANCELLED' } : null);
+      setStatusValue('CANCELLED');
+    } catch (e: any) {
+      showToast.error(e?.message || 'Failed to cancel appointment');
+    } finally {
+      setCancellingAppt(false);
     }
   };
 
@@ -179,8 +196,7 @@ export default function DoctorAppointmentDetailPage() {
           <CardTitle>Appointment Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <p><span className="font-semibold">ID:</span> {appointment.id}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <p className="flex items-center gap-2">
               <span className="font-semibold">Status:</span>
               <Badge variant={getStatusBadgeVariant(appointment.status)}>
@@ -188,68 +204,30 @@ export default function DoctorAppointmentDetailPage() {
               </Badge>
             </p>
             <p><span className="font-semibold">Booked At:</span> {new Date(appointment.bookedAt).toLocaleString()}</p>
-            <p><span className="font-semibold">Payment Method:</span> {appointment.paymentMethod}</p>
-            <p><span className="font-semibold">Appointment Mode:</span> {appointment.isAppointmentOffline ? 'Offline' : 'Online'}</p>
+            <p><span className="font-semibold">Payment:</span> <span className="font-medium text-gray-700">{appointment.paymentMethod === 'ONLINE' ? 'Paid Online' : 'Pay at Clinic (Offline)'}</span></p>
+            <p><span className="font-semibold">Consultation Mode:</span> <span className="font-medium text-gray-700">{appointment.isAppointmentOffline ? '🏥 In-Clinic (Offline)' : '💻 Video / Online'}</span></p>
             {appointment.transactionId && <p><span className="font-semibold">Transaction ID:</span> {appointment.transactionId}</p>}
-            {appointment.notes && <p><span className="font-semibold">Notes:</span> {appointment.notes}</p>}
+            {appointment.notes && <p className="col-span-full"><span className="font-semibold">Notes:</span> {appointment.notes}</p>}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Status</label>
-              <div className="flex flex-wrap gap-2">
-                {statusOptions.map((option) => (
-                  <Button
-                    key={option}
-                    type="button"
-                    onClick={() => setStatusValue(option)}
-                    variant={statusValue === option ? "default" : "outline"}
-                    size="sm"
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-            </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Payment Method</label>
-              <div className="flex flex-wrap gap-2">
-                {paymentOptions.map((option) => (
-                  <Button
-                    key={option}
-                    type="button"
-                    onClick={() => setPaymentMethod(option)}
-                    variant={paymentMethod === option ? "default" : "outline"}
-                    size="sm"
-                    className={paymentMethod === option ? "bg-emerald-600 hover:bg-emerald-700" : ""}
-                  >
-                    {option}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium">Mode</label>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { label: 'Offline', value: true },
-                  { label: 'Online', value: false },
-                ].map((opt) => (
-                  <Button
-                    key={opt.label}
-                    type="button"
-                    onClick={() => setIsOffline(opt.value)}
-                    variant={isOffline === opt.value ? "default" : "outline"}
-                    size="sm"
-                    className={isOffline === opt.value ? "bg-purple-600 hover:bg-purple-700" : ""}
-                  >
-                    {opt.label}
-                  </Button>
-                ))}
-              </div>
+          <div className="pt-4 border-t space-y-3">
+            <label className="text-sm font-semibold text-gray-700 block">Update Appointment Status</label>
+            <div className="flex flex-wrap gap-2">
+              {statusOptions.map((option) => (
+                <Button
+                  key={option}
+                  type="button"
+                  onClick={() => setStatusValue(option)}
+                  variant={statusValue === option ? "default" : "outline"}
+                  size="sm"
+                  className={statusValue === option ? "bg-blue-600 hover:bg-blue-700 text-white" : ""}
+                >
+                  {option}
+                </Button>
+              ))}
             </div>
           </div>
+
           <div className="flex gap-3 flex-wrap pt-4 border-t">
             <Button
               type="button"
@@ -266,6 +244,16 @@ export default function DoctorAppointmentDetailPage() {
             >
               {saving ? 'Saving...' : 'Save changes'}
             </Button>
+            {isCancellable && (
+              <Button
+                type="button"
+                onClick={handleDirectCancel}
+                disabled={cancellingAppt}
+                variant="destructive"
+              >
+                {cancellingAppt ? 'Cancelling...' : '🔴 Cancel Appointment'}
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

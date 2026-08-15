@@ -9,6 +9,8 @@ import { Badge } from '@/components/ui/badge';
 import { showToast } from '@/lib/toast';
 import Link from 'next/link';
 
+import { useUserStore } from '@/store/userStore';
+
 interface Message {
   id: string;
   text: string;
@@ -23,7 +25,7 @@ interface ChatBarProps {
   userId: string;
 }
 
-function renderFormattedMessage(text: string, isMe: boolean) {
+function renderFormattedMessage(text: string, isMe: boolean, currentRole?: string) {
   // Regex to match URLs, internal routes (/patient/..., /doctor/...), or markdown links [label](url)
   const pattern = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+)|(\/(?:patient|doctor)\/[a-zA-Z0-9\-_/]+)/g;
 
@@ -38,9 +40,40 @@ function renderFormattedMessage(text: string, isMe: boolean) {
 
     if (match[1] && match[2]) {
       const label = match[1];
-      const url = match[2];
+      let url = match[2];
       const isInternal = url.startsWith('/');
-      if (isInternal) {
+      
+      // Auto-adapt route if logged-in user is doctor vs patient
+      if (currentRole === 'DOCTOR' && url.startsWith('/patient/appointments/')) {
+        url = url.replace('/patient/appointments/', '/doctor/appointments/');
+      } else if (currentRole === 'PATIENT' && url.startsWith('/doctor/appointments/')) {
+        url = url.replace('/doctor/appointments/', '/patient/appointments/');
+      }
+
+      const isCancelAction = /cancel/i.test(label) || /cancel/i.test(url);
+      const isManageAction = /manage|view|appointment|review|rate/i.test(label);
+
+      if (isInternal && (isCancelAction || isManageAction)) {
+        elements.push(
+          <span key={match.index} className="block my-2">
+            <Link href={url}>
+              <Button
+                variant={isCancelAction ? "destructive" : "default"}
+                size="sm"
+                className={`text-xs font-semibold px-3 py-1.5 shadow-sm transition active:scale-95 ${
+                  isCancelAction
+                    ? 'bg-red-600 hover:bg-red-700 text-white'
+                    : isMe
+                    ? 'bg-white text-gray-900 hover:bg-gray-100'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                }`}
+              >
+                {label}
+              </Button>
+            </Link>
+          </span>
+        );
+      } else if (isInternal) {
         elements.push(
           <Link
             key={match.index}
@@ -83,20 +116,43 @@ function renderFormattedMessage(text: string, isMe: boolean) {
         </a>
       );
     } else if (match[4]) {
-      const route = match[4];
-      elements.push(
-        <Link
-          key={match.index}
-          href={route}
-          className={`inline-flex items-center gap-1 font-semibold underline underline-offset-2 px-1.5 py-0.5 rounded text-xs transition-colors ${
-            isMe
-              ? 'bg-white/20 text-white hover:bg-white/30'
-              : 'bg-primary/15 text-primary hover:bg-primary/25'
-          }`}
-        >
-          {route}
-        </Link>
-      );
+      let route = match[4];
+      if (currentRole === 'DOCTOR' && route.startsWith('/patient/appointments')) {
+        route = route.replace('/patient/appointments', '/doctor/appointments');
+      } else if (currentRole === 'PATIENT' && route.startsWith('/doctor/appointments')) {
+        route = route.replace('/doctor/appointments', '/patient/appointments');
+      }
+
+      const isAppointmentsRoute = route.includes('/appointments');
+      if (isAppointmentsRoute) {
+        elements.push(
+          <span key={match.index} className="block my-1.5">
+            <Link href={route}>
+              <Button
+                variant={isMe ? "secondary" : "default"}
+                size="sm"
+                className="text-xs font-semibold px-3 py-1 shadow-sm"
+              >
+                📋 View Appointments
+              </Button>
+            </Link>
+          </span>
+        );
+      } else {
+        elements.push(
+          <Link
+            key={match.index}
+            href={route}
+            className={`inline-flex items-center gap-1 font-semibold underline underline-offset-2 px-1.5 py-0.5 rounded text-xs transition-colors ${
+              isMe
+                ? 'bg-white/20 text-white hover:bg-white/30'
+                : 'bg-primary/15 text-primary hover:bg-primary/25'
+            }`}
+          >
+            {route}
+          </Link>
+        );
+      }
     }
 
     lastIndex = pattern.lastIndex;
@@ -110,6 +166,7 @@ function renderFormattedMessage(text: string, isMe: boolean) {
 }
 
 export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProps) {
+  const currentRole = useUserStore((s) => s.user?.role);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
@@ -386,7 +443,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
                     </p>
                   )}
                   <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
-                    {renderFormattedMessage(message.text, isMe)}
+                    {renderFormattedMessage(message.text, isMe, currentRole)}
                   </div>
                   <p className={`text-[10px] mt-1 text-right ${
                     isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'

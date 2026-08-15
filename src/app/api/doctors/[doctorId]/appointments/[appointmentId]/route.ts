@@ -168,17 +168,13 @@ export async function PATCH(
 
     const data: Record<string, any> = {};
     if (status) data.status = status;
-    if (paymentMethod) data.paymentMethod = paymentMethod;
-    if (isAppointmentOffline !== undefined) {
-      data.isAppointmentOffline = isAppointmentOffline;
-    }
 
     const updatedAppointment = await prisma.appointment.update({
       where: { id: appointmentId },
       data,
     });
 
-    // Update slot status based on appointment status
+    // Update slot status and process refunds based on appointment status
     if (status && status !== appointmentBefore.status) {
       if (status === 'CANCELLED') {
         // If cancelled, make slot available again
@@ -186,6 +182,46 @@ export async function PATCH(
           where: { id: appointmentBefore.slotId },
           data: { status: 'AVAILABLE' },
         });
+
+        // Process refund if payment was online
+        if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
+          try {
+            const patientUserId = appointmentBefore.patient.user.id;
+            const payment = await prisma.payment.findFirst({
+              where: {
+                razorpayPaymentId: appointmentBefore.transactionId,
+                userId: patientUserId,
+                status: 'SUCCESS',
+              },
+            });
+
+            if (payment && payment.razorpayPaymentId) {
+              if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+                const RazorpayModule = await import('razorpay');
+                const Razorpay = RazorpayModule.default;
+                const razorpay = new Razorpay({
+                  key_id: process.env.RAZORPAY_KEY_ID,
+                  key_secret: process.env.RAZORPAY_KEY_SECRET,
+                });
+
+                await razorpay.payments.refund(payment.razorpayPaymentId, {
+                  amount: payment.amount,
+                  notes: {
+                    reason: 'Appointment cancelled by doctor',
+                    appointmentId: appointmentId,
+                  },
+                });
+
+                await prisma.payment.update({
+                  where: { id: payment.id },
+                  data: { status: 'REFUNDED' },
+                });
+              }
+            }
+          } catch (refundError) {
+            console.error('Doctor cancellation refund error:', refundError);
+          }
+        }
       } else if (status === 'CONFIRMED') {
         // If confirmed, ensure slot is marked as booked
         await prisma.slot.update({
@@ -244,7 +280,9 @@ export async function PATCH(
         } else if (status === 'NO_SHOW') {
           chatText = `⚠️ Missed Appointment (Never Showed Up)\n\nWe noticed you were unable to attend your scheduled appointment with Dr. ${doctorName} on ${apptDate}.\n\n👉 Need to rebook a new appointment? [Click here to select a new slot](/patient/doctor/${doctorId})`;
         } else if (status === 'CANCELLED') {
-          chatText = `❌ Appointment Cancelled\n\nYour appointment with Dr. ${doctorName} on ${apptDate} has been cancelled.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
+          chatText = appointmentBefore.paymentMethod === 'ONLINE'
+            ? `❌ Appointment Cancelled\n\nYour appointment with Dr. ${doctorName} on ${apptDate} has been cancelled. A full refund has been initiated to your original payment method.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`
+            : `❌ Appointment Cancelled\n\nYour appointment with Dr. ${doctorName} on ${apptDate} has been cancelled.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
         }
 
         if (chatText) {
@@ -273,7 +311,9 @@ export async function PATCH(
         patientActionHref = `/patient/doctor/${doctorId}`;
         patientActionLabel = 'Book another visit';
       } else if (status === 'CANCELLED') {
-        patientNotificationMessage = `Your appointment on ${apptDate} with Dr. ${doctorName} has been cancelled.`;
+        patientNotificationMessage = appointmentBefore.paymentMethod === 'ONLINE'
+          ? `Your appointment on ${apptDate} with Dr. ${doctorName} was cancelled. A full refund has been initiated to your payment method.`
+          : `Your appointment on ${apptDate} with Dr. ${doctorName} has been cancelled.`;
       }
 
       try {

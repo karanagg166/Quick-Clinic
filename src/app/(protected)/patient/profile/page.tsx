@@ -9,6 +9,7 @@ import { showToast } from "@/lib/toast";
 import { useUserStore } from "@/store/userStore";
 import { AccountDetails } from "@/components/patient/profile/AccountDetails";
 import { MedicalDetails } from "@/components/patient/profile/MedicalDetails";
+import { BankDetailsCard } from "@/components/patient/profile/BankDetailsCard";
 import type { PatientProfileFormData, PatientMedicalData } from "@/types/patientProfile";
 
 export default function PatientProfilePage() {
@@ -243,6 +244,8 @@ export default function PatientProfilePage() {
 						</Button>
 					</div>
 				</form>
+
+				<BankDetailsCard userId={userId} />
 			</div>
 		</div>
 	);

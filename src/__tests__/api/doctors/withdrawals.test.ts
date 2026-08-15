@@ -122,7 +122,8 @@ describe('Doctor Withdrawals Route', () => {
       doctorId: 'doc_1',
       amount: 50000,
       currency: 'INR',
-      status: 'PENDING',
+      status: 'COMPLETED',
+      processedAt: new Date(),
     } as any);
 
     vi.mocked(prisma.doctor.update).mockResolvedValueOnce({} as any);

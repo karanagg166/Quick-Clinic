@@ -52,13 +52,14 @@ export async function GET(
         }),
       ]);
 
-    // Simple wellness score calculation (0-100)
+    // Simple wellness score calculation (0-100) for backward compatibility
     const wellnessScore = Math.min(100, Math.max(0, completedAppointments * 10));
 
     return NextResponse.json({
       upcomingAppointments,
       assignedDoctors,
       pendingApprovals,
+      completedAppointments,
       wellnessScore,
     }, { status: 200 });
   } catch (error: any) {

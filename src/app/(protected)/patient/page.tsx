@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, HeartPulse, Clock3, TrendingUp } from "lucide-react";
+import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, CheckCircle2, Clock3 } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import UpcomingAppointmentsSection from "@/components/patient/upcomingAppointmentsSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -14,7 +14,7 @@ interface StatsData {
   upcomingAppointments: number;
   assignedDoctors: number;
   pendingApprovals: number;
-  wellnessScore: number;
+  completedAppointments?: number;
 }
 
 export default function PatientDashboard() {
@@ -68,11 +68,11 @@ export default function PatientDashboard() {
       textColor: "text-amber-600" 
     },
     { 
-      label: "Wellness Score", 
-      value: loading ? "--" : `${statsData?.wellnessScore || 0}/100`, 
-      icon: HeartPulse, 
-      bgColor: "bg-rose-50", 
-      textColor: "text-rose-600" 
+      label: "Completed Visits", 
+      value: loading ? "--" : (statsData?.completedAppointments ?? 0).toString(), 
+      icon: CheckCircle2, 
+      bgColor: "bg-indigo-50", 
+      textColor: "text-indigo-600" 
     },
   ];
 
