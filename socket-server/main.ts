@@ -42,31 +42,51 @@ const prisma = new PrismaClient({
 }) as PrismaClientType;
 
 // CORS configuration
-// Normalize frontend URL by removing trailing slash to avoid CORS mismatches
-const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
-// Create array of allowed origins (with and without trailing slash for compatibility)
-const allowedOrigins = [frontendUrl, `${frontendUrl}/`];
+const envFrontendUrls = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map((u) => u.trim().replace(/\/$/, ''))
+  .filter(Boolean);
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+const defaultAllowedOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+  'https://quick-clinic-nine.vercel.app',
+  'https://quick-clinic.vercel.app',
+];
 
-    // Normalize origin by removing trailing slash for comparison
-    const normalizedOrigin = origin.replace(/\/$/, '');
+const allowedOriginsSet = new Set([...envFrontendUrls, ...defaultAllowedOrigins]);
 
-    if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+function isOriginAllowed(origin?: string): boolean {
+  if (!origin) return true;
+  const normalized = origin.replace(/\/$/, '');
+  if (allowedOriginsSet.has(normalized)) return true;
+  if (/^https:\/\/.*\.vercel\.app$/.test(normalized)) return true;
+  if (/^http:\/\/localhost(:\d+)?$/.test(normalized)) return true;
+  if (/^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalized)) return true;
+  return false;
+}
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
+    credentials: true,
+  })
+);
 
 app.use(express.json());
 
-// Health check endpoint
+// Root & Health check endpoints
+app.get('/', (req: express.Request, res: express.Response) => {
+  res.json({ status: 'ok', service: 'quick-clinic-socket-server' });
+});
+
 app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
@@ -75,16 +95,10 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 const io = new Server(httpServer, {
   cors: {
     origin: (origin, callback) => {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      if (!origin) return callback(null, true);
-
-      // Normalize origin by removing trailing slash for comparison
-      const normalizedOrigin = origin.replace(/\/$/, '');
-
-      if (normalizedOrigin === frontendUrl || allowedOrigins.includes(origin)) {
+      if (isOriginAllowed(origin)) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(null, false);
       }
     },
     methods: ['GET', 'POST'],
@@ -301,5 +315,5 @@ const HOST = process.env.HOST || '0.0.0.0';
 httpServer.listen(PORT, HOST, () => {
   console.log(`🚀 Socket.IO server running on ${HOST}:${PORT}`);
   console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
-  console.log(`🌐 Frontend allowed from: ${frontendUrl}`);
+  console.log(`🌐 Allowed origins: ${Array.from(allowedOriginsSet).join(', ')}`);
 });

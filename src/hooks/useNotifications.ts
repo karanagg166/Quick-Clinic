@@ -37,14 +37,13 @@ export function useNotifications() {
       auth: {
         userId, // Only userId, no relationId for notifications
       },
-      transports: ['polling'], // Use polling only to avoid WebSocket upgrade issues
+      transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
       reconnectionAttempts: 5,
       timeout: 20000,
-      forceNew: true, // Force new connection to avoid reuse issues
-      upgrade: true,
+      forceNew: true,
     });
 
     socketRef.current = socket;

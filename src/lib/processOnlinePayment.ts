@@ -18,10 +18,16 @@ export async function processOnlinePayment({
   doctorId,
   slotId,
   userId,
+  userEmail,
+  userName,
+  userPhone,
 }: {
   doctorId: string;
   slotId: string;
   userId: string;
+  userEmail?: string;
+  userName?: string;
+  userPhone?: string;
 }) {
   return new Promise<{ success: boolean; transactionId: string | null; error?: string }>(async (resolve) => {
     try {
@@ -40,16 +46,21 @@ export async function processOnlinePayment({
       });
       
       const data = await orderRes.json();
-      if (!orderRes.ok) throw new Error(data.message);
+      if (!orderRes.ok) throw new Error(data.message || "Failed to create payment order");
 
       // 4. Initialize Razorpay Options
       const options = {
-        key: data.keyId, 
-        currency: "INR",
+        key: data.keyId,
+        amount: data.order?.amount,
+        currency: data.order?.currency || "INR",
         name: "Quick Clinic",
-        description: "Medical Consultation",
-        order_id: data.order.razorpayOrderId, 
-        
+        description: "Medical Consultation Booking",
+        order_id: data.order?.razorpayOrderId,
+        prefill: {
+          name: userName || "",
+          email: userEmail || "",
+          contact: userPhone || "",
+        },
         handler: async function (response: any) {
           try {
             // 5. Verify Payment on Server
@@ -64,21 +75,26 @@ export async function processOnlinePayment({
             });
             
             const verifyData = await verifyRes.json();
-            if (!verifyRes.ok) throw new Error(verifyData.error);
+            if (!verifyRes.ok) throw new Error(verifyData.error || "Payment verification failed");
 
             resolve({ success: true, transactionId: response.razorpay_payment_id });
           } catch (err: any) {
             resolve({ success: false, error: "Verification Failed: " + err.message, transactionId: null });
           }
         },
-        theme: { color: "#3399cc" },
+        modal: {
+          ondismiss: function () {
+            resolve({ success: false, error: "Payment was cancelled.", transactionId: null });
+          },
+        },
+        theme: { color: "#0d9488" },
       };
 
       // 6. Open the Payment Window
       const rzp1 = new (window as any).Razorpay(options);
       
       rzp1.on('payment.failed', function (response: any) {
-        resolve({ success: false, error: response.error.description, transactionId: null });
+        resolve({ success: false, error: response?.error?.description || "Payment failed", transactionId: null });
       });
 
       rzp1.open();

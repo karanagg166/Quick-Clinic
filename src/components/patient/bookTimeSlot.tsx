@@ -18,7 +18,8 @@ interface BookTimeSlotProps {
 type Hold = { slotId: string; token: string };
 
 export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
-  const userId = useUserStore((state) => state.user?.id);
+  const user = useUserStore((state) => state.user);
+  const userId = user?.id;
   const [date, setDate] = useState('');
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(false);
@@ -111,7 +112,14 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     try {
       setBooking(true);
       hold = await acquireHold(slotId);
-      const payment = await processOnlinePayment({ doctorId, slotId, userId });
+      const payment = await processOnlinePayment({
+        doctorId,
+        slotId,
+        userId,
+        userEmail: user?.email || undefined,
+        userName: user?.name || undefined,
+        userPhone: user?.phoneNo || undefined,
+      });
       if (!payment?.success || !payment.transactionId) throw new Error(payment?.error || 'Payment failed or was cancelled');
       await confirmHold(hold, 'ONLINE', payment.transactionId);
     } catch (cause) {
