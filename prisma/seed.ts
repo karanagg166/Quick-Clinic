@@ -80,7 +80,7 @@ async function main() {
 
   // ---------- DOCTOR ----------
   const doctorEmail = "priyanshu@gmail.com";
-  const doctorPlain = "priyanshu166";
+  const doctorPlain = "karan166";
   const doctorHashed = await hash(doctorPlain, 10);
 
   const doctorUser = await prisma.user.upsert({
@@ -169,7 +169,7 @@ async function main() {
 
   // ---------- ADMIN (Super Admin) ----------
   const adminEmail = "harsh@gmail.com";
-  const adminPlain = "harsh166"; // Change this in production!
+  const adminPlain = "karan166"; // Change this in production!
   const adminHashed = await hash(adminPlain, 10);
 
   const adminUser = await prisma.user.upsert({

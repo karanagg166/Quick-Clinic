@@ -1,5 +1,4 @@
-import test from "node:test";
-import assert from "node:assert";
+import { test, expect, assert } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "../app/api/doctors/route";
 
