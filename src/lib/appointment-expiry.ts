@@ -102,27 +102,59 @@ export async function autoExpirePastAppointments() {
           }
         }
 
-        // 4. Send database notification to patient and doctor
+        // 4. Send chat message and database notification to patient and doctor
         try {
           const patientUserId = appointment.patient?.user?.id;
+          const doctorUserId = appointment.doctor?.user?.id;
           const doctorName = appointment.doctor?.user?.name || "Doctor";
+          const patientName = appointment.patient?.user?.name || "Patient";
           const apptDate = appointment.slot?.date?.toISOString().split("T")[0] || "";
+
+          // Post in-chat message
+          if (doctorUserId && patientUserId) {
+            let relation = await prisma.doctorPatientRelation.findUnique({
+              where: {
+                doctorsUserId_patientsUserId: {
+                  doctorsUserId: doctorUserId,
+                  patientsUserId: patientUserId,
+                },
+              },
+            });
+
+            if (!relation) {
+              relation = await prisma.doctorPatientRelation.create({
+                data: {
+                  doctorsUserId: doctorUserId,
+                  patientsUserId: patientUserId,
+                },
+              });
+            }
+
+            const expireChatText = `⏱️ Appointment Expired\n\nThe scheduled time for the appointment on ${apptDate} has passed.\n\n👉 Need to book a new appointment? [Click here to find doctors](/patient/findDoctors)`;
+
+            await prisma.chatMessages.create({
+              data: {
+                doctorPatientRelationId: relation.id,
+                text: expireChatText,
+                senderId: doctorUserId,
+              },
+            });
+          }
 
           if (patientUserId) {
             await prisma.notification.create({
               data: {
                 userId: patientUserId,
-                message: `Your appointment with ${doctorName} on ${apptDate} has expired as the appointment date passed.`,
+                message: `Your appointment with Dr. ${doctorName} on ${apptDate} has expired as the appointment date passed.`,
               },
             });
           }
 
-          const doctorUserId = appointment.doctor?.user?.id;
           if (doctorUserId && previousStatus === "CONFIRMED") {
             await prisma.notification.create({
               data: {
                 userId: doctorUserId,
-                message: `Your appointment with ${appointment.patient?.user?.name || "Patient"} on ${apptDate} was marked expired as the scheduled date passed.`,
+                message: `Your appointment with ${patientName} on ${apptDate} was marked expired as the scheduled date passed.`,
               },
             });
           }

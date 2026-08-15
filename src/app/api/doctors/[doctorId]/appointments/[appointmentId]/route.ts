@@ -210,7 +210,7 @@ export async function PATCH(
       }
     }
 
-    // Notifications
+    // Notifications & Chat Messages
     if (status && status !== appointmentBefore.status) {
       const patientUserId = appointmentBefore.patient.user.id;
       const doctorUserId = appointmentBefore.doctor.user.id;
@@ -218,21 +218,63 @@ export async function PATCH(
       const doctorName = appointmentBefore.doctor.user.name || 'Doctor';
       const apptDate = appointmentBefore.slot.date.toISOString().split('T')[0];
 
-      const statusLabels: Record<string, string> = {
-        CONFIRMED: 'confirmed',
-        CANCELLED: 'cancelled',
-        COMPLETED: 'completed',
-        NO_SHOW: 'marked as no-show',
-        RESCHEDULED: 'rescheduled',
-        EXPIRED: 'expired',
-      };
-      const statusLabel = statusLabels[status] || status.toLowerCase();
+      // 1. Post Automated Chat Message into Doctor-Patient Relation
+      try {
+        let relation = await prisma.doctorPatientRelation.findUnique({
+          where: {
+            doctorsUserId_patientsUserId: {
+              doctorsUserId: doctorUserId,
+              patientsUserId: patientUserId,
+            },
+          },
+        });
+
+        if (!relation) {
+          relation = await prisma.doctorPatientRelation.create({
+            data: {
+              doctorsUserId: doctorUserId,
+              patientsUserId: patientUserId,
+            },
+          });
+        }
+
+        let chatText = "";
+        if (status === 'COMPLETED') {
+          chatText = `🎉 Consultation Completed!\n\nThank you for consulting with Dr. ${doctorName}. How was your experience?\n\n👉 [Click here to review & rate Dr. ${doctorName}](/patient/doctor/${doctorId})`;
+        } else if (status === 'NO_SHOW') {
+          chatText = `⚠️ Missed Appointment (Never Showed Up)\n\nWe noticed you were unable to attend your scheduled appointment with Dr. ${doctorName} on ${apptDate}.\n\n👉 Need to rebook a new appointment? [Click here to select a new slot](/patient/doctor/${doctorId})`;
+        } else if (status === 'CANCELLED') {
+          chatText = `❌ Appointment Cancelled\n\nYour appointment with Dr. ${doctorName} on ${apptDate} has been cancelled.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
+        }
+
+        if (chatText) {
+          await prisma.chatMessages.create({
+            data: {
+              doctorPatientRelationId: relation.id,
+              text: chatText,
+              senderId: doctorUserId,
+            },
+          });
+        }
+      } catch (chatErr) {
+        console.warn("Failed to create automated status chat message:", chatErr);
+      }
+
+      // 2. In-App Notifications
+      let patientNotificationMessage = `Your appointment on ${apptDate} with Dr. ${doctorName} has been updated to ${status.toLowerCase()}.`;
+      if (status === 'COMPLETED') {
+        patientNotificationMessage = `Your consultation with Dr. ${doctorName} is completed. Please rate and review: /patient/doctor/${doctorId}`;
+      } else if (status === 'NO_SHOW') {
+        patientNotificationMessage = `You were marked as no-show for your appointment with Dr. ${doctorName}. Click here to rebook: /patient/doctor/${doctorId}`;
+      } else if (status === 'CANCELLED') {
+        patientNotificationMessage = `Your appointment on ${apptDate} with Dr. ${doctorName} has been cancelled.`;
+      }
 
       try {
         await prisma.notification.create({
           data: {
             userId: patientUserId,
-            message: `Your appointment on ${apptDate} with ${doctorName} has been ${statusLabel}.`,
+            message: patientNotificationMessage,
           },
         });
       } catch {}
@@ -241,7 +283,7 @@ export async function PATCH(
         await prisma.notification.create({
           data: {
             userId: doctorUserId,
-            message: `Appointment with ${patientName} on ${apptDate} has been ${statusLabel}.`,
+            message: `Appointment with ${patientName} on ${apptDate} has been marked as ${status.toLowerCase()}.`,
           },
         });
       } catch {}

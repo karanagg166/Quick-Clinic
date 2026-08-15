@@ -85,7 +85,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     setSlots((previous) => previous.map((slot) => slot.id === hold.slotId ? { ...slot, status: 'BOOKED' } : slot));
     setSelectedSlot(null);
     setShowPaymentOptions(false);
-    showToast.success(paymentMethod === 'ONLINE' ? 'Appointment requested! Pending doctor confirmation (Online payment).' : 'Appointment requested! Pending doctor confirmation (Pay at clinic).');
+    showToast.success(paymentMethod === 'ONLINE' ? 'Appointment confirmed! Details and cancellation link sent to chat.' : 'Appointment confirmed! Details and cancellation link sent to chat.');
   };
 
   const handleOfflineBooking = async (slotId: string) => {

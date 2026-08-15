@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Bell, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle } from 'lucide-react';
+import { Bell, LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle, Clock } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
 import Logo from '@/components/general/Logo';
@@ -87,6 +87,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <CalendarDays className="w-4 h-4" /> Dashboard
+          </Link>
+
+          <Link
+            href="/doctor/today"
+            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+          >
+            <Clock className="w-4 h-4" /> Today
           </Link>
 
           <Link

@@ -14,6 +14,13 @@ vi.mock('@/lib/prisma', () => ({
     doctor: {
       update: vi.fn(),
     },
+    doctorPatientRelation: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
+    chatMessages: {
+      create: vi.fn(),
+    },
     notification: {
       create: vi.fn(),
     },
@@ -126,6 +133,8 @@ describe('Doctor Appointment Detail Route', () => {
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(existing as any);
     vi.mocked(prisma.appointment.update).mockResolvedValueOnce({ ...existing, status: 'COMPLETED' } as any);
     vi.mocked(prisma.doctor.update).mockResolvedValueOnce({} as any);
+    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
+    vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({} as any);
 
     const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
       method: 'PATCH',
@@ -158,6 +167,8 @@ describe('Doctor Appointment Detail Route', () => {
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(existing as any);
     vi.mocked(prisma.appointment.update).mockResolvedValueOnce({ ...existing, status: 'CANCELLED' } as any);
     vi.mocked(prisma.slot.update).mockResolvedValueOnce({} as any);
+    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
+    vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({} as any);
 
     const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
       method: 'PATCH',

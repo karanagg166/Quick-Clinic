@@ -26,13 +26,14 @@ export async function POST(req: NextRequest) {
   try {
     const appointment = await confirmSlotHold({ ...body.data, patientId: patient.id, token: body.data.holdToken });
     if (!appointment) return NextResponse.json({ error: "Hold expired or does not belong to this patient" }, { status: 409 });
+    
     await logAudit(patient.userId, "Booked Appointment", {
       appointmentId: appointment.id,
       doctorId: body.data.doctorId,
       slotId: body.data.slotId,
     });
 
-    // Notify doctor of new pending appointment request
+    // Notify doctor & patient in database, chat, and sockets
     try {
       const doctor = await prisma.doctor.findUnique({
         where: { id: body.data.doctorId },
@@ -46,18 +47,67 @@ export async function POST(req: NextRequest) {
         include: { location: true },
       });
 
-      if (doctor?.user?.id) {
-        const patientName = patientUser?.name || "A patient";
-        const apptDate = slot?.date ? new Date(slot.date).toISOString().split('T')[0] : "";
-        await prisma.notification.create({
-          data: {
-            userId: doctor.user.id,
-            message: `New appointment request received from ${patientName} on ${apptDate}. Please review and confirm.`,
+      if (doctor?.user?.id && patientUser) {
+        const patientName = patientUser.name || "Patient";
+        const doctorName = doctor.user.name || "Doctor";
+        const formattedDate = slot?.date
+          ? new Date(slot.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })
+          : "Scheduled Date";
+        const formattedTime = slot?.startTime
+          ? new Date(slot.startTime).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })
+          : "Scheduled Time";
+
+        // 1. Ensure DoctorPatientRelation exists
+        let relation = await prisma.doctorPatientRelation.findUnique({
+          where: {
+            doctorsUserId_patientsUserId: {
+              doctorsUserId: doctor.user.id,
+              patientsUserId: patientUser.id,
+            },
           },
         });
 
+        if (!relation) {
+          relation = await prisma.doctorPatientRelation.create({
+            data: {
+              doctorsUserId: doctor.user.id,
+              patientsUserId: patientUser.id,
+            },
+          });
+        }
+
+        // 2. Post automated confirmation message in Chat
+        const chatText = `✅ Appointment Confirmed!\n\n📅 Date: ${formattedDate}\n⏰ Time: ${formattedTime}\n👨‍⚕️ Doctor: Dr. ${doctorName}\n👤 Patient: ${patientName}\n💳 Payment: ${appointment.paymentMethod === 'ONLINE' ? 'Paid Online' : 'Pay at Clinic'}\n\n👉 If you need to cancel this appointment, click here: /patient/appointments (Doctor: /doctor/appointments)`;
+
+        await prisma.chatMessages.create({
+          data: {
+            doctorPatientRelationId: relation.id,
+            text: chatText,
+            senderId: patientUser.id,
+          },
+        });
+
+        // 3. Create Notification for Doctor
+        await prisma.notification.create({
+          data: {
+            userId: doctor.user.id,
+            message: `New appointment confirmed with ${patientName} on ${formattedDate} at ${formattedTime}. If you need to cancel: /doctor/appointments`,
+          },
+        });
+
+        // 4. Create Notification for Patient
+        await prisma.notification.create({
+          data: {
+            userId: patientUser.id,
+            message: `Your appointment with Dr. ${doctorName} is confirmed for ${formattedDate} at ${formattedTime}. If you need to cancel: /patient/appointments`,
+          },
+        });
+
+        // 5. Send real-time updates via Socket Server
         const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-        await fetch(`${socketServerUrl}/api/notifications/new-appointment`, {
+        
+        // Notify doctor via socket
+        fetch(`${socketServerUrl}/api/notifications/new-appointment`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -65,21 +115,35 @@ export async function POST(req: NextRequest) {
             appointmentId: appointment.id,
             appointment: {
               id: appointment.id,
-              patientName: patientUser?.name || "Patient",
-              patientString: patientUser?.email || "",
-              gender: patientUser?.gender || "",
-              city: patientUser?.location?.city || "N/A",
-              age: patientUser?.age || 0,
+              patientName,
+              patientString: patientUser.email || "",
+              gender: patientUser.gender || "",
+              city: patientUser.location?.city || "N/A",
+              age: patientUser.age || 0,
               appointmentDate: slot?.date?.toISOString() || "",
               appointmentTime: slot?.startTime?.toISOString() || "",
-              status: "PENDING",
+              status: "CONFIRMED",
               paymentMethod: appointment.paymentMethod,
             },
           }),
         }).catch(() => {});
+
+        // Notify patient via socket
+        fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            patientUserId: patientUser.id,
+            appointmentId: appointment.id,
+            status: "CONFIRMED",
+            appointmentDate: slot?.date?.toISOString() || "",
+            appointmentTime: slot?.startTime?.toISOString() || "",
+            doctorName,
+          }),
+        }).catch(() => {});
       }
     } catch (e) {
-      console.warn("Non-critical notification failed:", e);
+      console.warn("Non-critical chat/notification delivery warning:", e);
     }
 
     return NextResponse.json({ appointment }, { status: 201 });

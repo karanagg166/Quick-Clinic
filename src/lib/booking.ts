@@ -155,7 +155,7 @@ export async function confirmSlotHold(input: {
           doctorId: input.doctorId,
           patientId: input.patientId,
           slotId: input.slotId,
-          status: "PENDING",
+          status: "CONFIRMED",
           paymentMethod: input.paymentMethod,
           transactionId: input.transactionId ?? null,
           isAppointmentOffline: input.paymentMethod === "OFFLINE",

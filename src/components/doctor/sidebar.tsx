@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import {
   LayoutDashboard,
   CalendarDays,
+  CalendarCheck2,
   Users,
   FileClock,
   ClipboardList,
@@ -41,12 +42,17 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
       icon: LayoutDashboard,
     },
     {
+      label: "Today's Schedule",
+      href: '/doctor/today',
+      icon: CalendarCheck2,
+    },
+    {
       label: 'My Schedule',
       href: '/doctor/schedule',
       icon: CalendarDays,
     },
     {
-      label: 'Appointments',
+      label: 'All Appointments',
       href: '/doctor/appointments',
       icon: FileClock,
     },

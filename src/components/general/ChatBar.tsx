@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { showToast } from '@/lib/toast';
+import Link from 'next/link';
 
 interface Message {
   id: string;
@@ -20,6 +21,92 @@ interface Message {
 interface ChatBarProps {
   doctorPatientRelationId: string;
   userId: string;
+}
+
+function renderFormattedMessage(text: string, isMe: boolean) {
+  // Regex to match URLs, internal routes (/patient/..., /doctor/...), or markdown links [label](url)
+  const pattern = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+)|(\/(?:patient|doctor)\/[a-zA-Z0-9\-_/]+)/g;
+
+  const elements: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = pattern.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      elements.push(text.slice(lastIndex, match.index));
+    }
+
+    if (match[1] && match[2]) {
+      const label = match[1];
+      const url = match[2];
+      const isInternal = url.startsWith('/');
+      if (isInternal) {
+        elements.push(
+          <Link
+            key={match.index}
+            href={url}
+            className={`font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity ${
+              isMe ? 'text-white' : 'text-primary'
+            }`}
+          >
+            {label}
+          </Link>
+        );
+      } else {
+        elements.push(
+          <a
+            key={match.index}
+            href={url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`font-semibold underline underline-offset-2 hover:opacity-80 transition-opacity ${
+              isMe ? 'text-white' : 'text-primary'
+            }`}
+          >
+            {label}
+          </a>
+        );
+      }
+    } else if (match[3]) {
+      const url = match[3];
+      elements.push(
+        <a
+          key={match.index}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`font-semibold underline underline-offset-2 break-all hover:opacity-80 transition-opacity ${
+            isMe ? 'text-white' : 'text-primary'
+          }`}
+        >
+          {url}
+        </a>
+      );
+    } else if (match[4]) {
+      const route = match[4];
+      elements.push(
+        <Link
+          key={match.index}
+          href={route}
+          className={`inline-flex items-center gap-1 font-semibold underline underline-offset-2 px-1.5 py-0.5 rounded text-xs transition-colors ${
+            isMe
+              ? 'bg-white/20 text-white hover:bg-white/30'
+              : 'bg-primary/15 text-primary hover:bg-primary/25'
+          }`}
+        >
+          {route}
+        </Link>
+      );
+    }
+
+    lastIndex = pattern.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    elements.push(text.slice(lastIndex));
+  }
+
+  return elements;
 }
 
 export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProps) {
@@ -298,7 +385,9 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
                       {message.senderName}
                     </p>
                   )}
-                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.text}</p>
+                  <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
+                    {renderFormattedMessage(message.text, isMe)}
+                  </div>
                   <p className={`text-[10px] mt-1 text-right ${
                     isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
                   }`}>
