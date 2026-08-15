@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 import { logAccess } from "@/lib/logger";
 import { verifyToken } from "@/lib/auth";
+import { parseCoordinates } from "@/lib/coordinates";
 
 // GET - Fetch doctor by ID
 export const GET = async (
@@ -27,6 +28,8 @@ export const GET = async (
         fees: true,
         experience: true,
         doctorBio: true,
+        latitude: true,
+        longitude: true,
         user: {
           select: {
             id: true,
@@ -97,6 +100,8 @@ export const GET = async (
       state: d.user?.location?.state ?? undefined,
       profileImageUrl: d.user?.profileImageUrl ?? undefined,
       doctorBio: d.doctorBio ?? undefined,
+      latitude: d.latitude ?? undefined,
+      longitude: d.longitude ?? undefined,
     };
 
     const ratingSummary = {
@@ -148,6 +153,8 @@ export const PUT = async (
       experience = undefined,
       qualifications = undefined,
       doctorBio = undefined,
+      latitude = undefined,
+      longitude = undefined,
     } = body ?? {};
 
     // Check if doctor exists
@@ -165,6 +172,12 @@ export const PUT = async (
     if (fees !== undefined) data.fees = Number(fees);
     if (experience !== undefined) data.experience = Number(experience);
     if (doctorBio !== undefined) data.doctorBio = doctorBio;
+    if (latitude !== undefined || longitude !== undefined) {
+      const coordinates = parseCoordinates({ latitude, longitude });
+      if (!coordinates) return NextResponse.json({ error: "Valid latitude and longitude are required" }, { status: 400 });
+      data.latitude = coordinates.latitude;
+      data.longitude = coordinates.longitude;
+    }
 
     // Handle qualifications update: Delete all existing, verify uniqueness, then create new
     if (qualifications && Array.isArray(qualifications)) {
@@ -216,6 +229,12 @@ export const PATCH = async (
     if (body.fees !== undefined) updateData.fees = Number(body.fees);
     if (body.experience !== undefined) updateData.experience = Number(body.experience);
     if (body.doctorBio !== undefined) updateData.doctorBio = body.doctorBio;
+    if (body.latitude !== undefined || body.longitude !== undefined) {
+      const coordinates = parseCoordinates({ latitude: body.latitude, longitude: body.longitude });
+      if (!coordinates) return NextResponse.json({ error: "Valid latitude and longitude are required" }, { status: 400 });
+      updateData.latitude = coordinates.latitude;
+      updateData.longitude = coordinates.longitude;
+    }
 
     // Handle qualifications update: Delete all existing, verify uniqueness, then create new
     if (body.qualifications !== undefined && Array.isArray(body.qualifications)) {

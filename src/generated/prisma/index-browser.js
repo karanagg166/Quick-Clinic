@@ -160,6 +160,8 @@ exports.Prisma.DoctorScalarFieldEnum = {
   fees: 'fees',
   doctorBio: 'doctorBio',
   balance: 'balance',
+  latitude: 'latitude',
+  longitude: 'longitude',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

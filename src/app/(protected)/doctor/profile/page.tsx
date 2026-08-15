@@ -21,6 +21,7 @@ export default function DoctorProfilePage() {
 	const [loadingData, setLoadingData] = useState(true);
 	const [saving, setSaving] = useState(false);
 	const [loadingEnums, setLoadingEnums] = useState(true);
+	const [locating, setLocating] = useState(false);
 
 	const [formData, setFormData] = useState<DoctorProfileFormData>({
 		name: "",
@@ -41,6 +42,8 @@ export default function DoctorProfilePage() {
 		fees: "",
 		qualifications: [],
 		doctorBio: "",
+		latitude: "",
+		longitude: "",
 	});
 
 	const [specialties, setSpecialties] = useState<string[]>([]);
@@ -123,6 +126,8 @@ export default function DoctorProfilePage() {
 							fees: doctor?.fees?.toString() ?? "",
 							qualifications: Array.isArray(doctor?.qualifications) ? doctor.qualifications : [],
 							doctorBio: doctor?.doctorBio ?? "",
+							latitude: doctor?.latitude?.toString() ?? "",
+							longitude: doctor?.longitude?.toString() ?? "",
 						});
 						setDoctorId(nextDoctorId);
 					}
@@ -159,6 +164,30 @@ export default function DoctorProfilePage() {
 		}));
 	};
 
+	const useCurrentPracticeLocation = () => {
+		if (!navigator.geolocation) {
+			showToast.error("Your browser does not support location. Enter coordinates manually.");
+			return;
+		}
+		setLocating(true);
+		navigator.geolocation.getCurrentPosition(
+			(position) => {
+				setDoctorData((previous) => ({
+					...previous,
+					latitude: position.coords.latitude.toString(),
+					longitude: position.coords.longitude.toString(),
+				}));
+				setLocating(false);
+				showToast.success("Practice location added. It will be saved with your profile.");
+			},
+			() => {
+				setLocating(false);
+				showToast.warning("Location access was denied. Enter your practice coordinates manually.");
+			},
+			{ enableHighAccuracy: false, timeout: 10_000, maximumAge: 0 },
+		);
+	};
+
 	const handleSave = async (e: FormEvent) => {
 		e.preventDefault();
 		if (!userId) {
@@ -173,6 +202,12 @@ export default function DoctorProfilePage() {
 
 		if (!doctorData.specialty) {
 			showToast.warning("Please select your specialty.");
+			return;
+		}
+		const latitude = Number(doctorData.latitude);
+		const longitude = Number(doctorData.longitude);
+		if (!doctorData.latitude || !doctorData.longitude || !Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+			showToast.warning("Add a valid practice latitude and longitude to complete your profile.");
 			return;
 		}
 
@@ -211,6 +246,8 @@ export default function DoctorProfilePage() {
 						fees: Number(doctorData.fees),
 						qualifications: doctorData.qualifications,
 						doctorBio: doctorData.doctorBio,
+						latitude,
+						longitude,
 					}),
 				});
 
@@ -229,6 +266,8 @@ export default function DoctorProfilePage() {
 						fees: Number(doctorData.fees || 0),
 						qualifications: doctorData.qualifications,
 						doctorBio: doctorData.doctorBio,
+						latitude,
+						longitude,
 					}),
 				});
 
@@ -293,6 +332,8 @@ export default function DoctorProfilePage() {
 						specialties={specialties}
 						qualificationsList={qualificationsList}
 						loadingEnums={loadingEnums}
+						onUseCurrentLocation={useCurrentPracticeLocation}
+						locating={locating}
 					/>
 
 					<div className="flex justify-end">

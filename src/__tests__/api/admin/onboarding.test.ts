@@ -32,20 +32,9 @@ test("POST /api/admin/onboarding - returns 403 when onboarding another user id",
 });
 
 test("POST /api/admin/onboarding - rejects invalid secret code", async () => {
-  const adminUser = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
-  });
-  expect(adminUser).toBeDefined();
-
-  await prisma.admin.upsert({
-    where: { userId: adminUser!.id },
-    update: {},
-    create: { userId: adminUser!.id },
-  });
-
   const adminToken = await createToken({
-    id: adminUser!.id,
-    email: adminUser!.email,
+    id: "admin_test_id",
+    email: "admin@quickclinic.com",
     role: "ADMIN",
   });
 
@@ -55,10 +44,10 @@ test("POST /api/admin/onboarding - rejects invalid secret code", async () => {
       cookie: `token=${adminToken}; role=ADMIN`,
     },
     body: JSON.stringify({
-      userId: adminUser!.id,
+      userId: "admin_test_id",
       secretCode: "WRONG_SECRET_CODE",
-      name: adminUser!.name,
-      phoneNo: adminUser!.phoneNo,
+      name: "Admin Tester",
+      phoneNo: "1234567890",
     }),
   });
   const res = await onboardingPOST(req);
@@ -67,3 +56,4 @@ test("POST /api/admin/onboarding - rejects invalid secret code", async () => {
   const data = await res.json();
   expect(data.error).toBe("Invalid Super Admin Code");
 });
+

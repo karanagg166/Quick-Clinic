@@ -6897,12 +6897,16 @@ export namespace Prisma {
     experience: number | null
     fees: number | null
     balance: number | null
+    latitude: number | null
+    longitude: number | null
   }
 
   export type DoctorSumAggregateOutputType = {
     experience: number | null
     fees: number | null
     balance: number | null
+    latitude: number | null
+    longitude: number | null
   }
 
   export type DoctorMinAggregateOutputType = {
@@ -6913,6 +6917,8 @@ export namespace Prisma {
     fees: number | null
     doctorBio: string | null
     balance: number | null
+    latitude: number | null
+    longitude: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6925,6 +6931,8 @@ export namespace Prisma {
     fees: number | null
     doctorBio: string | null
     balance: number | null
+    latitude: number | null
+    longitude: number | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -6937,6 +6945,8 @@ export namespace Prisma {
     fees: number
     doctorBio: number
     balance: number
+    latitude: number
+    longitude: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -6947,12 +6957,16 @@ export namespace Prisma {
     experience?: true
     fees?: true
     balance?: true
+    latitude?: true
+    longitude?: true
   }
 
   export type DoctorSumAggregateInputType = {
     experience?: true
     fees?: true
     balance?: true
+    latitude?: true
+    longitude?: true
   }
 
   export type DoctorMinAggregateInputType = {
@@ -6963,6 +6977,8 @@ export namespace Prisma {
     fees?: true
     doctorBio?: true
     balance?: true
+    latitude?: true
+    longitude?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6975,6 +6991,8 @@ export namespace Prisma {
     fees?: true
     doctorBio?: true
     balance?: true
+    latitude?: true
+    longitude?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -6987,6 +7005,8 @@ export namespace Prisma {
     fees?: true
     doctorBio?: true
     balance?: true
+    latitude?: true
+    longitude?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -7086,6 +7106,8 @@ export namespace Prisma {
     fees: number
     doctorBio: string | null
     balance: number
+    latitude: number | null
+    longitude: number | null
     createdAt: Date
     updatedAt: Date
     _count: DoctorCountAggregateOutputType | null
@@ -7117,6 +7139,8 @@ export namespace Prisma {
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
+    latitude?: boolean
+    longitude?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7140,6 +7164,8 @@ export namespace Prisma {
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
+    latitude?: boolean
+    longitude?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7153,6 +7179,8 @@ export namespace Prisma {
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
+    latitude?: boolean
+    longitude?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -7166,11 +7194,13 @@ export namespace Prisma {
     fees?: boolean
     doctorBio?: boolean
     balance?: boolean
+    latitude?: boolean
+    longitude?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "fees" | "doctorBio" | "balance" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
+  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "fees" | "doctorBio" | "balance" | "latitude" | "longitude" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
   export type DoctorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     leaves?: boolean | Doctor$leavesArgs<ExtArgs>
@@ -7213,6 +7243,8 @@ export namespace Prisma {
       fees: number
       doctorBio: string | null
       balance: number
+      latitude: number | null
+      longitude: number | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["doctor"]>
@@ -7655,6 +7687,8 @@ export namespace Prisma {
     readonly fees: FieldRef<"Doctor", 'Int'>
     readonly doctorBio: FieldRef<"Doctor", 'String'>
     readonly balance: FieldRef<"Doctor", 'Int'>
+    readonly latitude: FieldRef<"Doctor", 'Float'>
+    readonly longitude: FieldRef<"Doctor", 'Float'>
     readonly createdAt: FieldRef<"Doctor", 'DateTime'>
     readonly updatedAt: FieldRef<"Doctor", 'DateTime'>
   }
@@ -27145,6 +27179,8 @@ export namespace Prisma {
     fees: 'fees',
     doctorBio: 'doctorBio',
     balance: 'balance',
+    latitude: 'latitude',
+    longitude: 'longitude',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -27513,6 +27549,20 @@ export namespace Prisma {
 
 
   /**
+   * Reference to a field of type 'Float'
+   */
+  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
+
+  /**
+   * Reference to a field of type 'Float[]'
+   */
+  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
+    
+
+
+  /**
    * Reference to a field of type 'Qualification'
    */
   export type EnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification'>
@@ -27593,20 +27643,6 @@ export namespace Prisma {
    * Reference to a field of type 'WithdrawalStatus[]'
    */
   export type ListEnumWithdrawalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WithdrawalStatus[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
     
   /**
    * Deep Input Types
@@ -27869,6 +27905,8 @@ export namespace Prisma {
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
     balance?: IntFilter<"Doctor"> | number
+    latitude?: FloatNullableFilter<"Doctor"> | number | null
+    longitude?: FloatNullableFilter<"Doctor"> | number | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -27891,6 +27929,8 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
     balance?: SortOrder
+    latitude?: SortOrderInput | SortOrder
+    longitude?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -27916,6 +27956,8 @@ export namespace Prisma {
     fees?: IntFilter<"Doctor"> | number
     doctorBio?: StringNullableFilter<"Doctor"> | string | null
     balance?: IntFilter<"Doctor"> | number
+    latitude?: FloatNullableFilter<"Doctor"> | number | null
+    longitude?: FloatNullableFilter<"Doctor"> | number | null
     createdAt?: DateTimeFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeFilter<"Doctor"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -27938,6 +27980,8 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrderInput | SortOrder
     balance?: SortOrder
+    latitude?: SortOrderInput | SortOrder
+    longitude?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: DoctorCountOrderByAggregateInput
@@ -27958,6 +28002,8 @@ export namespace Prisma {
     fees?: IntWithAggregatesFilter<"Doctor"> | number
     doctorBio?: StringNullableWithAggregatesFilter<"Doctor"> | string | null
     balance?: IntWithAggregatesFilter<"Doctor"> | number
+    latitude?: FloatNullableWithAggregatesFilter<"Doctor"> | number | null
+    longitude?: FloatNullableWithAggregatesFilter<"Doctor"> | number | null
     createdAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Doctor"> | Date | string
   }
@@ -29365,6 +29411,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -29387,6 +29435,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -29407,6 +29457,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -29429,6 +29481,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -29450,6 +29504,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -29461,6 +29517,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -29473,6 +29531,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31039,6 +31099,17 @@ export namespace Prisma {
     not?: NestedEnumSpecialtyFilter<$PrismaModel> | $Enums.Specialty
   }
 
+  export type FloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type LeaveListRelationFilter = {
     every?: LeaveWhereInput
     some?: LeaveWhereInput
@@ -31132,6 +31203,8 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31140,6 +31213,8 @@ export namespace Prisma {
     experience?: SortOrder
     fees?: SortOrder
     balance?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
   }
 
   export type DoctorMaxOrderByAggregateInput = {
@@ -31150,6 +31225,8 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31162,6 +31239,8 @@ export namespace Prisma {
     fees?: SortOrder
     doctorBio?: SortOrder
     balance?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31170,6 +31249,8 @@ export namespace Prisma {
     experience?: SortOrder
     fees?: SortOrder
     balance?: SortOrder
+    latitude?: SortOrder
+    longitude?: SortOrder
   }
 
   export type EnumSpecialtyWithAggregatesFilter<$PrismaModel = never> = {
@@ -31180,6 +31261,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSpecialtyFilter<$PrismaModel>
     _max?: NestedEnumSpecialtyFilter<$PrismaModel>
+  }
+
+  export type FloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type EnumQualificationFilter<$PrismaModel = never> = {
@@ -32646,6 +32743,14 @@ export namespace Prisma {
     set?: $Enums.Specialty
   }
 
+  export type NullableFloatFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
   export type UserUpdateOneRequiredWithoutDoctorNestedInput = {
     create?: XOR<UserCreateWithoutDoctorInput, UserUncheckedCreateWithoutDoctorInput>
     connectOrCreate?: UserCreateOrConnectWithoutDoctorInput
@@ -33680,6 +33785,17 @@ export namespace Prisma {
     not?: NestedEnumSpecialtyFilter<$PrismaModel> | $Enums.Specialty
   }
 
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedEnumSpecialtyWithAggregatesFilter<$PrismaModel = never> = {
     equals?: $Enums.Specialty | EnumSpecialtyFieldRefInput<$PrismaModel>
     in?: $Enums.Specialty[] | ListEnumSpecialtyFieldRefInput<$PrismaModel>
@@ -33688,6 +33804,22 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedEnumSpecialtyFilter<$PrismaModel>
     _max?: NestedEnumSpecialtyFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedFloatNullableFilter<$PrismaModel>
+    _min?: NestedFloatNullableFilter<$PrismaModel>
+    _max?: NestedFloatNullableFilter<$PrismaModel>
   }
 
   export type NestedEnumQualificationFilter<$PrismaModel = never> = {
@@ -33874,6 +34006,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveCreateNestedManyWithoutDoctorInput
@@ -33894,6 +34028,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -34193,6 +34329,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUpdateManyWithoutDoctorNestedInput
@@ -34213,6 +34351,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -35449,6 +35589,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -35470,6 +35612,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -35505,6 +35649,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -35526,6 +35672,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -35971,6 +36119,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -35992,6 +36142,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
@@ -36027,6 +36179,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -36048,6 +36202,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
@@ -36067,6 +36223,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -36088,6 +36246,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -36123,6 +36283,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -36144,6 +36306,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -36194,6 +36358,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -36215,6 +36381,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -36287,6 +36455,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -36308,6 +36478,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -36358,6 +36530,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -36379,6 +36553,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -36482,6 +36658,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -36503,6 +36681,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -36585,6 +36765,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -36606,6 +36788,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -36688,6 +36872,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -36709,6 +36895,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -37061,6 +37249,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -37082,6 +37272,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -37117,6 +37309,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -37138,6 +37332,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -37653,6 +37849,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -37674,6 +37872,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -37740,6 +37940,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -37761,6 +37963,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
@@ -37817,6 +38021,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutDoctorInput
@@ -37838,6 +38044,8 @@ export namespace Prisma {
     fees?: number
     doctorBio?: string | null
     balance?: number
+    latitude?: number | null
+    longitude?: number | null
     createdAt?: Date | string
     updatedAt?: Date | string
     leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
@@ -37904,6 +38112,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutDoctorNestedInput
@@ -37925,6 +38135,8 @@ export namespace Prisma {
     fees?: IntFieldUpdateOperationsInput | number
     doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
     balance?: IntFieldUpdateOperationsInput | number
+    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
+    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput

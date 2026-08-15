@@ -182,6 +182,9 @@ model Doctor {
   fees       Int       @default(0)
   doctorBio  String?
   balance    Int       @default(0)
+  // A one-time saved practice location. Patient locations are never stored.
+  latitude   Float?    @db.DoublePrecision
+  longitude  Float?    @db.DoublePrecision
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
@@ -197,6 +200,8 @@ model Doctor {
   updatedAt DateTime @updatedAt
 
   doctorQualifications DoctorQualification[]
+
+  @@index([latitude, longitude])
 }
 
 model DoctorQualification {

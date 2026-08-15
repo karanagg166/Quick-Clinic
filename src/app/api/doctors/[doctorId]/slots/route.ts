@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { expireDoctorHolds } from "@/lib/booking";
 
 const SLOT_DURATION_MINUTES = 10;
 
@@ -54,6 +55,9 @@ export async function GET(
         { status: 400 }
       );
     }
+
+    // A stale payment hold must never make a slot appear unavailable.
+    await expireDoctorHolds(doctorId);
 
     // Check if slots already exist for this date
     const existingSlots = await prisma.slot.findMany({
@@ -163,11 +167,12 @@ export async function PATCH(
 ) {
   try {
     const { doctorId } = await params;
-    const { slotId, status } = await req.json();
+    const body = await req.json();
+    const { slotId, slotIds, status } = body;
 
-    if (!doctorId || !slotId || !status) {
+    if (!doctorId || (!slotId && (!slotIds || !Array.isArray(slotIds))) || !status) {
       return NextResponse.json(
-        { error: "doctorId, slotId and status are required" },
+        { error: "doctorId, status, and either slotId or slotIds array are required" },
         { status: 400 }
       );
     }
@@ -175,6 +180,18 @@ export async function PATCH(
     const allowedStatuses = ["AVAILABLE", "HELD", "BOOKED", "UNAVAILABLE", "CANCELLED", "ON_LEAVE"];
     if (!allowedStatuses.includes(status)) {
       return NextResponse.json({ error: "Invalid status" }, { status: 400 });
+    }
+
+    if (slotIds && Array.isArray(slotIds)) {
+      const updated = await prisma.slot.updateMany({
+        where: {
+          id: { in: slotIds },
+          doctorId,
+          status: { notIn: ["BOOKED"] },
+        },
+        data: { status },
+      });
+      return NextResponse.json({ success: true, count: updated.count }, { status: 200 });
     }
 
     const slot = await prisma.slot.findUnique({ where: { id: slotId } });

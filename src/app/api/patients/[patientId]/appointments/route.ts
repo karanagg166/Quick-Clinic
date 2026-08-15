@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { logAudit } from "@/lib/logger";
 import type { PatientAppointment } from "@/types/patient";
+import { getAuthenticatedPatient } from "@/lib/request-auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
@@ -108,81 +108,16 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
 }
 
 export async function POST(
-  req: Request,
+  req: NextRequest,
   { params }: { params: Promise<{ patientId: string }> }
 ) {
-  try {
-    const { doctorId, slotId, paymentMethod, transactionId } = await req.json();
-    const { patientId } = await params;
+  const { patientId } = await params;
+  const patient = await getAuthenticatedPatient(req);
+  if (!patient) return NextResponse.json({ message: "Authentication required" }, { status: 401 });
+  if (patient.id !== patientId) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
-    // Validation
-    if (!doctorId || !slotId) {
-      return NextResponse.json(
-        { message: "Doctor ID and Slot ID are required" },
-        { status: 400 }
-      );
-    }
-
-    // Verify slot is available
-    const slot = await prisma.slot.findUnique({
-      where: { id: slotId },
-    });
-
-    if (!slot || slot.doctorId !== doctorId) {
-      return NextResponse.json(
-        { message: "Slot not found" },
-        { status: 404 }
-      );
-    }
-
-    if (slot.status !== "AVAILABLE") {
-      return NextResponse.json(
-        { message: `Slot is not available (current status: ${slot.status})` },
-        { status: 409 }
-      );
-    }
-
-    // Create appointment with payment details
-    const appointment = await prisma.appointment.create({
-      data: {
-        doctorId,
-        patientId,
-        slotId,
-        status: 'PENDING',
-        paymentMethod: paymentMethod || 'OFFLINE',
-        transactionId: transactionId || null,
-      },
-    });
-
-    // Update slot status to BOOKED
-    const slotUpdate = await prisma.slot.update({
-      where: { id: slotId },
-      data: { status: 'BOOKED' },
-    });
-
-    // Send notification to doctor via Socket.IO
-    try {
-      const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-      await fetch(`${socketServerUrl}/api/notifications/appointment`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          doctorId,
-          appointmentId: appointment.id,
-        }),
-      }).catch(() => {});
-    } catch {}
-
-    // Log Audit
-    await logAudit(patientId, "Booked Appointment", { appointmentId: appointment.id, doctorId, slotId });
-
-    return NextResponse.json({ appointment, slotUpdate }, { status: 201 });
-
-  } catch (err: any) {
-    console.error("Booking Error:", err);
-    return NextResponse.json(
-      { message: "Internal server error", error: err?.message || "Failed to book appointment" },
-      { status: 500 }
-    );
-  }
+  return NextResponse.json(
+    { message: "Use /api/appointments/hold followed by /api/appointments/confirm to book a slot" },
+    { status: 410 },
+  );
 }

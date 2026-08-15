@@ -3,6 +3,8 @@ import {
   timeStringToMinutes,
   validateDaySlots,
   validateWeeklySchedule,
+  calculateTimelineBlocks,
+  calculateDayMetrics,
 } from "@/lib/scheduleUtils";
 
 describe("scheduleUtils", () => {
@@ -110,6 +112,123 @@ describe("scheduleUtils", () => {
       const res = validateWeeklySchedule(schedule);
       expect(res.isValid).toBe(false);
       expect(res.error).toContain("Overlapping slots detected on Tuesday");
+    });
+  });
+
+  describe("calculateTimelineBlocks", () => {
+    it("returns empty array for empty slots", () => {
+      const blocks = calculateTimelineBlocks([]);
+      expect(blocks).toEqual([]);
+    });
+
+    it("aggregates consecutive booked slots into a busy block", () => {
+      const slots = [
+        {
+          id: "s1",
+          startTime: "2026-08-15T09:00:00.000Z",
+          endTime: "2026-08-15T09:10:00.000Z",
+          status: "BOOKED" as const,
+        },
+        {
+          id: "s2",
+          startTime: "2026-08-15T09:10:00.000Z",
+          endTime: "2026-08-15T09:20:00.000Z",
+          status: "BOOKED" as const,
+        },
+      ];
+
+      const blocks = calculateTimelineBlocks(slots);
+      expect(blocks.length).toBe(1);
+      expect(blocks[0].type).toBe("BUSY");
+      expect(blocks[0].slotCount).toBe(2);
+      expect(blocks[0].bookedCount).toBe(2);
+      expect(blocks[0].durationMinutes).toBe(20);
+    });
+
+    it("aggregates transition between busy and free slots into distinct blocks", () => {
+      const slots = [
+        // 9:00 - 9:20 Busy
+        {
+          id: "s1",
+          startTime: "2026-08-15T09:00:00.000Z",
+          endTime: "2026-08-15T09:10:00.000Z",
+          status: "BOOKED" as const,
+        },
+        {
+          id: "s2",
+          startTime: "2026-08-15T09:10:00.000Z",
+          endTime: "2026-08-15T09:20:00.000Z",
+          status: "BOOKED" as const,
+        },
+        // 9:20 - 9:40 Free
+        {
+          id: "s3",
+          startTime: "2026-08-15T09:20:00.000Z",
+          endTime: "2026-08-15T09:30:00.000Z",
+          status: "AVAILABLE" as const,
+        },
+        {
+          id: "s4",
+          startTime: "2026-08-15T09:30:00.000Z",
+          endTime: "2026-08-15T09:40:00.000Z",
+          status: "AVAILABLE" as const,
+        },
+        // 9:40 - 10:00 Break / Unavailable
+        {
+          id: "s5",
+          startTime: "2026-08-15T09:40:00.000Z",
+          endTime: "2026-08-15T09:50:00.000Z",
+          status: "UNAVAILABLE" as const,
+        },
+      ];
+
+      const blocks = calculateTimelineBlocks(slots);
+      expect(blocks.length).toBe(3);
+      expect(blocks[0].type).toBe("BUSY");
+      expect(blocks[1].type).toBe("FREE");
+      expect(blocks[2].type).toBe("BLOCKED");
+    });
+  });
+
+  describe("calculateDayMetrics", () => {
+    it("computes accurate counts, minutes and occupancy percentages", () => {
+      const slots = [
+        {
+          id: "s1",
+          startTime: "2026-08-15T09:00:00.000Z",
+          endTime: "2026-08-15T09:10:00.000Z",
+          status: "BOOKED" as const,
+        },
+        {
+          id: "s2",
+          startTime: "2026-08-15T09:10:00.000Z",
+          endTime: "2026-08-15T09:20:00.000Z",
+          status: "AVAILABLE" as const,
+        },
+        {
+          id: "s3",
+          startTime: "2026-08-15T09:20:00.000Z",
+          endTime: "2026-08-15T09:30:00.000Z",
+          status: "UNAVAILABLE" as const,
+        },
+        {
+          id: "s4",
+          startTime: "2026-08-15T09:30:00.000Z",
+          endTime: "2026-08-15T09:40:00.000Z",
+          status: "ON_LEAVE" as const,
+        },
+      ];
+
+      const metrics = calculateDayMetrics(slots);
+      expect(metrics.totalSlots).toBe(4);
+      expect(metrics.bookedCount).toBe(1);
+      expect(metrics.availableCount).toBe(1);
+      expect(metrics.unavailableCount).toBe(1);
+      expect(metrics.onLeaveCount).toBe(1);
+      expect(metrics.totalWorkingMinutes).toBe(40);
+      expect(metrics.freeMinutes).toBe(10);
+      expect(metrics.busyMinutes).toBe(10);
+      expect(metrics.occupancyPercentage).toBe(25);
     });
   });
 });

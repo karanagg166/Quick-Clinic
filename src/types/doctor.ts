@@ -14,6 +14,11 @@ export interface Doctor {
   state?:string;
   profileImageUrl?: string;
   doctorBio?: string;
+  latitude?: number;
+  longitude?: number;
+  distanceKm?: number;
+  durationMinutes?: number;
+  distanceUnavailable?: boolean;
   
 }
 export interface DoctorAppointment{

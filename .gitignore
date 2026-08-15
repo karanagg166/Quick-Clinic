@@ -1,7 +1,5 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -9,41 +7,63 @@
 !.yarn/plugins
 !.yarn/releases
 !.yarn/versions
+.pnpm-store/
 
-# testing
-/coverage
+# Testing & Coverage
+/coverage/
+*.lcov
 
-# next.js
+# Next.js & Build outputs
 /.next/
 /out/
+/build/
+/dist/
+socket-server/dist/
 
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env
-
-# vercel
-.vercel
-
-# typescript
+# TypeScript & Next build artifacts
 *.tsbuildinfo
 next-env.d.ts
 
-# socket-server
-socket-server/dist
+# Environment variables (protect .env.example)
+.env
+.env*.local
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+!.env.example
+!socket-server/.env.example
 
+# Logs & Debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-debug.log*
 
+# Vercel
+.vercel/
+
+# OS & Editor files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.pem
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# Project specific local files
 heatmap_repo/
 heatmap_private/
 my_time_log.txt

@@ -18,4 +18,6 @@ export interface DoctorProfessionalData {
     fees: string;
     qualifications: string[];
     doctorBio: string;
+    latitude: string;
+    longitude: string;
 }

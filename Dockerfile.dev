@@ -12,17 +12,17 @@ ENV NODE_ENV=${NODE_ENV}
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Enable and configure pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 # Install dependencies using pnpm
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy project files
 COPY . .
 
 # Generate Prisma Client
-RUN pnpm dlx prisma generate
+RUN pnpm exec prisma generate
 
 # 👉 Run build ONLY in production
 RUN if [ "$NODE_ENV" = "production" ] ; then pnpm run build ; fi

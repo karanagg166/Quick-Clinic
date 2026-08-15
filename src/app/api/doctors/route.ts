@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
-import { Gender, Specialty } from "@/generated/prisma";
+import { Gender, Prisma, Specialty } from "@/generated/prisma";
+import { parseSearchCoordinates } from "@/lib/coordinates";
+import { getRouteMetrics } from "@/lib/routing";
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
+    const patientCoordinates = parseSearchCoordinates(searchParams);
+    if (patientCoordinates === "invalid") {
+      return NextResponse.json({ error: "lat must be between -90 and 90 and lng must be between -180 and 180" }, { status: 400 });
+    }
     const filters: any = {};
     const userFilters: any = {};
     const locationFilters: any = {};
@@ -114,9 +120,19 @@ export async function GET(req: NextRequest) {
 
     const raw = await prisma.doctor.findMany({
       where: filters,
-      include: {
+      select: {
+        id: true,
+        specialty: true,
+        experience: true,
+        fees: true,
+        doctorBio: true,
+        ...(patientCoordinates ? { latitude: true, longitude: true } : {}),
         user: {
-          include: {
+          select: {
+            name: true,
+            gender: true,
+            age: true,
+            profileImageUrl: true,
             location: true,
           },
         },
@@ -124,7 +140,7 @@ export async function GET(req: NextRequest) {
       },
     });
 
-    const doctors: Doctor[] = raw.map((d: any) => {
+    const toDoctor = (d: any): Doctor => {
       const qualifications = d.doctorQualifications?.map((dq: any) => dq.qualification) ?? [];
 
       return {
@@ -140,10 +156,59 @@ export async function GET(req: NextRequest) {
         qualifications: qualifications,
         city: d.user?.location?.city ?? undefined,
         state: d.user?.location?.state ?? undefined,
+        latitude: d.latitude ?? undefined,
+        longitude: d.longitude ?? undefined,
       };
-    });
+    };
 
-    return NextResponse.json(doctors, { status: 200 });
+    if (!patientCoordinates) {
+      return NextResponse.json(raw.map(toDoctor), { status: 200 });
+    }
+
+    // Apply all existing filters before the spatial lookup. Legacy doctors without
+    // a saved practice location are deliberately excluded from a nearby result.
+    const candidates = raw.filter((doctor: any) =>
+      typeof doctor.latitude === "number" && typeof doctor.longitude === "number",
+    );
+    if (candidates.length === 0) {
+      return NextResponse.json({ doctors: raw.map(toDoctor), distanceUnavailable: true }, { status: 200 });
+    }
+
+    let nearbyDoctors: Doctor[];
+    try {
+      const nearbyIds = await prisma.$queryRaw(Prisma.sql`
+        SELECT "id"
+        FROM "Doctor"
+        WHERE "id" IN (${Prisma.join(candidates.map((doctor: any) => doctor.id))})
+          AND "practiceLocation" IS NOT NULL
+        ORDER BY "practiceLocation" <-> ST_SetSRID(
+          ST_MakePoint(${patientCoordinates.longitude}, ${patientCoordinates.latitude}),
+          4326
+        )::geography
+        LIMIT 30
+      `) as Array<{ id: string }>;
+      const byId = new Map(raw.map((doctor: any) => [doctor.id, doctor]));
+      const nearby = nearbyIds.map(({ id }: { id: string }) => byId.get(id)).filter(Boolean) as any[];
+      const metrics = await getRouteMetrics(
+        patientCoordinates,
+        nearby.map((doctor: any) => ({ latitude: doctor.latitude, longitude: doctor.longitude })),
+      );
+
+      nearbyDoctors = nearby
+        .map((doctor: any, index: number): Doctor | null => {
+          const metric = metrics[index];
+          return metric ? { ...toDoctor(doctor), ...metric } : null;
+        })
+        .filter((doctor: Doctor | null): doctor is Doctor => doctor !== null)
+        .sort((a: Doctor, b: Doctor) => (a.distanceKm ?? Infinity) - (b.distanceKm ?? Infinity));
+    } catch (error) {
+      // Provider, timeout, or unavailable PostGIS should never hide an otherwise
+      // valid filtered result set.
+      console.error("nearby-doctors-unavailable", error);
+      return NextResponse.json({ doctors: raw.map(toDoctor), distanceUnavailable: true }, { status: 200 });
+    }
+
+    return NextResponse.json({ doctors: nearbyDoctors, distanceUnavailable: false }, { status: 200 });
   } catch (err: any) {
     console.error("doctors-get-error", err);
     return NextResponse.json(
@@ -163,6 +228,8 @@ export const POST = async (req: NextRequest) => {
       experience = 0,
       qualifications = [],
       doctorBio = null,
+      latitude,
+      longitude,
     } = body ?? {};
 
     if (!userId || typeof userId !== "string") {
@@ -171,6 +238,15 @@ export const POST = async (req: NextRequest) => {
 
     if (!specialty || typeof specialty !== "string") {
       return NextResponse.json({ error: "specialty is required" }, { status: 400 });
+    }
+
+    const hasCoordinates = latitude !== undefined || longitude !== undefined;
+    if (hasCoordinates && (
+      typeof latitude !== "number" || typeof longitude !== "number" ||
+      !Number.isFinite(latitude) || !Number.isFinite(longitude) ||
+      latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180
+    )) {
+      return NextResponse.json({ error: "Valid latitude and longitude are required" }, { status: 400 });
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
@@ -193,6 +269,8 @@ export const POST = async (req: NextRequest) => {
         fees: Number(fees),
         experience: Number(experience),
         doctorBio,
+        latitude: hasCoordinates ? latitude : null,
+        longitude: hasCoordinates ? longitude : null,
         doctorQualifications: {
           create: Array.isArray(qualifications)
             ? qualifications.map((q: string) => ({ qualification: q }))

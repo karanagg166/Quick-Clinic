@@ -23,6 +23,12 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "User ID is required" }, { status: 400 });
         }
 
+        // Reject an invalid super-admin code before reading or mutating a user.
+        // This keeps the validation deterministic and avoids exposing user state.
+        if (secretCode && secretCode !== SUPER_ADMIN_CODE) {
+            return NextResponse.json({ error: "Invalid Super Admin Code" }, { status: 400 });
+        }
+
         const user = await prisma.user.findUnique({
             where: { id: userId },
             include: { admin: true },
@@ -42,12 +48,8 @@ export async function POST(req: NextRequest) {
 
         // Scenario 1: Super Admin Code
         if (secretCode) {
-            if (secretCode === SUPER_ADMIN_CODE) {
-                isActive = true;
-                logAction = "Admin Auto-Approved (Super Code)";
-            } else {
-                return NextResponse.json({ error: "Invalid Super Admin Code" }, { status: 400 });
-            }
+            isActive = true;
+            logAction = "Admin Auto-Approved (Super Code)";
         }
         // Scenario 2: Manager Email
         else if (managerEmail) {

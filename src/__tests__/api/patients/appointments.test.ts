@@ -55,51 +55,9 @@ describe('Patient Appointments Route', () => {
     expect(data[0].fees).toBe(750);
   });
 
-  it('POST rejects when slot is already BOOKED or UNAVAILABLE', async () => {
-    vi.mocked(prisma.slot.findUnique).mockResolvedValueOnce({
-      id: 'slot_1',
-      doctorId: 'doc_1',
-      status: 'BOOKED',
-    } as any);
-
-    const req = new Request('http://localhost:3000/api/patients/pat_1/appointments', {
-      method: 'POST',
-      body: JSON.stringify({ doctorId: 'doc_1', slotId: 'slot_1' }),
-    });
-
+  it('POST rejects the retired non-atomic booking flow without an authenticated patient', async () => {
+    const req = new NextRequest('http://localhost:3000/api/patients/pat_1/appointments', { method: 'POST' });
     const res = await POST(req, { params: Promise.resolve({ patientId: 'pat_1' }) });
-    expect(res.status).toBe(409);
-  });
-
-  it('POST creates appointment in PENDING status and marks slot BOOKED', async () => {
-    vi.mocked(prisma.slot.findUnique).mockResolvedValueOnce({
-      id: 'slot_1',
-      doctorId: 'doc_1',
-      status: 'AVAILABLE',
-    } as any);
-
-    vi.mocked(prisma.appointment.create).mockResolvedValueOnce({
-      id: 'appt_1',
-      patientId: 'pat_1',
-      doctorId: 'doc_1',
-      slotId: 'slot_1',
-      status: 'PENDING',
-      paymentMethod: 'OFFLINE',
-    } as any);
-
-    vi.mocked(prisma.slot.update).mockResolvedValueOnce({} as any);
-
-    const req = new Request('http://localhost:3000/api/patients/pat_1/appointments', {
-      method: 'POST',
-      body: JSON.stringify({ doctorId: 'doc_1', slotId: 'slot_1', paymentMethod: 'OFFLINE' }),
-    });
-
-    const res = await POST(req, { params: Promise.resolve({ patientId: 'pat_1' }) });
-    expect(res.status).toBe(201);
-
-    expect(prisma.slot.update).toHaveBeenCalledWith({
-      where: { id: 'slot_1' },
-      data: { status: 'BOOKED' },
-    });
+    expect(res.status).toBe(401);
   });
 });

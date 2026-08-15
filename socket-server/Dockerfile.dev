@@ -7,20 +7,20 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
 # Enable and configure pnpm
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 # Copy root package.json and lockfile (for Prisma client dependencies)
 COPY package.json pnpm-lock.yaml* ./
-RUN pnpm install
+RUN pnpm install --frozen-lockfile --ignore-scripts
 
 # Copy socket-server package files
 COPY socket-server/package.json socket-server/pnpm-lock.yaml* ./socket-server/
-RUN cd socket-server && pnpm install
+RUN cd socket-server && pnpm install --frozen-lockfile
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN pnpm dlx prisma generate
+RUN pnpm exec prisma generate
 
 # Copy socket server files
 COPY socket-server ./socket-server/

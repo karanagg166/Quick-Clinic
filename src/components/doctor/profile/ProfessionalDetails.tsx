@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +15,8 @@ interface ProfessionalDetailsProps {
     specialties: string[];
     qualificationsList: string[];
     loadingEnums: boolean;
+    onUseCurrentLocation: () => void;
+    locating: boolean;
 }
 
 export function ProfessionalDetails({
@@ -24,6 +27,8 @@ export function ProfessionalDetails({
     specialties,
     qualificationsList,
     loadingEnums,
+    onUseCurrentLocation,
+    locating,
 }: ProfessionalDetailsProps) {
     return (
         <Card className="shadow-sm">
@@ -90,6 +95,49 @@ export function ProfessionalDetails({
                             min={0}
                         />
                     </div>
+                </div>
+
+                <div className="space-y-3 rounded-lg border p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <Label>Practice location</Label>
+                            <p className="text-xs text-muted-foreground mt-1">
+                                Saved once for nearby searches; we never track your live location.
+                            </p>
+                        </div>
+                        <Button type="button" variant="outline" onClick={onUseCurrentLocation} disabled={locating}>
+                            {locating ? "Getting location..." : "Use current practice location"}
+                        </Button>
+                    </div>
+                    <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label htmlFor="latitude">Latitude</Label>
+                            <Input
+                                id="latitude"
+                                type="number"
+                                step="any"
+                                min={-90}
+                                max={90}
+                                value={doctorData.latitude}
+                                onChange={(e) => handleDoctorChange("latitude", e.target.value)}
+                                placeholder="e.g. 12.9716"
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label htmlFor="longitude">Longitude</Label>
+                            <Input
+                                id="longitude"
+                                type="number"
+                                step="any"
+                                min={-180}
+                                max={180}
+                                value={doctorData.longitude}
+                                onChange={(e) => handleDoctorChange("longitude", e.target.value)}
+                                placeholder="e.g. 77.5946"
+                            />
+                        </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">If location access is denied, enter your practice coordinates manually.</p>
                 </div>
 
                 <div className="space-y-3">

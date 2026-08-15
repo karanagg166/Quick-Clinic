@@ -9,6 +9,55 @@ export interface DaySchedule {
   slots: ScheduleSlot[];
 }
 
+export type SlotStatus = "AVAILABLE" | "HELD" | "BOOKED" | "UNAVAILABLE" | "CANCELLED" | "ON_LEAVE";
+
+export interface RawSlot {
+  id: string;
+  startTime: Date | string;
+  endTime: Date | string;
+  status: SlotStatus;
+  appointment?: {
+    id: string;
+    status: string;
+    patient?: {
+      user?: {
+        name?: string;
+        email?: string;
+        phoneNo?: string;
+      };
+    };
+  } | null;
+}
+
+export interface TimelineBlock {
+  type: "BUSY" | "FREE" | "BLOCKED" | "ON_LEAVE";
+  startTime: string;
+  endTime: string;
+  startMinutes: number;
+  endMinutes: number;
+  durationMinutes: number;
+  slotCount: number;
+  bookedCount: number;
+  title: string;
+  description: string;
+  status: SlotStatus;
+  slots: RawSlot[];
+}
+
+export interface DayScheduleMetrics {
+  totalSlots: number;
+  availableCount: number;
+  bookedCount: number;
+  heldCount: number;
+  unavailableCount: number;
+  onLeaveCount: number;
+  totalWorkingMinutes: number;
+  freeMinutes: number;
+  busyMinutes: number;
+  occupancyPercentage: number;
+  nextAppointmentTime?: string;
+}
+
 /**
  * Converts "HH:mm" time string into total minutes since midnight (0 - 1439).
  */
@@ -124,4 +173,168 @@ export function validateWeeklySchedule(weeklySchedule: DaySchedule[]): SlotValid
   }
 
   return { isValid: true };
+}
+
+/**
+ * Maps raw slot status to a high-level block category
+ */
+function getBlockType(status: SlotStatus): "BUSY" | "FREE" | "BLOCKED" | "ON_LEAVE" {
+  switch (status) {
+    case "BOOKED":
+    case "HELD":
+      return "BUSY";
+    case "AVAILABLE":
+      return "FREE";
+    case "ON_LEAVE":
+      return "ON_LEAVE";
+    case "UNAVAILABLE":
+    case "CANCELLED":
+    default:
+      return "BLOCKED";
+  }
+}
+
+/**
+ * Aggregates sorted slots into human-readable contiguous timeline blocks
+ */
+export function calculateTimelineBlocks(slots: RawSlot[]): TimelineBlock[] {
+  if (!slots || slots.length === 0) return [];
+
+  // Sort slots chronologically
+  const sorted = [...slots].sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime());
+
+  const blocks: TimelineBlock[] = [];
+  let currentBlockSlots: RawSlot[] = [sorted[0]];
+  let currentType = getBlockType(sorted[0].status);
+
+  for (let i = 1; i < sorted.length; i++) {
+    const slot = sorted[i];
+    const slotType = getBlockType(slot.status);
+    const prevSlot = currentBlockSlots[currentBlockSlots.length - 1];
+
+    const prevEnd = new Date(prevSlot.endTime).getTime();
+    const currStart = new Date(slot.startTime).getTime();
+
+    // If same type and continuous (gap <= 1 min), group together
+    if (slotType === currentType && Math.abs(currStart - prevEnd) <= 60000) {
+      currentBlockSlots.push(slot);
+    } else {
+      // Finalize current block
+      blocks.push(createTimelineBlock(currentType, currentBlockSlots));
+      currentBlockSlots = [slot];
+      currentType = slotType;
+    }
+  }
+
+  if (currentBlockSlots.length > 0) {
+    blocks.push(createTimelineBlock(currentType, currentBlockSlots));
+  }
+
+  return blocks;
+}
+
+function createTimelineBlock(
+  type: "BUSY" | "FREE" | "BLOCKED" | "ON_LEAVE",
+  slots: RawSlot[]
+): TimelineBlock {
+  const firstSlot = slots[0];
+  const lastSlot = slots[slots.length - 1];
+
+  const startDate = new Date(firstSlot.startTime);
+  const endDate = new Date(lastSlot.endTime);
+
+  const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes();
+  const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
+  const durationMinutes = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
+
+  const bookedCount = slots.filter((s) => s.status === "BOOKED" || s.status === "HELD").length;
+
+  let title = "";
+  let description = "";
+
+  switch (type) {
+    case "BUSY":
+      title = `Busy (${bookedCount} ${bookedCount === 1 ? "Appointment" : "Appointments"})`;
+      description = `Scheduled patient consultations during this block.`;
+      break;
+    case "FREE":
+      title = `Available (${slots.length} open ${slots.length === 1 ? "slot" : "slots"})`;
+      description = `Open for bookings and patient consultations.`;
+      break;
+    case "ON_LEAVE":
+      title = `On Leave`;
+      description = `Doctor is scheduled on approved leave.`;
+      break;
+    case "BLOCKED":
+      title = `Break / Unavailable`;
+      description = `Doctor is offline or time block is reserved.`;
+      break;
+  }
+
+  return {
+    type,
+    startTime: startDate.toISOString(),
+    endTime: endDate.toISOString(),
+    startMinutes,
+    endMinutes,
+    durationMinutes,
+    slotCount: slots.length,
+    bookedCount,
+    title,
+    description,
+    status: firstSlot.status,
+    slots,
+  };
+}
+
+/**
+ * Calculates summary metrics for a list of daily slots
+ */
+export function calculateDayMetrics(slots: RawSlot[]): DayScheduleMetrics {
+  const totalSlots = slots.length;
+  let availableCount = 0;
+  let bookedCount = 0;
+  let heldCount = 0;
+  let unavailableCount = 0;
+  let onLeaveCount = 0;
+  let nextAppointmentTime: string | undefined;
+
+  const now = new Date().getTime();
+
+  for (const slot of slots) {
+    if (slot.status === "AVAILABLE") availableCount++;
+    else if (slot.status === "BOOKED") {
+      bookedCount++;
+      const startMs = new Date(slot.startTime).getTime();
+      if (startMs >= now && (!nextAppointmentTime || startMs < new Date(nextAppointmentTime).getTime())) {
+        nextAppointmentTime = new Date(slot.startTime).toISOString();
+      }
+    } else if (slot.status === "HELD") {
+      heldCount++;
+    } else if (slot.status === "UNAVAILABLE" || slot.status === "CANCELLED") {
+      unavailableCount++;
+    } else if (slot.status === "ON_LEAVE") {
+      onLeaveCount++;
+    }
+  }
+
+  const slotMinutes = 10; // Standard Quick-Clinic slot duration
+  const totalWorkingMinutes = totalSlots * slotMinutes;
+  const freeMinutes = availableCount * slotMinutes;
+  const busyMinutes = (bookedCount + heldCount) * slotMinutes;
+  const occupancyPercentage = totalSlots > 0 ? Math.round(((bookedCount + heldCount) / totalSlots) * 100) : 0;
+
+  return {
+    totalSlots,
+    availableCount,
+    bookedCount,
+    heldCount,
+    unavailableCount,
+    onLeaveCount,
+    totalWorkingMinutes,
+    freeMinutes,
+    busyMinutes,
+    occupancyPercentage,
+    nextAppointmentTime,
+  };
 }

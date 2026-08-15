@@ -10,6 +10,7 @@ vi.mock('@/lib/prisma', () => ({
       findUnique: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
       delete: vi.fn(),
     },
     schedule: {
@@ -84,6 +85,21 @@ describe('Doctor Slots Route', () => {
 
     const res = await PATCH(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(400);
+  });
+
+  it('PATCH supports bulk slot updates for a list of slotIds', async () => {
+    vi.mocked(prisma.slot.updateMany).mockResolvedValueOnce({ count: 3 });
+
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots', {
+      method: 'PATCH',
+      body: JSON.stringify({ slotIds: ['s1', 's2', 's3'], status: 'UNAVAILABLE' }),
+    });
+
+    const res = await PATCH(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.success).toBe(true);
+    expect(data.count).toBe(3);
   });
 
   it('DELETE only deletes AVAILABLE slots', async () => {

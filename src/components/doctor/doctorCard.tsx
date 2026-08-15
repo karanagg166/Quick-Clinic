@@ -2,6 +2,7 @@
 
 import {
   MapPin,
+  Navigation,
   Star,
   Calendar,
   User,
@@ -52,6 +53,13 @@ export default function DoctorCard({ doctor }: { doctor: Doctor }) {
           <MapPin className="w-4 h-4 text-muted-foreground" />
           <span>{doctor.city}, {doctor.state}</span>
         </div>
+
+        {doctor.distanceKm !== undefined && doctor.durationMinutes !== undefined && (
+          <div className="flex items-center gap-2 text-sm">
+            <Navigation className="w-4 h-4 text-muted-foreground" />
+            <span>{doctor.distanceKm} km away · about {doctor.durationMinutes} min</span>
+          </div>
+        )}
 
         <div className="flex items-center gap-2 text-sm">
           <Star className="w-4 h-4 text-muted-foreground" />

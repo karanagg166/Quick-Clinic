@@ -27,6 +27,8 @@ export default function FindDoctorsPage() {
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [specializations, setSpecializations] = useState<string[]>([]);
+  const [distanceUnavailable, setDistanceUnavailable] = useState(false);
+  const [requestingLocation, setRequestingLocation] = useState(false);
 
   // Fetch specializations on mount
   useEffect(() => {
@@ -66,7 +68,7 @@ export default function FindDoctorsPage() {
     minExperience?: string;
     maxExperience?: string;
     age?: string;
-  }) => {
+  }, coordinates?: { latitude: number; longitude: number }) => {
     setLoading(true);
     setSearched(true);
 
@@ -93,6 +95,10 @@ export default function FindDoctorsPage() {
       if (actualMinExperience) params.append("minExperience", actualMinExperience);
       if (actualMaxExperience) params.append("maxExperience", actualMaxExperience);
       if (actualAge) params.append("age", actualAge);
+      if (coordinates) {
+        params.append("lat", String(coordinates.latitude));
+        params.append("lng", String(coordinates.longitude));
+      }
       // console.log("Fetching doctors with params:", params.toString());
       const res = await fetch(`/api/doctors?${params.toString()}`, {
         method: "GET",
@@ -110,16 +116,44 @@ export default function FindDoctorsPage() {
 
 
         setDoctors(doctorsData);
+        setDistanceUnavailable(Boolean(!Array.isArray(data) && data.distanceUnavailable));
       } else {
         console.error("Failed to fetch doctors:", res);
         setDoctors([]);
+        setDistanceUnavailable(Boolean(coordinates));
       }
     } catch (error) {
       console.error("Error fetching doctors:", error);
       setDoctors([]);
+      setDistanceUnavailable(Boolean(coordinates));
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleNearbySearch = () => {
+    if (!navigator.geolocation) {
+      setDistanceUnavailable(true);
+      void handleSearch().then(() => setDistanceUnavailable(true));
+      return;
+    }
+
+    setRequestingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setRequestingLocation(false);
+        void handleSearch(undefined, {
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+      },
+      () => {
+        setRequestingLocation(false);
+        setDistanceUnavailable(true);
+        void handleSearch().then(() => setDistanceUnavailable(true));
+      },
+      { enableHighAccuracy: false, timeout: 10_000, maximumAge: 0 },
+    );
   };
 
   // Load doctors on mount
@@ -138,6 +172,7 @@ export default function FindDoctorsPage() {
     setSpecialty("");
     setGender("");
     setAge("");
+    setDistanceUnavailable(false);
     handleSearch({
       city: "",
       state: "",
@@ -255,12 +290,27 @@ export default function FindDoctorsPage() {
                 Clear
               </Button>
             </div>
+            <Button
+              onClick={handleNearbySearch}
+              variant="secondary"
+              disabled={loading || requestingLocation}
+              className="w-full"
+            >
+              {requestingLocation ? "Getting your location..." : "Find doctors near me"}
+            </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Doctors List */}
       <div>
+        {distanceUnavailable && (
+          <Card className="mb-4 border-amber-300 bg-amber-50">
+            <CardContent className="p-4 text-sm text-amber-900">
+              Distance and travel time are unavailable. Showing doctors that match your filters instead.
+            </CardContent>
+          </Card>
+        )}
         {loading && (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <Skeleton className="h-64 w-full" />
