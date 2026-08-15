@@ -14,8 +14,12 @@ function getRedis() {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const token = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !token) return null;
-  redis ??= new Redis({ url, token });
-  return redis;
+  try {
+    redis ??= new Redis({ url, token });
+    return redis;
+  } catch {
+    return null;
+  }
 }
 
 export function bookingSlotKey(slotId: string) {
@@ -24,51 +28,95 @@ export function bookingSlotKey(slotId: string) {
 
 async function ownsHold(slotId: string, patientId: string, token: string) {
   const client = getRedis();
-  if (!client) return false;
-  const value = await client.get<HoldValue>(bookingSlotKey(slotId));
-  return value?.patientId === patientId && value.token === token;
+  if (client) {
+    try {
+      const value = await client.get<HoldValue>(bookingSlotKey(slotId));
+      if (value) {
+        return value.patientId === patientId && value.token === token;
+      }
+    } catch (e) {
+      console.warn("Redis ownsHold error:", e);
+    }
+  }
+
+  // Database fallback check
+  try {
+    const slot = await prisma.slot.findUnique({
+      where: { id: slotId },
+    });
+    if (!slot) return false;
+    if (slot.status === "HELD" && slot.heldByPatientId === patientId) {
+      if (slot.heldAt && Date.now() - slot.heldAt.getTime() <= HOLD_TTL_MS) {
+        return true;
+      }
+    }
+  } catch (dbError) {
+    console.error("Database ownsHold check error:", dbError);
+  }
+  return false;
 }
 
 async function deleteIfOwner(slotId: string, patientId: string, token: string) {
   const client = getRedis();
   if (!client) return;
-  const key = bookingSlotKey(slotId);
-  if (await ownsHold(slotId, patientId, token)) await client.del(key);
+  try {
+    const key = bookingSlotKey(slotId);
+    if (await ownsHold(slotId, patientId, token)) await client.del(key);
+  } catch (e) {
+    console.warn("Redis deleteIfOwner error:", e);
+  }
 }
 
 export async function expireSlotHolds(slotId?: string) {
   const cutoff = new Date(Date.now() - HOLD_TTL_MS);
-  await prisma.slot.updateMany({
-    where: {
-      ...(slotId ? { id: slotId } : {}),
-      status: "HELD",
-      heldAt: { lte: cutoff },
-    },
-    data: { status: "AVAILABLE", heldByPatientId: null, heldAt: null },
-  });
+  try {
+    await prisma.slot.updateMany({
+      where: {
+        ...(slotId ? { id: slotId } : {}),
+        status: "HELD",
+        heldAt: { lte: cutoff },
+      },
+      data: { status: "AVAILABLE", heldByPatientId: null, heldAt: null },
+    });
+  } catch (e) {
+    console.warn("expireSlotHolds error:", e);
+  }
 }
 
 export async function expireDoctorHolds(doctorId: string) {
   const cutoff = new Date(Date.now() - HOLD_TTL_MS);
-  await prisma.slot.updateMany({
-    where: { doctorId, status: "HELD", heldAt: { lte: cutoff } },
-    data: { status: "AVAILABLE", heldByPatientId: null, heldAt: null },
-  });
+  try {
+    await prisma.slot.updateMany({
+      where: { doctorId, status: "HELD", heldAt: { lte: cutoff } },
+      data: { status: "AVAILABLE", heldByPatientId: null, heldAt: null },
+    });
+  } catch (e) {
+    console.warn("expireDoctorHolds error:", e);
+  }
 }
 
 export async function createSlotHold(slotId: string, doctorId: string, patientId: string) {
   await expireSlotHolds(slotId);
-  const client = getRedis();
-  if (!client) return { kind: "unavailable" as const };
 
   const token = randomUUID();
-  const locked = await client.set(bookingSlotKey(slotId), { patientId, token }, { nx: true, ex: HOLD_TTL_SECONDS });
-  if (locked !== "OK") return { kind: "conflict" as const };
+  const client = getRedis();
 
+  // Try Redis distributed lock if available
+  if (client) {
+    try {
+      const locked = await client.set(bookingSlotKey(slotId), { patientId, token }, { nx: true, ex: HOLD_TTL_SECONDS });
+      if (locked !== "OK") return { kind: "conflict" as const };
+    } catch (redisError) {
+      console.warn("Redis set failed, proceeding with DB lock:", redisError);
+    }
+  }
+
+  // Atomic database slot transition from AVAILABLE to HELD
   const transitioned = await prisma.slot.updateMany({
     where: { id: slotId, doctorId, status: "AVAILABLE" },
     data: { status: "HELD", heldByPatientId: patientId, heldAt: new Date() },
   });
+
   if (transitioned.count !== 1) {
     await deleteIfOwner(slotId, patientId, token);
     return { kind: "conflict" as const };
@@ -86,7 +134,8 @@ export async function confirmSlotHold(input: {
   transactionId?: string | null;
 }) {
   await expireSlotHolds(input.slotId);
-  if (!(await ownsHold(input.slotId, input.patientId, input.token))) return null;
+  const isOwner = await ownsHold(input.slotId, input.patientId, input.token);
+  if (!isOwner) return null;
 
   try {
     const appointment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
@@ -123,7 +172,8 @@ export async function confirmSlotHold(input: {
 
 export async function cancelSlotHold(slotId: string, patientId: string, token: string) {
   await expireSlotHolds(slotId);
-  if (!(await ownsHold(slotId, patientId, token))) return false;
+  const isOwner = await ownsHold(slotId, patientId, token);
+  if (!isOwner) return false;
 
   const released = await prisma.slot.updateMany({
     where: { id: slotId, status: "HELD", heldByPatientId: patientId },
