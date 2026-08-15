@@ -13,7 +13,7 @@ test("GET /api/doctors - retrieves all doctors when no filters are applied", asy
 });
 
 test("GET /api/doctors - filters by city (case-insensitive & trimmed)", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?city=%20%20jabalpur%20%20");
+  const req = new NextRequest("http://localhost:3000/api/doctors?city=%20%20bangalore%20%20");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 
@@ -21,12 +21,12 @@ test("GET /api/doctors - filters by city (case-insensitive & trimmed)", async ()
   assert.ok(Array.isArray(doctors));
   assert.ok(doctors.length > 0);
   doctors.forEach((doc: any) => {
-    assert.strictEqual(doc.city.toLowerCase(), "jabalpur");
+    assert.strictEqual(doc.city.toLowerCase(), "bangalore");
   });
 });
 
 test("GET /api/doctors - filters by state (case-insensitive & trimmed)", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?state=%20%20madhya%20pradesh%20%20");
+  const req = new NextRequest("http://localhost:3000/api/doctors?state=%20%20karnataka%20%20");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 
@@ -34,9 +34,10 @@ test("GET /api/doctors - filters by state (case-insensitive & trimmed)", async (
   assert.ok(Array.isArray(doctors));
   assert.ok(doctors.length > 0);
   doctors.forEach((doc: any) => {
-    assert.strictEqual(doc.state.toLowerCase(), "madhya pradesh");
+    assert.strictEqual(doc.state.toLowerCase(), "karnataka");
   });
 });
+
 
 test("GET /api/doctors - filters by doctor name (case-insensitive & trimmed)", async () => {
   const req = new NextRequest("http://localhost:3000/api/doctors?name=%20%20priyanshu%20%20");
@@ -177,7 +178,7 @@ test("GET /api/doctors - filters by experience range (minExperience & maxExperie
 });
 
 test("GET /api/doctors - filters by exact age", async () => {
-  const req = new NextRequest("http://localhost:3000/api/doctors?age=21");
+  const req = new NextRequest("http://localhost:3000/api/doctors?age=38");
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
 
@@ -185,9 +186,10 @@ test("GET /api/doctors - filters by exact age", async () => {
   assert.ok(Array.isArray(doctors));
   assert.ok(doctors.length > 0);
   doctors.forEach((doc: any) => {
-    assert.strictEqual(doc.age, 21);
+    assert.strictEqual(doc.age, 38);
   });
 });
+
 
 test("GET /api/doctors - handles non-numeric age, fees, and experience gracefully", async () => {
   const req = new NextRequest("http://localhost:3000/api/doctors?age=invalid&minFees=invalid&maxFees=invalid&minExperience=invalid&maxExperience=invalid");
