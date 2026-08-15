@@ -55,31 +55,48 @@ const doctorId = useUserStore((s) => s.doctorId);
     fetchSchedule();
   }, [doctorId]);
 
-  // Add empty slot
+  // Add empty slot (pure immutable update)
   const appendSlot = (dayIndex: number) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots.push({
-        slotNo: updated[dayIndex].slots.length + 1,
-        start: "",
-        end: "",
-      });
-      return updated;
-    });
+    setSchedule((prev) =>
+      prev.map((dayItem, dIdx) => {
+        if (dIdx !== dayIndex) return dayItem;
+        return {
+          ...dayItem,
+          slots: [
+            ...dayItem.slots,
+            {
+              slotNo: dayItem.slots.length + 1,
+              start: "",
+              end: "",
+            },
+          ],
+        };
+      })
+    );
   };
 
-  // Update slot
+  // Update slot (pure immutable update)
   const updateSlot = (
     dayIndex: number,
     slotIndex: number,
     field: "start" | "end",
     value: string
   ) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots[slotIndex][field] = value;
-      return updated;
-    });
+    setSchedule((prev) =>
+      prev.map((dayItem, dIdx) => {
+        if (dIdx !== dayIndex) return dayItem;
+        return {
+          ...dayItem,
+          slots: dayItem.slots.map((slot, sIdx) => {
+            if (sIdx !== slotIndex) return slot;
+            return {
+              ...slot,
+              [field]: value,
+            };
+          }),
+        };
+      })
+    );
   };
 
   // Save slot validation
@@ -107,13 +124,23 @@ const doctorId = useUserStore((s) => s.doctorId);
     showToast.success("Slot saved!");
   };
 
-  // Delete slot
+  // Delete slot (pure immutable update with renumbering)
   const deleteSlot = (dayIndex: number, slotIndex: number) => {
-    setSchedule((prev) => {
-      const updated = [...prev];
-      updated[dayIndex].slots.splice(slotIndex, 1);
-      return updated;
-    });
+    setSchedule((prev) =>
+      prev.map((dayItem, dIdx) => {
+        if (dIdx !== dayIndex) return dayItem;
+        const newSlots = dayItem.slots
+          .filter((_, sIdx) => sIdx !== slotIndex)
+          .map((slot, idx) => ({
+            ...slot,
+            slotNo: idx + 1,
+          }));
+        return {
+          ...dayItem,
+          slots: newSlots,
+        };
+      })
+    );
   };
 
   // Submit full schedule

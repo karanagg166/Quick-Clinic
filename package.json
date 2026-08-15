@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "dev:socket": "cd socket-server && npm run dev",
+    "dev:docker": "node scripts/docker-dev.mjs",
+    "docker:up": "node scripts/docker-dev.mjs",
     "build": "prisma generate && next build",
     "postinstall": "prisma generate",
     "start": "next start",
