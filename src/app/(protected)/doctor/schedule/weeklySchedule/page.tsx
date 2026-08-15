@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useUserStore } from "@/store/userStore";
 import ScheduleDaySection from "@/components/doctor/schedule/ScheduleDaySection";
 import { showToast } from "@/lib/toast";
+import { validateDaySlots, validateWeeklySchedule } from "@/lib/scheduleUtils";
 
 interface Slot {
   slotNo: number;
@@ -83,10 +84,23 @@ const doctorId = useUserStore((s) => s.doctorId);
 
   // Save slot validation
   const saveSlot = (dayIndex: number, slotIndex: number) => {
-    const slot = schedule[dayIndex].slots[slotIndex];
+    const day = schedule[dayIndex];
+    const slot = day.slots[slotIndex];
 
-    if (!slot.start || !slot.end || slot.start >= slot.end) {
-      showToast.warning("Invalid slot time");
+    if (!slot.start || !slot.end) {
+      showToast.warning("Please fill both start and end times");
+      return;
+    }
+
+    if (slot.start >= slot.end) {
+      showToast.warning("Start time must be before end time");
+      return;
+    }
+
+    // Validate no overlap on that day
+    const dayValidation = validateDaySlots(day.day, day.slots);
+    if (!dayValidation.isValid) {
+      showToast.warning(dayValidation.error || "Overlapping slots detected");
       return;
     }
 
@@ -126,6 +140,13 @@ const doctorId = useUserStore((s) => s.doctorId);
         slotNo: index + 1,
       })),
     }));
+
+    // Validate no overlapping slots across all days
+    const scheduleValidation = validateWeeklySchedule(normalizedSchedule);
+    if (!scheduleValidation.isValid) {
+      showToast.warning(scheduleValidation.error || "Schedule validation failed");
+      return;
+    }
 
     setLoading(true);
     try {

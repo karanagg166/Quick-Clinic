@@ -13,8 +13,8 @@ COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install
 
 # Copy socket-server package files
-COPY socket-server/package*.json ./socket-server/
-RUN cd socket-server && npm install
+COPY socket-server/package.json socket-server/pnpm-lock.yaml* ./socket-server/
+RUN cd socket-server && pnpm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
@@ -31,7 +31,7 @@ COPY socket-server/tsconfig.json ./socket-server/
 
 # Build TypeScript
 WORKDIR /app/socket-server
-RUN npx tsc
+RUN pnpm exec tsc
 
 EXPOSE 4000
 

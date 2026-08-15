@@ -1,17 +1,10 @@
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Watermark from "@/components/general/Watermark";
 
 const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
   display: "swap",
 });
@@ -31,9 +24,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
-      <body
-        className={`${inter.variable} ${geistMono.variable} font-sans antialiased`}
-      >
+      <body className={`${inter.className} antialiased`}>
         {children}
         <Toaster />
         <Watermark />

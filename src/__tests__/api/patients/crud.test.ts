@@ -86,6 +86,96 @@ describe('Patients API CRUD & Filters', () => {
     expect(data[0].medicalHistory).toBe('Asthma');
   });
 
+  it('GET filters patients by minAge and maxAge range', async () => {
+    vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
+      { patientId: 'pat_1' },
+    ] as any);
+
+    vi.mocked(prisma.patient.findMany).mockResolvedValueOnce([
+      {
+        id: 'pat_1',
+        user: {
+          id: 'u_1',
+          name: 'Alice',
+          email: 'alice@example.com',
+          age: 28,
+          gender: 'FEMALE',
+          phoneNo: '9876543210',
+          location: { city: 'Delhi', state: 'Delhi' },
+        },
+      },
+    ] as any);
+
+    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=20&maxAge=35');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    expect(prisma.patient.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          user: expect.objectContaining({
+            age: { gte: 20, lte: 35 },
+          }),
+        }),
+      })
+    );
+  });
+
+  it('GET filters patients by minAge only', async () => {
+    vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
+      { patientId: 'pat_1' },
+    ] as any);
+
+    vi.mocked(prisma.patient.findMany).mockResolvedValueOnce([
+      {
+        id: 'pat_1',
+        user: {
+          id: 'u_1',
+          name: 'Charlie',
+          email: 'charlie@example.com',
+          age: 45,
+          gender: 'MALE',
+        },
+      },
+    ] as any);
+
+    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=40');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    expect(prisma.patient.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          user: expect.objectContaining({
+            age: { gte: 40 },
+          }),
+        }),
+      })
+    );
+  });
+
+  it('GET filters patients by maxAge only', async () => {
+    vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
+      { patientId: 'pat_1' },
+    ] as any);
+
+    vi.mocked(prisma.patient.findMany).mockResolvedValueOnce([]);
+
+    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&maxAge=60');
+    const res = await GET(req);
+    expect(res.status).toBe(200);
+
+    expect(prisma.patient.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          user: expect.objectContaining({
+            age: { lte: 60 },
+          }),
+        }),
+      })
+    );
+  });
+
   it('PATCH updates patient medical history', async () => {
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({
       id: 'pat_1',

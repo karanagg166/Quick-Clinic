@@ -6,7 +6,7 @@ This guide contains all standard local development and Docker commands for the Q
 
 ## 🏗️ 0. Architecture & Package Manager Rules
 - **Root Web App (`/`):** Next.js 16 App Router, Prisma 7, NextAuth. **ALWAYS use `pnpm`**.
-- **Socket Server (`/socket-server`):** Standalone Socket.IO server. **Uses `npm`**.
+- **Socket Server (`/socket-server`):** Standalone Socket.IO server. **ALWAYS use `pnpm`**.
 - **Database:** PostgreSQL (Neon) with Prisma custom output at `src/generated/prisma`.
 - **Cache / Messaging:** Upstash Redis / Redis.
 
@@ -20,7 +20,7 @@ This guide contains all standard local development and Docker commands for the Q
 pnpm install
 
 # Install socket-server dependencies
-cd socket-server && npm install && cd ..
+cd socket-server && pnpm install && cd ..
 ```
 
 ### Running Dev Servers
@@ -28,8 +28,10 @@ cd socket-server && npm install && cd ..
 # Run Next.js frontend dev server (default port 3000)
 pnpm dev
 
-# Run Socket server in parallel (port 4000)
-cd socket-server && npm run dev
+# Run Socket server in parallel from root (port 4000)
+pnpm dev:socket
+# or directly inside socket-server:
+cd socket-server && pnpm dev
 ```
 
 ### Prisma & Database

@@ -14,8 +14,8 @@ COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install
 
 # Copy socket-server package files
-COPY socket-server/package*.json ./socket-server/
-RUN cd socket-server && npm install
+COPY socket-server/package.json socket-server/pnpm-lock.yaml* ./socket-server/
+RUN cd socket-server && pnpm install
 
 # Copy Prisma schema and generate client
 COPY prisma ./prisma/
@@ -33,5 +33,4 @@ ENV PORT=4000
 
 # Start in development mode with watch
 WORKDIR /app/socket-server
-CMD ["npm", "run", "dev"]
-
+CMD ["pnpm", "run", "dev"]

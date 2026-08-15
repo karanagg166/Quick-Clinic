@@ -37,6 +37,12 @@ test("POST /api/admin/onboarding - rejects invalid secret code", async () => {
   });
   expect(adminUser).toBeDefined();
 
+  await prisma.admin.upsert({
+    where: { userId: adminUser!.id },
+    update: {},
+    create: { userId: adminUser!.id },
+  });
+
   const adminToken = await createToken({
     id: adminUser!.id,
     email: adminUser!.email,

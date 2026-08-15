@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { validateWeeklySchedule } from "@/lib/scheduleUtils";
 
 // ========================================================
 // POST → CREATE or UPDATE Doctor Schedule (UPSERT)
@@ -21,6 +22,15 @@ export async function POST(
     if (!weeklySchedule) {
       return NextResponse.json(
         { error: "Missing weeklySchedule" },
+        { status: 400 }
+      );
+    }
+
+    // Validate that schedule has no overlapping or invalid slots
+    const validation = validateWeeklySchedule(weeklySchedule);
+    if (!validation.isValid) {
+      return NextResponse.json(
+        { error: validation.error },
         { status: 400 }
       );
     }

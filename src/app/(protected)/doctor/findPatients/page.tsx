@@ -9,13 +9,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RotateCcw, Search } from "lucide-react";
 
 export default function FindPatientsPage() {
-  const doctorId = useUserStore((s) => s.doctorId); // ✅ FIXED
+  const doctorId = useUserStore((s) => s.doctorId);
 
   const [name, setName] = useState("");
   const [gender, setGender] = useState("");
-  const [age, setAge] = useState("");
+  const [minAge, setMinAge] = useState("");
+  const [maxAge, setMaxAge] = useState("");
   const [email, setEmail] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -34,7 +36,8 @@ export default function FindPatientsPage() {
 
       if (name) params.append("name", name);
       if (gender && gender !== "all") params.append("gender", gender);
-      if (age) params.append("age", age);
+      if (minAge) params.append("minAge", minAge);
+      if (maxAge) params.append("maxAge", maxAge);
       if (email) params.append("email", email);
       if (city) params.append("city", city);
       if (state) params.append("state", state);
@@ -46,7 +49,6 @@ export default function FindPatientsPage() {
 
       if (res.ok) {
         const data = await res.json();
-console.log(data);
         // Make sure medical arrays always exist
         const safePatients = (Array.isArray(data) ? data : data.patients ?? []).map((p: any) => ({
           ...p,
@@ -68,12 +70,24 @@ console.log(data);
     }
   };
 
+  const handleReset = () => {
+    setName("");
+    setGender("");
+    setMinAge("");
+    setMaxAge("");
+    setEmail("");
+    setCity("");
+    setState("");
+    setPatients([]);
+    setSearched(false);
+  };
+
   return (
     <div className="min-h-screen p-6 space-y-8">
       {/* Header */}
       <div>
         <h1 className="text-3xl font-semibold mb-2">Find Patients</h1>
-        <p className="text-muted-foreground">Search patient records using flexible filters</p>
+        <p className="text-muted-foreground">Search patient records using flexible age range, demographic, and location filters</p>
       </div>
 
       {/* Filters */}
@@ -81,8 +95,8 @@ console.log(data);
         <CardHeader>
           <CardTitle>Search Filters</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             <Input
               type="text"
               placeholder="Name"
@@ -90,7 +104,7 @@ console.log(data);
               onChange={(e) => setName(e.target.value)}
             />
             <Select value={gender} onValueChange={setGender}>
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue placeholder="All Genders" />
               </SelectTrigger>
               <SelectContent>
@@ -102,9 +116,19 @@ console.log(data);
             </Select>
             <Input
               type="number"
-              placeholder="Age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
+              placeholder="Min Age (e.g. 18)"
+              value={minAge}
+              min={0}
+              max={150}
+              onChange={(e) => setMinAge(e.target.value)}
+            />
+            <Input
+              type="number"
+              placeholder="Max Age (e.g. 65)"
+              value={maxAge}
+              min={0}
+              max={150}
+              onChange={(e) => setMaxAge(e.target.value)}
             />
             <Input
               type="text"
@@ -124,13 +148,24 @@ console.log(data);
               value={state}
               onChange={(e) => setState(e.target.value)}
             />
-            <Button
-              onClick={handleSearch}
-              className="w-full"
-              disabled={loading}
-            >
-              {loading ? "Searching..." : "Search"}
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={handleSearch}
+                className="flex-1 flex items-center gap-1.5"
+                disabled={loading}
+              >
+                <Search className="w-4 h-4" />
+                {loading ? "Searching..." : "Search"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleReset}
+                disabled={loading}
+                title="Reset filters"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -148,14 +183,14 @@ console.log(data);
         {!loading && searched && patients.length === 0 && (
           <Card>
             <CardContent className="p-6 text-center">
-              <p className="text-muted-foreground">No patients found.</p>
+              <p className="text-muted-foreground">No patients found matching your search criteria.</p>
             </CardContent>
           </Card>
         )}
 
         {!loading && patients.length > 0 && (
           <>
-            <h2 className="text-2xl font-semibold mb-4">Search Results</h2>
+            <h2 className="text-2xl font-semibold mb-4">Search Results ({patients.length})</h2>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {patients.map((patient) => (
                 <PatientCard key={patient.id} patient={patient} />

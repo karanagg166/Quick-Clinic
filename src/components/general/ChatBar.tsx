@@ -1,17 +1,19 @@
 'use client';
-import React, { useState, useEffect, useRef } from 'react';
-import { Send, Loader, AlertCircle } from 'lucide-react';
+
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { Send, Loader, Wifi, WifiOff } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import { showToast } from '@/lib/toast';
 
 interface Message {
   id: string;
   text: string;
   senderId: string;
-  senderName: string;
-  senderRole: string;
+  senderName?: string;
+  senderRole?: string;
   createdAt: string;
 }
 
@@ -25,7 +27,6 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [typingUser, setTypingUser] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -33,101 +34,133 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Initialize Socket.io connection
+  // 1. Fetch initial messages via REST API for guaranteed reliability
+  const fetchMessagesFromAPI = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats?limit=50`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.chats && Array.isArray(data.chats)) {
+          setMessages(data.chats);
+        }
+      }
+    } catch {
+      // Ignore network errors on chat history fetch
+    } finally {
+      setLoading(false);
+    }
+  }, [doctorPatientRelationId]);
+
   useEffect(() => {
-    const connectSocket = () => {
+    fetchMessagesFromAPI();
+  }, [fetchMessagesFromAPI]);
+
+  // 2. Initialize Socket.io connection with pre-flight check to prevent unhandled WebSocket errors
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+    let isMounted = true;
+    let socketInstance: Socket | null = null;
+
+    const setupSocket = async () => {
       try {
-        // Connect to separate Socket.io server
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
-        
-        console.log('Connecting to Socket.IO server:', socketUrl);
-        
-        const socket = io(socketUrl, {
+        // Pre-flight health check to verify socket server is running
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
+
+        const healthRes = await fetch(`${socketUrl}/health`, {
+          method: 'GET',
+          signal: controller.signal,
+        }).catch(() => null);
+
+        clearTimeout(timeoutId);
+
+        if (!healthRes || !healthRes.ok || !isMounted) {
+          // Socket server is offline - stay in standard REST mode
+          if (isMounted) {
+            setIsConnected(false);
+            setLoading(false);
+          }
+          return;
+        }
+
+        // Server is reachable, initiate socket connection
+        socketInstance = io(socketUrl, {
           auth: {
             relationId: doctorPatientRelationId,
             userId,
           },
+          transports: ['websocket', 'polling'],
           reconnection: true,
-          reconnectionDelay: 1000,
-          reconnectionDelayMax: 5000,
-          reconnectionAttempts: 5,
+          reconnectionDelay: 2000,
+          reconnectionDelayMax: 10000,
+          reconnectionAttempts: 3,
+          timeout: 4000,
         });
 
-        socket.on('connect', () => {
-          console.log('Socket connected successfully');
-          setIsConnected(true);
-          setError(null);
-
-          // Request initial messages
-          socket.emit('get_initial_messages', { page: 1, limit: 50 });
+        socketInstance.on('connect', () => {
+          if (isMounted) {
+            setIsConnected(true);
+            socketInstance?.emit('get_initial_messages', { page: 1, limit: 50 });
+          }
         });
 
-        socket.on('connected', (data: any) => {
-          console.log('Connection confirmed:', data);
+        socketInstance.on('initial_messages', (data: { messages?: Message[] }) => {
+          if (isMounted && data?.messages && Array.isArray(data.messages)) {
+            setMessages(data.messages);
+          }
+          if (isMounted) setLoading(false);
         });
 
-        socket.on('initial_messages', (data: any) => {
-          console.log('Received initial messages:', data);
-          setMessages(data.messages || []);
-          setLoading(false);
+        socketInstance.on('new_message', (data: { message: Message }) => {
+          if (isMounted && data?.message) {
+            setMessages((prev) => {
+              const isDuplicate = prev.some((msg) => msg.id === data.message.id);
+              return isDuplicate ? prev : [...prev, data.message];
+            });
+          }
         });
 
-        socket.on('new_message', (data: any) => {
-          console.log('Received new message:', data);
-          setMessages((prev) => {
-            const isDuplicate = prev.some((msg) => msg.id === data.message.id);
-            return isDuplicate ? prev : [...prev, data.message];
-          });
-        });
-
-        socket.on('user_typing', (data: any) => {
-          if (data.userId !== userId) {
-            setTypingUser(data.userName || data.userId);
+        socketInstance.on('user_typing', (data: { userId: string; userName?: string }) => {
+          if (isMounted && data.userId !== userId) {
+            setTypingUser(data.userName || 'Someone');
             if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
             typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
           }
         });
 
-        socket.on('error', (data: any) => {
-          console.error('Socket error:', data);
-          setError(data.message || 'Socket error occurred');
-          setLoading(false);
+        socketInstance.on('disconnect', () => {
+          if (isMounted) setIsConnected(false);
         });
 
-        socket.on('disconnect', (reason: string) => {
-          console.log('Socket disconnected:', reason);
+        socketInstance.on('connect_error', () => {
+          if (isMounted) {
+            setIsConnected(false);
+            setLoading(false);
+          }
+        });
+
+        if (isMounted) {
+          socketRef.current = socketInstance;
+        }
+      } catch {
+        if (isMounted) {
           setIsConnected(false);
-        });
-
-        socket.on('connect_error', (error: any) => {
-          console.error('Connection error:', error.message);
-          setError('Cannot connect to chat server. Please ensure the Socket.IO server is running on port 4000.');
-          setIsConnected(false);
           setLoading(false);
-        });
-
-        socketRef.current = socket;
-
-        return socket;
-      } catch (err) {
-        console.error('Socket initialization error:', err);
-        setError('Failed to initialize chat connection');
-        setLoading(false);
-        return null;
+        }
       }
     };
 
-    const socket = connectSocket();
+    setupSocket();
 
     return () => {
-      if (socket) {
-        console.log('Disconnecting socket');
-        socket.disconnect();
+      isMounted = false;
+      if (socketInstance) {
+        socketInstance.disconnect();
       }
     };
   }, [doctorPatientRelationId, userId]);
 
-  // Auto-scroll to bottom when messages change
+  // Auto-scroll to bottom on message update
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -147,34 +180,43 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     }
   };
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
+    const text = inputValue.trim();
+    if (!text || sending) return;
 
-    if (!inputValue.trim()) return;
-    
-    if (!isConnected || !socketRef.current) {
-      setError('Not connected to chat server. Please refresh the page.');
-      return;
-    }
+    setSending(true);
 
     try {
-      setSending(true);
-
-      if (socketRef.current.connected) {
-        console.log('Sending message:', inputValue.trim());
-        
-        socketRef.current.emit('send_message', {
-          text: inputValue.trim(),
+      // If socket is active, send via Socket
+      if (socketRef.current && socketRef.current.connected) {
+        socketRef.current.emit('send_message', { text });
+        setInputValue('');
+      } else {
+        // Fallback: Send directly via REST API
+        const res = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            senderId: userId,
+          }),
         });
 
-        setInputValue('');
-        setError(null);
-      } else {
-        setError('Connection lost. Trying to reconnect...');
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.chat) {
+            setMessages((prev) => [...prev, data.chat]);
+          }
+          setInputValue('');
+        } else {
+          const errorData = await res.json();
+          showToast.error(errorData.error || 'Failed to send message');
+        }
       }
     } catch (err) {
       console.error('Error sending message:', err);
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      showToast.error('Failed to send message. Please try again.');
     } finally {
       setSending(false);
     }
@@ -183,7 +225,6 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      // create a fake form event to reuse send handler
       handleSendMessage({ preventDefault: () => {} } as unknown as React.FormEvent);
     }
   };
@@ -191,15 +232,27 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   return (
     <div className="flex flex-col h-screen bg-background">
       {/* Header */}
-      <div className="border-b px-6 py-4 sticky top-0 z-10 bg-background">
+      <div className="border-b px-6 py-4 sticky top-0 z-10 bg-background/95 backdrop-blur">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xl font-semibold tracking-tight">Chat</h2>
             <p className="text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
           </div>
-          <Badge variant={isConnected ? "default" : "destructive"} className="flex items-center gap-2">
-            <div className={`w-2.5 h-2.5 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
-            {isConnected ? 'Connected' : 'Connecting'}
+          <Badge
+            variant={isConnected ? "default" : "secondary"}
+            className="flex items-center gap-1.5 px-3 py-1"
+          >
+            {isConnected ? (
+              <>
+                <Wifi className="w-3.5 h-3.5 text-green-500" />
+                <span>Live Socket</span>
+              </>
+            ) : (
+              <>
+                <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
+                <span>Standard (REST)</span>
+              </>
+            )}
           </Badge>
         </div>
       </div>
@@ -209,61 +262,66 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <Loader className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600 font-medium text-lg">Loading messages...</p>
-              <p className="text-xs text-gray-400 mt-2">Make sure Socket.IO server is running</p>
+              <Loader className="w-8 h-8 text-primary animate-spin mx-auto mb-3" />
+              <p className="text-muted-foreground font-medium text-sm">Loading messages...</p>
             </div>
           </div>
         ) : messages.length === 0 ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-4xl">💬</span>
+              <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <span className="text-2xl">💬</span>
               </div>
-              <p className="text-gray-700 font-semibold text-lg">No messages yet</p>
-              <p className="text-sm text-gray-500 mt-2">Start the conversation by sending a message</p>
+              <p className="text-foreground font-semibold text-base">No messages yet</p>
+              <p className="text-xs text-muted-foreground mt-1">Start the conversation by sending a message below</p>
             </div>
           </div>
         ) : (
-          messages.map((message, idx) => (
-            <div
-              key={message.id}
-              className={`flex ${message.senderId === userId ? 'justify-end' : 'justify-start'} animate-fadeIn`}
-            >
+          messages.map((message) => {
+            const isMe = message.senderId === userId;
+            return (
               <div
-                className={`max-w-[72%] px-4 py-2.5 rounded-2xl shadow-sm ${
-                  message.senderId === userId
-                    ? 'bg-blue-500 text-white rounded-br-none'
-                    : 'bg-gray-200 text-gray-800 rounded-bl-none'
-                }`}
+                key={message.id}
+                className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
               >
-                <p className={`text-[11px] font-semibold mb-1 ${
-                  message.senderId === userId ? 'text-blue-100' : 'text-gray-600'
-                }`}>
-                  {message.senderName}
-                </p>
-                <p className="text-[13px] wrap-break-word leading-relaxed">{message.text}</p>
-                <p className={`text-[11px] mt-1.5 ${
-                  message.senderId === userId ? 'text-blue-100' : 'text-gray-500'
-                }`}>
-                  {new Date(message.createdAt).toLocaleTimeString('en-US', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </p>
+                <div
+                  className={`max-w-[75%] px-4 py-2.5 rounded-2xl shadow-xs ${
+                    isMe
+                      ? 'bg-primary text-primary-foreground rounded-br-xs'
+                      : 'bg-muted text-foreground rounded-bl-xs'
+                  }`}
+                >
+                  {message.senderName && (
+                    <p className={`text-[11px] font-semibold mb-0.5 ${
+                      isMe ? 'text-primary-foreground/80' : 'text-muted-foreground'
+                    }`}>
+                      {message.senderName}
+                    </p>
+                  )}
+                  <p className="text-sm whitespace-pre-wrap break-words leading-relaxed">{message.text}</p>
+                  <p className={`text-[10px] mt-1 text-right ${
+                    isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
+                  }`}>
+                    {new Date(message.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
+
         {/* Typing Indicator */}
-        {typingUser && typingUser !== userId && (
+        {typingUser && (
           <div className="flex justify-start">
-            <div className="bg-gray-200 text-gray-800 px-5 py-3 rounded-2xl rounded-bl-none shadow-sm">
-              <p className="text-xs font-semibold mb-2 text-gray-600">{typingUser}</p>
+            <div className="bg-muted text-foreground px-4 py-2 rounded-2xl rounded-bl-xs shadow-xs">
+              <p className="text-xs text-muted-foreground mb-1">{typingUser} is typing...</p>
               <div className="flex gap-1">
-                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" />
-                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-                <div className="w-2.5 h-2.5 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
+                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce" />
+                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.2s]" />
+                <div className="w-1.5 h-1.5 bg-muted-foreground rounded-full animate-bounce [animation-delay:0.4s]" />
               </div>
             </div>
           </div>
@@ -271,14 +329,6 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
         <div ref={messagesEndRef} />
       </div>
-
-      {/* Error Message */}
-      {error && (
-        <div className="px-6 py-3 bg-destructive/10 border-b border-destructive/20 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-destructive shrink-0" />
-          <p className="text-sm text-destructive">{error}</p>
-        </div>
-      )}
 
       {/* Input Area */}
       <div className="border-t px-6 py-3 sticky bottom-0 bg-background">
@@ -291,16 +341,16 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
               handleTyping();
             }}
             onKeyDown={handleKeyDown}
-            placeholder="Type a message (Shift+Enter for newline)"
-            disabled={sending || !isConnected}
+            placeholder="Type a message (Shift+Enter for newline)..."
+            disabled={sending}
             rows={1}
-            className="flex-1 resize-none rounded-2xl"
+            className="flex-1 resize-none rounded-xl text-sm"
           />
           <Button
             type="submit"
-            disabled={sending || !inputValue.trim() || !isConnected}
+            disabled={sending || !inputValue.trim()}
             size="icon"
-            className="rounded-xl"
+            className="rounded-xl shrink-0"
           >
             {sending ? (
               <Loader className="w-4 h-4 animate-spin" />
@@ -313,4 +363,3 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     </div>
   );
 }
-

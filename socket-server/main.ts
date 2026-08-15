@@ -1,11 +1,13 @@
 import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
-import { PrismaClient } from '../src/generated/prisma/client';
+import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
 import { SocketServer } from './server';
 import dotenv from 'dotenv';
+import path from 'path';
+import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
@@ -19,11 +21,25 @@ if (!connectionString) {
   throw new Error('DATABASE_URL is not set in environment variables');
 }
 
+// Dynamically locate Prisma Client across development, ts-node, and compiled dist runtime
+const prismaCandidatePaths = [
+  path.resolve(__dirname, '../../src/generated/prisma/client'),
+  path.resolve(__dirname, '../src/generated/prisma/client'),
+  path.resolve(process.cwd(), 'src/generated/prisma/client'),
+  path.resolve(process.cwd(), '../src/generated/prisma/client'),
+];
+
+const prismaClientPath = prismaCandidatePaths.find(
+  (p) => fs.existsSync(p) || fs.existsSync(`${p}.js`)
+);
+
+const { PrismaClient } = prismaClientPath ? require(prismaClientPath) : require('@prisma/client');
+
 const adapter = new PrismaPg({ connectionString });
 const prisma = new PrismaClient({
   adapter,
   log: ['error', 'warn'],
-});
+}) as PrismaClientType;
 
 // CORS configuration
 // Normalize frontend URL by removing trailing slash to avoid CORS mismatches

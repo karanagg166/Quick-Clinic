@@ -79,12 +79,22 @@ export const GET = async (req: NextRequest) => {
     if (nameParam) {
       userFilter.name = { contains: nameParam, mode: "insensitive" };
     }
+    const minAgeVal = searchParams.get("minAge");
+    const maxAgeVal = searchParams.get("maxAge");
     const ageVal = searchParams.get("age");
-    if (ageVal) {
-      const ageNum = Number(ageVal);
-      if (!isNaN(ageNum)) {
-        userFilter.age = ageNum;
-      }
+
+    const minAge = minAgeVal !== null && minAgeVal.trim() !== "" ? Number(minAgeVal) : null;
+    const maxAge = maxAgeVal !== null && maxAgeVal.trim() !== "" ? Number(maxAgeVal) : null;
+    const exactAge = ageVal !== null && ageVal.trim() !== "" ? Number(ageVal) : null;
+
+    if (minAge !== null && !isNaN(minAge) && maxAge !== null && !isNaN(maxAge)) {
+      userFilter.age = { gte: minAge, lte: maxAge };
+    } else if (minAge !== null && !isNaN(minAge)) {
+      userFilter.age = { gte: minAge };
+    } else if (maxAge !== null && !isNaN(maxAge)) {
+      userFilter.age = { lte: maxAge };
+    } else if (exactAge !== null && !isNaN(exactAge)) {
+      userFilter.age = exactAge;
     }
     const genderInput = searchParams.get("gender")?.trim();
     if (genderInput && genderInput !== "all") {

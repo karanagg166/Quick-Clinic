@@ -1,30 +1,64 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { io, Socket } from "socket.io-client";
 
 export const useSocket = () => {
-    const socketRef = useRef<Socket | null>(null);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
-    useEffect(() => {
-        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001";
+  useEffect(() => {
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000";
+    let isMounted = true;
+    let socketInstance: Socket | null = null;
 
-        const socketInstance = io(socketUrl, {
-            path: "/socket.io",
-            transports: ["websocket"],
-            reconnectionAttempts: 5,
+    const initSocket = async () => {
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 1200);
+
+        const healthRes = await fetch(`${socketUrl}/health`, {
+          method: "GET",
+          signal: controller.signal,
+        }).catch(() => null);
+
+        clearTimeout(timeoutId);
+
+        if (!healthRes || !healthRes.ok || !isMounted) {
+          return;
+        }
+
+        socketInstance = io(socketUrl, {
+          path: "/socket.io",
+          transports: ["websocket", "polling"],
+          reconnectionAttempts: 3,
+          timeout: 3000,
         });
 
         socketInstance.on("connect", () => {
-            console.log("Socket connected:", socketInstance.id);
+          console.log("Socket connected:", socketInstance?.id);
         });
 
-        socketRef.current = socketInstance;
+        socketInstance.on("connect_error", () => {
+          // Graceful handling
+        });
 
-        return () => {
-            socketInstance.disconnect();
-        };
-    }, []);
+        if (isMounted) {
+          setSocket(socketInstance);
+        }
+      } catch {
+        // Silently catch offline socket error
+      }
+    };
 
-    return socketRef.current;
+    initSocket();
+
+    return () => {
+      isMounted = false;
+      if (socketInstance) {
+        socketInstance.disconnect();
+      }
+    };
+  }, []);
+
+  return socket;
 };

@@ -11,9 +11,9 @@ Canonical command reference is available at `commands.md`.
 ---
 
 ## 1. Package Manager & Environment
-- **Root app:** ALWAYS use `pnpm`. The repo pins `packageManager: pnpm@10.33.0`.
-- **`socket-server/`:** uses `npm` internally — its own `Dockerfile.dev` runs `npm install` / `npm run dev` inside that folder. Don't force pnpm on this subfolder; match what's already there.
-- **Known issue:** both `pnpm-lock.yaml` and a root `package-lock.json` exist. Treat `pnpm-lock.yaml` as source of truth. Flag/delete the stray `package-lock.json` rather than updating it — don't let both drift.
+- **Whole Repository:** ALWAYS use `pnpm`. The repo pins `packageManager: pnpm@10.33.0` for both root and `socket-server/`.
+- **`socket-server/`:** uses `pnpm` (`pnpm install`, `pnpm dev`, `pnpm build`, `pnpm start`).
+- `pnpm-lock.yaml` is the source of truth in both root and `socket-server/`. Stray `package-lock.json` files should be removed.
 
 ---
 
