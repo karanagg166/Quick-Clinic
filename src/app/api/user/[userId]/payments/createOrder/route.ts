@@ -3,6 +3,14 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import Razorpay from 'razorpay';
 import { getAuthenticatedPatient } from '@/lib/request-auth';
+import { validateSlotHold } from '@/lib/booking';
+import { z } from 'zod';
+
+const createOrderSchema = z.object({
+  doctorId: z.string().min(1),
+  slotId: z.string().min(1),
+  holdToken: z.string().uuid(),
+});
 
 export async function POST(
   req: NextRequest,
@@ -12,12 +20,11 @@ export async function POST(
     const { userId } = await params;
     if (!userId) return NextResponse.json({ message: 'userId required' }, { status: 400 });
 
-    const body = await req.json().catch(() => null);
-    const doctorId = typeof body?.doctorId === 'string' ? body.doctorId : '';
-    const slotId = typeof body?.slotId === 'string' ? body.slotId : '';
-    if (!doctorId || !slotId) {
-      return NextResponse.json({ message: 'doctorId and slotId are required' }, { status: 400 });
+    const body = createOrderSchema.safeParse(await req.json().catch(() => null));
+    if (!body.success) {
+      return NextResponse.json({ message: 'doctorId, slotId, and a valid holdToken are required' }, { status: 400 });
     }
+    const { doctorId, slotId, holdToken } = body.data;
 
     const patient = await getAuthenticatedPatient(req);
     if (!patient || patient.userId !== userId) {
@@ -33,14 +40,15 @@ export async function POST(
       key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
 
-    const [doctor, slot] = await Promise.all([
+    const [doctor, slot, ownsHold] = await Promise.all([
       prisma.doctor.findUnique({ where: { id: doctorId }, select: { fees: true } }),
       prisma.slot.findFirst({
         where: { id: slotId, doctorId, status: 'HELD', heldByPatientId: patient.id },
         select: { id: true },
       }),
+      validateSlotHold(slotId, patient.id, holdToken),
     ]);
-    if (!doctor || !slot) {
+    if (!doctor || !slot || !ownsHold) {
       return NextResponse.json({ message: 'Your appointment hold has expired. Please choose the slot again.' }, { status: 409 });
     }
 
@@ -60,6 +68,9 @@ export async function POST(
     const savedOrder = await prisma.payment.create({
       data: {
         userId: userId,
+        doctorId,
+        slotId,
+        holdToken,
         amount: Number(order.amount),
         currency: order.currency,
         status: order.status, // usually "created"
@@ -74,8 +85,11 @@ export async function POST(
       keyId: process.env.RAZORPAY_KEY_ID 
     }, { status: 201 });
 
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error creating order:", error);
-    return NextResponse.json({ message: error.message }, { status: 500 });
+    return NextResponse.json(
+      { message: error instanceof Error ? error.message : 'Failed to create payment order' },
+      { status: 500 }
+    );
   }
 }

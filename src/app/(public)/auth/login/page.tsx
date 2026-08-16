@@ -23,10 +23,15 @@ const ParticlesBackground = dynamic(
 
 export default function Home() {
   const router = useRouter();
- const setUser = useUserStore((state) => state.setUser);
-  const [email, setEmail] = useState("priyanshu@gmail.com");
-  const [password, setPassword] = useState("");
+  const setUser = useUserStore((state) => state.setUser);
+  const [email, setEmail] = useState("patient@gmail.com");
+  const [password, setPassword] = useState("karan166");
   const [showPassword, setShowPassword] = useState(false);
+
+  const handleRoleSelect = (roleEmail: string) => {
+    setEmail(roleEmail);
+    setPassword("karan166");
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,10 +99,50 @@ export default function Home() {
             </motion.div>
             <CardTitle className="text-3xl font-bold tracking-tight">Welcome Back</CardTitle>
             <CardDescription className="text-base">
-              Please login to continue to your account
+              Select your role or enter credentials to sign in
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {/* Quick Role Selector */}
+            <div className="grid grid-cols-3 gap-2 p-1.5 bg-muted/60 rounded-xl mb-5 border">
+              <button
+                type="button"
+                onClick={() => handleRoleSelect("patient@gmail.com")}
+                className={`py-2 px-2.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                  email === "patient@gmail.com"
+                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                }`}
+              >
+                <span className="text-base">🩺</span>
+                <span>Patient</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleSelect("doctor@gmail.com")}
+                className={`py-2 px-2.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                  email === "doctor@gmail.com"
+                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                }`}
+              >
+                <span className="text-base">👨‍⚕️</span>
+                <span>Doctor</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleRoleSelect("admin@gmail.com")}
+                className={`py-2 px-2.5 rounded-lg text-xs font-semibold flex flex-col items-center gap-1 transition-all ${
+                  email === "admin@gmail.com"
+                    ? "bg-primary text-primary-foreground shadow-sm scale-[1.02]"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/60"
+                }`}
+              >
+                <span className="text-base">🛡️</span>
+                <span>Admin</span>
+              </button>
+            </div>
+
             <form onSubmit={handleLogin} className="flex flex-col gap-5">
               <motion.div
                 initial={{ opacity: 0, x: -20 }}

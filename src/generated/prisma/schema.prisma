@@ -363,11 +363,14 @@ model ChatMessages {
 }
 
 model Payment {
-  id       String @id @default(cuid())
-  amount   Int
-  currency String @default("INR")
-  userId   String
-  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String  @id @default(cuid())
+  amount    Int
+  currency  String  @default("INR")
+  userId    String
+  doctorId  String?
+  slotId    String?
+  holdToken String?
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   status            String
   razorpayOrderId   String   @unique

@@ -54,6 +54,28 @@ async function main() {
 
   // 3. ADMINS
   console.log("Seeding admins...");
+  const mainAdminUser = await prisma.user.create({
+    data: {
+      email: "admin@gmail.com",
+      phoneNo: "9999999990",
+      name: "Super Admin",
+      password: defaultPasswordHash,
+      age: 30,
+      gender: "MALE",
+      role: "ADMIN",
+      address: "Quick Clinic Headquarters, Connaught Place",
+      pinCode: 110001,
+      emailVerified: true,
+      isActive: true,
+    },
+  });
+
+  const superAdminRecord = await prisma.admin.create({
+    data: {
+      userId: mainAdminUser.id,
+    },
+  });
+
   const superAdminUser = await prisma.user.create({
     data: {
       email: "harsh@gmail.com",
@@ -70,9 +92,10 @@ async function main() {
     },
   });
 
-  const superAdminRecord = await prisma.admin.create({
+  await prisma.admin.create({
     data: {
       userId: superAdminUser.id,
+      managerId: superAdminRecord.id,
     },
   });
 
@@ -98,7 +121,7 @@ async function main() {
       managerId: superAdminRecord.id,
     },
   });
-  console.log("✓ Seeded super admin and ops admin");
+  console.log("✓ Seeded super admin, harsh, and ops admin");
 
   // Standard weekly schedule definition
   const standardWeeklySchedule = [
@@ -147,6 +170,23 @@ async function main() {
   // 4. DOCTORS
   console.log("Seeding doctors...");
   const doctorsData = [
+    {
+      email: "doctor@gmail.com",
+      name: "Dr. Clinic Doctor",
+      phoneNo: "9876543211",
+      age: 40,
+      gender: "MALE" as const,
+      address: "Quick Clinic Health Center, Connaught Place",
+      pinCode: 110001,
+      specialty: "GENERAL_PHYSICIAN" as const,
+      experience: 15,
+      fees: 500,
+      doctorBio: "Principal Doctor at Quick Clinic specializing in general wellness, diagnostics, and patient consultations.",
+      latitude: 28.6315,
+      longitude: 77.2167,
+      balance: 25000,
+      qualifications: ["MBBS", "MD"] as const,
+    },
     {
       email: "priyanshu@gmail.com",
       name: "Dr. Priyanshu Sharma",
@@ -359,6 +399,18 @@ async function main() {
   // 5. PATIENTS
   console.log("Seeding patients...");
   const patientsData = [
+    {
+      email: "patient@gmail.com",
+      name: "Standard Patient",
+      phoneNo: "9876543212",
+      age: 26,
+      gender: "MALE" as const,
+      address: "Connaught Place, New Delhi",
+      pinCode: 110001,
+      medicalHistory: "No major medical history, regular checkups",
+      allergies: "None",
+      currentMedications: "Multivitamins daily",
+    },
     {
       email: "karan@gmail.com",
       name: "Karan Aggarwal",

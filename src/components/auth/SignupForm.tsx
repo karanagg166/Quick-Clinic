@@ -19,24 +19,35 @@ export function SignupForm() {
     const [loading, setLoading] = useState(false);
 
     const [formData, setFormData] = useState<SignupFormData>({
-        name: "doc",
-        email: "doc@gmail.com",
-        phoneNo: "7869551545",
-        age: "45",
-        address: "Dumna road",
-        city: "Jabalpur",
-        state: "Madhya Pradesh",
-        pinCode: "482003",
+        name: "Patient User",
+        email: "patient@gmail.com",
+        phoneNo: "9876543210",
+        age: "25",
+        address: "Connaught Place",
+        city: "New Delhi",
+        state: "Delhi",
+        pinCode: "110001",
         gender: "MALE",
-        password: "12345",
-        confirmPassword: "",
-        role: "DOCTOR",
+        password: "karan166",
+        confirmPassword: "karan166",
+        role: "PATIENT",
     });
 
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const handleChange = (field: keyof SignupFormData, value: string) => {
+        if (field === "role") {
+            const roleEmail = value === "PATIENT" ? "patient@gmail.com" : value === "DOCTOR" ? "doctor@gmail.com" : "admin@gmail.com";
+            setFormData((prev) => ({
+                ...prev,
+                role: value as any,
+                email: (prev.email === "patient@gmail.com" || prev.email === "doctor@gmail.com" || prev.email === "admin@gmail.com" || prev.email === "doc@gmail.com") ? roleEmail : prev.email,
+                password: prev.password || "karan166",
+                confirmPassword: prev.confirmPassword || "karan166",
+            }));
+            return;
+        }
         setFormData((prev) => ({ ...prev, [field]: value }));
     };
 

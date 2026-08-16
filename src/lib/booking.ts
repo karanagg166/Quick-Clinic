@@ -56,6 +56,11 @@ async function ownsHold(slotId: string, patientId: string, token: string) {
   return false;
 }
 
+export async function validateSlotHold(slotId: string, patientId: string, token: string) {
+  await expireSlotHolds(slotId);
+  return ownsHold(slotId, patientId, token);
+}
+
 async function deleteIfOwner(slotId: string, patientId: string, token: string) {
   const client = getRedis();
   if (!client) return;
@@ -144,6 +149,21 @@ export async function confirmSlotHold(input: {
   paymentMethod: "ONLINE" | "OFFLINE";
   transactionId?: string | null;
 }) {
+  if (input.paymentMethod === "ONLINE" && input.transactionId) {
+    const existingAppointment = await prisma.appointment.findUnique({
+      where: { slotId: input.slotId },
+    });
+    if (
+      existingAppointment &&
+      existingAppointment.status !== "CANCELLED" &&
+      existingAppointment.doctorId === input.doctorId &&
+      existingAppointment.patientId === input.patientId &&
+      existingAppointment.transactionId === input.transactionId
+    ) {
+      return existingAppointment;
+    }
+  }
+
   await expireSlotHolds(input.slotId);
   const isOwner = await ownsHold(input.slotId, input.patientId, input.token);
   if (!isOwner) return null;

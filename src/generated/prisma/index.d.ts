@@ -18329,6 +18329,9 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     userId: string | null
+    doctorId: string | null
+    slotId: string | null
+    holdToken: string | null
     status: string | null
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
@@ -18340,6 +18343,9 @@ export namespace Prisma {
     amount: number | null
     currency: string | null
     userId: string | null
+    doctorId: string | null
+    slotId: string | null
+    holdToken: string | null
     status: string | null
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
@@ -18351,6 +18357,9 @@ export namespace Prisma {
     amount: number
     currency: number
     userId: number
+    doctorId: number
+    slotId: number
+    holdToken: number
     status: number
     razorpayOrderId: number
     razorpayPaymentId: number
@@ -18372,6 +18381,9 @@ export namespace Prisma {
     amount?: true
     currency?: true
     userId?: true
+    doctorId?: true
+    slotId?: true
+    holdToken?: true
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
@@ -18383,6 +18395,9 @@ export namespace Prisma {
     amount?: true
     currency?: true
     userId?: true
+    doctorId?: true
+    slotId?: true
+    holdToken?: true
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
@@ -18394,6 +18409,9 @@ export namespace Prisma {
     amount?: true
     currency?: true
     userId?: true
+    doctorId?: true
+    slotId?: true
+    holdToken?: true
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
@@ -18492,6 +18510,9 @@ export namespace Prisma {
     amount: number
     currency: string
     userId: string
+    doctorId: string | null
+    slotId: string | null
+    holdToken: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId: string | null
@@ -18522,6 +18543,9 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     userId?: boolean
+    doctorId?: boolean
+    slotId?: boolean
+    holdToken?: boolean
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
@@ -18534,6 +18558,9 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     userId?: boolean
+    doctorId?: boolean
+    slotId?: boolean
+    holdToken?: boolean
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
@@ -18546,6 +18573,9 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     userId?: boolean
+    doctorId?: boolean
+    slotId?: boolean
+    holdToken?: boolean
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
@@ -18558,13 +18588,16 @@ export namespace Prisma {
     amount?: boolean
     currency?: boolean
     userId?: boolean
+    doctorId?: boolean
+    slotId?: boolean
+    holdToken?: boolean
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
     createdAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "amount" | "currency" | "userId" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "createdAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "amount" | "currency" | "userId" | "doctorId" | "slotId" | "holdToken" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "createdAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -18585,6 +18618,9 @@ export namespace Prisma {
       amount: number
       currency: string
       userId: string
+      doctorId: string | null
+      slotId: string | null
+      holdToken: string | null
       status: string
       razorpayOrderId: string
       razorpayPaymentId: string | null
@@ -19017,6 +19053,9 @@ export namespace Prisma {
     readonly amount: FieldRef<"Payment", 'Int'>
     readonly currency: FieldRef<"Payment", 'String'>
     readonly userId: FieldRef<"Payment", 'String'>
+    readonly doctorId: FieldRef<"Payment", 'String'>
+    readonly slotId: FieldRef<"Payment", 'String'>
+    readonly holdToken: FieldRef<"Payment", 'String'>
     readonly status: FieldRef<"Payment", 'String'>
     readonly razorpayOrderId: FieldRef<"Payment", 'String'>
     readonly razorpayPaymentId: FieldRef<"Payment", 'String'>
@@ -27335,6 +27374,9 @@ export namespace Prisma {
     amount: 'amount',
     currency: 'currency',
     userId: 'userId',
+    doctorId: 'doctorId',
+    slotId: 'slotId',
+    holdToken: 'holdToken',
     status: 'status',
     razorpayOrderId: 'razorpayOrderId',
     razorpayPaymentId: 'razorpayPaymentId',
@@ -28658,6 +28700,9 @@ export namespace Prisma {
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     userId?: StringFilter<"Payment"> | string
+    doctorId?: StringNullableFilter<"Payment"> | string | null
+    slotId?: StringNullableFilter<"Payment"> | string | null
+    holdToken?: StringNullableFilter<"Payment"> | string | null
     status?: StringFilter<"Payment"> | string
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
@@ -28670,6 +28715,9 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
+    doctorId?: SortOrderInput | SortOrder
+    slotId?: SortOrderInput | SortOrder
+    holdToken?: SortOrderInput | SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
@@ -28686,6 +28734,9 @@ export namespace Prisma {
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     userId?: StringFilter<"Payment"> | string
+    doctorId?: StringNullableFilter<"Payment"> | string | null
+    slotId?: StringNullableFilter<"Payment"> | string | null
+    holdToken?: StringNullableFilter<"Payment"> | string | null
     status?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
@@ -28697,6 +28748,9 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
+    doctorId?: SortOrderInput | SortOrder
+    slotId?: SortOrderInput | SortOrder
+    holdToken?: SortOrderInput | SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
@@ -28716,6 +28770,9 @@ export namespace Prisma {
     amount?: IntWithAggregatesFilter<"Payment"> | number
     currency?: StringWithAggregatesFilter<"Payment"> | string
     userId?: StringWithAggregatesFilter<"Payment"> | string
+    doctorId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    slotId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    holdToken?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     status?: StringWithAggregatesFilter<"Payment"> | string
     razorpayOrderId?: StringWithAggregatesFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
@@ -30213,6 +30270,9 @@ export namespace Prisma {
     id?: string
     amount: number
     currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -30225,6 +30285,9 @@ export namespace Prisma {
     amount: number
     currency?: string
     userId: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -30235,6 +30298,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30247,6 +30313,9 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30258,6 +30327,9 @@ export namespace Prisma {
     amount: number
     currency?: string
     userId: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -30268,6 +30340,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -30279,6 +30354,9 @@ export namespace Prisma {
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -31790,6 +31868,9 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
+    doctorId?: SortOrder
+    slotId?: SortOrder
+    holdToken?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
@@ -31805,6 +31886,9 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
+    doctorId?: SortOrder
+    slotId?: SortOrder
+    holdToken?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
@@ -31816,6 +31900,9 @@ export namespace Prisma {
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
+    doctorId?: SortOrder
+    slotId?: SortOrder
+    holdToken?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
@@ -34245,6 +34332,9 @@ export namespace Prisma {
     id?: string
     amount: number
     currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -34255,6 +34345,9 @@ export namespace Prisma {
     id?: string
     amount: number
     currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -34601,6 +34694,9 @@ export namespace Prisma {
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     userId?: StringFilter<"Payment"> | string
+    doctorId?: StringNullableFilter<"Payment"> | string | null
+    slotId?: StringNullableFilter<"Payment"> | string | null
+    holdToken?: StringNullableFilter<"Payment"> | string | null
     status?: StringFilter<"Payment"> | string
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
@@ -38286,6 +38382,9 @@ export namespace Prisma {
     id?: string
     amount: number
     currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
@@ -38411,6 +38510,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38421,6 +38523,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -38431,6 +38536,9 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null

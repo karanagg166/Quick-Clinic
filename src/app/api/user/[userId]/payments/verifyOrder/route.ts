@@ -2,19 +2,32 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import crypto from "crypto";
+import { z } from "zod";
+import { getAuthenticatedPatient } from "@/lib/request-auth";
+import { finalizeAppointmentBooking } from "@/lib/appointment-confirmation";
+
+const verifyOrderSchema = z.object({
+  orderId: z.string().min(1),
+  signature: z.string().regex(/^[a-f0-9]{64}$/i),
+  paymentId: z.string().min(1),
+});
 
 export const POST = async (req: NextRequest, { params }: { params: Promise<{ userId: string }> }) => {
   try {
     const { userId } = await params;
     
-    // 1. Get Payment Data from Body
-    const { orderId, signature, paymentId } = await req.json();
-
-    if (!orderId || !signature || !paymentId) {
+    const body = verifyOrderSchema.safeParse(await req.json().catch(() => null));
+    if (!body.success) {
       return NextResponse.json(
         { error: "Missing required payment details" },
         { status: 400 }
       );
+    }
+    const { orderId, signature, paymentId } = body.data;
+
+    const patient = await getAuthenticatedPatient(req);
+    if (!patient || patient.userId !== userId) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
     }
 
     // 2. Verify Signature
@@ -27,38 +40,62 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       .update(orderId + "|" + paymentId)
       .digest("hex");
 
-    if (generatedSignature !== signature) {
+    const expected = Buffer.from(generatedSignature, "hex");
+    const received = Buffer.from(signature, "hex");
+    if (expected.length !== received.length || !crypto.timingSafeEqual(expected, received)) {
       return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
     }
 
     const payment = await prisma.payment.findUnique({
       where: { razorpayOrderId: orderId },
-      select: { userId: true },
+      select: {
+        userId: true,
+        status: true,
+        razorpayPaymentId: true,
+        doctorId: true,
+        slotId: true,
+        holdToken: true,
+      },
     });
     if (!payment || payment.userId !== userId) {
       return NextResponse.json({ error: "Payment order not found" }, { status: 404 });
     }
+    if (!payment.doctorId || !payment.slotId || !payment.holdToken) {
+      return NextResponse.json({ error: "Payment order is missing booking context" }, { status: 409 });
+    }
 
-    // 3. Update the payment record only after verifying both signature and owner.
-    await prisma.payment.update({
-      where: { 
-        razorpayOrderId: orderId 
-      },
-      data: {
-        status: "SUCCESS", // Or 'VERIFIED'
-        razorpayPaymentId: paymentId,
-      }
+    if (payment.status !== "SUCCESS" || payment.razorpayPaymentId !== paymentId) {
+      await prisma.payment.update({
+        where: { razorpayOrderId: orderId },
+        data: { status: "SUCCESS", razorpayPaymentId: paymentId },
+      });
+    }
+
+    const appointment = await finalizeAppointmentBooking({
+      slotId: payment.slotId,
+      doctorId: payment.doctorId,
+      patientId: patient.id,
+      patientUserId: patient.userId,
+      holdToken: payment.holdToken,
+      paymentMethod: "ONLINE",
+      transactionId: paymentId,
     });
+    if (!appointment) {
+      return NextResponse.json(
+        { error: "Payment was verified, but the appointment could not be finalized. Please retry or contact support." },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json(
-      { message: "Order verified successfully", transactionId: paymentId },
+      { message: "Payment verified and appointment confirmed", transactionId: paymentId, appointment },
       { status: 200 }
     );
 
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("verify-order-error", err);
     return NextResponse.json(
-      { error: err?.message ?? "Failed to verify order" },
+      { error: err instanceof Error ? err.message : "Failed to verify order" },
       { status: 500 }
     );
   }

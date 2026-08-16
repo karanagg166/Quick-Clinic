@@ -137,7 +137,7 @@ docker compose exec app pnpm lint
 docker compose exec app pnpm test
 
 # Run socket-server npm commands inside socket container
-docker compose exec socket-server npm test
+docker compose exec socket-server pnpm test
 ```
 
 ---

@@ -29,7 +29,10 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [activeHold, setActiveHold] = useState<Hold | null>(null);
 
-  useEffect(() => setDate(getTodayInUserTimezone()), []);
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setDate(getTodayInUserTimezone()), 0);
+    return () => window.clearTimeout(timeout);
+  }, []);
 
   useEffect(() => {
     if (!doctorId || !date) return;
@@ -109,21 +112,30 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       return;
     }
     let hold: Hold | null = null;
+    let paymentCaptured = false;
     try {
       setBooking(true);
       hold = await acquireHold(slotId);
       const payment = await processOnlinePayment({
         doctorId,
+        holdToken: hold.token,
         slotId,
         userId,
         userEmail: user?.email || undefined,
         userName: user?.name || undefined,
         userPhone: user?.phoneNo || undefined,
       });
+      paymentCaptured = Boolean(payment.paymentCaptured);
       if (!payment?.success || !payment.transactionId) throw new Error(payment?.error || 'Payment failed or was cancelled');
-      await confirmHold(hold, 'ONLINE', payment.transactionId);
+      setActiveHold(null);
+      setSlots((previous) => previous.map((slot) => slot.id === hold?.slotId ? { ...slot, status: 'BOOKED' } : slot));
+      setSelectedSlot(null);
+      setShowPaymentOptions(false);
+      showToast.success('Payment successful and appointment confirmed.');
     } catch (cause) {
-      await releaseHold(hold);
+      if (!paymentCaptured) {
+        await releaseHold(hold);
+      }
       showToast.error(cause instanceof Error ? cause.message : 'Online payment failed');
     } finally {
       setBooking(false);
