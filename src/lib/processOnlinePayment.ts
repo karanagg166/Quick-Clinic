@@ -49,6 +49,14 @@ export async function processOnlinePayment({
       if (!orderRes.ok) throw new Error(data.message || "Failed to create payment order");
 
       // 4. Initialize Razorpay Options
+      const prefillData: Record<string, string> = {};
+      if (userName && userName.trim()) prefillData.name = userName.trim();
+      if (userEmail && userEmail.trim()) prefillData.email = userEmail.trim();
+      if (userPhone && userPhone.trim()) {
+        const cleanPhone = userPhone.replace(/\D/g, '').slice(-10);
+        if (cleanPhone.length === 10) prefillData.contact = cleanPhone;
+      }
+
       const options = {
         key: data.keyId,
         amount: data.order?.amount,
@@ -56,11 +64,7 @@ export async function processOnlinePayment({
         name: "Quick Clinic",
         description: "Medical Consultation Booking",
         order_id: data.order?.razorpayOrderId,
-        prefill: {
-          name: userName || "",
-          email: userEmail || "",
-          contact: userPhone || "",
-        },
+        prefill: Object.keys(prefillData).length > 0 ? prefillData : undefined,
         handler: async function (response: any) {
           try {
             // 5. Verify Payment on Server
