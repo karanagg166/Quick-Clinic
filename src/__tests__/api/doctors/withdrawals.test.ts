@@ -5,9 +5,25 @@ import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    $transaction: vi.fn((cb: any) => cb({
+      doctor: {
+        updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      },
+      withdrawal: {
+        create: vi.fn().mockResolvedValue({
+          id: 'w_1',
+          doctorId: 'doc_1',
+          amount: 50000,
+          currency: 'INR',
+          status: 'COMPLETED',
+          processedAt: new Date(),
+        }),
+      },
+    })),
     doctor: {
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     withdrawal: {
       findMany: vi.fn(),
@@ -91,6 +107,17 @@ describe('Doctor Withdrawals Route', () => {
       },
     } as any);
 
+    vi.mocked(prisma.$transaction).mockImplementationOnce(async (cb: any) => {
+      return cb({
+        doctor: {
+          updateMany: vi.fn().mockResolvedValue({ count: 0 }),
+        },
+        withdrawal: {
+          create: vi.fn(),
+        },
+      });
+    });
+
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
       body: JSON.stringify({ amount: 500 }), // 500 INR = 50000 paise
@@ -117,16 +144,27 @@ describe('Doctor Withdrawals Route', () => {
       },
     } as any);
 
-    vi.mocked(prisma.withdrawal.create).mockResolvedValueOnce({
+    const mockCreate = vi.fn().mockResolvedValue({
       id: 'w_1',
       doctorId: 'doc_1',
       amount: 50000,
       currency: 'INR',
       status: 'COMPLETED',
       processedAt: new Date(),
-    } as any);
+    });
 
-    vi.mocked(prisma.doctor.update).mockResolvedValueOnce({} as any);
+    const mockUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+
+    vi.mocked(prisma.$transaction).mockImplementationOnce(async (cb: any) => {
+      return cb({
+        doctor: {
+          updateMany: mockUpdateMany,
+        },
+        withdrawal: {
+          create: mockCreate,
+        },
+      });
+    });
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
@@ -135,8 +173,8 @@ describe('Doctor Withdrawals Route', () => {
 
     const res = await POST(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(201);
-    expect(prisma.doctor.update).toHaveBeenCalledWith({
-      where: { id: 'doc_1' },
+    expect(mockUpdateMany).toHaveBeenCalledWith({
+      where: { id: 'doc_1', balance: { gte: 50000 } },
       data: { balance: { decrement: 50000 } },
     });
   });

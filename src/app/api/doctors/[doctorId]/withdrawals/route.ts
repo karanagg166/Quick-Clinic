@@ -122,34 +122,39 @@ export async function POST(
       );
     }
 
-    // Check if doctor has sufficient balance
-    if (doctor.balance < amountInPaise) {
+    // Atomic transaction ensuring balance >= amountInPaise
+    const withdrawal = await prisma.$transaction(async (tx) => {
+      const updateResult = await tx.doctor.updateMany({
+        where: {
+          id: doctorId,
+          balance: { gte: amountInPaise },
+        },
+        data: {
+          balance: { decrement: amountInPaise },
+        },
+      });
+
+      if (updateResult.count === 0) {
+        return null;
+      }
+
+      return await tx.withdrawal.create({
+        data: {
+          doctorId,
+          amount: amountInPaise,
+          currency: "INR",
+          status: "COMPLETED",
+          processedAt: new Date(),
+        },
+      });
+    });
+
+    if (!withdrawal) {
       return NextResponse.json(
         { error: "Insufficient balance" },
         { status: 400 }
       );
     }
-
-    // Create withdrawal request - marked as COMPLETED instantly
-    const withdrawal = await prisma.withdrawal.create({
-      data: {
-        doctorId,
-        amount: amountInPaise,
-        currency: "INR",
-        status: "COMPLETED",
-        processedAt: new Date(),
-      },
-    });
-
-    // Deduct amount from doctor's balance immediately
-    await prisma.doctor.update({
-      where: { id: doctorId },
-      data: {
-        balance: {
-          decrement: amountInPaise,
-        },
-      },
-    });
 
     return NextResponse.json(
       {

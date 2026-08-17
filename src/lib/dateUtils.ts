@@ -39,6 +39,10 @@ export function combineDateTimeInUserTimezone(dateStr: string, timeStr: string):
     throw new Error('Date and time are required');
   }
 
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr) || !/^\d{2}:\d{2}$/.test(timeStr)) {
+    throw new Error(`Invalid date/time format: ${dateStr} ${timeStr}`);
+  }
+
   // Parse local date & time safely
   const localDate = new Date(`${dateStr}T${timeStr}:00`);
   if (isNaN(localDate.getTime())) {
