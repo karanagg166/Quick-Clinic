@@ -285,8 +285,8 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
   }
 });
 
-// Export socket server instance for use in API routes
-export { socketServer };
+// Export express app, httpServer, io, and socketServer instance for tests and API routes
+export { app, httpServer, io, socketServer };
 
 // Error handling
 process.on('unhandledRejection', (error: unknown) => {
@@ -308,12 +308,14 @@ process.on('SIGTERM', async () => {
   });
 });
 
-// Start server
-const PORT = Number(process.env.PORT || process.env.SOCKET_PORT || 4000);
-const HOST = process.env.HOST || '0.0.0.0';
+// Start server when run directly (not during unit/integration tests)
+if (process.env.NODE_ENV !== 'test') {
+  const PORT = Number(process.env.PORT || process.env.SOCKET_PORT || 4000);
+  const HOST = process.env.HOST || '0.0.0.0';
 
-httpServer.listen(PORT, HOST, () => {
-  console.log(`🚀 Socket.IO server running on ${HOST}:${PORT}`);
-  console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
-  console.log(`🌐 Allowed origins: ${Array.from(allowedOriginsSet).join(', ')}`);
-});
+  httpServer.listen(PORT, HOST, () => {
+    console.log(`🚀 Socket.IO server running on ${HOST}:${PORT}`);
+    console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
+    console.log(`🌐 Allowed origins: ${Array.from(allowedOriginsSet).join(', ')}`);
+  });
+}

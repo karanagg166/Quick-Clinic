@@ -7,7 +7,9 @@
     "build": "tsc",
     "start": "node dist/main.js",
     "dev": "ts-node main.ts",
-    "dev:watch": "nodemon --exec ts-node main.ts"
+    "dev:watch": "nodemon --exec ts-node main.ts",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
   },
   "packageManager": "pnpm@10.33.0",
   "keywords": [
@@ -34,8 +36,13 @@
     "@types/formidable": "^3.4.6",
     "@types/node": "^20.19.26",
     "@types/pg": "^8.11.11",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^4.1.10",
     "nodemon": "^3.1.9",
+    "socket.io-client": "^4.8.3",
+    "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.10"
   }
 }
