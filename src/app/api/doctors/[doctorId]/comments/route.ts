@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getUserId } from "@/lib/auth";
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
 export async function GET(
   req: NextRequest,
@@ -12,7 +13,7 @@ export async function GET(
       return NextResponse.json({ message: "doctorId is required" }, { status: 400 });
     }
 
-    const comments = await prisma.comment.findMany({
+    const rawComments = await prisma.comment.findMany({
       where: { doctorId },
       include: {
         patient: {
@@ -29,6 +30,19 @@ export async function GET(
       },
       orderBy: { createdAt: "desc" },
     });
+
+    const comments = rawComments.map((c) => ({
+      ...c,
+      patient: c.patient?.user
+        ? {
+            ...c.patient,
+            user: {
+              ...c.patient.user,
+              profileImageUrl: sanitizeProfileImageUrl(c.patient.user.profileImageUrl) ?? null,
+            },
+          }
+        : c.patient,
+    }));
 
     return NextResponse.json({ comments }, { status: 200 });
   } catch (error: any) {

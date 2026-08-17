@@ -66,7 +66,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   }, [doctorId, date]);
 
   const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', hour12: true,
+    hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
   });
 
   const acquireHold = async (slotId: string): Promise<Hold> => {

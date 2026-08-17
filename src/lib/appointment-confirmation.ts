@@ -61,10 +61,10 @@ async function sendAppointmentConfirmation({
     const patientName = patientUser.name || 'Patient';
     const doctorName = doctor.user.name || 'Doctor';
     const formattedDate = slot?.date
-      ? new Date(slot.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+      ? new Date(slot.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
       : 'Scheduled Date';
     const formattedTime = slot?.startTime
-      ? new Date(slot.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      ? new Date(slot.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
       : 'Scheduled Time';
 
     let relation = await prisma.doctorPatientRelation.findUnique({

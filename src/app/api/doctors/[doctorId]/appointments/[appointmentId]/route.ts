@@ -166,6 +166,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
+    const doctorUserId = appointmentBefore.doctor.user.id;
+
     const data: Record<string, any> = {};
     if (status) data.status = status;
 
@@ -365,7 +367,7 @@ export async function PATCH(
 
     }
 
-    await logAudit(doctorId, "Updated Appointment Status", { appointmentId, status: status || appointmentBefore.status, paymentMethod, isAppointmentOffline });
+    await logAudit(doctorUserId, "Updated Appointment Status", { appointmentId, status: status || appointmentBefore.status, paymentMethod, isAppointmentOffline });
 
     return NextResponse.json({ success: true, status: status || appointmentBefore.status, appointment: updatedAppointment }, { status: 200 });
   } catch (e) {

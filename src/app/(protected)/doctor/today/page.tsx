@@ -353,6 +353,7 @@ export default function DoctorTodayAppointmentsPage() {
               ? new Date(appt.appointmentTime).toLocaleTimeString("en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "UTC",
                 })
               : "N/A";
 

@@ -51,22 +51,32 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
       }
 
       const isCancelAction = /cancel/i.test(label) || /cancel/i.test(url);
-      const isManageAction = /manage|view|appointment|review|rate/i.test(label);
+      const isReviewAction = /review|rate/i.test(label) || /rating|review/i.test(url);
+      const isFindOrBookAction = /find|select|book|doctor|slot/i.test(label) || /findDoctors|doctor\//i.test(url);
+      const isManageAction = /manage|view|appointment/i.test(label);
 
-      if (isInternal && (isCancelAction || isManageAction)) {
+      if (isInternal && (isCancelAction || isReviewAction || isFindOrBookAction || isManageAction)) {
+        let buttonVariant: "default" | "destructive" | "outline" | "secondary" = "default";
+        let buttonClass = 'bg-primary text-primary-foreground hover:bg-primary/90';
+
+        if (isCancelAction) {
+          buttonVariant = "destructive";
+          buttonClass = 'bg-red-600 hover:bg-red-700 text-white';
+        } else if (isReviewAction) {
+          buttonClass = 'bg-amber-600 hover:bg-amber-700 text-white';
+        } else if (isFindOrBookAction) {
+          buttonClass = 'bg-teal-600 hover:bg-teal-700 text-white';
+        } else if (isMe) {
+          buttonClass = 'bg-white text-gray-900 hover:bg-gray-100';
+        }
+
         elements.push(
           <span key={match.index} className="block my-2">
             <Link href={url}>
               <Button
-                variant={isCancelAction ? "destructive" : "default"}
+                variant={buttonVariant}
                 size="sm"
-                className={`text-xs font-semibold px-3 py-1.5 shadow-sm transition active:scale-95 ${
-                  isCancelAction
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : isMe
-                    ? 'bg-white text-gray-900 hover:bg-gray-100'
-                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
-                }`}
+                className={`text-xs font-semibold px-3 py-1.5 shadow-sm transition active:scale-95 ${buttonClass}`}
               >
                 {label}
               </Button>

@@ -186,9 +186,9 @@ export default function AppointmentPage() {
             <div className="bg-white rounded-lg shadow-md border p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Appointment Slot</h2>
                 <div className="grid grid-cols-2 gap-4">
-                    <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString()}</p>
-                    <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString()}</p>
-                    <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString()}</p>
+                    <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString("en-US", { timeZone: "UTC" })}</p>
+                    <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
+                    <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
                     <p><span className="font-semibold">Slot Status:</span> {appointment.slot.status}</p>
                 </div>
             </div>

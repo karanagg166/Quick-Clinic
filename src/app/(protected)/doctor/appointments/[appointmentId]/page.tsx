@@ -264,9 +264,9 @@ export default function DoctorAppointmentDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString()}</p>
-            <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString()}</p>
-            <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString()}</p>
+            <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString("en-US", { timeZone: "UTC" })}</p>
+            <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
+            <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
             <p><span className="font-semibold">Slot Status:</span> {appointment.slot.status}</p>
           </div>
         </CardContent>

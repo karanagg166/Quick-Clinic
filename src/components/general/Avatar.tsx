@@ -3,6 +3,8 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
+
 interface Props {
   src?: string | null;
   name?: string;
@@ -17,23 +19,9 @@ const sizeMap = {
   xl: "w-24 h-24 text-lg",
 };
 
-function isValidAvatarUrl(src?: string | null): boolean {
-  if (!src || typeof src !== "string" || src.trim() === "") return false;
-  try {
-    const url = new URL(src);
-    // Only allow HTTPS URLs from known image hosts (e.g., Cloudinary)
-    // Block all localhost/127.0.0.1 URLs since they reference non-existent services
-    if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return false;
-    if (url.protocol !== "https:") return false;
-    return true;
-  } catch {
-    // If it's not a valid URL, reject it
-    return false;
-  }
-}
-
 export default function Avatar({ src, name = "User", size = "md", className = "" }: Props) {
   const [hasError, setHasError] = useState(false);
+  const validUrl = sanitizeProfileImageUrl(src);
 
   useEffect(() => {
     setHasError(false);
@@ -49,11 +37,11 @@ export default function Avatar({ src, name = "User", size = "md", className = ""
 
   const sizeClass = sizeMap[size];
 
-  if (src && isValidAvatarUrl(src) && !hasError) {
+  if (validUrl && !hasError) {
     return (
       <div className={`${sizeClass} rounded-full overflow-hidden bg-gray-200 flex-shrink-0 relative ${className}`}>
         <Image
-          src={src}
+          src={validUrl}
           alt={name}
           width={96}
           height={96}

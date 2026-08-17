@@ -18,11 +18,15 @@ export default function AppointmentCard({
   const patientId = useUserStore((s) => s.patientId);
   const [cancelling, setCancelling] = useState(false);
 
-  const date = new Date(appointment.appointmentDate);
+  const dateText = (() => {
+    const d = new Date(appointment.appointmentDate);
+    return isNaN(d.getTime()) ? appointment.appointmentDate : d.toLocaleDateString("en-US", { timeZone: "UTC" });
+  })();
+
   const timeText = (() => {
     const t = appointment.appointmentTime;
     const asDate = new Date(t);
-    return isNaN(asDate.getTime()) ? t : asDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return isNaN(asDate.getTime()) ? t : asDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
   })();
 
   const canCancel = appointment.status === 'PENDING' || appointment.status === 'CONFIRMED';
@@ -93,7 +97,7 @@ export default function AppointmentCard({
         <div className="flex flex-wrap gap-4 text-sm text-gray-700 mb-4">
           <div>
             <p className="text-xs text-gray-500">Date</p>
-            <p className="font-medium">{date.toLocaleDateString()}</p>
+            <p className="font-medium">{dateText}</p>
           </div>
           <div>
             <p className="text-xs text-gray-500">Time</p>

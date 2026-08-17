@@ -4,6 +4,7 @@ import type { Doctor } from "@/types/doctor";
 import { logAccess } from "@/lib/logger";
 import { verifyToken } from "@/lib/auth";
 import { parseCoordinates } from "@/lib/coordinates";
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
 // GET - Fetch doctor by ID
 export const GET = async (
@@ -98,7 +99,7 @@ export const GET = async (
       qualifications: d.doctorQualifications?.map((q: any) => q.qualification) ?? [],
       city: d.user?.location?.city ?? undefined,
       state: d.user?.location?.state ?? undefined,
-      profileImageUrl: d.user?.profileImageUrl ?? undefined,
+      profileImageUrl: sanitizeProfileImageUrl(d.user?.profileImageUrl) ?? undefined,
       doctorBio: d.doctorBio ?? undefined,
       latitude: d.latitude ?? undefined,
       longitude: d.longitude ?? undefined,
@@ -111,8 +112,13 @@ export const GET = async (
 
     const comments = rawComments.map((c: any) => ({
       ...c,
-      user: c.patient.user,
-      patient: undefined, // Remove patient structure to match original expected shape if needed, or keep it.
+      user: c.patient?.user
+        ? {
+            ...c.patient.user,
+            profileImageUrl: sanitizeProfileImageUrl(c.patient.user.profileImageUrl) ?? null,
+          }
+        : undefined,
+      patient: undefined,
     }));
 
     // Check viewer & review eligibility

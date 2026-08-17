@@ -222,14 +222,50 @@ export async function PATCH(
 			},
 		});
 
-		// Send notification to doctor
+		// Send notification to doctor and post automated cancellation chat message
 		try {
 			const doctorUserId = appointment.doctor.user.id;
+			const patientUserId = appointment.patient.user.id;
+			const doctorName = appointment.doctor.user.name || 'Doctor';
+			const patientName = appointment.patient.user.name || 'Patient';
 			const apptDate = appointment.slot.date.toISOString().split('T')[0];
+
+			// 1. Post automated message into Doctor-Patient chat
+			let relation = await prisma.doctorPatientRelation.findUnique({
+				where: {
+					doctorsUserId_patientsUserId: {
+						doctorsUserId: doctorUserId,
+						patientsUserId: patientUserId,
+					},
+				},
+			});
+
+			if (!relation) {
+				relation = await prisma.doctorPatientRelation.create({
+					data: {
+						doctorsUserId: doctorUserId,
+						patientsUserId: patientUserId,
+					},
+				});
+			}
+
+			const cancelChatText = appointment.paymentMethod === 'ONLINE'
+				? `❌ Appointment Cancelled by Patient\n\nThe appointment on ${apptDate} with Dr. ${doctorName} has been cancelled by ${patientName}. A full refund has been initiated to the original payment method.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`
+				: `❌ Appointment Cancelled by Patient\n\nThe appointment on ${apptDate} with Dr. ${doctorName} has been cancelled by ${patientName}.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
+
+			await prisma.chatMessages.create({
+				data: {
+					doctorPatientRelationId: relation.id,
+					text: cancelChatText,
+					senderId: patientUserId,
+				},
+			});
+
+			// 2. Notification to doctor
 			const notification = await prisma.notification.create({
 				data: {
 					userId: doctorUserId,
-					message: `Appointment with ${appointment.patient.user.name || 'Patient'} on ${apptDate} was cancelled by the patient.`,
+					message: `Appointment with ${patientName} on ${apptDate} was cancelled by the patient.`,
 					actionHref: `/doctor/appointments/${appointmentId}`,
 					actionLabel: 'View appointment',
 				},

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { createToken } from "@/lib/auth";
 import { logAudit } from "@/lib/logger";
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
 import type { UserDetail } from "@/types/common";
 
 
@@ -75,7 +76,7 @@ export async function POST(req: NextRequest) {
       state: user.location?.state ?? "",
       pinCode: user.pinCode,
 
-      profileImageUrl: user.profileImageUrl,
+      profileImageUrl: sanitizeProfileImageUrl(user.profileImageUrl) ?? undefined,
       emailVerified: user.emailVerified,
       doctorId,
       patientId,

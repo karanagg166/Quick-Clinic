@@ -61,7 +61,7 @@ export default function AppointmentCard({
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">
-            {new Date(appointment.slotDate).toDateString()}
+            {new Date(appointment.slotDate).toLocaleDateString("en-US", { timeZone: "UTC" })}
           </span>
         </div>
 
@@ -69,14 +69,16 @@ export default function AppointmentCard({
         <div className="flex items-center gap-2 text-sm">
           <Clock className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">
-            {new Date(appointment.slotStart).toLocaleTimeString([], {
+            {new Date(appointment.slotStart).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: "UTC",
             })}
             {" - "}
-            {new Date(appointment.slotEnd).toLocaleTimeString([], {
+            {new Date(appointment.slotEnd).toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
+              timeZone: "UTC",
             })}
           </span>
         </div>

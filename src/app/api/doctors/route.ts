@@ -5,6 +5,8 @@ import { Gender, Prisma, Specialty, Qualification } from "@/generated/prisma";
 import { parseSearchCoordinates, calculateHaversineDistanceKm, estimateTravelTimeMinutes } from "@/lib/coordinates";
 import { getRouteMetrics } from "@/lib/routing";
 
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = req.nextUrl;
@@ -151,7 +153,7 @@ export async function GET(req: NextRequest) {
         specialty: d.specialty ?? "",
         experience: d.experience ?? 0,
         fees: d.fees ?? 0,
-        profileImageUrl: d.user?.profileImageUrl ?? "",
+        profileImageUrl: sanitizeProfileImageUrl(d.user?.profileImageUrl) ?? "",
         doctorBio: d.doctorBio ?? "",
         qualifications: qualifications,
         city: d.user?.location?.city ?? undefined,

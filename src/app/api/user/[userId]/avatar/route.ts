@@ -1,10 +1,9 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { getUserId } from '@/lib/auth';
-
+import { sanitizeProfileImageUrl } from '@/lib/avatar';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
-
     try {
         const { userId } = await params;
 
@@ -17,11 +16,12 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             return NextResponse.json({ message: "User not found" }, { status: 404 });
         }
 
-        if (!user.profileImageUrl) {
+        const cleanUrl = sanitizeProfileImageUrl(user.profileImageUrl);
+        if (!cleanUrl) {
             return NextResponse.json({ message: "Avatar not found" }, { status: 404 });
         }
 
-        return NextResponse.json({ avatarUrl: user.profileImageUrl });
+        return NextResponse.json({ avatarUrl: cleanUrl });
 
     }
     catch (error: any) {

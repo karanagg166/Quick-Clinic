@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { UserDetail } from "@/types/common";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyToken } from "@/lib/auth";
+import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
 // 1. GET: Fetch User Details
 export async function GET(
@@ -52,7 +53,7 @@ export async function GET(
       city: userDB.location?.city || "",
       state: userDB.location?.state || "",
       pinCode: userDB.pinCode || 0,
-      profileImageUrl: userDB.profileImageUrl ?? undefined,
+      profileImageUrl: sanitizeProfileImageUrl(userDB.profileImageUrl) ?? undefined,
       emailVerified: userDB.emailVerified,
       doctorId: userDB.doctor?.id ?? null,
       patientId: userDB.patient?.id ?? null,
@@ -128,7 +129,7 @@ export async function PATCH(
       city: updatedDB.location?.city || "",
       state: updatedDB.location?.state || "",
       pinCode: updatedDB.pinCode || 0,
-      profileImageUrl: updatedDB.profileImageUrl ?? undefined,
+      profileImageUrl: sanitizeProfileImageUrl(updatedDB.profileImageUrl) ?? undefined,
       emailVerified: updatedDB.emailVerified,
       doctorId: updatedDB.doctor?.id ?? null,
       patientId: updatedDB.patient?.id ?? null,

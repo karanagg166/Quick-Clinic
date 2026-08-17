@@ -18,6 +18,13 @@ vi.mock('@/lib/prisma', () => ({
     notification: {
       create: vi.fn(),
     },
+    doctorPatientRelation: {
+      findUnique: vi.fn(),
+      create: vi.fn(),
+    },
+    chatMessages: {
+      create: vi.fn(),
+    },
   },
 }));
 

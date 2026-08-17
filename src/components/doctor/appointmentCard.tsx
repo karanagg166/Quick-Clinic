@@ -17,13 +17,13 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
 
   const dateText = (() => {
     const d = new Date(appointment.appointmentDate);
-    return isNaN(d.getTime()) ? appointment.appointmentDate : d.toLocaleDateString();
+    return isNaN(d.getTime()) ? appointment.appointmentDate : d.toLocaleDateString("en-US", { timeZone: "UTC" });
   })();
 
   const timeText = (() => {
     const t = appointment.appointmentTime;
     const asDate = new Date(t);
-    return isNaN(asDate.getTime()) ? t : asDate.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+    return isNaN(asDate.getTime()) ? t : asDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
   })();
 
   const isPending = appointment.status.toUpperCase() === 'PENDING';
