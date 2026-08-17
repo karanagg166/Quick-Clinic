@@ -64,6 +64,7 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       return NextResponse.json({ error: "Payment order is missing booking context" }, { status: 409 });
     }
 
+    // Update payment status first — this is idempotent
     if (payment.status !== "SUCCESS" || payment.razorpayPaymentId !== paymentId) {
       await prisma.payment.update({
         where: { razorpayOrderId: orderId },
@@ -71,6 +72,9 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       });
     }
 
+    // Finalize appointment — confirmSlotHold internally uses prisma.$transaction
+    // for slot+appointment atomicity. The payment update above is idempotent,
+    // so retrying this endpoint is safe.
     const appointment = await finalizeAppointmentBooking({
       slotId: payment.slotId,
       doctorId: payment.doctorId,
@@ -81,8 +85,14 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       transactionId: paymentId,
     });
     if (!appointment) {
+      // Payment captured but appointment failed — this should NOT happen now
+      // with the re-acquisition logic in confirmSlotHold. Log prominently.
+      console.error(
+        "CRITICAL: Payment verified but appointment finalization failed.",
+        { orderId, paymentId, slotId: payment.slotId, doctorId: payment.doctorId, patientId: patient.id }
+      );
       return NextResponse.json(
-        { error: "Payment was verified, but the appointment could not be finalized. Please retry or contact support." },
+        { error: "Payment was verified, but the appointment could not be finalized. Please contact support with your payment ID: " + paymentId },
         { status: 409 }
       );
     }

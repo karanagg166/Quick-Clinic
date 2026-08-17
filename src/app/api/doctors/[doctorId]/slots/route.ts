@@ -26,6 +26,7 @@ function getDayNameUTC(date: Date): string {
 
 // Helper: format slots with real-time appointment availability
 function formatSlotsWithAvailability(slots: any[]) {
+  const now = new Date();
   return slots.map((slot) => {
     let status = slot.status;
 
@@ -40,6 +41,10 @@ function formatSlotsWithAvailability(slots: any[]) {
           status = "AVAILABLE";
         }
       }
+    }
+
+    if (status === "AVAILABLE" && new Date(slot.startTime) < now) {
+      status = "UNAVAILABLE";
     }
 
     return {

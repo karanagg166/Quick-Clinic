@@ -19,11 +19,17 @@ const sizeMap = {
 
 function isValidAvatarUrl(src?: string | null): boolean {
   if (!src || typeof src !== "string" || src.trim() === "") return false;
-  // If running in browser and not on localhost, block localhost/127.0.0.1 image URLs
-  if (typeof window !== "undefined" && window.location.hostname !== "localhost" && window.location.hostname !== "127.0.0.1") {
-    if (src.includes("localhost:") || src.includes("127.0.0.1:")) return false;
+  try {
+    const url = new URL(src);
+    // Only allow HTTPS URLs from known image hosts (e.g., Cloudinary)
+    // Block all localhost/127.0.0.1 URLs since they reference non-existent services
+    if (url.hostname === "localhost" || url.hostname === "127.0.0.1") return false;
+    if (url.protocol !== "https:") return false;
+    return true;
+  } catch {
+    // If it's not a valid URL, reject it
+    return false;
   }
-  return true;
 }
 
 export default function Avatar({ src, name = "User", size = "md", className = "" }: Props) {

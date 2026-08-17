@@ -165,7 +165,31 @@ export async function confirmSlotHold(input: {
   }
 
   await expireSlotHolds(input.slotId);
-  const isOwner = await ownsHold(input.slotId, input.patientId, input.token);
+  
+  // For ONLINE payments, the payment has already been verified and captured.
+  // We must be more lenient with hold checks since the hold may have expired
+  // during the Razorpay checkout flow. The slot may have transitioned to
+  // AVAILABLE after hold expiry, which is fine — we'll re-acquire it.
+  let isOwner = await ownsHold(input.slotId, input.patientId, input.token);
+  if (!isOwner && input.paymentMethod === "ONLINE" && input.transactionId) {
+    // Payment was captured — try to transition the slot from AVAILABLE back to HELD
+    // so the transaction below can transition it to BOOKED.
+    const reacquired = await prisma.slot.updateMany({
+      where: {
+        id: input.slotId,
+        doctorId: input.doctorId,
+        status: "AVAILABLE",
+      },
+      data: {
+        status: "HELD",
+        heldByPatientId: input.patientId,
+        heldAt: new Date(),
+      },
+    });
+    if (reacquired.count === 1) {
+      isOwner = true;
+    }
+  }
   if (!isOwner) return null;
 
   try {

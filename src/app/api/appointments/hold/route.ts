@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createSlotHold } from "@/lib/booking";
 import { getAuthenticatedPatient } from "@/lib/request-auth";
+import { prisma } from "@/lib/prisma";
 
 const holdSchema = z.object({
   slotId: z.string().min(1),
@@ -16,6 +17,15 @@ export async function POST(req: NextRequest) {
     const rawBody = await req.json().catch(() => null);
     const body = holdSchema.safeParse(rawBody);
     if (!body.success) return NextResponse.json({ error: "Invalid hold request" }, { status: 400 });
+
+    // Server-side guard: reject holds on slots whose time has already passed
+    const slot = await prisma.slot.findUnique({
+      where: { id: body.data.slotId },
+      select: { startTime: true },
+    });
+    if (slot && new Date(slot.startTime) <= new Date()) {
+      return NextResponse.json({ error: "This time slot has already passed" }, { status: 400 });
+    }
 
     const result = await createSlotHold(body.data.slotId, body.data.doctorId, patient.id);
     if (result.kind === "conflict") {

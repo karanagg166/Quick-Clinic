@@ -48,9 +48,11 @@ describe('Doctor Slots Route', () => {
   });
 
   it('GET generates slots from weekly schedule and marks active leaves as ON_LEAVE', async () => {
+    // Use a far-future date to avoid the past-slot filter marking slots as UNAVAILABLE.
+    // 2027-05-14 is a Friday.
     const generated = [
-      { id: 's_1', startTime: new Date('2026-05-15T09:00:00Z'), endTime: new Date('2026-05-15T09:10:00Z'), status: 'AVAILABLE' },
-      { id: 's_2', startTime: new Date('2026-05-15T09:10:00Z'), endTime: new Date('2026-05-15T09:20:00Z'), status: 'ON_LEAVE' },
+      { id: 's_1', startTime: new Date('2027-05-14T09:00:00Z'), endTime: new Date('2027-05-14T09:10:00Z'), status: 'AVAILABLE' },
+      { id: 's_2', startTime: new Date('2027-05-14T09:10:00Z'), endTime: new Date('2027-05-14T09:20:00Z'), status: 'ON_LEAVE' },
     ];
 
     vi.mocked(prisma.slot.findMany)
@@ -61,7 +63,7 @@ describe('Doctor Slots Route', () => {
       doctorId: 'doc_1',
       weeklySchedule: [
         {
-          day: 'Friday', // 2026-05-15 is Friday
+          day: 'Friday', // 2027-05-14 is Friday
           slots: [{ slotNo: 1, start: '09:00', end: '09:20' }],
         },
       ],
@@ -70,14 +72,14 @@ describe('Doctor Slots Route', () => {
     // Mock active leave covering 09:10-09:20
     vi.mocked(prisma.leave.findMany).mockResolvedValueOnce([
       {
-        startDate: new Date('2026-05-15T09:10:00Z'),
-        endDate: new Date('2026-05-15T12:00:00Z'),
+        startDate: new Date('2027-05-14T09:10:00Z'),
+        endDate: new Date('2027-05-14T12:00:00Z'),
       },
     ] as any);
 
     vi.mocked(prisma.slot.createMany).mockResolvedValueOnce({ count: 2 });
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots?date=2026-05-15');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots?date=2027-05-14');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(201);
     const data = await res.json();

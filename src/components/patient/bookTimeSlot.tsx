@@ -29,6 +29,18 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
   const [activeHold, setActiveHold] = useState<Hold | null>(null);
 
+  const isSlotBookable = (slot: Slot) => {
+    if (activeHold && slot.id === activeHold.slotId) return true;
+    if (slot.status !== 'AVAILABLE') return false;
+    // For today, filter out slots whose start time has passed
+    const today = getTodayInUserTimezone();
+    if (date === today) {
+      const slotStart = new Date(slot.startTime);
+      if (slotStart <= new Date()) return false;
+    }
+    return true;
+  };
+
   useEffect(() => {
     const timeout = window.setTimeout(() => setDate(getTodayInUserTimezone()), 0);
     return () => window.clearTimeout(timeout);
@@ -58,6 +70,15 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   });
 
   const acquireHold = async (slotId: string): Promise<Hold> => {
+    // Prevent booking a slot whose time has already passed
+    const selectedSlotData = slots.find(s => s.id === slotId);
+    if (selectedSlotData) {
+      const slotStart = new Date(selectedSlotData.startTime);
+      if (slotStart <= new Date()) {
+        throw new Error('This time slot has already passed. Please select a future slot.');
+      }
+    }
+
     const response = await fetch('/api/appointments/hold', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({ slotId, doctorId }),
@@ -159,7 +180,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {loading ? <div className="text-center py-8 space-y-4"><Skeleton className="h-12 w-12 rounded-full mx-auto" /><Skeleton className="h-4 w-48 mx-auto" /></div>
-          : slots.filter((slot) => slot.status === 'AVAILABLE' || (activeHold && slot.id === activeHold.slotId)).length === 0 ? (
+          : slots.filter(isSlotBookable).length === 0 ? (
             <div className="text-center py-8">
               <p className="text-muted-foreground text-lg">No available slots for this date</p>
             </div>
@@ -169,7 +190,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                 <h3 className="text-xl font-semibold mb-3">Available Time Slots</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
                   {slots
-                    .filter((slot) => slot.status === 'AVAILABLE' || (activeHold && slot.id === activeHold.slotId))
+                    .filter(isSlotBookable)
                     .map((slot) => (
                       <Button
                         key={slot.id}
