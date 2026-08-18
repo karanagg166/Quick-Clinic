@@ -120,19 +120,33 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    let bankAccount = doctor.user?.bankAccounts?.[0];
+    let bankAccount: any = doctor.user?.bankAccounts?.[0];
 
     // If no existing bank account is linked, check if details were provided in payload
     if (!bankAccount && body.bankAccountNumber && body.bankIFSC) {
-      bankAccount = await prisma.bankAccount.create({
-        data: {
-          userId: doctor.user.id,
-          bankAccountNumber: body.bankAccountNumber,
-          bankIFSC: body.bankIFSC,
-          bankAccountHolderName: body.bankAccountHolderName || doctor.user.name || "Doctor",
-          bankName: body.bankName || "Bank",
-        },
-      });
+      try {
+        bankAccount = await prisma.bankAccount.upsert({
+          where: {
+            bankAccountNumber: body.bankAccountNumber,
+          },
+          update: {
+            bankIFSC: body.bankIFSC,
+            bankAccountHolderName: body.bankAccountHolderName || doctor.user.name || "Doctor",
+            bankName: body.bankName || "Bank",
+          },
+          create: {
+            userId: doctor.user.id,
+            bankAccountNumber: body.bankAccountNumber,
+            bankIFSC: body.bankIFSC,
+            bankAccountHolderName: body.bankAccountHolderName || doctor.user.name || "Doctor",
+            bankName: body.bankName || "Bank",
+          },
+        });
+      } catch {
+        bankAccount = (await prisma.bankAccount.findFirst({
+          where: { userId: doctor.user.id },
+        })) || undefined;
+      }
     }
 
     // Check if bank details are set

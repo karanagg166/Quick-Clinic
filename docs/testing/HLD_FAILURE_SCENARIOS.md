@@ -47,3 +47,20 @@ This document specifies the failure recovery modes, race conditions, resilience 
 - **Mitigation:**
   1. All domain events create durable PostgreSQL records (`Notification`, `ChatMessages`).
   2. Sockets serve as transient notification delivery; client UI re-fetches unread notifications and chat history from REST APIs upon reconnection.
+
+### 2.7 Doctor Leave Application & Existing Appointments Cascade
+- **Risk:** Doctor applies leave covering dates with existing confirmed or pending appointments.
+- **Mitigation:**
+  1. Overlapping appointments are automatically transitioned to `CANCELLED`.
+  2. Covered slots are transitioned to `ON_LEAVE`.
+  3. Online payments trigger automated refund processing.
+  4. Durable patient notifications and audit log entries are generated immediately.
+  5. Subsequent deletion of the leave restores available slots while guaranteeing that cancelled appointments never revive.
+
+### 2.8 Concurrent Appointment Completion & Double-Crediting
+- **Risk:** Rapid double-click or simultaneous completion requests for the same appointment could double-credit the doctor's balance.
+- **Mitigation:**
+  1. Completion execution occurs in an interactive transaction with `appointment.updateMany({ where: { id, status: { not: 'COMPLETED' } }, data: { status: 'COMPLETED' } })`.
+  2. Only the single winning transaction that transitioned the status from non-`COMPLETED` increments the doctor balance by `fees * 100` paise.
+  3. Subsequent replays observe `count === 0` and return HTTP 200 idempotently without crediting the doctor balance again.
+

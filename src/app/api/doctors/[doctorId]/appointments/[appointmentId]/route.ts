@@ -336,12 +336,23 @@ export async function PATCH(
         });
 
         if (!relation) {
-          relation = await prisma.doctorPatientRelation.create({
-            data: {
-              doctorsUserId: doctorUserId,
-              patientsUserId: patientUserId,
-            },
-          });
+          try {
+            relation = await prisma.doctorPatientRelation.create({
+              data: {
+                doctorsUserId: doctorUserId,
+                patientsUserId: patientUserId,
+              },
+            });
+          } catch {
+            relation = await prisma.doctorPatientRelation.findUnique({
+              where: {
+                doctorsUserId_patientsUserId: {
+                  doctorsUserId: doctorUserId,
+                  patientsUserId: patientUserId,
+                },
+              },
+            });
+          }
         }
 
         let chatText = "";
@@ -355,7 +366,7 @@ export async function PATCH(
             : `❌ Appointment Cancelled\n\nYour appointment with Dr. ${doctorName} on ${apptDate} has been cancelled.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
         }
 
-        if (chatText) {
+        if (relation && chatText) {
           await prisma.chatMessages.create({
             data: {
               doctorPatientRelationId: relation.id,

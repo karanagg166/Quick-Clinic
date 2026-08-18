@@ -7,7 +7,6 @@ import { GET as doctorDetailGET, PUT as doctorDetailPUT, PATCH as doctorDetailPA
 import { POST as schedulePOST, GET as scheduleGET } from '@/app/api/doctors/[doctorId]/schedule/route';
 import { POST as leavePOST, GET as leaveGET, DELETE as leaveDELETE } from '@/app/api/doctors/[doctorId]/leave/route';
 import { GET as earningsGET } from '@/app/api/doctors/[doctorId]/earnings/route';
-import { GET as earningsGET } from '@/app/api/doctors/[doctorId]/earnings/route';
 import { GET as balanceGET } from '@/app/api/doctors/[doctorId]/balance/route';
 import { POST as withdrawalPOST, GET as withdrawalGET } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { PATCH as doctorAppointmentPATCH, GET as doctorAppointmentGET } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';

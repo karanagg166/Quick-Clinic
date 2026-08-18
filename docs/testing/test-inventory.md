@@ -82,7 +82,20 @@ The test suite across `Quick-Clinic` and `socket-server` has been classified acc
 
 ### 2.7 Real-Time Sockets & Communication
 - `socket-server/__tests__/socketServer.integration.test.ts`: Cryptographic JWT authentication, 8 attack tests, room isolation, message broadcasting.
+- `socket-server/__tests__/part2-phase5-socket-deep.test.ts`: Real Socket.IO deep server testing, token verification, and chat room isolation.
 - `src/__tests__/socket/socketServer.test.ts`: Socket authentication middleware, room joining, chat broadcast.
 - `src/__tests__/socket/phase66-notifications-socket-integration.test.ts`: Multi-channel notification delivery.
 - `src/__tests__/api/chats/phase34-chat-history.test.ts`: Chat pagination, timestamp sorting, relation isolation.
 - `src/__tests__/api/phase31-doctor-patient-relations.test.ts`: Relationship creation, idempotency, and room binding.
+
+### 2.8 Part 2 Deep Integration & Concurrency Load Invariants
+- `src/__tests__/integration/part2-phase1-environment-data.test.ts`: Multi-tenant realistic database dataset seeding (Admins, 6 Doctors, 8 Patients) with scoped teardown.
+- `src/__tests__/api/doctors/part2-phase2-doctor-deep.test.ts`: Doctor deep testing (Onboarding, Profiles, Schedule, Leave Cascade, State Transitions, Balance Invariants, Withdrawals).
+- `src/__tests__/api/patients/part2-phase3-patient-golden-flows.test.ts`: Patient golden paths (Offline/Online booking, Hold, Rescheduling, Cancellation, Ratings).
+- `src/__tests__/api/doctors/part2-phase4-search-filters.test.ts`: Doctor multi-parameter filter matrix (specialty, fees, experience, gender, coordinates).
+- `src/__tests__/api/admin/part2-phase6-admin-deep.test.ts`: Admin operations, moderation, audit, and withdrawal processing.
+- `src/__tests__/concurrency/part2-slot-contention-load.test.ts`: 20-thread slot contention race condition invariant test (1 winner, 19 conflicts).
+- `src/__tests__/concurrency/part2-earnings-concurrency-load.test.ts`: Multi-appointment completion earnings credit determinism and idempotency invariant test.
+- `src/__tests__/concurrency/part2-withdrawal-concurrency-load.test.ts`: Parallel withdrawal overdraft prevention invariant test.
+- `tests/load/*`: k6 load testing scripts for search baseline, slot contention, earnings concurrency, and withdrawals.
+
