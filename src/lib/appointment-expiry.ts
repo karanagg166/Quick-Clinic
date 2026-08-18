@@ -20,7 +20,7 @@ export async function autoExpirePastAppointments(force = false) {
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
 
-    // Find all PENDING and CONFIRMED appointments whose slot date is in the past
+    // Find all PENDING and CONFIRMED appointments whose slot date is in the past (batched to 50 for safety)
     const expiredAppointments = await prisma.appointment.findMany({
       where: {
         status: {
@@ -41,6 +41,7 @@ export async function autoExpirePastAppointments(force = false) {
           include: { user: true },
         },
       },
+      take: 50,
     });
 
     if (expiredAppointments.length === 0) {
@@ -184,6 +185,7 @@ export async function autoExpirePastAppointments(force = false) {
             await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
+              signal: AbortSignal.timeout(1000),
               body: JSON.stringify({
                 patientUserId: appointment.patient.user.id,
                 appointmentId: appointment.id,
