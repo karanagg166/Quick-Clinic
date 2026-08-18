@@ -75,7 +75,7 @@ export async function GET(req: NextRequest) {
             }
         }
 
-        const orderBy = { createdAt: "desc" as const };
+        const orderBy = [{ createdAt: "desc" as const }, { id: "desc" as const }];
         const include = { user: { select: { id: true, name: true, email: true, role: true } } };
 
         let logs: any[] = [];
@@ -99,18 +99,16 @@ export async function GET(req: NextRequest) {
             });
         }
 
-        let nextCursor: string | null = null;
-        if (logs.length > limit) {
-            const nextItem = logs.pop();
-            nextCursor = nextItem?.id || null;
-        }
+        const hasMore = logs.length > limit;
+        const returnedLogs = hasMore ? logs.slice(0, limit) : logs;
+        const nextCursor = hasMore && returnedLogs.length > 0 ? returnedLogs[returnedLogs.length - 1].id : null;
 
         return NextResponse.json({
-            logs,
+            logs: returnedLogs,
             pagination: {
                 limit,
                 nextCursor,
-                hasMore: nextCursor !== null,
+                hasMore,
             },
         }, { status: 200 });
     } catch (error: any) {

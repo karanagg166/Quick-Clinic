@@ -2,6 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 
+export function maskAccountNumber(accountNumber?: string | null): string {
+  if (!accountNumber) return "N/A";
+  const trimmed = accountNumber.trim();
+  if (trimmed.length <= 4) return trimmed;
+  const last4 = trimmed.slice(-4);
+  return `********${last4}`;
+}
+
 // GET - Fetch doctor withdrawal history
 export async function GET(
   req: NextRequest,
@@ -52,7 +60,7 @@ export async function GET(
         amountInRupees: w.amount / 100, // Convert from paise to rupees
         currency: w.currency,
         status: w.status,
-        bankAccountNumber: bankAccount?.bankAccountNumber || "N/A",
+        bankAccountNumber: maskAccountNumber(bankAccount?.bankAccountNumber),
         bankIFSC: bankAccount?.bankIFSC || "N/A",
         bankAccountHolderName: bankAccount?.bankAccountHolderName || "N/A",
         bankName: bankAccount?.bankName || "N/A",
@@ -162,8 +170,7 @@ export async function POST(
           doctorId,
           amount: amountInPaise,
           currency: "INR",
-          status: "COMPLETED",
-          processedAt: new Date(),
+          status: "PENDING",
         },
       });
     });
@@ -181,7 +188,7 @@ export async function POST(
         withdrawal: {
           ...withdrawal,
           amountInRupees: withdrawal.amount / 100,
-          bankAccountNumber: bankAccount.bankAccountNumber,
+          bankAccountNumber: maskAccountNumber(bankAccount.bankAccountNumber),
           bankIFSC: bankAccount.bankIFSC,
           bankAccountHolderName: bankAccount.bankAccountHolderName,
           bankName: bankAccount.bankName,

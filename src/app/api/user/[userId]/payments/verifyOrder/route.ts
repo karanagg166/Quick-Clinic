@@ -64,7 +64,55 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       return NextResponse.json({ error: "Payment order is missing booking context" }, { status: 409 });
     }
 
-    // Update payment status first — this is idempotent
+    // Explicit payment state machine
+    // 1. REFUNDED: Replay must NOT transition back to SUCCESS, must NOT create appointment, must NOT issue another refund.
+    if (payment.status === "REFUNDED") {
+      return NextResponse.json(
+        {
+          error: "PAYMENT_ALREADY_REFUNDED",
+          message: "This payment has already been refunded.",
+          refundStatus: "REFUNDED",
+          transactionId: payment.razorpayPaymentId || paymentId,
+        },
+        { status: 409 }
+      );
+    }
+
+    // 2. REFUND_PENDING: Replay must NOT transition back to SUCCESS, must NOT create appointment, must NOT blindly issue duplicate refunds.
+    if (payment.status === "REFUND_PENDING") {
+      return NextResponse.json(
+        {
+          error: "REFUND_PENDING",
+          message: "A refund is currently pending for this payment.",
+          refundStatus: "REFUND_PENDING",
+          transactionId: payment.razorpayPaymentId || paymentId,
+        },
+        { status: 409 }
+      );
+    }
+
+    // 3. SUCCESS: Duplicate verification after successful appointment must be idempotent.
+    if (payment.status === "SUCCESS") {
+      const existingAppointment = await prisma.appointment.findFirst({
+        where: {
+          slotId: payment.slotId,
+          patientId: patient.id,
+        },
+      });
+
+      if (existingAppointment) {
+        return NextResponse.json(
+          {
+            message: "Payment verified and appointment confirmed",
+            transactionId: payment.razorpayPaymentId || paymentId,
+            appointment: existingAppointment,
+          },
+          { status: 200 }
+        );
+      }
+    }
+
+    // 4. PENDING (or unfinalized SUCCESS): Transition to SUCCESS and attempt finalization
     if (payment.status !== "SUCCESS" || payment.razorpayPaymentId !== paymentId) {
       await prisma.payment.update({
         where: { razorpayOrderId: orderId },
@@ -103,6 +151,7 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
               reason: "Automatic compensation: slot unavailable during finalization",
               orderId,
             },
+            receipt: `ref_${orderId}`,
           });
           refundStatus = "REFUNDED";
         }

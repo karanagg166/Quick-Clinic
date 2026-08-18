@@ -31,8 +31,12 @@ export function verifySocketJWT(
       return { valid: false, error: 'Invalid token format' };
     }
 
+    const secret = secretKey || process.env.JWT_SECRET;
+    if (!secret || typeof secret !== 'string' || !secret.trim()) {
+      return { valid: false, error: 'JWT_SECRET is not configured' };
+    }
+
     const [headerB64, payloadB64, signatureB64] = parts;
-    const secret = secretKey || process.env.JWT_SECRET || 'default_test_secret_for_jwt_auth_32_characters_minimum';
 
     const expectedSignature = crypto
       .createHmac('sha256', secret)
@@ -67,10 +71,12 @@ export function verifySocketJWT(
 export class SocketServer {
   private io: SocketIOServer;
   private prisma: PrismaClient;
+  private jwtSecret?: string;
 
-  constructor(io: SocketIOServer, prisma: PrismaClient) {
+  constructor(io: SocketIOServer, prisma: PrismaClient, jwtSecret?: string) {
     this.io = io;
     this.prisma = prisma;
+    this.jwtSecret = jwtSecret;
     this.setupAuthentication();
     this.setupEventHandlers();
   }
@@ -93,7 +99,7 @@ export class SocketServer {
           return next(new Error('Missing token'));
         }
 
-        const authResult = verifySocketJWT(token);
+        const authResult = verifySocketJWT(token, this.jwtSecret);
         if (!authResult.valid || !authResult.payload) {
           return next(new Error(authResult.error || 'Authentication failed'));
         }

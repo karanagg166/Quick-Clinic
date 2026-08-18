@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET, POST } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -15,8 +16,7 @@ vi.mock('@/lib/prisma', () => ({
           doctorId: 'doc_1',
           amount: 50000,
           currency: 'INR',
-          status: 'COMPLETED',
-          processedAt: new Date(),
+          status: 'PENDING',
         }),
       },
     })),
@@ -33,12 +33,17 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Doctor Withdrawals Route', () => {
-  beforeEach(() => {
+  let docToken: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    docToken = await createToken({ id: 'user_doc_1', role: 'DOCTOR' });
   });
 
-  it('GET returns withdrawals with rupees mapping', async () => {
+  it('GET returns withdrawals with rupees mapping and masked bank account number', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      id: 'doc_1',
+      userId: 'user_doc_1',
       user: {
         bankAccounts: [
           {
@@ -56,33 +61,42 @@ describe('Doctor Withdrawals Route', () => {
         id: 'w_1',
         amount: 50000,
         currency: 'INR',
-        status: 'COMPLETED',
-        razorpayPayoutId: 'pout_123',
+        status: 'PENDING',
+        razorpayPayoutId: null,
         failureReason: null,
         createdAt: new Date(),
         updatedAt: new Date(),
-        processedAt: new Date(),
+        processedAt: null,
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 
     const data = await res.json();
     expect(data.length).toBe(1);
     expect(data[0].amountInRupees).toBe(500);
-    expect(data[0].bankAccountNumber).toBe('12345678901');
+    expect(data[0].status).toBe('PENDING');
+    expect(data[0].bankAccountNumber).toBe('********8901');
   });
 
   it('POST rejects when bank details are missing', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      id: 'doc_1',
+      userId: 'user_doc_1',
       balance: 100000,
       user: { bankAccounts: [] },
     } as any);
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 500 }),
     });
 
@@ -94,6 +108,8 @@ describe('Doctor Withdrawals Route', () => {
 
   it('POST rejects when balance is insufficient', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      id: 'doc_1',
+      userId: 'user_doc_1',
       balance: 10000, // 100 INR in paise
       user: {
         bankAccounts: [
@@ -120,6 +136,10 @@ describe('Doctor Withdrawals Route', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 500 }), // 500 INR = 50000 paise
     });
 
@@ -129,8 +149,10 @@ describe('Doctor Withdrawals Route', () => {
     expect(data.error).toMatch(/Insufficient balance/i);
   });
 
-  it('POST creates withdrawal and deducts balance immediately', async () => {
+  it('POST creates withdrawal in PENDING status, masks bank account and decrements balance immediately', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      id: 'doc_1',
+      userId: 'user_doc_1',
       balance: 100000, // 1000 INR
       user: {
         bankAccounts: [
@@ -149,8 +171,7 @@ describe('Doctor Withdrawals Route', () => {
       doctorId: 'doc_1',
       amount: 50000,
       currency: 'INR',
-      status: 'COMPLETED',
-      processedAt: new Date(),
+      status: 'PENDING',
     });
 
     const mockUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
@@ -168,11 +189,18 @@ describe('Doctor Withdrawals Route', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 500 }),
     });
 
     const res = await POST(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(201);
+    const data = await res.json();
+    expect(data.withdrawal.status).toBe('PENDING');
+    expect(data.withdrawal.bankAccountNumber).toBe('********8901');
     expect(mockUpdateMany).toHaveBeenCalledWith({
       where: { id: 'doc_1', balance: { gte: 50000 } },
       data: { balance: { decrement: 50000 } },

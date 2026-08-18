@@ -5,14 +5,17 @@ import {
   POST as withdrawalsPOST,
 } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload, buildBankAccountPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => {
   let doc1UserId: string;
   let doc1Id: string;
+  let doc1Token: string;
 
   let doc2UserId: string;
   let doc2Id: string;
+  let doc2Token: string;
 
   const createdWithdrawalIds: string[] = [];
 
@@ -42,6 +45,7 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
       },
     });
     doc1UserId = doc1User.id;
+    doc1Token = await createToken({ id: doc1UserId, email: doc1User.email, role: 'DOCTOR', name: doc1User.name });
 
     const d1 = await prisma.doctor.create({
       data: {
@@ -55,7 +59,9 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
     doc1Id = d1.id;
 
     // Attach Bank Account to Doctor 1
-    const bankPayload = buildBankAccountPayload();
+    const bankPayload = buildBankAccountPayload({
+      bankAccountNumber: `99${Date.now().toString().slice(-10)}`,
+    });
     await prisma.bankAccount.create({
       data: {
         userId: doc1UserId,
@@ -91,6 +97,7 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
       },
     });
     doc2UserId = doc2User.id;
+    doc2Token = await createToken({ id: doc2UserId, email: doc2User.email, role: 'DOCTOR', name: doc2User.name });
 
     const d2 = await prisma.doctor.create({
       data: {
@@ -120,6 +127,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
   it('41.1 POST rejects non-existent doctor with 404', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/withdrawals', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc1Token}`,
+      },
       body: JSON.stringify({ amount: 500 }),
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: 'non_existent_doc' }) });
@@ -133,6 +144,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
     for (const amt of invalidAmounts) {
       const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
         method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${doc1Token}`,
+        },
         body: JSON.stringify({ amount: amt }),
       });
       const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc1Id }) });
@@ -145,6 +160,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
   it('41.3 POST rejects withdrawal when doctor has not configured bank details (400)', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc2Token}`,
+      },
       body: JSON.stringify({ amount: 500 }),
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc2Id }) });
@@ -156,6 +175,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
   it('41.4 POST rejects withdrawal below minimum threshold of ₹100 (400)', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc1Token}`,
+      },
       body: JSON.stringify({ amount: 50 }), // ₹50 < ₹100
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc1Id }) });
@@ -167,6 +190,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
   it('41.5 POST rejects withdrawal exceeding available balance (400)', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc1Token}`,
+      },
       body: JSON.stringify({ amount: 10000 }), // ₹10,000 > ₹5,000 balance
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc1Id }) });
@@ -181,6 +208,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc1Token}`,
+      },
       body: JSON.stringify({ amount: 1500 }), // ₹1,500 = 150,000 paise
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc1Id }) });
@@ -190,8 +221,8 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
     expect(data.message).toBe('Withdrawal request created successfully');
     expect(data.withdrawal.amount).toBe(150000); // in paise
     expect(data.withdrawal.amountInRupees).toBe(1500);
-    expect(data.withdrawal.status).toBe('COMPLETED');
-    expect(data.withdrawal.bankAccountNumber).toBeDefined();
+    expect(data.withdrawal.status).toBe('PENDING');
+    expect(data.withdrawal.bankAccountNumber).toMatch(/^\*{8}\d{4}$/);
 
     createdWithdrawalIds.push(data.withdrawal.id);
 
@@ -206,11 +237,17 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doc1Token}`,
+      },
       body: JSON.stringify({ amount: remainingRupees }),
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: doc1Id }) });
     expect(res.status).toBe(201);
     const data = await res.json();
+    expect(data.withdrawal.status).toBe('PENDING');
+    expect(data.withdrawal.bankAccountNumber).toMatch(/^\*{8}\d{4}$/);
 
     createdWithdrawalIds.push(data.withdrawal.id);
 
@@ -218,8 +255,10 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
     expect(docAfter?.balance).toBe(0);
   });
 
-  it('41.8 GET returns complete withdrawal history ordered by newest first', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`);
+  it('41.8 GET returns complete withdrawal history ordered by newest first with masked bank details', async () => {
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/withdrawals`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await withdrawalsGET(req, { params: Promise.resolve({ doctorId: doc1Id }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -227,6 +266,6 @@ describe('Phase 41: Doctor Withdrawal Requests & Validations Test Suite', () => 
     expect(Array.isArray(data)).toBe(true);
     expect(data.length).toBe(2);
     expect(data[0].amountInRupees).toBeDefined();
-    expect(data[0].bankAccountNumber).toBeDefined();
+    expect(data[0].bankAccountNumber).toMatch(/^\*{8}\d{4}$/);
   });
 });

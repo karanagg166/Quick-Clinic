@@ -1,51 +1,58 @@
-# Quick-Clinic Part 1 & Part 1B Checkpoint & Verification Sign-Off
+# Quick-Clinic Part 1 & Part 1C Checkpoint & Verification Sign-Off
 
 ## 1. Scope Completion & Verification Summary
 
-Following the comprehensive audit and remediation directives of **Part 1B (Implementation Verification and Correction)**, all production implementations, architectural corrections, security hardening measures, and test verifications are **Complete & Formally Verified**.
+Following the comprehensive audit and remediation directives of **Part 1B (Implementation Verification and Correction)** and **Part 1C (Final Verification/Fix Pass)**, all production implementations, architectural corrections, security hardening measures, and test verifications are **Complete & Formally Verified**.
 
-### 1.1 Summary of Corrections & Verified Hardening in Part 1B
-- **Slot Hold Security & Database Fallback:**
-  - `Slot.holdToken String?`, `Slot.holdExpiresAt DateTime?`, and index `@@index([holdExpiresAt])` added to schema and migrated.
-  - `src/lib/booking.ts` updated so DB fallback strictly requires proving token possession (`slot.holdToken === token` and `slot.holdExpiresAt > now`).
-  - Atomic transition `AVAILABLE` (or expired `HELD`) -> `HELD` enforced at DB level.
-  - Verified with real database integration tests in `src/__tests__/security/part1b-security-hardening.test.ts`.
-- **Socket.IO Cryptographic Handshake Authentication:**
-  - `socket-server/server.ts` cryptographically verifies HMAC-SHA256 JWT signatures using `JWT_SECRET`.
-  - Client-controlled handshake payloads (`socket.handshake.auth.userId`) are ignored; identity is strictly derived from verified JWT.
-  - Relation access authorization checked against DB prior to joining `relation_${relationId}` rooms.
-  - Verified against all 8 attack and misuse scenarios in `socket-server/__tests__/socketServer.integration.test.ts` (19/19 tests passing).
-- **Centralized Appointment State Machine Integration:**
-  - State machine transition validation (`validateStatusTransition` from `src/lib/appointment-state-machine.ts`) wired into:
-    - Doctor appointment updates (`src/app/api/doctors/[doctorId]/appointments/[appointmentId]/route.ts`)
-    - Patient cancellations (`src/app/api/patients/[patientId]/appointments/[appointmentId]/route.ts`)
-    - Doctor leave auto-cancellations (`src/app/api/doctors/[doctorId]/leave/route.ts`)
-- **Super Admin Architectural Model Correction:**
-  - Corrected documentation to accurately reflect database schema modeling: Super Admin is represented as `User.role == 'ADMIN'` with `Admin.managerId == null`.
-- **Admin Logs Security & Cursor Pagination:**
-  - `src/app/api/admin/logs/route.ts` hardened with cursor pagination (`cursor`, `nextCursor`, `hasMore`), safe limit capping (max 100), date-range filtering, role filtering, and authenticated session scope (`scope=my`).
-- **Comprehensive IDOR Defenses Across Routes:**
-  - Enforced authenticated session verification via `getAuthenticatedUser(req)` across all 13 targeted routes including bank details (doctor & patient), withdrawals, appointments, user/doctor/patient profiles, doctor-patient relations, and chats.
-- **Payment Compensation & Concurrency Invariants:**
-  - Automatic deterministic Razorpay refund compensation and `REFUND_PENDING` status update in `verifyOrder` if appointment finalization fails.
-  - Atomic balance conditional decrement (`balance: { decrement: amount }` with condition `balance >= amount`) in doctor withdrawals preventing double-spend.
+### 1.1 Summary of Corrections & Verified Hardening in Part 1C
+
+- **1. Socket JWT Authentication Fail-Closed Hardening:**
+  - Removed all hardcoded fallback secrets in `socket-server/server.ts`.
+  - When `JWT_SECRET` is missing in environment/config, authentication immediately fails closed (`{ valid: false, error: 'JWT_SECRET is not configured' }`).
+  - Cryptographic verification strictly tests valid secrets and rejects tokens signed with defaults, forged signatures, or wrong secrets.
+  - Verified with real Socket.IO integration suite (`socket-server/__tests__/socketServer.integration.test.ts` - 21/21 passed).
+
+- **2. Payment Verification & Refund State Machine Idempotency:**
+  - `src/app/api/user/[userId]/payments/verifyOrder/route.ts` rejects state machine inversion (replays of `REFUNDED` or `REFUND_PENDING` return 409 and never transition back to `SUCCESS`).
+  - Duplicate verification calls for successful payments return the existing appointment idempotently (HTTP 200) without duplicating database appointments.
+  - Automatic refund compensation is triggered if the slot is lost or unavailable post-payment.
+  - Verified with real database integration suite (`src/__tests__/security/part1c-payment-refund-idempotency.test.ts` - 5/5 passed).
+
+- **3. Admin Audit Logs Deterministic Cursor Pagination:**
+  - `src/app/api/admin/logs/route.ts` corrected to use standard `limit + 1` cursor pagination without skipping items (`nextCursor = logs[limit - 1].id`).
+  - Deterministic tiebreaker applied: `orderBy: [{ createdAt: 'desc' }, { id: 'desc' }]`.
+  - Tested across multi-page, limit=1, and identical timestamp scenarios (`src/__tests__/api/admin/part1c-admin-logs-pagination.test.ts` - 3/3 passed).
+
+- **4. Withdrawal Lifecycle Semantics:**
+  - `src/app/api/doctors/[doctorId]/withdrawals/route.ts` creates requests with initial `status: 'PENDING'` and `processedAt: null` (never `COMPLETED` at request time).
+  - Status progression enforces `PENDING` -> `PROCESSING` -> `COMPLETED`/`FAILED`.
+  - Atomic balance reservation prevents double-spend / overdrafts; failed payouts restore doctor balance idempotently exactly once.
+  - Verified with unit and database suites (`src/__tests__/api/doctors/part1c-withdrawal-lifecycle-masking.test.ts` & `src/__tests__/api/doctors/withdrawals.test.ts`).
+
+- **5. Sensitive Bank Account Number Masking:**
+  - `maskAccountNumber` helper masks all but the last 4 digits (`********XXXX`).
+  - Both GET and POST responses in doctor withdrawals route mask the raw account number before returning to the client.
+  - Database stores the unmasked number securely.
 
 ---
 
-## 2. Part 1B Deliverables & Reports
+## 2. Part 1C Verified Deliverables & Test Suites
 
-1. [`docs/testing/PART1_AUDIT.md`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/docs/testing/PART1_AUDIT.md) - System architecture audit & comprehensive Part 1 vs Part 1B verification matrix.
-2. [`docs/testing/test-inventory.md`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/docs/testing/test-inventory.md) - True test categorization breakdown (UNIT, COMPONENT, MOCKED API, REAL DB INTEGRATION, REAL SOCKET INTEGRATION, SECURITY, CONCURRENCY, STATIC/META).
-3. [`docs/testing/HLD_FAILURE_SCENARIOS.md`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/docs/testing/HLD_FAILURE_SCENARIOS.md) - Distributed failure modes, race mitigations, and compensation workflows.
-4. [`docs/testing/PART1_CHECKPOINT.md`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/docs/testing/PART1_CHECKPOINT.md) - Formal checkpoint sign-off report.
+1. [`socket-server/__tests__/socketServer.integration.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/socket-server/__tests__/socketServer.integration.test.ts) (21 tests - 100% PASS)
+2. [`src/__tests__/security/part1c-payment-refund-idempotency.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/security/part1c-payment-refund-idempotency.test.ts) (5 tests - 100% PASS)
+3. [`src/__tests__/api/admin/part1c-admin-logs-pagination.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/api/admin/part1c-admin-logs-pagination.test.ts) (3 tests - 100% PASS)
+4. [`src/__tests__/api/doctors/part1c-withdrawal-lifecycle-masking.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/api/doctors/part1c-withdrawal-lifecycle-masking.test.ts) (6 tests - 100% PASS)
+5. [`src/__tests__/api/doctors/withdrawals.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/api/doctors/withdrawals.test.ts) (4 tests - 100% PASS)
+6. [`src/__tests__/api/doctors/phase41-doctor-withdrawals.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/api/doctors/phase41-doctor-withdrawals.test.ts) (8 tests - 100% PASS)
+7. [`src/__tests__/security/part1b-security-hardening.test.ts`](file:///Users/karanagg/Desktop/Projects/Quick-Clinic/src/__tests__/security/part1b-security-hardening.test.ts) (10 tests - 100% PASS)
 
 ---
 
 ## 3. Exit Quality Gates
 
 - **Prisma Schema Generation (`pnpm prisma generate`):** Cleanly generated; synchronized with Neon PostgreSQL.
-- **TypeScript Compilation (`pnpm tsc --noEmit`):** Passed with **0 errors**.
+- **TypeScript Compilation (`pnpm type-check`):** Passed with **0 errors**.
 - **ESLint Code Quality (`pnpm lint`):** Passed with **0 errors**.
-- **Part 1B Security Test Suite (`pnpm vitest run src/__tests__/security/part1b-security-hardening.test.ts`):** 10/10 tests passed (100%).
-- **Socket Server Test Suite (`pnpm --dir socket-server test`):** 19/19 tests passed (100%).
-- **Core API Integration Suites (Phases 22, 23, 24, 25, 26, 39, 67, profile):** All passed.
+- **Socket Server Integration Suite (`pnpm --dir socket-server test --run`):** 21/21 tests passed (100%).
+- **Part 1C & Security Test Suite (`pnpm test ... --run`):** 36/36 tests passed (100%).
+- **Remaining P0 / P1 Issues:** 0 P0, 0 P1.

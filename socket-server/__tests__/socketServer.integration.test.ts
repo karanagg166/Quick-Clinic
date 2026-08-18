@@ -6,7 +6,7 @@ import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import express from 'express';
 import cors from 'cors';
 import crypto from 'crypto';
-import { SocketServer } from '../server';
+import { SocketServer, verifySocketJWT } from '../server';
 
 const TEST_SECRET = 'default_test_secret_for_jwt_auth_32_characters_minimum';
 
@@ -184,6 +184,43 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
   });
 
   describe('2. Cryptographic WebSocket Authentication & 8 Security Attack Scenarios', () => {
+    it('Fail-Closed: verifySocketJWT fails closed when JWT_SECRET is missing or empty', () => {
+      const savedSecret = process.env.JWT_SECRET;
+      try {
+        delete process.env.JWT_SECRET;
+        const validFormatToken = generateTestToken({ id: 'u1', role: 'PATIENT' }, 'some_key');
+        const res = verifySocketJWT(validFormatToken);
+        expect(res.valid).toBe(false);
+        expect(res.error).toBe('JWT_SECRET is not configured');
+      } finally {
+        process.env.JWT_SECRET = savedSecret;
+      }
+    });
+
+    it('Fail-Closed: verifySocketJWT succeeds with correct secret and fails with wrong or old default secret', () => {
+      const customSecret = 'my_custom_production_secret_32_characters_long';
+      const validToken = generateTestToken({ id: 'u1', role: 'PATIENT' }, customSecret);
+      const forgedOldDefaultToken = generateTestToken(
+        { id: 'u1', role: 'PATIENT' },
+        'default_test_secret_for_jwt_auth_32_characters_minimum'
+      );
+
+      // Correct secret succeeds
+      const goodRes = verifySocketJWT(validToken, customSecret);
+      expect(goodRes.valid).toBe(true);
+      expect(goodRes.payload?.id).toBe('u1');
+
+      // Wrong secret fails
+      const badRes = verifySocketJWT(validToken, 'wrong_custom_secret_32_chars_long');
+      expect(badRes.valid).toBe(false);
+      expect(badRes.error).toBe('Invalid token signature');
+
+      // Old default fallback secret fails when server uses custom secret
+      const defaultRes = verifySocketJWT(forgedOldDefaultToken, customSecret);
+      expect(defaultRes.valid).toBe(false);
+      expect(defaultRes.error).toBe('Invalid token signature');
+    });
+
     it('Attack Case 6: rejects connection when token is omitted', async () => {
       const client = Client(`http://localhost:${port}`, {
         auth: {},
