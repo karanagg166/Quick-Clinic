@@ -5,7 +5,7 @@ import {
   PATCH as doctorAppointmentPATCH,
 } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
-import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { buildUserPayload, createAuthHeaders } from '@/__tests__/helpers/factories';
 
 describe('Phase 24: Appointment Completion & Doctor Earnings Settlement Test Suite', () => {
   let doc1UserId: string;
@@ -232,10 +232,12 @@ describe('Phase 24: Appointment Completion & Doctor Earnings Settlement Test Sui
     const docBefore = await prisma.doctor.findUnique({ where: { id: doc1Id } });
     const initialBalance = docBefore?.balance ?? 0;
 
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptOnlineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -270,10 +272,12 @@ describe('Phase 24: Appointment Completion & Doctor Earnings Settlement Test Sui
     const currentBalance = docBefore?.balance ?? 0;
 
     // Call completion again
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptOnlineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -293,10 +297,12 @@ describe('Phase 24: Appointment Completion & Doctor Earnings Settlement Test Sui
     const docBefore = await prisma.doctor.findUnique({ where: { id: doc1Id } });
     const balanceBefore = docBefore?.balance ?? 0;
 
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptOfflineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -316,10 +322,12 @@ describe('Phase 24: Appointment Completion & Doctor Earnings Settlement Test Sui
   });
 
   it('24.4 Doctor 2 cannot complete Doctor 1 appointment (404 isolation)', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc2UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc2Id}/appointments/${apptOnlineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );

@@ -13,67 +13,79 @@ export async function GET(req: NextRequest) {
         const type = searchParams.get("type") || "audit"; // 'audit' or 'access'
         const userId = searchParams.get("userId");
         const action = searchParams.get("action");
-        const date = searchParams.get("date"); // YYYY-MM-DD
+        const tag = searchParams.get("tag");
+        const role = searchParams.get("role");
+        const scope = searchParams.get("scope") || "all";
+        const cursor = searchParams.get("cursor") || undefined;
+        const rawLimit = parseInt(searchParams.get("limit") || "50", 10);
+        const limit = Math.min(Math.max(isNaN(rawLimit) ? 50 : rawLimit, 1), 100);
 
         let where: any = {};
 
-        if (userId) {
+        // Scope resolution: "my" strictly uses the authenticated admin's ID
+        if (scope === "my") {
+            where.userId = adminUser.id;
+        } else if (userId) {
             where.userId = userId;
         }
+
         if (action) {
             where.action = { contains: action, mode: "insensitive" };
         }
 
-        const tag = searchParams.get("tag");
         if (tag) {
             where.tag = tag;
         }
 
+        if (role) {
+            where.user = { role };
+        }
+
+        // Date and time range filters
         const timeRange = searchParams.get("timeRange");
+        const startDateParam = searchParams.get("startDate");
+        const endDateParam = searchParams.get("endDate");
+        const dateParam = searchParams.get("date"); // Single day YYYY-MM-DD
+
         if (timeRange === "last5Mins") {
             const fiveMinsAgo = new Date(Date.now() - 5 * 60 * 1000);
             where.createdAt = { gte: fiveMinsAgo };
-        } else if (date) {
-            const startDate = new Date(date);
-            const endDate = new Date(date);
-            endDate.setDate(endDate.getDate() + 1);
-            where.createdAt = {
-                gte: startDate,
-                lt: endDate,
-            };
+        } else if (startDateParam || endDateParam) {
+            const dateFilter: any = {};
+            if (startDateParam) {
+                const s = new Date(startDateParam);
+                if (!isNaN(s.getTime())) dateFilter.gte = s;
+            }
+            if (endDateParam) {
+                const e = new Date(endDateParam);
+                if (!isNaN(e.getTime())) dateFilter.lte = e;
+            }
+            if (Object.keys(dateFilter).length > 0) {
+                where.createdAt = dateFilter;
+            }
+        } else if (dateParam) {
+            const startDate = new Date(dateParam);
+            if (!isNaN(startDate.getTime())) {
+                const endDate = new Date(startDate);
+                endDate.setDate(endDate.getDate() + 1);
+                where.createdAt = {
+                    gte: startDate,
+                    lt: endDate,
+                };
+            }
         }
 
-        // Verify token for scope check
-        const token = req.cookies.get("token")?.value;
-        let currentUserId = null;
-        if (token) {
-            // We can lazy load auth lib here or pass it if token is raw
-            // reusing simple check for now or assuming we can trust userId param if scope is my
-            // But better to decode. For brevity, let's trust the 'my' scope passes userId correctly from client or we fetch it.
-            // Actually, safer to decode.
-        }
-
-        const scope = searchParams.get("scope") || "all";
-
-        if (scope === "my" && userId) {
-            where.userId = userId;
-        } else if (scope === "my" && !userId) {
-            // If scope is my but no user id sent, we might fail or ignore.
-            // In real app, we decode token here.
-        } else if (userId) {
-            // Specific user filter
-            where.userId = userId;
-        }
-
-        let logs;
-        const take = 50; // Limit results
         const orderBy = { createdAt: "desc" as const };
-        const include = { user: { select: { name: true, email: true, role: true } } };
+        const include = { user: { select: { id: true, name: true, email: true, role: true } } };
+
+        let logs: any[] = [];
+        const take = limit + 1; // Fetch 1 extra to determine nextCursor
 
         if (type === "access") {
             logs = await prisma.accessLog.findMany({
                 where,
                 take,
+                ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
                 orderBy,
                 include,
             });
@@ -81,12 +93,26 @@ export async function GET(req: NextRequest) {
             logs = await prisma.auditLog.findMany({
                 where,
                 take,
+                ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
                 orderBy,
                 include,
             });
         }
 
-        return NextResponse.json({ logs });
+        let nextCursor: string | null = null;
+        if (logs.length > limit) {
+            const nextItem = logs.pop();
+            nextCursor = nextItem?.id || null;
+        }
+
+        return NextResponse.json({
+            logs,
+            pagination: {
+                limit,
+                nextCursor,
+                hasMore: nextCursor !== null,
+            },
+        }, { status: 200 });
     } catch (error: any) {
         console.error("Logs Fetch Error:", error);
         return NextResponse.json({ error: "Failed to fetch logs" }, { status: 500 });

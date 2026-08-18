@@ -5,7 +5,7 @@ import {
   PATCH as doctorAppointmentPATCH,
 } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
-import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { buildUserPayload, createAuthHeaders } from '@/__tests__/helpers/factories';
 
 describe('Phase 25: Patient No-Show Handling & Slot Consumption Test Suite', () => {
   let doc1UserId: string;
@@ -184,10 +184,12 @@ describe('Phase 25: Patient No-Show Handling & Slot Consumption Test Suite', () 
   });
 
   it('25.1 Doctor 1 marks appointment as NO_SHOW, consumes slot, notifies patient, and logs audit', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'NO_SHOW' }),
       }
     );
@@ -218,10 +220,12 @@ describe('Phase 25: Patient No-Show Handling & Slot Consumption Test Suite', () 
   });
 
   it('25.2 Doctor 2 cannot mark NO_SHOW on Doctor 1 appointment (404 isolation)', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc2UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc2Id}/appointments/${apptId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'NO_SHOW' }),
       }
     );

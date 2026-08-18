@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 import { logAccess } from "@/lib/logger";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, getAuthenticatedUser } from "@/lib/auth";
 import { parseCoordinates } from "@/lib/coordinates";
 import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
@@ -188,16 +188,10 @@ export const PUT = async (
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const body = await req.json();
-    const {
-      specialty,
-      fees = undefined,
-      experience = undefined,
-      qualifications = undefined,
-      doctorBio = undefined,
-      latitude = undefined,
-      longitude = undefined,
-    } = body ?? {};
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Check if doctor exists
     const doctor = await prisma.doctor.findUnique({
@@ -207,6 +201,13 @@ export const PUT = async (
     if (!doctor) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { specialty, fees, experience, doctorBio, latitude, longitude, qualifications } = body;
 
     // Prepare update data
     const data: any = {};
@@ -263,6 +264,24 @@ export const PATCH = async (
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check if doctor exists
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json();
     const updateData: any = {};
 
@@ -287,15 +306,6 @@ export const PATCH = async (
           qualification: q,
         })),
       };
-    }
-
-    // Check if doctor exists
-    const doctor = await prisma.doctor.findUnique({
-      where: { id: doctorId },
-    });
-
-    if (!doctor) {
-      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
     // Update only provided fields

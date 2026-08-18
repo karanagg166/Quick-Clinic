@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAccess } from "@/lib/logger";
-import { verifyToken } from "@/lib/auth";
+import { verifyToken, getAuthenticatedUser } from "@/lib/auth";
 
 // GET - Fetch patient by ID
 export const GET = async (
@@ -25,12 +25,8 @@ export const GET = async (
     }
 
     // Log Access
-    const token = req.cookies.get("token")?.value;
-    let viewerId = null;
-    if (token) {
-      const { payload } = await verifyToken(token);
-      if (payload) viewerId = (payload as any).id;
-    }
+    const authUser = await getAuthenticatedUser(req);
+    const viewerId = authUser?.id || null;
     await logAccess(viewerId, patientId, "Viewed Patient Profile");
 
     return NextResponse.json({ patient }, { status: 200 });
@@ -55,12 +51,10 @@ export const PUT = async (
       return NextResponse.json({ error: "patientId is required" }, { status: 400 });
     }
 
-    const body = await req.json();
-    const {
-      medicalHistory = undefined,
-      allergies = undefined,
-      currentMedications = undefined,
-    } = body ?? {};
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Check if patient exists
     const patient = await prisma.patient.findUnique({
@@ -70,6 +64,17 @@ export const PUT = async (
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
+
+    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const {
+      medicalHistory = undefined,
+      allergies = undefined,
+      currentMedications = undefined,
+    } = body ?? {};
 
     // Update patient
     const updated = await prisma.patient.update({
@@ -103,13 +108,10 @@ export const PATCH = async (
       return NextResponse.json({ error: "patientId is required" }, { status: 400 });
     }
 
-    const body = await req.json();
-    const updateData: any = {};
-
-    // Only add fields that are explicitly provided
-    if (body.medicalHistory !== undefined) updateData.medicalHistory = body.medicalHistory;
-    if (body.allergies !== undefined) updateData.allergies = body.allergies;
-    if (body.currentMedications !== undefined) updateData.currentMedications = body.currentMedications;
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
     // Check if patient exists
     const patient = await prisma.patient.findUnique({
@@ -119,6 +121,18 @@ export const PATCH = async (
     if (!patient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
+
+    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const updateData: any = {};
+
+    // Only add fields that are explicitly provided
+    if (body.medicalHistory !== undefined) updateData.medicalHistory = body.medicalHistory;
+    if (body.allergies !== undefined) updateData.allergies = body.allergies;
+    if (body.currentMedications !== undefined) updateData.currentMedications = body.currentMedications;
 
     // Update only provided fields
     const updated = await prisma.patient.update({

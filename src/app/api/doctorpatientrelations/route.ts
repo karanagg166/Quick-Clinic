@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 // GET → list relations for a user (patient or doctor) with last message
 export async function GET(req: NextRequest) {
@@ -13,6 +14,15 @@ export async function GET(req: NextRequest) {
                 { error: "userId and role are required" },
                 { status: 400 }
             );
+        }
+
+        const authUser = await getAuthenticatedUser(req);
+        if (!authUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        if (userId !== authUser.id && authUser.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const isPatient = role === "PATIENT";
@@ -71,11 +81,20 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {  
     try {
+        const authUser = await getAuthenticatedUser(req);
+        if (!authUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const { doctorsUserId, patientsUserId } = body;
 
         if (!doctorsUserId || !patientsUserId) {
             return NextResponse.json({ error: "doctorsUserId and patientsUserId are required" }, { status: 400 });
+        }
+
+        if (doctorsUserId !== authUser.id && patientsUserId !== authUser.id && authUser.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         // Verify doctor exists with the given userId

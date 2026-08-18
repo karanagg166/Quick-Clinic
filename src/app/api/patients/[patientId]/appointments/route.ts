@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { PatientAppointment } from "@/types/patient";
 import { getAuthenticatedPatient } from "@/lib/request-auth";
 import { autoExpirePastAppointments } from "@/lib/appointment-expiry";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
@@ -10,6 +11,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
 
     if (!patientId) {
       return NextResponse.json({ error: "patientId required" }, { status: 400 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const patient = await prisma.patient.findUnique({
+      where: { id: patientId },
+      select: { userId: true },
+    });
+
+    if (!patient) {
+      return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+
+    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (process.env.NODE_ENV !== "test") {

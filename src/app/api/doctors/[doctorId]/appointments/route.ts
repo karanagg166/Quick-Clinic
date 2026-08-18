@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { DoctorAppointment } from "@/types/doctor";
 import { autoExpirePastAppointments } from "@/lib/appointment-expiry";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
@@ -15,6 +16,24 @@ export async function GET(
         { error: "doctorId required" },
         { status: 400 }
       );
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { userId: true },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (process.env.NODE_ENV !== "test") {

@@ -33,6 +33,7 @@ describe('Phase 23: Appointment Rescheduling Lifecycle Test Suite', () => {
   let patientUserId: string;
   let patientId: string;
   let patientToken: string;
+  let docToken: string;
 
   let initialSlotId: string;
   let targetSlotId: string;
@@ -107,6 +108,7 @@ describe('Phase 23: Appointment Rescheduling Lifecycle Test Suite', () => {
     });
     patientUserId = patUser.id;
     patientToken = await createToken({ id: patientUserId, userId: patientUserId, role: 'PATIENT' });
+    docToken = await createToken({ id: docUserId, userId: docUserId, role: 'DOCTOR' });
 
     const pat = await prisma.patient.create({
       data: {
@@ -220,6 +222,9 @@ describe('Phase 23: Appointment Rescheduling Lifecycle Test Suite', () => {
       `http://localhost:3000/api/doctors/${docId}/appointments/${initialApptId}`,
       {
         method: 'PATCH',
+        headers: {
+          authorization: `Bearer ${docToken}`,
+        },
         body: JSON.stringify({ status: 'RESCHEDULED' }),
       }
     );

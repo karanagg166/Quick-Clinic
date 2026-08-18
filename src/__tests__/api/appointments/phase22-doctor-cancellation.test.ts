@@ -5,7 +5,7 @@ import {
   PATCH as doctorAppointmentPATCH,
 } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
-import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { buildUserPayload, createAuthHeaders } from '@/__tests__/helpers/factories';
 
 describe('Phase 22: Appointment Cancellation by Doctor Test Suite', () => {
   let doc1UserId: string;
@@ -227,10 +227,12 @@ describe('Phase 22: Appointment Cancellation by Doctor Test Suite', () => {
   });
 
   it('22.1 Doctor 1 cancels own appointment and releases slot back to AVAILABLE', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptOfflineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'CANCELLED' }),
       }
     );
@@ -257,10 +259,12 @@ describe('Phase 22: Appointment Cancellation by Doctor Test Suite', () => {
   });
 
   it('22.2 Doctor 1 cancels ONLINE appointment and releases slot with refund handling', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc1UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc1Id}/appointments/${apptOnlineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'CANCELLED' }),
       }
     );
@@ -278,10 +282,12 @@ describe('Phase 22: Appointment Cancellation by Doctor Test Suite', () => {
   });
 
   it('22.3 Doctor 2 cannot cancel Doctor 1 appointment (404 isolation)', async () => {
+    const authHeaders = await createAuthHeaders({ id: doc2UserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${doc2Id}/appointments/${apptOfflineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'CANCELLED' }),
       }
     );

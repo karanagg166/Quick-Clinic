@@ -72,9 +72,6 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       });
     }
 
-    // Finalize appointment — confirmSlotHold internally uses prisma.$transaction
-    // for slot+appointment atomicity. The payment update above is idempotent,
-    // so retrying this endpoint is safe.
     const appointment = await finalizeAppointmentBooking({
       slotId: payment.slotId,
       doctorId: payment.doctorId,
@@ -84,15 +81,47 @@ export const POST = async (req: NextRequest, { params }: { params: Promise<{ use
       paymentMethod: "ONLINE",
       transactionId: paymentId,
     });
+
     if (!appointment) {
-      // Payment captured but appointment failed — this should NOT happen now
-      // with the re-acquisition logic in confirmSlotHold. Log prominently.
       console.error(
-        "CRITICAL: Payment verified but appointment finalization failed.",
+        "CRITICAL: Payment verified but appointment finalization failed. Executing automatic refund compensation.",
         { orderId, paymentId, slotId: payment.slotId, doctorId: payment.doctorId, patientId: patient.id }
       );
+
+      let refundStatus: "REFUNDED" | "REFUND_PENDING" = "REFUND_PENDING";
+      try {
+        if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+          const RazorpayModule = await import("razorpay");
+          const Razorpay = RazorpayModule.default;
+          const razorpay = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID,
+            key_secret: process.env.RAZORPAY_KEY_SECRET,
+          });
+
+          await razorpay.payments.refund(paymentId, {
+            notes: {
+              reason: "Automatic compensation: slot unavailable during finalization",
+              orderId,
+            },
+          });
+          refundStatus = "REFUNDED";
+        }
+      } catch (refundErr) {
+        console.error("Failed to execute Razorpay refund compensation:", refundErr);
+      }
+
+      await prisma.payment.update({
+        where: { razorpayOrderId: orderId },
+        data: { status: refundStatus },
+      });
+
       return NextResponse.json(
-        { error: "Payment was verified, but the appointment could not be finalized. Please contact support with your payment ID: " + paymentId },
+        {
+          error: "SLOT_UNAVAILABLE_REFUNDED",
+          message: "The requested slot is no longer available. Your payment has been automatically refunded.",
+          refundStatus,
+          transactionId: paymentId,
+        },
         { status: 409 }
       );
     }

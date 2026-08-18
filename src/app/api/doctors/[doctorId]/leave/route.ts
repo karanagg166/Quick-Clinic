@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
+import { isValidStatusTransition } from "@/lib/appointment-state-machine";
 
 /**
  * Helper: get all dates between two DateTimes (inclusive, UTC midnight dates)
@@ -92,6 +94,24 @@ export async function POST(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { userId: true },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { startDate, endDate, reason, userId } = body || {};
 
@@ -152,10 +172,13 @@ export async function POST(
       },
     });
 
-    const cancelledCount = overlappingAppointments.length;
+    const cancellableAppointments = overlappingAppointments.filter((a) =>
+      isValidStatusTransition(a.status as any, "CANCELLED")
+    );
+    const cancelledCount = cancellableAppointments.length;
     const doctorName = overlappingAppointments[0]?.doctor?.user?.name || "your doctor";
 
-    for (const appt of overlappingAppointments) {
+    for (const appt of cancellableAppointments) {
       await prisma.appointment.update({
         where: { id: appt.id },
         data: {

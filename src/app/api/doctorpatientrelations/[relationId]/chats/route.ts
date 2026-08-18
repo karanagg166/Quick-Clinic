@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(
     req: NextRequest,
@@ -10,6 +11,11 @@ export async function GET(
 
         if (!doctorPatientRelationId) {
             return NextResponse.json({ error: "Missing relationId" }, { status: 400 });
+        }
+
+        const authUser = await getAuthenticatedUser(req);
+        if (!authUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
         // Get pagination parameters from query string
@@ -40,6 +46,14 @@ export async function GET(
 
         if (!relation) {
             return NextResponse.json({ error: "Relation not found" }, { status: 404 });
+        }
+
+        if (
+            relation.doctorsUserId !== authUser.id &&
+            relation.patientsUserId !== authUser.id &&
+            authUser.role !== "ADMIN"
+        ) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         // Calculate skip for pagination
@@ -98,13 +112,17 @@ export async function POST(
             return NextResponse.json({ error: "Missing relationId" }, { status: 400 });
         }
 
+        const authUser = await getAuthenticatedUser(req);
+        if (!authUser) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json();
         const text = (body.text || body.message || "").trim();
-        const senderId = body.senderId;
 
-        if (!text || !senderId) {
+        if (!text) {
             return NextResponse.json(
-                { error: "message and senderId are required" },
+                { error: "message is required" },
                 { status: 400 }
             );
         }
@@ -118,11 +136,19 @@ export async function POST(
             return NextResponse.json({ error: "Relation not found" }, { status: 404 });
         }
 
+        if (
+            relation.doctorsUserId !== authUser.id &&
+            relation.patientsUserId !== authUser.id &&
+            authUser.role !== "ADMIN"
+        ) {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+        }
+
         const newChat = await prisma.chatMessages.create({
             data: {
                 doctorPatientRelationId,
                 text,
-                senderId,
+                senderId: authUser.id,
             },
         });
 

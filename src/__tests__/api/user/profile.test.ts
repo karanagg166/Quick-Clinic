@@ -2,6 +2,7 @@ import { test, expect } from "vitest";
 import { NextRequest } from "next/server";
 import { GET as profileGET, PATCH as profilePATCH } from "@/app/api/user/[userId]/route";
 import { prisma } from "@/lib/prisma";
+import { createAuthHeaders } from "@/__tests__/helpers/factories";
 
 test("GET /api/user/[userId] - returns 404 for invalid user ID", async () => {
   const req = new NextRequest("http://localhost:3000/api/user/invalid_user_id_123");
@@ -39,9 +40,11 @@ test("PATCH /api/user/[userId] - updates user profile fields successfully", asyn
   expect(user).toBeDefined();
 
   const originalAddress = user!.address;
+  const authHeaders = await createAuthHeaders({ id: user!.id, role: user!.role });
 
   const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}`, {
     method: "PATCH",
+    headers: authHeaders,
     body: JSON.stringify({
       address: "Updated Test Address 123",
       age: 23,
@@ -60,6 +63,7 @@ test("PATCH /api/user/[userId] - updates user profile fields successfully", asyn
   // Restore original address
   const restoreReq = new NextRequest(`http://localhost:3000/api/user/${user!.id}`, {
     method: "PATCH",
+    headers: authHeaders,
     body: JSON.stringify({
       address: originalAddress,
       age: 22,

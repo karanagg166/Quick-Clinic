@@ -4,7 +4,7 @@ import { PATCH as doctorAppointmentPATCH } from '@/app/api/doctors/[doctorId]/ap
 import { PATCH as patientAppointmentPATCH } from '@/app/api/patients/[patientId]/appointments/[appointmentId]/route';
 import { autoExpirePastAppointments } from '@/lib/appointment-expiry';
 import { prisma } from '@/lib/prisma';
-import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { buildUserPayload, createAuthHeaders } from '@/__tests__/helpers/factories';
 
 describe('Phase 26: Doctor No-Show & Unfulfilled Appointment Handling Test Suite', () => {
   let docUserId: string;
@@ -187,11 +187,13 @@ describe('Phase 26: Doctor No-Show & Unfulfilled Appointment Handling Test Suite
     const docBefore = await prisma.doctor.findUnique({ where: { id: docId } });
     expect(docBefore?.balance).toBe(0);
 
+    const authHeaders = await createAuthHeaders({ id: docUserId, role: 'DOCTOR' });
     // Cancel appointment on behalf of doctor
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${docId}/appointments/${apptDoctorCancelId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'CANCELLED' }),
       }
     );

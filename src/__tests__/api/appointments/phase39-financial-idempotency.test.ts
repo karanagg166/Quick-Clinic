@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { PATCH as doctorAppointmentPATCH } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
-import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { buildUserPayload, createAuthHeaders } from '@/__tests__/helpers/factories';
 
 describe('Phase 39: Financial Idempotency & Balance Credit Determinism Test Suite', () => {
   let docUserId: string;
@@ -180,10 +180,12 @@ describe('Phase 39: Financial Idempotency & Balance Credit Determinism Test Suit
     const docBefore = await prisma.doctor.findUnique({ where: { id: docId } });
     expect(docBefore?.balance).toBe(0);
 
+    const authHeaders = await createAuthHeaders({ id: docUserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${docId}/appointments/${apptOnline1Id}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -201,10 +203,12 @@ describe('Phase 39: Financial Idempotency & Balance Credit Determinism Test Suit
     const docBefore = await prisma.doctor.findUnique({ where: { id: docId } });
     expect(docBefore?.balance).toBe(120000);
 
+    const authHeaders = await createAuthHeaders({ id: docUserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${docId}/appointments/${apptOnline1Id}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -222,10 +226,12 @@ describe('Phase 39: Financial Idempotency & Balance Credit Determinism Test Suit
     const docBefore = await prisma.doctor.findUnique({ where: { id: docId } });
     const balanceBefore = docBefore?.balance ?? 0;
 
+    const authHeaders = await createAuthHeaders({ id: docUserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${docId}/appointments/${apptOfflineId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -243,10 +249,12 @@ describe('Phase 39: Financial Idempotency & Balance Credit Determinism Test Suit
     const docBefore = await prisma.doctor.findUnique({ where: { id: docId } });
     const balanceBefore = docBefore?.balance ?? 0;
 
+    const authHeaders = await createAuthHeaders({ id: docUserId, role: 'DOCTOR' });
     const req = new NextRequest(
       `http://localhost:3000/api/doctors/${docId}/appointments/${apptCancelledId}`,
       {
         method: 'PATCH',
+        headers: authHeaders,
         body: JSON.stringify({ status: 'CANCELLED' }),
       }
     );

@@ -6,6 +6,7 @@ import { POST as withdrawalPOST } from '@/app/api/doctors/[doctorId]/withdrawals
 import { prisma } from '@/lib/prisma';
 import * as requestAuth from '@/lib/request-auth';
 import * as booking from '@/lib/booking';
+import { createAuthHeaders } from '@/__tests__/helpers/factories';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
@@ -97,6 +98,8 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
   });
 
   it('67.2 Double completion requests: first completes and credits, second is idempotent without double credit', async () => {
+    const authHeaders = await createAuthHeaders({ id: 'doc_u_1', role: 'DOCTOR' });
+
     // First completion: status is CONFIRMED -> transitions to COMPLETED
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
       id: 'appt_comp_race',
@@ -105,8 +108,8 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
       slotId: 'slot_1',
       paymentMethod: 'ONLINE',
       transactionId: 'tx_online_123',
-      doctor: { fees: 600, user: { id: 'doc_u_1', name: 'Dr. House' } },
-      patient: { user: { id: 'pat_u_1', name: 'Patient One' } },
+      doctor: { userId: 'doc_u_1', fees: 600, user: { id: 'doc_u_1', name: 'Dr. House' } },
+      patient: { userId: 'pat_u_1', user: { id: 'pat_u_1', name: 'Patient One' } },
       slot: { date: new Date('2026-10-12') },
     } as any);
 
@@ -117,6 +120,7 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
 
     const req1 = new NextRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_comp_race', {
       method: 'PATCH',
+      headers: authHeaders,
       body: JSON.stringify({ status: 'COMPLETED' }),
     });
 
@@ -140,13 +144,14 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
       slotId: 'slot_1',
       paymentMethod: 'ONLINE',
       transactionId: 'tx_online_123',
-      doctor: { fees: 600, user: { id: 'doc_u_1', name: 'Dr. House' } },
-      patient: { user: { id: 'pat_u_1', name: 'Patient One' } },
+      doctor: { userId: 'doc_u_1', fees: 600, user: { id: 'doc_u_1', name: 'Dr. House' } },
+      patient: { userId: 'pat_u_1', user: { id: 'pat_u_1', name: 'Patient One' } },
       slot: { date: new Date('2026-10-12') },
     } as any);
 
     const req2 = new NextRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_comp_race', {
       method: 'PATCH',
+      headers: authHeaders,
       body: JSON.stringify({ status: 'COMPLETED' }),
     });
 
@@ -157,8 +162,11 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
   });
 
   it('67.3 Concurrent withdrawals: total deducted never exceeds doctor balance', async () => {
+    const authHeaders = await createAuthHeaders({ id: 'doc_u_1', role: 'DOCTOR' });
+
     vi.mocked(prisma.doctor.findUnique).mockResolvedValue({
       id: 'doc_1',
+      userId: 'doc_u_1',
       balance: 100000, // ₹1,000 in paise
       user: {
         bankAccounts: [
@@ -191,6 +199,7 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
     // Request 1: ₹800 withdrawal
     const req1 = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
+      headers: authHeaders,
       body: JSON.stringify({ amount: 800 }),
     });
     const res1 = await withdrawalPOST(req1, { params: Promise.resolve({ doctorId: 'doc_1' }) });
@@ -199,6 +208,7 @@ describe('Phase 67: Concurrency, Invariants & Race Conditions Test Suite', () =>
     // Request 2: concurrent ₹800 withdrawal (exceeds remaining balance)
     const req2 = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
       method: 'POST',
+      headers: authHeaders,
       body: JSON.stringify({ amount: 800 }),
     });
     const res2 = await withdrawalPOST(req2, { params: Promise.resolve({ doctorId: 'doc_1' }) });

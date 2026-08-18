@@ -5,7 +5,21 @@ import { Server as SocketIOServer } from 'socket.io';
 import { io as Client, Socket as ClientSocket } from 'socket.io-client';
 import express from 'express';
 import cors from 'cors';
+import crypto from 'crypto';
 import { SocketServer } from '../server';
+
+const TEST_SECRET = 'default_test_secret_for_jwt_auth_32_characters_minimum';
+
+function generateTestToken(payload: Record<string, any>, secret = TEST_SECRET): string {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url');
+  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signatureB64 = crypto
+    .createHmac('sha256', secret)
+    .update(`${headerB64}.${payloadB64}`)
+    .digest('base64url');
+  return `${headerB64}.${payloadB64}.${signatureB64}`;
+}
 
 describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () => {
   let app: express.Application;
@@ -34,6 +48,8 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
   };
 
   beforeAll(async () => {
+    process.env.JWT_SECRET = TEST_SECRET;
+
     app = express();
     app.use(cors());
     app.use(express.json());
@@ -167,8 +183,8 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
     });
   });
 
-  describe('2. Real WebSocket Client Connection & Authentication (socket.io-client)', () => {
-    it('rejects connection when userId is omitted', async () => {
+  describe('2. Cryptographic WebSocket Authentication & 8 Security Attack Scenarios', () => {
+    it('Attack Case 6: rejects connection when token is omitted', async () => {
       const client = Client(`http://localhost:${port}`, {
         auth: {},
         transports: ['websocket'],
@@ -178,15 +194,14 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
         client.on('connect_error', (e) => resolve(e));
       });
 
-      expect(err.message).toBe('Missing userId');
+      expect(err.message).toBe('Missing token');
       client.disconnect();
     });
 
-    it('rejects chat connection when relationId does not exist', async () => {
-      mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue(null);
-
+    it('Attack Case 4: rejects connection when JWT signature is forged/invalid', async () => {
+      const forgedToken = generateTestToken({ id: 'user_fake', role: 'PATIENT' }, 'wrong_secret_key');
       const client = Client(`http://localhost:${port}`, {
-        auth: { userId: 'user_1', relationId: 'non_existent_rel' },
+        auth: { token: forgedToken },
         transports: ['websocket'],
       });
 
@@ -194,19 +209,90 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
         client.on('connect_error', (e) => resolve(e));
       });
 
-      expect(err.message).toBe('Relation not found');
+      expect(err.message).toBe('Invalid token signature');
       client.disconnect();
     });
 
-    it('rejects chat connection when user is neither doctor nor patient in relation', async () => {
-      mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
-        id: 'rel_1',
-        doctor: { user: { id: 'doc_real', name: 'Dr. Real' } },
-        patient: { user: { id: 'patient_real', name: 'Patient Real' } },
+    it('Attack Case 5: rejects connection when JWT is expired', async () => {
+      const expiredToken = generateTestToken({
+        id: 'user_expired',
+        role: 'PATIENT',
+        exp: Math.floor(Date.now() / 1000) - 3600, // Expired 1 hr ago
       });
 
       const client = Client(`http://localhost:${port}`, {
-        auth: { userId: 'attacker_user_999', relationId: 'rel_1' },
+        auth: { token: expiredToken },
+        transports: ['websocket'],
+      });
+
+      const err = await new Promise<Error>((resolve) => {
+        client.on('connect_error', (e) => resolve(e));
+      });
+
+      expect(err.message).toBe('Token expired');
+      client.disconnect();
+    });
+
+    it('Attack Case 1: ignores client-supplied userId and derives identity strictly from cryptographic token', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'real_patient_id',
+        name: 'Real Patient',
+        role: 'PATIENT',
+      });
+
+      const token = generateTestToken({ id: 'real_patient_id', name: 'Real Patient', role: 'PATIENT' });
+      const client = Client(`http://localhost:${port}`, {
+        auth: {
+          token,
+          userId: 'victim_patient_id', // Client tries to claim someone else's ID
+        },
+        transports: ['websocket'],
+      });
+
+      const data = await new Promise<any>((resolve) => {
+        client.on('notification_connected', (d) => resolve(d));
+      });
+
+      // Must be authenticated as the token owner, NOT the client-supplied victim ID
+      expect(data.userId).toBe('real_patient_id');
+      expect(data.userName).toBe('Real Patient');
+      client.disconnect();
+    });
+
+    it('Attack Case 2: prevents privilege escalation when patient claims doctor role in handshake body', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'patient_alice',
+        name: 'Alice',
+        role: 'PATIENT',
+      });
+
+      const token = generateTestToken({ id: 'patient_alice', name: 'Alice', role: 'PATIENT' });
+      const client = Client(`http://localhost:${port}`, {
+        auth: {
+          token,
+          userRole: 'DOCTOR', // Client tries to escalate to DOCTOR
+        },
+        transports: ['websocket'],
+      });
+
+      const data = await new Promise<any>((resolve) => {
+        client.on('notification_connected', (d) => resolve(d));
+      });
+
+      expect(data.userRole).toBe('PATIENT');
+      client.disconnect();
+    });
+
+    it('Attack Case 3: rejects chat connection when user does not belong to relation (IDOR attempt)', async () => {
+      mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
+        id: 'rel_private_1',
+        doctor: { user: { id: 'doc_bob', name: 'Dr. Bob' } },
+        patient: { user: { id: 'patient_charlie', name: 'Charlie' } },
+      });
+
+      const eavesdropperToken = generateTestToken({ id: 'attacker_eve', name: 'Eve', role: 'PATIENT' });
+      const client = Client(`http://localhost:${port}`, {
+        auth: { token: eavesdropperToken, relationId: 'rel_private_1' },
         transports: ['websocket'],
       });
 
@@ -218,37 +304,33 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
       client.disconnect();
     });
 
-    it('connects successfully for notifications when valid userId is provided', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user_valid_1',
-        name: 'Jane Doe',
-        role: 'PATIENT',
-      });
+    it('rejects chat connection when relation does not exist', async () => {
+      mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue(null);
 
+      const token = generateTestToken({ id: 'user_1', role: 'PATIENT' });
       const client = Client(`http://localhost:${port}`, {
-        auth: { userId: 'user_valid_1' },
+        auth: { token, relationId: 'non_existent_rel' },
         transports: ['websocket'],
       });
 
-      const data = await new Promise<any>((resolve) => {
-        client.on('notification_connected', (d) => resolve(d));
+      const err = await new Promise<Error>((resolve) => {
+        client.on('connect_error', (e) => resolve(e));
       });
 
-      expect(data.userId).toBe('user_valid_1');
-      expect(data.userName).toBe('Jane Doe');
-      expect(data.userRole).toBe('PATIENT');
+      expect(err.message).toBe('Relation not found');
       client.disconnect();
     });
 
-    it('connects successfully for chat when user belongs to relation', async () => {
+    it('Attack Case 7: connects successfully for chat when valid token matches relation member', async () => {
       mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
-        id: 'rel_100',
-        doctor: { user: { id: 'doc_100', name: 'Dr. House' } },
-        patient: { user: { id: 'pat_100', name: 'Wilson' } },
+        id: 'rel_legit',
+        doctor: { user: { id: 'doc_house', name: 'Dr. House' } },
+        patient: { user: { id: 'pat_wilson', name: 'Wilson' } },
       });
 
+      const token = generateTestToken({ id: 'doc_house', name: 'Dr. House', role: 'DOCTOR' });
       const client = Client(`http://localhost:${port}`, {
-        auth: { userId: 'doc_100', relationId: 'rel_100' },
+        auth: { token, relationId: 'rel_legit' },
         transports: ['websocket'],
       });
 
@@ -256,15 +338,55 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
         client.on('connected', (d) => resolve(d));
       });
 
-      expect(data.userId).toBe('doc_100');
+      expect(data.userId).toBe('doc_house');
       expect(data.userName).toBe('Dr. House');
       expect(data.userRole).toBe('DOCTOR');
       client.disconnect();
+    });
+
+    it('Attack Case 8: strictly isolates notification rooms so Patient A never receives Patient B events', async () => {
+      mockPrisma.user.findUnique.mockImplementation(async ({ where }: any) => {
+        if (where.id === 'patient_a') return { id: 'patient_a', name: 'Patient A', role: 'PATIENT' };
+        if (where.id === 'patient_b') return { id: 'patient_b', name: 'Patient B', role: 'PATIENT' };
+        return null;
+      });
+
+      const tokenA = generateTestToken({ id: 'patient_a', name: 'Patient A', role: 'PATIENT' });
+      const clientA = Client(`http://localhost:${port}`, {
+        auth: { token: tokenA },
+        transports: ['websocket'],
+      });
+
+      await new Promise<void>((resolve) => {
+        clientA.on('notification_connected', () => resolve());
+      });
+
+      let receivedSecretNotification = false;
+      clientA.on('new_notification', (data) => {
+        if (data.notification.id === 'secret_for_b') {
+          receivedSecretNotification = true;
+        }
+      });
+
+      // Send private notification intended strictly for Patient B
+      socketServer.sendNotificationToUser('patient_b', {
+        id: 'secret_for_b',
+        message: 'Patient B private medical record',
+        createdAt: new Date().toISOString(),
+        isRead: false,
+      });
+
+      // Wait 100ms to confirm no leakage
+      await new Promise((r) => setTimeout(r, 100));
+      expect(receivedSecretNotification).toBe(false);
+
+      clientA.disconnect();
     });
   });
 
   describe('3. Real-Time Event Delivery & Broadcasts', () => {
     let notificationClient: ClientSocket;
+    const recipientToken = generateTestToken({ id: 'recipient_user_1', name: 'Notification Receiver', role: 'PATIENT' });
 
     beforeEach(async () => {
       mockPrisma.user.findUnique.mockResolvedValue({
@@ -274,7 +396,7 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
       });
 
       notificationClient = Client(`http://localhost:${port}`, {
-        auth: { userId: 'recipient_user_1' },
+        auth: { token: recipientToken },
         transports: ['websocket'],
       });
 
@@ -294,7 +416,6 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
         notificationClient.on('new_notification', (data) => resolve(data));
       });
 
-      // Send via HTTP endpoint
       await request(app)
         .post('/api/notifications/broadcast')
         .send({
@@ -335,6 +456,8 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
   describe('4. Bi-Directional Chat & Typing Flow', () => {
     let doctorClient: ClientSocket;
     let patientClient: ClientSocket;
+    const docToken = generateTestToken({ id: 'doc_chat', name: 'Dr. Chat', role: 'DOCTOR' });
+    const patientToken = generateTestToken({ id: 'patient_chat', name: 'Patient Chat', role: 'PATIENT' });
 
     beforeEach(async () => {
       mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
@@ -344,12 +467,12 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
       });
 
       doctorClient = Client(`http://localhost:${port}`, {
-        auth: { userId: 'doc_chat', relationId: 'rel_room_1' },
+        auth: { token: docToken, relationId: 'rel_room_1' },
         transports: ['websocket'],
       });
 
       patientClient = Client(`http://localhost:${port}`, {
-        auth: { userId: 'patient_chat', relationId: 'rel_room_1' },
+        auth: { token: patientToken, relationId: 'rel_room_1' },
         transports: ['websocket'],
       });
 
@@ -369,7 +492,6 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
         patientClient.on('user_typing', (d) => resolve(d));
       });
 
-      // Small delay to ensure socket.io room subscription is fully active
       await new Promise((r) => setTimeout(r, 50));
       doctorClient.emit('user_typing');
 

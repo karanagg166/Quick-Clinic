@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { logAudit } from "@/lib/logger";
 import type { AppointmentDetail } from '@/types/common';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { validateStatusTransition } from '@/lib/appointment-state-machine';
 
 export async function GET(
   req: Request,
@@ -12,6 +14,11 @@ export async function GET(
 
     if (!doctorId || !appointmentId) {
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const appointment = await prisma.appointment.findFirst({
@@ -35,6 +42,14 @@ export async function GET(
 
     if (!appointment) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+    }
+
+    const isDoctor = appointment.doctor.userId === authUser.id;
+    const isPatient = appointment.patient.userId === authUser.id;
+    const isAdmin = authUser.role === 'ADMIN';
+
+    if (!isDoctor && !isPatient && !isAdmin) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const qualifications = appointment.doctor.doctorQualifications?.map((dq: any) => String(dq.qualification)) ?? [];
@@ -123,6 +138,11 @@ export async function PATCH(
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
     }
 
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
     interface RequestBody {
       status?: string;
       paymentMethod?: string;
@@ -164,6 +184,18 @@ export async function PATCH(
 
     if (!appointmentBefore) {
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+    }
+
+    if (appointmentBefore.doctor.userId !== authUser.id && authUser.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    // Enforce centralized appointment state machine transition
+    if (status && status !== appointmentBefore.status) {
+      const validation = validateStatusTransition(appointmentBefore.status as any, status as any);
+      if (!validation.valid) {
+        return NextResponse.json({ error: validation.error }, { status: 400 });
+      }
     }
 
     const doctorUserId = appointmentBefore.doctor.user.id;

@@ -13830,6 +13830,8 @@ export namespace Prisma {
     status: $Enums.SlotStatus | null
     heldByPatientId: string | null
     heldAt: Date | null
+    holdToken: string | null
+    holdExpiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13843,6 +13845,8 @@ export namespace Prisma {
     status: $Enums.SlotStatus | null
     heldByPatientId: string | null
     heldAt: Date | null
+    holdToken: string | null
+    holdExpiresAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -13856,6 +13860,8 @@ export namespace Prisma {
     status: number
     heldByPatientId: number
     heldAt: number
+    holdToken: number
+    holdExpiresAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -13871,6 +13877,8 @@ export namespace Prisma {
     status?: true
     heldByPatientId?: true
     heldAt?: true
+    holdToken?: true
+    holdExpiresAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13884,6 +13892,8 @@ export namespace Prisma {
     status?: true
     heldByPatientId?: true
     heldAt?: true
+    holdToken?: true
+    holdExpiresAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -13897,6 +13907,8 @@ export namespace Prisma {
     status?: true
     heldByPatientId?: true
     heldAt?: true
+    holdToken?: true
+    holdExpiresAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -13983,6 +13995,8 @@ export namespace Prisma {
     status: $Enums.SlotStatus
     heldByPatientId: string | null
     heldAt: Date | null
+    holdToken: string | null
+    holdExpiresAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: SlotCountAggregateOutputType | null
@@ -14013,6 +14027,8 @@ export namespace Prisma {
     status?: boolean
     heldByPatientId?: boolean
     heldAt?: boolean
+    holdToken?: boolean
+    holdExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     appointment?: boolean | Slot$appointmentArgs<ExtArgs>
@@ -14028,6 +14044,8 @@ export namespace Prisma {
     status?: boolean
     heldByPatientId?: boolean
     heldAt?: boolean
+    holdToken?: boolean
+    holdExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -14042,6 +14060,8 @@ export namespace Prisma {
     status?: boolean
     heldByPatientId?: boolean
     heldAt?: boolean
+    holdToken?: boolean
+    holdExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -14056,11 +14076,13 @@ export namespace Prisma {
     status?: boolean
     heldByPatientId?: boolean
     heldAt?: boolean
+    holdToken?: boolean
+    holdExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type SlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "date" | "startTime" | "endTime" | "status" | "heldByPatientId" | "heldAt" | "createdAt" | "updatedAt", ExtArgs["result"]["slot"]>
+  export type SlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "date" | "startTime" | "endTime" | "status" | "heldByPatientId" | "heldAt" | "holdToken" | "holdExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["slot"]>
   export type SlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     appointment?: boolean | Slot$appointmentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -14087,6 +14109,8 @@ export namespace Prisma {
       status: $Enums.SlotStatus
       heldByPatientId: string | null
       heldAt: Date | null
+      holdToken: string | null
+      holdExpiresAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["slot"]>
@@ -14522,6 +14546,8 @@ export namespace Prisma {
     readonly status: FieldRef<"Slot", 'SlotStatus'>
     readonly heldByPatientId: FieldRef<"Slot", 'String'>
     readonly heldAt: FieldRef<"Slot", 'DateTime'>
+    readonly holdToken: FieldRef<"Slot", 'String'>
+    readonly holdExpiresAt: FieldRef<"Slot", 'DateTime'>
     readonly createdAt: FieldRef<"Slot", 'DateTime'>
     readonly updatedAt: FieldRef<"Slot", 'DateTime'>
   }
@@ -27322,6 +27348,8 @@ export namespace Prisma {
     status: 'status',
     heldByPatientId: 'heldByPatientId',
     heldAt: 'heldAt',
+    holdToken: 'holdToken',
+    holdExpiresAt: 'holdExpiresAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -28404,6 +28432,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFilter<"Slot"> | $Enums.SlotStatus
     heldByPatientId?: StringNullableFilter<"Slot"> | string | null
     heldAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
+    holdToken?: StringNullableFilter<"Slot"> | string | null
+    holdExpiresAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeFilter<"Slot"> | Date | string
     updatedAt?: DateTimeFilter<"Slot"> | Date | string
     appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
@@ -28419,6 +28449,8 @@ export namespace Prisma {
     status?: SortOrder
     heldByPatientId?: SortOrderInput | SortOrder
     heldAt?: SortOrderInput | SortOrder
+    holdToken?: SortOrderInput | SortOrder
+    holdExpiresAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     appointment?: AppointmentOrderByWithRelationInput
@@ -28438,6 +28470,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFilter<"Slot"> | $Enums.SlotStatus
     heldByPatientId?: StringNullableFilter<"Slot"> | string | null
     heldAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
+    holdToken?: StringNullableFilter<"Slot"> | string | null
+    holdExpiresAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeFilter<"Slot"> | Date | string
     updatedAt?: DateTimeFilter<"Slot"> | Date | string
     appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
@@ -28453,6 +28487,8 @@ export namespace Prisma {
     status?: SortOrder
     heldByPatientId?: SortOrderInput | SortOrder
     heldAt?: SortOrderInput | SortOrder
+    holdToken?: SortOrderInput | SortOrder
+    holdExpiresAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: SlotCountOrderByAggregateInput
@@ -28472,6 +28508,8 @@ export namespace Prisma {
     status?: EnumSlotStatusWithAggregatesFilter<"Slot"> | $Enums.SlotStatus
     heldByPatientId?: StringNullableWithAggregatesFilter<"Slot"> | string | null
     heldAt?: DateTimeNullableWithAggregatesFilter<"Slot"> | Date | string | null
+    holdToken?: StringNullableWithAggregatesFilter<"Slot"> | string | null
+    holdExpiresAt?: DateTimeNullableWithAggregatesFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Slot"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Slot"> | Date | string
   }
@@ -29966,6 +30004,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentCreateNestedOneWithoutSlotInput
@@ -29981,6 +30021,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutSlotInput
@@ -29994,6 +30036,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUpdateOneWithoutSlotNestedInput
@@ -30009,6 +30053,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutSlotNestedInput
@@ -30023,6 +30069,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -30035,6 +30083,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -30048,6 +30098,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31676,6 +31728,8 @@ export namespace Prisma {
     status?: SortOrder
     heldByPatientId?: SortOrder
     heldAt?: SortOrder
+    holdToken?: SortOrder
+    holdExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31689,6 +31743,8 @@ export namespace Prisma {
     status?: SortOrder
     heldByPatientId?: SortOrder
     heldAt?: SortOrder
+    holdToken?: SortOrder
+    holdExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -31702,6 +31758,8 @@ export namespace Prisma {
     status?: SortOrder
     heldByPatientId?: SortOrder
     heldAt?: SortOrder
+    holdToken?: SortOrder
+    holdExpiresAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -35285,6 +35343,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentCreateNestedOneWithoutSlotInput
@@ -35298,6 +35358,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutSlotInput
@@ -35625,6 +35687,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFilter<"Slot"> | $Enums.SlotStatus
     heldByPatientId?: StringNullableFilter<"Slot"> | string | null
     heldAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
+    holdToken?: StringNullableFilter<"Slot"> | string | null
+    holdExpiresAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeFilter<"Slot"> | Date | string
     updatedAt?: DateTimeFilter<"Slot"> | Date | string
   }
@@ -36660,6 +36724,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     doctor: DoctorCreateNestedOneWithoutSlotsInput
@@ -36674,6 +36740,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -36782,6 +36850,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctor?: DoctorUpdateOneRequiredWithoutSlotsNestedInput
@@ -36796,6 +36866,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -38756,6 +38828,8 @@ export namespace Prisma {
     status?: $Enums.SlotStatus
     heldByPatientId?: string | null
     heldAt?: Date | string | null
+    holdToken?: string | null
+    holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38887,6 +38961,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUpdateOneWithoutSlotNestedInput
@@ -38900,6 +38976,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutSlotNestedInput
@@ -38913,6 +38991,8 @@ export namespace Prisma {
     status?: EnumSlotStatusFieldUpdateOperationsInput | $Enums.SlotStatus
     heldByPatientId?: NullableStringFieldUpdateOperationsInput | string | null
     heldAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

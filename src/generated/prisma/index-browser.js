@@ -220,6 +220,8 @@ exports.Prisma.SlotScalarFieldEnum = {
   status: 'status',
   heldByPatientId: 'heldByPatientId',
   heldAt: 'heldAt',
+  holdToken: 'holdToken',
+  holdExpiresAt: 'holdExpiresAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

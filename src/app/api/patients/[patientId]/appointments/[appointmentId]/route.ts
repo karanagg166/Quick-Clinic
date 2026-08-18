@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import type { AppointmentDetail } from '@/types/common';
+import { getAuthenticatedUser } from '@/lib/auth';
+import { validateStatusTransition } from '@/lib/appointment-state-machine';
 
 export async function GET(
 	req: Request,
@@ -8,6 +10,11 @@ export async function GET(
 ) {
 	try {
 		const { patientId, appointmentId } = await params;
+
+		const authUser = await getAuthenticatedUser(req);
+		if (!authUser) {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
 
 		// Fetch single appointment with all relations
 		const appointment = await prisma.appointment.findFirst({
@@ -41,6 +48,14 @@ export async function GET(
 
 		if (!appointment) {
 			return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+		}
+
+		const isPatient = appointment.patient.userId === authUser.id;
+		const isDoctor = appointment.doctor.userId === authUser.id;
+		const isAdmin = authUser.role === 'ADMIN';
+
+		if (!isPatient && !isDoctor && !isAdmin) {
+			return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 		}
 
 		const qualifications = appointment.doctor.doctorQualifications?.map((dq: any) => String(dq.qualification)) ?? [];
@@ -131,6 +146,11 @@ export async function PATCH(
 			return NextResponse.json({ error: 'patientId and appointmentId are required' }, { status: 400 });
 		}
 
+		const authUser = await getAuthenticatedUser(req);
+		if (!authUser) {
+			return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+		}
+
 		// Get appointment details
 		const appointment = await prisma.appointment.findFirst({
 			where: {
@@ -152,8 +172,13 @@ export async function PATCH(
 			return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
 		}
 
-		// Check if appointment can be cancelled (only PENDING or CONFIRMED)
-		if (appointment.status !== 'PENDING' && appointment.status !== 'CONFIRMED') {
+		if (appointment.patient.userId !== authUser.id && authUser.role !== 'ADMIN') {
+			return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+		}
+
+		// Enforce centralized appointment state machine transition
+		const validation = validateStatusTransition(appointment.status as any, 'CANCELLED');
+		if (!validation.valid) {
 			return NextResponse.json(
 				{ error: `Cannot cancel appointment with status: ${appointment.status}` },
 				{ status: 400 }

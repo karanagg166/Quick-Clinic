@@ -290,6 +290,8 @@ model Slot {
   status          SlotStatus @default(AVAILABLE)
   heldByPatientId String?
   heldAt          DateTime?
+  holdToken       String?
+  holdExpiresAt   DateTime?
 
   appointment Appointment?
 
@@ -301,6 +303,7 @@ model Slot {
   @@index([doctorId, date, status])
   @@index([startTime, status])
   @@index([heldByPatientId])
+  @@index([holdExpiresAt])
 }
 
 model Appointment {
@@ -441,6 +444,12 @@ model AccessLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([targetId])
+  @@index([tag])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 model AuditLog {
@@ -453,6 +462,11 @@ model AuditLog {
   user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([tag])
+  @@index([createdAt])
+  @@index([userId, createdAt])
 }
 
 // ======================================================

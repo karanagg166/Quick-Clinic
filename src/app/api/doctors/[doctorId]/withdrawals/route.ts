@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 // GET - Fetch doctor withdrawal history
 export async function GET(
@@ -11,6 +12,11 @@ export async function GET(
 
     if (!doctorId) {
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const doctor = await prisma.doctor.findUnique({
@@ -26,6 +32,10 @@ export async function GET(
 
     if (!doctor) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const bankAccount = doctor.user?.bankAccounts?.[0] || null;
@@ -75,6 +85,11 @@ export async function POST(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { amount } = body;
 
@@ -99,6 +114,10 @@ export async function POST(
 
     if (!doctor) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const bankAccount = doctor.user?.bankAccounts?.[0];

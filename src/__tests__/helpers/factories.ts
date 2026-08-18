@@ -133,3 +133,18 @@ export function buildCommentPayload(overrides: Partial<any> = {}) {
     ...overrides,
   };
 }
+
+export async function createAuthHeaders(user: { id: string; role?: string; email?: string; name?: string }) {
+  const { createToken } = await import('@/lib/auth');
+  const token = await createToken({
+    id: user.id,
+    role: user.role || 'PATIENT',
+    email: user.email,
+    name: user.name,
+  });
+  return {
+    authorization: `Bearer ${token}`,
+    cookie: `token=${token}`,
+  };
+}
+

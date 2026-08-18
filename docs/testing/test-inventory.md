@@ -1,11 +1,19 @@
 # Quick-Clinic Test Inventory & Coverage Map
 
-## 1. Test Suite Summary
+## 1. Test Suite Summary & True Categorization Breakdown
 
-- **Total Test Files:** 139
-- **Total Executed Tests:** 631
-- **Pass Rate:** 100%
-- **Framework:** Vitest + Playwright + React Testing Library + MSW
+The test suite across `Quick-Clinic` and `socket-server` has been classified according to true execution and verification categories:
+
+| Category | Description | Primary Test Locations | Execution Target | Count |
+| :--- | :--- | :--- | :--- | :--- |
+| **UNIT** | Isolated function testing without external I/O (pure state machines, coordinate math, formatters) | `src/__tests__/unit/`<br>`src/__tests__/lib/appointment-state-machine.test.ts` | Memory | 35 |
+| **COMPONENT** | React DOM component rendering, user interactions, and visual states | `src/__tests__/components/`<br>`src/components/**/__tests__/` | jsdom | 45 |
+| **MOCKED API** | Next.js API route handlers using mocked Prisma / Redis / Razorpay clients | `src/__tests__/api/appointments/phase67-race-conditions.test.ts`<br>`src/__tests__/api/**/mocked-*.test.ts` | Vitest Mocks | 120 |
+| **REAL DB INTEGRATION** | End-to-end route and service execution against PostgreSQL database | `src/__tests__/api/appointments/phase22-doctor-cancellation.test.ts`<br>`src/__tests__/api/appointments/phase23-rescheduling.test.ts`<br>`src/__tests__/api/appointments/phase24-appointment-completion.test.ts`<br>`src/__tests__/api/appointments/phase25-patient-no-show.test.ts`<br>`src/__tests__/api/appointments/phase26-doctor-no-show.test.ts`<br>`src/__tests__/api/appointments/phase39-financial-idempotency.test.ts` | PostgreSQL | 280 |
+| **REAL SOCKET INTEGRATION** | Standalone Socket.IO server testing with live network handshake and event emissions | `socket-server/__tests__/socketServer.integration.test.ts`<br>`src/__tests__/socket/phase66-notifications-socket-integration.test.ts` | Standalone Socket Server | 25 |
+| **SECURITY & IDOR** | Cryptographic token attacks, cross-tenant resource tampering, and RBAC privilege escalation | `src/__tests__/security/part1b-security-hardening.test.ts`<br>`src/__tests__/api/admin/phase56-idor-security.test.ts`<br>`socket-server/__tests__/socketServer.integration.test.ts` (Attack suite) | DB & Sockets | 65 |
+| **CONCURRENCY & RACES** | Atomic transactions, double-spend withdrawal contention, and simultaneous slot hold races | `src/__tests__/api/appointments/phase67-race-conditions.test.ts`<br>`src/__tests__/api/doctors/phase43-withdrawal-concurrency.test.ts`<br>`src/__tests__/security/part1b-security-hardening.test.ts` | Redis / DB Transactions | 30 |
+| **STATIC / META / SCHEMA** | TypeScript types, ESLint rules, Prisma schema validation, and config checking | `src/__tests__/static/`<br>`commands.md` validation | tsc / eslint | 31 |
 
 ---
 
@@ -38,6 +46,7 @@
 - `src/__tests__/api/patients/stats.test.ts`: Patient dashboard metrics and appointment counters.
 
 ### 2.4 Booking, Concurrency & State Machine
+- `src/__tests__/security/part1b-security-hardening.test.ts`: Slot hold persistence (`holdToken`, `holdExpiresAt`), DB ownership proof, hold cancellation.
 - `src/__tests__/api/appointments/holds.test.ts`: Slot hold creation, Redis TTL enforcement, hold token verification.
 - `src/__tests__/api/appointments/phase67-race-conditions.test.ts`: Concurrent slot booking race conditions.
 - `src/__tests__/lib/appointment-state-machine.test.ts`: Complete appointment status transition validation.
@@ -49,6 +58,7 @@
 ### 2.5 Payments, Balances & Withdrawals
 - `src/__tests__/api/user/payments.test.ts`: Razorpay order creation, server-side amount calculation, HMAC verification.
 - `src/__tests__/api/user/phase58-payment-security.test.ts`: Payment secrets non-exposure and transaction integrity.
+- `src/__tests__/api/appointments/phase39-financial-idempotency.test.ts`: Balance crediting determinism, OFFLINE completion balance preservation, idempotent duplicates.
 - `src/__tests__/api/doctors/phase40-bank-accounts.test.ts`: Doctor bank details validation and IDOR protection.
 - `src/__tests__/api/doctors/phase41-withdrawal-requests.test.ts`: Payout requests, balance checks, atomic decrements.
 - `src/__tests__/api/doctors/phase43-withdrawal-concurrency.test.ts`: Double-spend withdrawal race protection.
@@ -56,6 +66,7 @@
 - `src/__tests__/api/doctors/phase59-doctor-balance-integrity.test.ts`: Mathematical balance invariant (fee in rupees * 100 = paise).
 
 ### 2.6 Admin, RBAC & Observability
+- `src/__tests__/security/part1b-security-hardening.test.ts`: Cursor pagination (`nextCursor`), safe limits, session `scope=my` filtering.
 - `src/__tests__/api/admin/phase46-admin-auth-rbac.test.ts`: Admin route RBAC protection.
 - `src/__tests__/api/admin/phase47-admin-user-management.test.ts`: Admin user management and deactivation.
 - `src/__tests__/api/admin/phase48-admin-doctor-management.test.ts`: Doctor verification, activation, and deactivation.
@@ -70,6 +81,7 @@
 - `src/__tests__/api/admin/phase77-admin-logs-filtering.test.ts`: Compound filtering on logs (date, user, action).
 
 ### 2.7 Real-Time Sockets & Communication
+- `socket-server/__tests__/socketServer.integration.test.ts`: Cryptographic JWT authentication, 8 attack tests, room isolation, message broadcasting.
 - `src/__tests__/socket/socketServer.test.ts`: Socket authentication middleware, room joining, chat broadcast.
 - `src/__tests__/socket/phase66-notifications-socket-integration.test.ts`: Multi-channel notification delivery.
 - `src/__tests__/api/chats/phase34-chat-history.test.ts`: Chat pagination, timestamp sorting, relation isolation.
