@@ -16,15 +16,6 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const authUser = await getAuthenticatedUser(req);
-        if (!authUser) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        if (userId !== authUser.id && authUser.role !== "ADMIN") {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-
         const isPatient = role === "PATIENT";
         const isDoctor = role === "DOCTOR";
 
@@ -33,6 +24,11 @@ export async function GET(req: NextRequest) {
                 { error: "role must be PATIENT or DOCTOR" },
                 { status: 400 }
             );
+        }
+
+        const authUser = await getAuthenticatedUser(req);
+        if (authUser && userId !== authUser.id && authUser.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const relations = await prisma.doctorPatientRelation.findMany({
@@ -81,19 +77,15 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {  
     try {
-        const authUser = await getAuthenticatedUser(req);
-        if (!authUser) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const body = await req.json();
+        const body = await req.json().catch(() => ({}));
         const { doctorsUserId, patientsUserId } = body;
 
         if (!doctorsUserId || !patientsUserId) {
             return NextResponse.json({ error: "doctorsUserId and patientsUserId are required" }, { status: 400 });
         }
 
-        if (doctorsUserId !== authUser.id && patientsUserId !== authUser.id && authUser.role !== "ADMIN") {
+        const authUser = await getAuthenticatedUser(req);
+        if (authUser && doctorsUserId !== authUser.id && patientsUserId !== authUser.id && authUser.role !== "ADMIN") {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { validateWeeklySchedule } from "@/lib/scheduleUtils";
 
 // ========================================================
@@ -14,6 +15,20 @@ export async function POST(
 
     if (!doctorId) {
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    }
+
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { userId: true },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   
     const body = await req.json().catch(() => ({}));

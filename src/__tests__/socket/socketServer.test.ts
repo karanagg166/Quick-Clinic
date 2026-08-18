@@ -98,7 +98,7 @@ describe("SocketServer Unit Tests", () => {
   });
 
   describe("Authentication Middleware", () => {
-    it("rejects connection when userId is missing", async () => {
+    it("rejects connection when token is missing", async () => {
       const authMiddleware = mockIo.use.mock.calls[0][0];
       const mockSocket = {
         handshake: {
@@ -110,7 +110,7 @@ describe("SocketServer Unit Tests", () => {
       await authMiddleware(mockSocket, mockNext);
 
       expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
-      expect(mockNext.mock.calls[0][0].message).toBe("Missing userId");
+      expect(mockNext.mock.calls[0][0].message).toMatch(/missing token/i);
     });
 
     it("authenticates notification connection when valid userId is provided", async () => {

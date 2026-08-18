@@ -66,7 +66,7 @@ describe('Phase 76: Doctor Withdrawals History & Data Isolation Test Suite', () 
     expect(data[0].status).toBe('COMPLETED');
     expect(data[1].amountInRupees).toBe(500);
     expect(data[1].status).toBe('PROCESSING');
-    expect(data[0].bankAccountNumber).toBe('98765432101');
+    expect(data[0].bankAccountNumber).toBe('********2101');
   });
 
   it('76.2 Returns empty array when doctor has no previous withdrawal requests', async () => {

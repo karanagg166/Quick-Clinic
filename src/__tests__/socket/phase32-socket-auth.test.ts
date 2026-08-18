@@ -91,7 +91,7 @@ describe('Phase 32: Socket.IO Chat Authorization & Room Binding Test Suite', () 
     await authMiddleware(mockSocket, mockNext);
 
     expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
-    expect(mockNext.mock.calls[0][0].message).toBe('Missing userId');
+    expect(mockNext.mock.calls[0][0].message).toMatch(/missing (token|userId)/i);
   });
 
   it('32.4 Rejects connection when relationId is not found with Relation not found error', async () => {

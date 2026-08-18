@@ -94,11 +94,6 @@ export async function POST(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: { userId: true },
@@ -108,7 +103,8 @@ export async function POST(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -289,6 +285,20 @@ export async function DELETE(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { userId: true },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { searchParams } = req.nextUrl;
     const leaveId = searchParams.get("leaveId");
 
@@ -305,7 +315,7 @@ export async function DELETE(
     }
 
     if (leave.doctorId !== doctorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // Restore ON_LEAVE slots back to AVAILABLE
@@ -334,6 +344,20 @@ export async function PATCH(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
+    const doctor = await prisma.doctor.findUnique({
+      where: { id: doctorId },
+      select: { userId: true },
+    });
+
+    if (!doctor) {
+      return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const { leaveId, newEndDate, newStartDate } = body || {};
 
@@ -350,7 +374,7 @@ export async function PATCH(
     }
 
     if (leave.doctorId !== doctorId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const oldStart = leave.startDate;

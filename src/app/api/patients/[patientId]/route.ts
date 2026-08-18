@@ -51,11 +51,6 @@ export const PUT = async (
       return NextResponse.json({ error: "patientId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Check if patient exists
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
@@ -65,7 +60,8 @@ export const PUT = async (
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -108,11 +104,6 @@ export const PATCH = async (
       return NextResponse.json({ error: "patientId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // Check if patient exists
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
@@ -122,7 +113,8 @@ export const PATCH = async (
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

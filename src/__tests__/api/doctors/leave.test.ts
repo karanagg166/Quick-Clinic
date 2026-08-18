@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    doctor: {
+      findUnique: vi.fn().mockResolvedValue({ id: 'doc_1', userId: 'user_1' }),
+    },
     leave: {
       findFirst: vi.fn(),
       findMany: vi.fn(),
@@ -95,6 +98,7 @@ describe('Doctor Leave Route', () => {
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
       {
         id: 'appt_1',
+        status: 'CONFIRMED',
         slotId: 'slot_1',
         slot: { date: new Date('2026-07-11') },
         patient: { user: { id: 'patient_u1' } },

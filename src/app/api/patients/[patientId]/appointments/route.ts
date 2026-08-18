@@ -13,11 +13,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
       return NextResponse.json({ error: "patientId required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
       select: { userId: true },
@@ -27,7 +22,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    if (patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

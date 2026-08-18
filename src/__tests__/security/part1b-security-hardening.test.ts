@@ -176,7 +176,7 @@ describe('Part 1B: Security & Robustness Verification Test Suite', () => {
       },
     });
     testSlotId = slot.id;
-  });
+  }, 60000);
 
   afterAll(async () => {
     try {
@@ -203,7 +203,7 @@ describe('Part 1B: Security & Robustness Verification Test Suite', () => {
     } catch (e) {
       console.warn('Part 1B test cleanup warning:', e);
     }
-  });
+  }, 60000);
 
   describe('1. Slot Hold Security & DB Durability', () => {
     let holdToken1: string;

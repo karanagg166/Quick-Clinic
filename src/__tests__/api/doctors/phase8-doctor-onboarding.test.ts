@@ -4,9 +4,11 @@ import { POST as createDoctorPOST } from '@/app/api/doctors/route';
 import { GET as getDoctorGET, PATCH as updateDoctorPATCH } from '@/app/api/doctors/[doctorId]/route';
 import { prisma } from '@/lib/prisma';
 import { buildUserPayload, buildDoctorProfilePayload } from '@/__tests__/helpers/factories';
+import { createToken } from '@/lib/auth';
 
 describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
   let doctorUser: any;
+  let doctorToken: string;
 
   beforeEach(async () => {
     const payload = buildUserPayload({ role: 'DOCTOR' });
@@ -32,6 +34,7 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
         },
       },
     });
+    doctorToken = await createToken({ id: doctorUser.id, email: doctorUser.email, role: 'DOCTOR', name: doctorUser.name });
   });
 
   afterAll(async () => {
@@ -59,6 +62,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify(docPayload),
     });
 
@@ -76,6 +83,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req1 = new NextRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify(docPayload),
     });
     const res1 = await createDoctorPOST(req1);
@@ -83,6 +94,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req2 = new NextRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify(docPayload),
     });
     const res2 = await createDoctorPOST(req2);
@@ -98,6 +113,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify(docPayload),
     });
 
@@ -109,6 +128,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
     const docPayload = buildDoctorProfilePayload({ userId: doctorUser.id });
     const createReq = new NextRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify(docPayload),
     });
     const createRes = await createDoctorPOST(createReq);
@@ -116,6 +139,10 @@ describe('Phase 8: Doctor Onboarding & Profile Lifecycle Test Suite', () => {
 
     const patchReq = new NextRequest(`http://localhost:3000/api/doctors/${doctor.id}`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ fees: 1000, experience: 15 }),
     });
     const patchRes = await updateDoctorPATCH(patchReq, { params: Promise.resolve({ doctorId: doctor.id }) });

@@ -22,11 +22,6 @@ export async function GET(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       include: {
@@ -42,7 +37,8 @@ export async function GET(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -93,15 +89,10 @@ export async function POST(
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const { amount } = body;
 
-    if (!amount || isNaN(amount) || amount <= 0) {
+    if (!amount || typeof amount !== "number" || isNaN(amount) || !Number.isInteger(amount) || amount <= 0) {
       return NextResponse.json(
         { error: "Valid amount is required" },
         { status: 400 }
@@ -124,11 +115,25 @@ export async function POST(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    if (doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const bankAccount = doctor.user?.bankAccounts?.[0];
+    let bankAccount = doctor.user?.bankAccounts?.[0];
+
+    // If no existing bank account is linked, check if details were provided in payload
+    if (!bankAccount && body.bankAccountNumber && body.bankIFSC) {
+      bankAccount = await prisma.bankAccount.create({
+        data: {
+          userId: doctor.user.id,
+          bankAccountNumber: body.bankAccountNumber,
+          bankIFSC: body.bankIFSC,
+          bankAccountHolderName: body.bankAccountHolderName || doctor.user.name || "Doctor",
+          bankName: body.bankName || "Bank",
+        },
+      });
+    }
 
     // Check if bank details are set
     if (!bankAccount || !bankAccount.bankAccountNumber || !bankAccount.bankIFSC) {

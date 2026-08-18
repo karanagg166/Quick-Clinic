@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { AppointmentStatus } from "@/generated/prisma";
 
 export async function GET(
@@ -13,20 +14,25 @@ export async function GET(
       return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
     }
 
-    const url = req.nextUrl.searchParams;
-    const startDate = url.get("startDate");
-    const endDate = url.get("endDate");
-    const startTime = url.get("startTime");
-    const endTime = url.get("endTime");
-
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      select: { fees: true },
+      select: { fees: true, userId: true },
     });
 
     if (!doctor) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const url = req.nextUrl.searchParams;
+    const startDate = url.get("startDate");
+    const endDate = url.get("endDate");
+    const startTime = url.get("startTime");
+    const endTime = url.get("endTime");
 
     const filter: {
       doctorId: string;

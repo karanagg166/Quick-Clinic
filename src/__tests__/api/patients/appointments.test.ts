@@ -5,6 +5,9 @@ import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    patient: {
+      findUnique: vi.fn().mockResolvedValue({ id: 'pat_1', userId: 'user_1' }),
+    },
     appointment: {
       findMany: vi.fn(),
       create: vi.fn(),

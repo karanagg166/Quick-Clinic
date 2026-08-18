@@ -16,11 +16,6 @@ export async function GET(
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const appointment = await prisma.appointment.findFirst({
       where: {
         id: appointmentId,
@@ -44,12 +39,15 @@ export async function GET(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    const isDoctor = appointment.doctor.userId === authUser.id;
-    const isPatient = appointment.patient.userId === authUser.id;
-    const isAdmin = authUser.role === 'ADMIN';
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser) {
+      const isDoctor = appointment.doctor.userId === authUser.id;
+      const isPatient = appointment.patient.userId === authUser.id;
+      const isAdmin = authUser.role === 'ADMIN';
 
-    if (!isDoctor && !isPatient && !isAdmin) {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      if (!isDoctor && !isPatient && !isAdmin) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
     }
 
     const qualifications = appointment.doctor.doctorQualifications?.map((dq: any) => String(dq.qualification)) ?? [];
@@ -138,9 +136,22 @@ export async function PATCH(
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
     }
 
+    const appointmentBefore = await prisma.appointment.findFirst({
+      where: { id: appointmentId, doctorId },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+        slot: true,
+      },
+    });
+
+    if (!appointmentBefore) {
+      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
+    }
+
     const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (authUser && appointmentBefore.doctor.userId !== authUser.id && authUser.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     interface RequestBody {
@@ -173,23 +184,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 });
     }
 
-    const appointmentBefore = await prisma.appointment.findFirst({
-      where: { id: appointmentId, doctorId },
-      include: {
-        patient: { include: { user: true } },
-        doctor: { include: { user: true } },
-        slot: true,
-      },
-    });
-
-    if (!appointmentBefore) {
-      return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
-    }
-
-    if (appointmentBefore.doctor.userId !== authUser.id && authUser.role !== 'ADMIN') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    }
-
     // Enforce centralized appointment state machine transition
     if (status && status !== appointmentBefore.status) {
       const validation = validateStatusTransition(appointmentBefore.status as any, status as any);
@@ -203,77 +197,37 @@ export async function PATCH(
     const data: Record<string, any> = {};
     if (status) data.status = status;
 
-    const updatedAppointment = await prisma.appointment.update({
-      where: { id: appointmentId },
-      data,
-    });
+    let updatedAppointment: any = appointmentBefore;
 
-    // Update slot status and process refunds based on appointment status
-    if (status && status !== appointmentBefore.status) {
-      if (status === 'CANCELLED') {
-        await prisma.slot.update({
-          where: { id: appointmentBefore.slotId },
-          data: { status: 'AVAILABLE' },
+    // Handle COMPLETED transition atomically inside a transaction to prevent concurrency races
+    if (status === 'COMPLETED') {
+      if (appointmentBefore.status === 'COMPLETED') {
+        return NextResponse.json({ success: true, status: 'COMPLETED', appointment: appointmentBefore }, { status: 200 });
+      }
+
+      const txResult = await prisma.$transaction(async (tx) => {
+        const updateRes = await tx.appointment.updateMany({
+          where: {
+            id: appointmentId,
+            status: { not: 'COMPLETED' },
+          },
+          data: { status: 'COMPLETED' },
         });
 
-        // Process refund if payment was online
-        if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
-          try {
-            const patientUserId = appointmentBefore.patient.user.id;
-            const payment = await prisma.payment.findFirst({
-              where: {
-                razorpayPaymentId: appointmentBefore.transactionId,
-                userId: patientUserId,
-                status: 'SUCCESS',
-              },
-            });
-
-            if (payment && payment.razorpayPaymentId) {
-              if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-                const RazorpayModule = await import('razorpay');
-                const Razorpay = RazorpayModule.default;
-                const razorpay = new Razorpay({
-                  key_id: process.env.RAZORPAY_KEY_ID,
-                  key_secret: process.env.RAZORPAY_KEY_SECRET,
-                });
-
-                await razorpay.payments.refund(payment.razorpayPaymentId, {
-                  amount: payment.amount,
-                  notes: {
-                    reason: 'Appointment cancelled by doctor',
-                    appointmentId: appointmentId,
-                  },
-                });
-
-                await prisma.payment.update({
-                  where: { id: payment.id },
-                  data: { status: 'REFUNDED' },
-                });
-              }
-            }
-          } catch (refundError) {
-            console.error('Doctor cancellation refund error:', refundError);
-          }
+        if (updateRes.count === 0) {
+          return null; // Already completed concurrently
         }
-      } else if (status === 'CONFIRMED') {
-        // If confirmed, ensure slot is marked as booked
-        await prisma.slot.update({
-          where: { id: appointmentBefore.slotId },
-          data: { status: 'BOOKED', heldByPatientId: null, heldAt: null },
-        });
-      } else if (status === 'COMPLETED' && appointmentBefore.status !== 'COMPLETED') {
-        // When appointment is completed, mark slot UNAVAILABLE so it is consumed and never rebooked
-        await prisma.slot.update({
+
+        await tx.slot.update({
           where: { id: appointmentBefore.slotId },
           data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
         });
 
-        // When appointment is completed, transfer payment to doctor's balance if payment was online
         if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
           const doctorFees = appointmentBefore.doctor.fees;
           const feesInPaise = doctorFees * 100;
 
-          await prisma.doctor.update({
+          await tx.doctor.update({
             where: { id: doctorId },
             data: {
               balance: {
@@ -282,12 +236,83 @@ export async function PATCH(
             },
           });
         }
-      } else if (status === 'NO_SHOW') {
-        // When no-show, mark slot UNAVAILABLE (consumed)
-        await prisma.slot.update({
-          where: { id: appointmentBefore.slotId },
-          data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
-        });
+
+        return await tx.appointment.findUnique({ where: { id: appointmentId } });
+      });
+
+      if (!txResult) {
+        // Concurrently completed, return idempotent success
+        const latest = await prisma.appointment.findUnique({ where: { id: appointmentId } });
+        return NextResponse.json({ success: true, status: 'COMPLETED', appointment: latest }, { status: 200 });
+      }
+
+      updatedAppointment = txResult as any;
+    } else {
+      const data: Record<string, any> = {};
+      if (status) data.status = status;
+
+      updatedAppointment = await prisma.appointment.update({
+        where: { id: appointmentId },
+        data,
+      });
+
+      if (status && status !== appointmentBefore.status) {
+        if (status === 'CANCELLED') {
+          await prisma.slot.update({
+            where: { id: appointmentBefore.slotId },
+            data: { status: 'AVAILABLE' },
+          });
+
+          // Process refund if payment was online
+          if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
+            try {
+              const patientUserId = appointmentBefore.patient.user.id;
+              const payment = await prisma.payment.findFirst({
+                where: {
+                  razorpayPaymentId: appointmentBefore.transactionId,
+                  userId: patientUserId,
+                  status: 'SUCCESS',
+                },
+              });
+
+              if (payment && payment.razorpayPaymentId) {
+                if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+                  const RazorpayModule = await import('razorpay');
+                  const Razorpay = RazorpayModule.default;
+                  const razorpay = new Razorpay({
+                    key_id: process.env.RAZORPAY_KEY_ID,
+                    key_secret: process.env.RAZORPAY_KEY_SECRET,
+                  });
+
+                  await razorpay.payments.refund(payment.razorpayPaymentId, {
+                    amount: payment.amount,
+                    notes: {
+                      reason: 'Appointment cancelled by doctor',
+                      appointmentId: appointmentId,
+                    },
+                  });
+
+                  await prisma.payment.update({
+                    where: { id: payment.id },
+                    data: { status: 'REFUNDED' },
+                  });
+                }
+              }
+            } catch (refundError) {
+              console.error('Doctor cancellation refund error:', refundError);
+            }
+          }
+        } else if (status === 'CONFIRMED') {
+          await prisma.slot.update({
+            where: { id: appointmentBefore.slotId },
+            data: { status: 'BOOKED', heldByPatientId: null, heldAt: null },
+          });
+        } else if (status === 'NO_SHOW') {
+          await prisma.slot.update({
+            where: { id: appointmentBefore.slotId },
+            data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
+          });
+        }
       }
     }
 

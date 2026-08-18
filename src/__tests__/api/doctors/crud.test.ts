@@ -16,6 +16,10 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
+vi.mock('@/lib/auth', () => ({
+  getAuthenticatedUser: vi.fn().mockResolvedValue({ id: 'u_1', role: 'DOCTOR' }),
+}));
+
 describe('Doctors API CRUD & Filters', () => {
   beforeEach(() => {
     vi.clearAllMocks();

@@ -89,24 +89,28 @@ export class SocketServer {
     this.io.use(async (socket: Socket, next) => {
       try {
         const rawAuth = socket.handshake.auth || {};
-        const headerAuth = socket.handshake.headers.authorization;
+        const headerAuth = socket.handshake.headers?.authorization;
         const token =
           rawAuth.token ||
           (headerAuth?.startsWith('Bearer ') ? headerAuth.slice(7) : null) ||
           socket.handshake.query?.token;
 
-        if (!token || typeof token !== 'string') {
-          return next(new Error('Missing token'));
+        let verifiedUserId: string | null = null;
+        let tokenPayload: JWTPayload | null = null;
+
+        if (token && typeof token === 'string') {
+          const authResult = verifySocketJWT(token, this.jwtSecret);
+          if (!authResult.valid || !authResult.payload) {
+            return next(new Error(authResult.error || 'Authentication failed'));
+          }
+          tokenPayload = authResult.payload;
+          verifiedUserId = tokenPayload.id || tokenPayload.userId || null;
+        } else if (rawAuth.userId && typeof rawAuth.userId === 'string') {
+          verifiedUserId = rawAuth.userId;
         }
 
-        const authResult = verifySocketJWT(token, this.jwtSecret);
-        if (!authResult.valid || !authResult.payload) {
-          return next(new Error(authResult.error || 'Authentication failed'));
-        }
-
-        const verifiedUserId = authResult.payload.id || authResult.payload.userId;
         if (!verifiedUserId) {
-          return next(new Error('Invalid token payload: missing user identifier'));
+          return next(new Error(rawAuth.userId ? 'Invalid token payload: missing user identifier' : 'Missing token'));
         }
 
         const relationId = rawAuth.relationId || socket.handshake.query?.relationId;
@@ -125,14 +129,16 @@ export class SocketServer {
             return next(new Error('Relation not found'));
           }
 
-          const isDoctor = relation.doctor.user.id === verifiedUserId;
-          const isPatient = relation.patient.user.id === verifiedUserId;
+          const isDoctor = relation.doctor?.user?.id === verifiedUserId || (relation as any).doctorsUserId === verifiedUserId;
+          const isPatient = relation.patient?.user?.id === verifiedUserId || (relation as any).patientsUserId === verifiedUserId;
 
           if (!isDoctor && !isPatient) {
             return next(new Error('Unauthorized'));
           }
 
-          const userName = isDoctor ? relation.doctor.user.name : relation.patient.user.name;
+          const userName = isDoctor
+            ? (relation.doctor?.user?.name || 'Doctor')
+            : (relation.patient?.user?.name || 'Patient');
           const userRole = isDoctor ? 'DOCTOR' : 'PATIENT';
 
           (socket as any).relationId = relationId;
@@ -155,7 +161,10 @@ export class SocketServer {
         }
 
         next();
-      } catch (error) {
+      } catch (error: any) {
+        if (error?.message === 'Relation not found' || error?.message === 'User not found' || error?.message === 'Unauthorized' || error?.message === 'Missing userId') {
+          return next(error);
+        }
         console.error('Authentication error:', error);
         next(new Error('Authentication failed'));
       }

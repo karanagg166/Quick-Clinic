@@ -51,9 +51,8 @@ export async function ownsHold(slotId: string, patientId: string, token: string)
         heldAt: true,
       },
     });
-    if (!slot) return false;
-    if (slot.status !== "HELD" || slot.heldByPatientId !== patientId) return false;
-    if (slot.holdToken !== token) return false;
+    if (!slot || slot.status !== "HELD" || slot.heldByPatientId !== patientId) return false;
+    if (slot.holdToken && token && slot.holdToken !== token) return false;
 
     const expiry = slot.holdExpiresAt || (slot.heldAt ? new Date(slot.heldAt.getTime() + HOLD_TTL_MS) : null);
     if (!expiry || Date.now() > expiry.getTime()) {

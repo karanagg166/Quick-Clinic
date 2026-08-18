@@ -4,7 +4,7 @@ import type { Doctor } from "@/types/doctor";
 import { Gender, Prisma, Specialty, Qualification } from "@/generated/prisma";
 import { parseSearchCoordinates, calculateHaversineDistanceKm, estimateTravelTimeMinutes } from "@/lib/coordinates";
 import { getRouteMetrics } from "@/lib/routing";
-
+import { getAuthenticatedUser } from "@/lib/auth";
 import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
 export async function GET(req: NextRequest) {
@@ -232,7 +232,7 @@ export async function GET(req: NextRequest) {
 
 export const POST = async (req: NextRequest) => {
   try {
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const {
       userId,
       specialty,
@@ -246,6 +246,15 @@ export const POST = async (req: NextRequest) => {
 
     if (!userId || typeof userId !== "string") {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (authUser.id !== userId && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     if (!specialty || typeof specialty !== "string") {

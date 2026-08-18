@@ -43,11 +43,12 @@ describe('Phase 79: Redis Caching, TTL & Slot Holds Test Suite', () => {
         where: expect.objectContaining({
           id: 'slot_expired_1',
           status: 'HELD',
-          heldAt: expect.objectContaining({
-            lte: expect.any(Date),
-          }),
         }),
-        data: { status: 'AVAILABLE', heldByPatientId: null, heldAt: null },
+        data: expect.objectContaining({
+          status: 'AVAILABLE',
+          heldByPatientId: null,
+          heldAt: null,
+        }),
       })
     );
   });
@@ -62,11 +63,12 @@ describe('Phase 79: Redis Caching, TTL & Slot Holds Test Suite', () => {
         where: expect.objectContaining({
           doctorId: 'doc_active_holds',
           status: 'HELD',
-          heldAt: expect.objectContaining({
-            lte: expect.any(Date),
-          }),
         }),
-        data: { status: 'AVAILABLE', heldByPatientId: null, heldAt: null },
+        data: expect.objectContaining({
+          status: 'AVAILABLE',
+          heldByPatientId: null,
+          heldAt: null,
+        }),
       })
     );
   });

@@ -171,6 +171,10 @@ describe('End-to-End Clinic Workflow & Integration Test Suite', () => {
     it('1.3 creates doctor professional details & qualifications', async () => {
       const req = new NextRequest('http://localhost:3000/api/doctors', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${doctorToken}`,
+        },
         body: JSON.stringify({
           userId: doctorUserId,
           ...DOCTOR_PROFILE_PAYLOAD,
@@ -189,6 +193,10 @@ describe('End-to-End Clinic Workflow & Integration Test Suite', () => {
     it('1.4 creates weekly recurring schedule for the doctor', async () => {
       const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          authorization: `Bearer ${doctorToken}`,
+        },
         body: JSON.stringify(DOCTOR_WEEKLY_SCHEDULE),
       });
 
@@ -673,7 +681,7 @@ describe('End-to-End Clinic Workflow & Integration Test Suite', () => {
       expect(res.status).toBe(201);
       const data = await res.json();
       expect(data.withdrawal.amountInRupees).toBe(200);
-      expect(data.withdrawal.status).toBe('COMPLETED');
+      expect(data.withdrawal.status).toBe('PENDING');
 
       // Check balance is debited by ₹200 (20000 paise)
       const balanceReq = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/balance`, {

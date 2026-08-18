@@ -2,16 +2,20 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, PATCH } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
+vi.mock('@/lib/prisma', () => {
+  const mockPrisma = {
+    $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     appointment: {
       findFirst: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
+      findUnique: vi.fn(),
     },
     slot: {
       update: vi.fn(),
     },
     doctor: {
+      findUnique: vi.fn().mockResolvedValue({ id: 'doc_1', userId: 'user_1' }),
       update: vi.fn(),
     },
     doctorPatientRelation: {
@@ -27,8 +31,9 @@ vi.mock('@/lib/prisma', () => ({
     auditLog: {
       create: vi.fn(),
     },
-  },
-}));
+  };
+  return { prisma: mockPrisma };
+});
 
 describe('Doctor Appointment Detail Route', () => {
   beforeEach(() => {
@@ -131,7 +136,9 @@ describe('Doctor Appointment Detail Route', () => {
     };
 
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(existing as any);
-    vi.mocked(prisma.appointment.update).mockResolvedValueOnce({ ...existing, status: 'COMPLETED' } as any);
+    vi.mocked(prisma.appointment.findUnique).mockResolvedValueOnce({ ...existing, status: 'COMPLETED' } as any);
+    vi.mocked(prisma.appointment.updateMany).mockResolvedValueOnce({ count: 1 });
+    vi.mocked(prisma.slot.update).mockResolvedValueOnce({} as any);
     vi.mocked(prisma.doctor.update).mockResolvedValueOnce({} as any);
     vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
     vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({} as any);

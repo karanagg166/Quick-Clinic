@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 // GET - Fetch doctor balance
 export async function GET(
@@ -16,6 +17,7 @@ export async function GET(
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
       select: {
+        userId: true,
         balance: true,
         fees: true,
       },
@@ -30,6 +32,11 @@ export async function GET(
         },
         { status: 200 }
       );
+    }
+
+    const authUser = await getAuthenticatedUser(req);
+    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const rawBalance = doctor.balance ?? 0;

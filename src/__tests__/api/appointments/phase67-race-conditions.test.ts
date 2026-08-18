@@ -8,9 +8,9 @@ import * as requestAuth from '@/lib/request-auth';
 import * as booking from '@/lib/booking';
 import { createAuthHeaders } from '@/__tests__/helpers/factories';
 
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
-    $transaction: vi.fn(),
+vi.mock('@/lib/prisma', () => {
+  const mockPrisma = {
+    $transaction: vi.fn(async (cb) => (typeof cb === 'function' ? cb(mockPrisma) : cb)),
     slot: {
       findUnique: vi.fn().mockResolvedValue({ startTime: new Date('2028-12-25T10:00:00Z') }),
       update: vi.fn(),
@@ -20,6 +20,7 @@ vi.mock('@/lib/prisma', () => ({
       findFirst: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn().mockResolvedValue({ count: 1 }),
     },
     doctor: {
       findUnique: vi.fn(),
@@ -42,8 +43,9 @@ vi.mock('@/lib/prisma', () => ({
     chatMessages: {
       create: vi.fn(),
     },
-  },
-}));
+  };
+  return { prisma: mockPrisma };
+});
 
 vi.mock('@/lib/request-auth', () => ({
   getAuthenticatedPatient: vi.fn(),
