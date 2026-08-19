@@ -384,27 +384,29 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   };
 
   return (
-    <div className="flex flex-col h-screen bg-background">
+    <div className="flex flex-col h-[calc(100vh-10rem)] min-h-[480px] max-h-[760px] bg-background border rounded-2xl shadow-xs overflow-hidden">
       {/* Header */}
-      <div className="border-b px-6 py-4 sticky top-0 z-10 bg-background/95 backdrop-blur">
-        <div className="flex items-center justify-between">
+      <div className="border-b px-3.5 sm:px-6 py-3.5 sticky top-0 z-10 bg-background/95 backdrop-blur">
+        <div className="flex items-center justify-between gap-2">
           <div>
-            <h2 className="text-xl font-semibold tracking-tight">Chat</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
+            <h2 className="text-lg sm:text-xl font-semibold tracking-tight">Chat</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
           </div>
           <Badge
             variant={isConnected ? "default" : "secondary"}
-            className="flex items-center gap-1.5 px-3 py-1"
+            className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-xs shrink-0"
           >
             {isConnected ? (
               <>
                 <Wifi className="w-3.5 h-3.5 text-green-500" />
-                <span>Live Socket</span>
+                <span className="hidden sm:inline">Live Socket</span>
+                <span className="sm:hidden">Live</span>
               </>
             ) : (
               <>
                 <WifiOff className="w-3.5 h-3.5 text-muted-foreground" />
-                <span>Standard (REST)</span>
+                <span className="hidden sm:inline">Standard (REST)</span>
+                <span className="sm:hidden">REST</span>
               </>
             )}
           </Badge>
@@ -412,7 +414,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       </div>
 
       {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto px-6 py-6 space-y-4 scroll-smooth">
+      <div className="flex-1 overflow-y-auto px-3.5 sm:px-6 py-4 sm:py-6 space-y-3.5 scroll-smooth">
         {loading ? (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
@@ -487,8 +489,8 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       </div>
 
       {/* Input Area */}
-      <div className="border-t px-6 py-3 sticky bottom-0 bg-background">
-        <form onSubmit={handleSendMessage} className="flex gap-3">
+      <div className="border-t px-3.5 sm:px-6 py-3 sticky bottom-0 bg-background">
+        <form onSubmit={handleSendMessage} className="flex gap-2 sm:gap-3">
           <Textarea
             ref={textareaRef}
             value={inputValue}

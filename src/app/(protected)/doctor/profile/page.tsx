@@ -287,6 +287,7 @@ export default function DoctorProfilePage() {
 
 			setUser(nextUserPayload, patientId ?? undefined, activeDoctorId ?? undefined);
 			showToast.success("Profile updated successfully");
+			router.push("/doctor");
 		} catch (err: any) {
 			console.error("doctor-profile-save", err);
 			showToast.error(err?.message ?? "Something went wrong");

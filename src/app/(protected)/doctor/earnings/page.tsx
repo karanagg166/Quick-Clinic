@@ -38,6 +38,9 @@ interface Withdrawal {
   processedAt: string | null;
 }
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 export default function DoctorEarnings() {
   const doctorId = useUserStore((s) => s.doctorId);
 
@@ -300,14 +303,22 @@ export default function DoctorEarnings() {
   }, [doctorId]);
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       <div>
-        <h1 className="text-3xl font-semibold mb-2">Earnings & Wallet</h1>
-        <p className="text-muted-foreground">Manage your earnings, balance, and withdrawals</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Earnings & Wallet</h1>
+        <p className="text-sm text-muted-foreground">Manage your earnings, balance, and withdrawals</p>
       </div>
 
       {/* Earnings Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Today", value: summaryData.today, icon: <TrendingUp className="w-5 h-5 text-blue-500" /> },
           { label: "This Week", value: summaryData.week, icon: <CalendarDays className="w-5 h-5 text-green-500" /> },
@@ -344,9 +355,9 @@ export default function DoctorEarnings() {
           {loadingBalance ? (
             <Skeleton className="h-12 w-48" />
           ) : (
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <p className="text-4xl font-bold text-green-700">
+                <p className="text-3xl sm:text-4xl font-bold text-green-700">
                   ₹{balance !== null ? balance.toFixed(2) : '0.00'}
                 </p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -363,7 +374,7 @@ export default function DoctorEarnings() {
                   }
                 }}
                 disabled={!balance || balance < 100}
-                className="bg-green-600 hover:bg-green-700"
+                className="bg-green-600 hover:bg-green-700 w-full sm:w-auto"
               >
                 <ArrowDownCircle className="w-4 h-4 mr-2" />
                 Withdraw
@@ -581,7 +592,7 @@ export default function DoctorEarnings() {
           <CardTitle>Filter Earnings</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
             {/* Start Date */}
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>

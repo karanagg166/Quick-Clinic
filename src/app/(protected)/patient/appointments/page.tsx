@@ -10,6 +10,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 export default function PatientAppointmentsPage() {
   const patientId = useUserStore((s) => s.patientId);
 
@@ -29,7 +32,7 @@ export default function PatientAppointmentsPage() {
     const params = new URLSearchParams();
 
     if (doctorName) params.append("doctorName", doctorName);
-    if (fees !== undefined && fees !== 0) params.append("fees", String(fees)); // FIX
+    if (fees !== undefined && fees !== 0) params.append("fees", String(fees));
     if (specialty) params.append("specialty", specialty);
     if (date) params.append("date", date);
     if (status && status !== "all") params.append("status", status);
@@ -59,10 +62,18 @@ export default function PatientAppointmentsPage() {
   }, [patientId]);
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/patient">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       <div>
-        <h1 className="text-3xl font-semibold mb-2">Your Appointments</h1>
-        <p className="text-muted-foreground">View and manage your appointments</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Your Appointments</h1>
+        <p className="text-sm text-muted-foreground">View and manage your appointments</p>
       </div>
 
       {/* Filters */}
@@ -71,7 +82,7 @@ export default function PatientAppointmentsPage() {
           <CardTitle>Filter Appointments</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
             <Input
               value={doctorName}
               onChange={(e) => setDoctorName(e.target.value)}

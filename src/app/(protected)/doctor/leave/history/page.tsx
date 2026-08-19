@@ -3,6 +3,11 @@
 import { useState, useEffect } from "react";
 import { useUserStore } from "@/store/userStore";
 import { showToast } from "@/lib/toast";
+import { EditLeaveDialog } from "@/components/doctor/EditLeaveDialog";
+
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function DoctorLeaveHistory() {
   const doctorId = useUserStore((state) => state.doctorId);
@@ -10,6 +15,8 @@ export default function DoctorLeaveHistory() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [editingLeave, setEditingLeave] = useState<any | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Filter state (optional, user can manually search too)
   const [startDate, setStartDate] = useState("");
@@ -128,8 +135,19 @@ export default function DoctorLeaveHistory() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-8 p-6 bg-white shadow-md rounded-lg">
-      <h1 className="text-2xl font-bold mb-6">Leave History</h1>
+    <div className="max-w-4xl mx-auto mt-4 sm:mt-8 p-4 sm:p-6 bg-white shadow-md rounded-lg space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor/leave">
+            <ArrowLeft className="w-4 h-4" /> Back to Leaves
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/doctor">Dashboard</Link>
+        </Button>
+      </div>
+
+      <h1 className="text-2xl font-bold">Leave History</h1>
 
       {/* Optional filter form */}
       <form onSubmit={handleSearch} className="mb-8 space-y-4">
@@ -259,6 +277,17 @@ export default function DoctorLeaveHistory() {
                       )}
                       {(isActive || isUpcoming) && (
                         <button
+                          onClick={() => {
+                            setEditingLeave(leave);
+                            setIsEditDialogOpen(true);
+                          }}
+                          className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm whitespace-nowrap"
+                        >
+                          Edit Leave
+                        </button>
+                      )}
+                      {(isActive || isUpcoming) && (
+                        <button
                           onClick={() => handleCancelLeave(leave.id)}
                           className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 text-sm whitespace-nowrap"
                         >
@@ -272,6 +301,20 @@ export default function DoctorLeaveHistory() {
             })}
           </div>
         </div>
+      )}
+
+      {/* Edit Leave Modal */}
+      {doctorId && (
+        <EditLeaveDialog
+          leave={editingLeave}
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setEditingLeave(null);
+          }}
+          onSuccess={fetchLeaves}
+          doctorId={doctorId}
+        />
       )}
 
       {!loading && results.length === 0 && (

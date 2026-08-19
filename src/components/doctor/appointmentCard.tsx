@@ -120,7 +120,7 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
 
       {/* Action buttons for pending appointments */}
       {isPending && (
-        <div className="flex gap-2 pt-3 border-t border-yellow-200">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-3 border-t border-yellow-200">
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -128,7 +128,7 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
               handleStatusUpdate('CONFIRMED');
             }}
             disabled={updating}
-            className="flex-1 bg-green-600 hover:bg-green-700"
+            className="w-full bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
           >
             {updating ? 'Updating...' : 'Confirm'}
           </Button>
@@ -140,12 +140,12 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
             }}
             disabled={updating}
             variant="destructive"
-            className="flex-1"
+            className="w-full text-xs sm:text-sm"
           >
             {updating ? 'Updating...' : 'Reject'}
           </Button>
-          <Link href={`/doctor/appointments/${appointment.id}`} className="flex-1">
-            <Button variant="outline" className="w-full">
+          <Link href={`/doctor/appointments/${appointment.id}`} className="w-full">
+            <Button variant="outline" className="w-full text-xs sm:text-sm">
               View Details
             </Button>
           </Link>
@@ -154,7 +154,7 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
 
       {/* Action buttons for confirmed appointments */}
       {isConfirmed && (
-        <div className="flex gap-2 pt-3 border-t border-blue-200">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-3 border-t border-blue-200">
           <Button
             onClick={(e) => {
               e.preventDefault();
@@ -162,7 +162,7 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
               handleStatusUpdate('COMPLETED');
             }}
             disabled={updating}
-            className="flex-1 bg-green-600 hover:bg-green-700"
+            className="w-full bg-green-600 hover:bg-green-700 text-xs sm:text-sm"
           >
             {updating ? 'Updating...' : 'Complete'}
           </Button>
@@ -173,7 +173,7 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
               handleStatusUpdate('NO_SHOW');
             }}
             disabled={updating}
-            className="flex-1 bg-orange-500 hover:bg-orange-600"
+            className="w-full bg-orange-500 hover:bg-orange-600 text-xs sm:text-sm"
           >
             {updating ? 'Updating...' : 'No Show'}
           </Button>
@@ -185,12 +185,12 @@ export default function AppointmentCard({ appointment, onStatusUpdate }: {
             }}
             disabled={updating}
             variant="destructive"
-            className="flex-1"
+            className="w-full text-xs sm:text-sm"
           >
             {updating ? 'Updating...' : 'Cancel'}
           </Button>
-          <Link href={`/doctor/appointments/${appointment.id}`} className="flex-1">
-            <Button variant="outline" className="w-full">
+          <Link href={`/doctor/appointments/${appointment.id}`} className="w-full">
+            <Button variant="outline" className="w-full text-xs sm:text-sm">
               View Details
             </Button>
           </Link>

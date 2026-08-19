@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showToast } from '@/lib/toast';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 
 export default function DoctorAppointmentDetailPage() {
   const params = useParams();
@@ -146,7 +148,7 @@ export default function DoctorAppointmentDetailPage() {
 
   if (loading) {
     return (
-      <div className="p-6 max-w-4xl mx-auto space-y-4">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-4">
         <Skeleton className="h-8 w-64" />
         <Skeleton className="h-64 w-full" />
       </div>
@@ -155,7 +157,7 @@ export default function DoctorAppointmentDetailPage() {
 
   if (error) {
     return (
-      <Card className="max-w-4xl mx-auto m-6">
+      <Card className="max-w-4xl mx-auto m-4 sm:m-6">
         <CardContent className="pt-6">
           <p className="text-destructive">{error}</p>
         </CardContent>
@@ -165,7 +167,7 @@ export default function DoctorAppointmentDetailPage() {
 
   if (!appointment) {
     return (
-      <Card className="max-w-4xl mx-auto m-6">
+      <Card className="max-w-4xl mx-auto m-4 sm:m-6">
         <CardContent className="pt-6">
           <p className="text-muted-foreground">No appointment details available.</p>
         </CardContent>
@@ -188,8 +190,19 @@ export default function DoctorAppointmentDetailPage() {
   };
 
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <h1 className="text-2xl font-bold mb-6">Appointment Details</h1>
+    <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor/appointments">
+            <ArrowLeft className="w-4 h-4" /> Back to Appointments
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/doctor">Dashboard</Link>
+        </Button>
+      </div>
+
+      <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Appointment Details</h1>
 
       <Card>
         <CardHeader>

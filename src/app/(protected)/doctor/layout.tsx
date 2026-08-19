@@ -57,9 +57,9 @@ export default function DoctorDashboardLayout({ children }: Readonly<{ children:
 
   return (
     <div className="min-h-screen">
-      {isSidebarOpen && <DoctorSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />}
+      <DoctorSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
       <DoctorNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
-      <main className="p-6 bg-background min-h-screen pt-24">
+      <main className="p-4 sm:p-6 bg-background min-h-screen pt-20 sm:pt-24 max-w-full overflow-x-hidden">
         {children}
         <div className="mt-8">
           <Footer />

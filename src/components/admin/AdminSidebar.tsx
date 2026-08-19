@@ -60,14 +60,24 @@ export default function AdminSidebar({ isSidebarOpen, setSidebarOpen }: AdminSid
 
     return (
         <>
+            {/* Backdrop overlay for mobile & desktop */}
+            {isSidebarOpen && (
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[55] transition-opacity animate-in fade-in"
+                    onClick={() => setSidebarOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
+
             {/* Sidebar */}
             <aside
-                className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-                    } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
+                className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${
+                    isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+                } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
             >
                 {/* Header */}
                 <Card className="border-0 border-b rounded-none shadow-none">
-                    <CardContent className="p-6 flex items-center justify-between">
+                    <CardContent className="p-5 sm:p-6 flex items-center justify-between">
                         <div>
                             <h2 className="text-lg font-bold text-foreground">Admin Portal</h2>
                             <p className="text-xs text-muted-foreground mt-1">System Management</p>
@@ -77,6 +87,7 @@ export default function AdminSidebar({ isSidebarOpen, setSidebarOpen }: AdminSid
                             size="icon"
                             onClick={() => setSidebarOpen(false)}
                             className="h-8 w-8"
+                            aria-label="Close sidebar"
                         >
                             <X className="w-5 h-5" />
                         </Button>
@@ -96,8 +107,9 @@ export default function AdminSidebar({ isSidebarOpen, setSidebarOpen }: AdminSid
                                         <Button
                                             asChild
                                             variant={isItemActive ? "secondary" : "ghost"}
-                                            className={`w-full justify-start ${isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
-                                                }`}
+                                            className={`w-full justify-start ${
+                                                isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
+                                            }`}
                                             onClick={() => setSidebarOpen(false)}
                                         >
                                             <Link href={item.href} className="flex items-center gap-3">
@@ -111,7 +123,6 @@ export default function AdminSidebar({ isSidebarOpen, setSidebarOpen }: AdminSid
                         })}
                     </ul>
                 </nav>
-
             </aside>
         </>
     );

@@ -112,7 +112,7 @@ export default function DoctorDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((card, index) => (
           <motion.div
             key={card.label}
@@ -190,7 +190,6 @@ export default function DoctorDashboard() {
             <CardContent className="space-y-2">
               {[
                 { href: "/doctor/schedule", icon: CalendarDays, title: "Manage schedule", desc: "Update availability and slots", color: "text-blue-600" },
-                { href: "/doctor/chat", icon: MessageCircle, title: "Open chat", desc: "Message patients directly", color: "text-emerald-600" },
                 { href: "/doctor/leave/apply", icon: Clock3, title: "Request leave", desc: "Plan time off", color: "text-amber-600" },
                 { href: "/doctor/earnings", icon: Wallet, title: "Earnings", desc: "Track payouts and history", color: "text-indigo-600" },
               ].map((action, index) => (
@@ -200,9 +199,9 @@ export default function DoctorDashboard() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                 >
-                  <Button asChild variant="ghost" className="w-full justify-start hover:bg-accent/50 transition-colors">
+                  <Button asChild variant="ghost" className="w-full justify-start hover:bg-accent/50 transition-colors h-auto py-2.5">
                     <Link href={action.href}>
-                      <action.icon className={`w-5 h-5 mr-3 ${action.color}`} />
+                      <action.icon className={`w-5 h-5 mr-3 shrink-0 ${action.color}`} />
                       <div className="text-left">
                         <p className="font-semibold text-sm">{action.title}</p>
                         <p className="text-xs text-muted-foreground">{action.desc}</p>

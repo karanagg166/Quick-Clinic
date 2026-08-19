@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
 import { processOnlinePayment } from '@/lib/processOnlinePayment';
 import type { Slot } from '@/types/common';
@@ -18,6 +19,7 @@ interface BookTimeSlotProps {
 type Hold = { slotId: string; token: string };
 
 export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
+  const router = useRouter();
   const user = useUserStore((state) => state.user);
   const userId = user?.id;
   const [date, setDate] = useState('');
@@ -110,7 +112,10 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     setSlots((previous) => previous.map((slot) => slot.id === hold.slotId ? { ...slot, status: 'BOOKED' } : slot));
     setSelectedSlot(null);
     setShowPaymentOptions(false);
-    showToast.success(paymentMethod === 'ONLINE' ? 'Appointment confirmed! Details and cancellation link sent to chat.' : 'Appointment confirmed! Details and cancellation link sent to chat.');
+    showToast.success('Appointment confirmed! Redirecting to dashboard...');
+    setTimeout(() => {
+      router.push('/patient');
+    }, 1000);
   };
 
   const handleOfflineBooking = async (slotId: string) => {
@@ -152,7 +157,10 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       setSlots((previous) => previous.map((slot) => slot.id === hold?.slotId ? { ...slot, status: 'BOOKED' } : slot));
       setSelectedSlot(null);
       setShowPaymentOptions(false);
-      showToast.success('Payment successful and appointment confirmed.');
+      showToast.success('Payment successful and appointment confirmed! Redirecting to dashboard...');
+      setTimeout(() => {
+        router.push('/patient');
+      }, 1000);
     } catch (cause) {
       if (!paymentCaptured) {
         await releaseHold(hold);

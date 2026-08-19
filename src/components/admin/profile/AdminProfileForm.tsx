@@ -9,7 +9,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { showToast } from "@/lib/toast";
 
+import { useRouter } from "next/navigation";
+
 export default function AdminProfileForm() {
+    const router = useRouter();
     const { user, updateUser } = useUserStore();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
@@ -79,6 +82,7 @@ export default function AdminProfileForm() {
             // Update store
             updateUser(data);
             showToast.success("Profile updated successfully");
+            router.push("/admin");
         } catch (error: any) {
             console.error(error);
             showToast.error(error.message);

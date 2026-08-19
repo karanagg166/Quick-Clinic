@@ -63,15 +63,15 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-4 bg-white border-b border-gray-200 shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-3 sm:px-6 py-2.5 sm:py-3.5 bg-white border-b border-gray-200 shadow-xs">
 
       {/* LEFT SECTION — Logo + Sidebar Toggle + Nav Links */}
-      <div className="flex items-center gap-8">
+      <div className="flex items-center gap-2 sm:gap-6">
 
         {/* Menu Button */}
         <button
           onClick={() => setSidebarOpen(!isSidebarOpen)}
-          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors"
           aria-label="Toggle sidebar"
         >
           <Menu className="w-5 h-5 text-gray-600" />
@@ -81,7 +81,7 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         <Logo />
 
         {/* Desktop Navigation */}
-        <div className="hidden md:flex items-center gap-6">
+        <div className="hidden lg:flex items-center gap-4 xl:gap-6">
 
           <Link
             href="/doctor"
@@ -136,18 +136,18 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
       </div>
 
       {/* RIGHT SECTION — Balance + Notifications + Profile + Logout */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2 sm:gap-3">
 
         {/* Balance Display */}
         {doctorId && (
           <Link href="/doctor/earnings">
-            <div className="flex items-center gap-2 px-3 py-2 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200">
-              <Wallet className="w-4 h-4 text-green-700" />
-              <span className="text-sm font-semibold text-green-700">
+            <div className="flex items-center gap-1.5 px-2 py-1 sm:px-3 sm:py-1.5 bg-green-50 hover:bg-green-100 rounded-lg transition-colors border border-green-200">
+              <Wallet className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-700" />
+              <span className="text-xs sm:text-sm font-semibold text-green-700">
                 {loadingBalance ? (
                   '...'
                 ) : (
-                  `₹${balance !== null ? balance.toFixed(2) : '0.00'}`
+                  `₹${balance !== null ? balance.toFixed(0) : '0'}`
                 )}
               </span>
             </div>
@@ -157,32 +157,29 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
         <NotificationMenu />
 
         {/* Profile */}
-
-        <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+        <div className="flex items-center gap-2 pl-1 sm:pl-2 border-l border-gray-200">
           <Link
             href="/doctor/profile"
-            className="flex items-center gap-2 hover:bg-gray-100 px-2 py-1 rounded-lg transition-colors"
+            className="flex items-center gap-2 hover:bg-gray-100 p-1 sm:px-2 sm:py-1 rounded-lg transition-colors"
           >
             <Avatar
               src={user?.profileImageUrl}
               name={user?.name || "Doctor"}
               size="sm"
             />
-            <span className="text-sm font-medium text-gray-700 hidden md:block">
+            <span className="text-sm font-medium text-gray-700 hidden xl:block max-w-[120px] truncate">
               {user?.name || "Dr. John"}
             </span>
           </Link>
         </div>
 
-
-
         {/* Logout */}
         <button
           onClick={handleLogout}
-          className="p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
+          className="p-1.5 sm:p-2 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors"
           title="Logout"
         >
-          <LogOut className="w-5 h-5" />
+          <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
       </div>

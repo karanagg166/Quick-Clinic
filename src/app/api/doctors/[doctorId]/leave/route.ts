@@ -18,18 +18,26 @@ function getDatesBetween(start: Date, end: Date): Date[] {
 }
 
 /**
- * Mark AVAILABLE slots as ON_LEAVE if they overlap with the leave period.
- * Any slot with startTime < leaveEnd and endTime > leaveStart is marked ON_LEAVE.
+ * Mark AVAILABLE or HELD slots as ON_LEAVE if they overlap with the leave period.
  */
 async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Date) {
   await prisma.slot.updateMany({
     where: {
       doctorId,
-      status: "AVAILABLE",
-      startTime: { lt: leaveEnd },
-      endTime: { gt: leaveStart },
+      status: { in: ["AVAILABLE", "HELD"] },
+      OR: [
+        { startTime: { gte: leaveStart, lte: leaveEnd } },
+        { endTime: { gte: leaveStart, lte: leaveEnd } },
+        { startTime: { lt: leaveEnd }, endTime: { gt: leaveStart } },
+      ],
     },
-    data: { status: "ON_LEAVE" },
+    data: {
+      status: "ON_LEAVE",
+      heldByPatientId: null,
+      heldAt: null,
+      holdToken: null,
+      holdExpiresAt: null,
+    },
   });
 }
 
@@ -42,8 +50,11 @@ async function restoreSlotsFromLeave(doctorId: string, leaveStart: Date, leaveEn
     where: {
       doctorId,
       status: "ON_LEAVE",
-      startTime: { lt: leaveEnd },
-      endTime: { gt: leaveStart },
+      OR: [
+        { startTime: { gte: leaveStart, lte: leaveEnd } },
+        { endTime: { gte: leaveStart, lte: leaveEnd } },
+        { startTime: { lt: leaveEnd }, endTime: { gt: leaveStart } },
+      ],
     },
   });
 
@@ -67,6 +78,264 @@ async function restoreSlotsFromLeave(doctorId: string, leaveStart: Date, leaveEn
   }
 }
 
+/**
+ * Cancel appointments that overlap with the doctor's leave period,
+ * send automated chat messages, issue notifications to patient & doctor,
+ * process refunds if paid online, and broadcast socket events.
+ */
+async function cancelAppointmentsForLeave(
+  doctorId: string,
+  doctorUserId: string,
+  doctorName: string,
+  startDateTime: Date,
+  endDateTime: Date,
+  reason: string
+): Promise<number> {
+  const overlappingAppointments = await prisma.appointment.findMany({
+    where: {
+      doctorId,
+      status: { in: ["PENDING", "CONFIRMED"] },
+      OR: [
+        {
+          slot: {
+            startTime: { gte: startDateTime, lte: endDateTime },
+          },
+        },
+        {
+          slot: {
+            endTime: { gte: startDateTime, lte: endDateTime },
+          },
+        },
+        {
+          slot: {
+            startTime: { lt: endDateTime },
+            endTime: { gt: startDateTime },
+          },
+        },
+      ],
+    },
+    include: {
+      patient: { include: { user: true } },
+      doctor: { include: { user: true } },
+      slot: true,
+    },
+  });
+
+  const cancellableAppointments = overlappingAppointments.filter((a) =>
+    isValidStatusTransition(a.status as any, "CANCELLED")
+  );
+
+  const socketServerUrl =
+    process.env.NEXT_PUBLIC_SOCKET_URL ||
+    process.env.SOCKET_SERVER_URL ||
+    "http://localhost:4000";
+
+  for (const appt of cancellableAppointments) {
+    // 1. Update appointment status to CANCELLED
+    await prisma.appointment.update({
+      where: { id: appt.id },
+      data: {
+        status: "CANCELLED",
+        notes: appt.notes
+          ? `${appt.notes} | Doctor cancelled due to leave. Reason: ${reason}`
+          : `Doctor cancelled due to leave. Reason: ${reason}`,
+      },
+    });
+
+    // 2. Mark slot status as ON_LEAVE
+    await prisma.slot.update({
+      where: { id: appt.slotId },
+      data: {
+        status: "ON_LEAVE",
+        heldByPatientId: null,
+        heldAt: null,
+        holdToken: null,
+        holdExpiresAt: null,
+      },
+    });
+
+    const patientUserId = appt.patient?.user?.id;
+    const patientName = appt.patient?.user?.name || "Patient";
+    const apptDate = appt.slot?.date
+      ? new Date(appt.slot.date).toISOString().split("T")[0]
+      : "scheduled date";
+    const docName = appt.doctor?.user?.name || doctorName || "Doctor";
+
+    // 3. Process online refund if payment was ONLINE
+    if (appt.paymentMethod === "ONLINE" && appt.transactionId) {
+      try {
+        const payment = await prisma.payment.findFirst({
+          where: {
+            razorpayPaymentId: appt.transactionId,
+            status: "SUCCESS",
+          },
+        });
+
+        if (payment && payment.razorpayPaymentId) {
+          if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+            const RazorpayModule = await import("razorpay");
+            const Razorpay = RazorpayModule.default;
+            const razorpay = new Razorpay({
+              key_id: process.env.RAZORPAY_KEY_ID,
+              key_secret: process.env.RAZORPAY_KEY_SECRET,
+            });
+
+            await razorpay.payments.refund(payment.razorpayPaymentId, {
+              amount: payment.amount,
+              notes: {
+                reason: `Doctor on leave: ${reason}`,
+                appointmentId: appt.id,
+              },
+            });
+
+            await prisma.payment.update({
+              where: { id: payment.id },
+              data: { status: "REFUNDED" },
+            });
+          }
+        }
+      } catch (refundError) {
+        console.error(`Refund error for appointment ${appt.id}:`, refundError);
+      }
+    }
+
+    // 4. Send chat message to doctor-patient chat
+    if (patientUserId && doctorUserId) {
+      try {
+        let relation = await prisma.doctorPatientRelation.findUnique({
+          where: {
+            doctorsUserId_patientsUserId: {
+              doctorsUserId: doctorUserId,
+              patientsUserId: patientUserId,
+            },
+          },
+        });
+
+        if (!relation) {
+          try {
+            relation = await prisma.doctorPatientRelation.create({
+              data: {
+                doctorsUserId: doctorUserId,
+                patientsUserId: patientUserId,
+              },
+            });
+          } catch {
+            relation = await prisma.doctorPatientRelation.findUnique({
+              where: {
+                doctorsUserId_patientsUserId: {
+                  doctorsUserId: doctorUserId,
+                  patientsUserId: patientUserId,
+                },
+              },
+            });
+          }
+        }
+
+        const cancelChatText =
+          appt.paymentMethod === "ONLINE"
+            ? `❌ Appointment Cancelled\n\nYour appointment with Dr. ${docName} on ${apptDate} has been cancelled because the doctor is on leave (Reason: ${reason}). A full refund has been initiated to your original payment method.\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`
+            : `❌ Appointment Cancelled\n\nYour appointment with Dr. ${docName} on ${apptDate} has been cancelled because the doctor is on leave (Reason: ${reason}).\n\n👉 [Click here to find available doctors & slots](/patient/findDoctors)`;
+
+        if (relation) {
+          await prisma.chatMessages.create({
+            data: {
+              doctorPatientRelationId: relation.id,
+              text: cancelChatText,
+              senderId: doctorUserId,
+            },
+          });
+        }
+      } catch (chatErr) {
+        console.warn("Failed to create automated cancellation chat message:", chatErr);
+      }
+    }
+
+    // 5. Send notification to Patient
+    if (patientUserId) {
+      try {
+        const patientMessage =
+          appt.paymentMethod === "ONLINE"
+            ? `Your appointment on ${apptDate} with Dr. ${docName} has been cancelled due to doctor leave (Reason: ${reason}). A full refund has been initiated to your payment method.`
+            : `Your appointment on ${apptDate} with Dr. ${docName} has been cancelled. Reason: Doctor is on leave — ${reason}`;
+
+        const patientNotification = await prisma.notification.create({
+          data: {
+            userId: patientUserId,
+            message: patientMessage,
+            actionHref: `/patient/appointments/${appt.id}`,
+            actionLabel: "View appointment",
+          },
+        });
+
+        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: patientUserId,
+            notification: {
+              id: patientNotification.id,
+              message: patientNotification.message,
+              actionHref: patientNotification.actionHref,
+              actionLabel: patientNotification.actionLabel,
+              createdAt: patientNotification.createdAt.toISOString(),
+              isRead: patientNotification.isRead,
+            },
+          }),
+        }).catch(() => {});
+
+        if (appt.slot?.date && appt.slot?.startTime) {
+          await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              patientUserId,
+              appointmentId: appt.id,
+              status: "CANCELLED",
+              appointmentDate: appt.slot.date.toISOString(),
+              appointmentTime: appt.slot.startTime.toISOString(),
+              doctorName: docName,
+            }),
+          }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    // 6. Send notification to Doctor for this cancelled appointment
+    if (doctorUserId) {
+      try {
+        const doctorMessage = `Appointment with ${patientName} on ${apptDate} was cancelled due to your scheduled leave (Reason: ${reason}).`;
+
+        const doctorNotification = await prisma.notification.create({
+          data: {
+            userId: doctorUserId,
+            message: doctorMessage,
+            actionHref: `/doctor/appointments/${appt.id}`,
+            actionLabel: "View appointment",
+          },
+        });
+
+        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: doctorUserId,
+            notification: {
+              id: doctorNotification.id,
+              message: doctorNotification.message,
+              actionHref: doctorNotification.actionHref,
+              actionLabel: doctorNotification.actionLabel,
+              createdAt: doctorNotification.createdAt.toISOString(),
+              isRead: doctorNotification.isRead,
+            },
+          }),
+        }).catch(() => {});
+      } catch {}
+    }
+  }
+
+  return cancellableAppointments.length;
+}
+
 /* POST - create a leave request for doctorId */
 export async function POST(
   req: NextRequest,
@@ -80,7 +349,7 @@ export async function POST(
 
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      select: { userId: true },
+      select: { userId: true, user: { select: { id: true, name: true } } },
     });
 
     if (!doctor) {
@@ -140,69 +409,55 @@ export async function POST(
     // Mark overlapping AVAILABLE slots as ON_LEAVE
     await markSlotsOnLeave(doctorId, startDateTime, endDateTime);
 
-    // Auto-cancel overlapping PENDING/CONFIRMED appointments
-    const overlappingAppointments = await prisma.appointment.findMany({
-      where: {
-        doctorId,
-        status: { in: ["PENDING", "CONFIRMED"] },
-        slot: {
-          startTime: { lt: endDateTime },
-          endTime: { gt: startDateTime },
-        },
-      },
-      include: {
-        patient: { include: { user: true } },
-        doctor: { include: { user: true } },
-        slot: true,
-      },
-    });
-
-    const cancellableAppointments = overlappingAppointments.filter((a) =>
-      isValidStatusTransition(a.status as any, "CANCELLED")
+    // Auto-cancel overlapping PENDING/CONFIRMED appointments & notify patient and doctor
+    const doctorName = doctor.user?.name || "Doctor";
+    const cancelledCount = await cancelAppointmentsForLeave(
+      doctorId,
+      doctor.userId,
+      doctorName,
+      startDateTime,
+      endDateTime,
+      reason
     );
-    const cancelledCount = cancellableAppointments.length;
-    const doctorName = overlappingAppointments[0]?.doctor?.user?.name || "your doctor";
 
-    for (const appt of cancellableAppointments) {
-      await prisma.appointment.update({
-        where: { id: appt.id },
-        data: {
-          status: "CANCELLED",
-          notes: `Doctor cancelled due to leave. Reason: ${reason}`,
-        },
-      });
-
-      await prisma.slot.update({
-        where: { id: appt.slotId },
-        data: { status: "ON_LEAVE" },
-      });
-
-      const patientUserId = appt.patient?.user?.id;
-      if (patientUserId) {
-        const apptDate = appt.slot.date.toISOString().split("T")[0];
-        try {
-          await prisma.notification.create({
-            data: {
-              userId: patientUserId,
-              message: `Your appointment on ${apptDate} with ${doctorName} has been cancelled. Reason: Doctor is on leave — ${reason}`,
-            },
-          });
-        } catch {}
-      }
-    }
-
-    if (userId) {
-      const message = cancelledCount > 0
-        ? `Leave request submitted. ${cancelledCount} appointment(s) for this period have been cancelled and patients have been notified.`
-        : "Leave request has been successfully added. No existing appointments were affected.";
+    // Summary notification for the doctor
+    const summaryUserId = userId || doctor.userId;
+    if (summaryUserId) {
+      const summaryMessage =
+        cancelledCount > 0
+          ? `Leave request submitted. ${cancelledCount} appointment(s) for this period have been cancelled, and patients have been notified on chat and notifications.`
+          : "Leave request has been successfully added. No existing appointments were affected.";
 
       try {
-        await prisma.notification.create({
+        const summaryNotif = await prisma.notification.create({
           data: {
-            userId,
-            message,
+            userId: summaryUserId,
+            message: summaryMessage,
+            actionHref: `/doctor/leave/history`,
+            actionLabel: "View leave history",
           },
         });
+
+        const socketServerUrl =
+          process.env.NEXT_PUBLIC_SOCKET_URL ||
+          process.env.SOCKET_SERVER_URL ||
+          "http://localhost:4000";
+
+        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            userId: summaryUserId,
+            notification: {
+              id: summaryNotif.id,
+              message: summaryNotif.message,
+              actionHref: summaryNotif.actionHref,
+              actionLabel: summaryNotif.actionLabel,
+              createdAt: summaryNotif.createdAt.toISOString(),
+              isRead: summaryNotif.isRead,
+            },
+          }),
+        }).catch(() => {});
       } catch {}
     }
 
@@ -340,7 +595,7 @@ export async function PATCH(
 
     const doctor = await prisma.doctor.findUnique({
       where: { id: doctorId },
-      select: { userId: true },
+      select: { userId: true, user: { select: { id: true, name: true } } },
     });
 
     if (!doctor) {
@@ -353,7 +608,7 @@ export async function PATCH(
     }
 
     const body = await req.json().catch(() => ({}));
-    const { leaveId, newEndDate, newStartDate } = body || {};
+    const { leaveId, newEndDate, newStartDate, reason } = body || {};
 
     if (!leaveId) {
       return NextResponse.json({ error: "Missing leaveId" }, { status: 400 });
@@ -398,12 +653,17 @@ export async function PATCH(
       return NextResponse.json({ error: "Updated dates conflict with another leave" }, { status: 409 });
     }
 
+    const updateData: any = {
+      startDate: updatedStart,
+      endDate: updatedEnd,
+    };
+    if (reason && typeof reason === "string" && reason.trim()) {
+      updateData.reason = reason.trim();
+    }
+
     const updatedLeave = await prisma.leave.update({
       where: { id: leaveId },
-      data: {
-        startDate: updatedStart,
-        endDate: updatedEnd,
-      },
+      data: updateData,
     });
 
     // Handle freed slots
@@ -414,12 +674,29 @@ export async function PATCH(
       await restoreSlotsFromLeave(doctorId, oldStart, updatedStart, leaveId);
     }
 
-    // Handle new covered slots
+    // Handle new covered slots & auto-cancel appointments
+    const docName = doctor.user?.name || "Doctor";
     if (updatedEnd > oldEnd) {
       await markSlotsOnLeave(doctorId, oldEnd, updatedEnd);
+      await cancelAppointmentsForLeave(
+        doctorId,
+        doctor.userId,
+        docName,
+        oldEnd,
+        updatedEnd,
+        leave.reason
+      );
     }
     if (updatedStart < oldStart) {
       await markSlotsOnLeave(doctorId, updatedStart, oldStart);
+      await cancelAppointmentsForLeave(
+        doctorId,
+        doctor.userId,
+        docName,
+        updatedStart,
+        oldStart,
+        leave.reason
+      );
     }
 
     return NextResponse.json({

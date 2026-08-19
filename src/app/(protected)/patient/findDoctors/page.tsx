@@ -13,6 +13,9 @@ import { showToast } from "@/lib/toast";
 
 
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 export default function FindDoctorsPage() {
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
@@ -100,21 +103,13 @@ export default function FindDoctorsPage() {
         params.append("lat", String(coordinates.latitude));
         params.append("lng", String(coordinates.longitude));
       }
-      // console.log("Fetching doctors with params:", params.toString());
       const res = await fetch(`/api/doctors?${params.toString()}`, {
         method: "GET",
         credentials: "include",
       });
-      console.log("Response status:", res);
       if (res.ok) {
         const data = await res.json();
-        // if API returns { doctors: [...] } adjust accordingly
-        console.log(data);
-
         const doctorsData = Array.isArray(data) ? data : data.doctors ?? [];
-
-        console.log(doctorsData);
-
 
         setDoctors(doctorsData);
         setDistanceUnavailable(Boolean(!Array.isArray(data) && data.distanceUnavailable));
@@ -198,11 +193,19 @@ export default function FindDoctorsPage() {
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-8">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/patient">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-semibold mb-2">Find Your Preferred Doctor</h1>
-        <p className="text-muted-foreground">Search and book appointments with qualified healthcare professionals</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Find Your Preferred Doctor</h1>
+        <p className="text-sm text-muted-foreground">Search and book appointments with qualified healthcare professionals</p>
       </div>
 
       {/* Search Filters */}
@@ -211,7 +214,7 @@ export default function FindDoctorsPage() {
           <CardTitle>Search Filters</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <Input
               type="text"
               placeholder="City"

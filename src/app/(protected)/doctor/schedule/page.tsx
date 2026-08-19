@@ -360,6 +360,14 @@ export default function DoctorSchedulePage() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 sm:p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor">
+            <ChevronLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       {/* Header & Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -941,116 +949,120 @@ export default function DoctorSchedulePage() {
             </div>
           </CardHeader>
           <CardContent className="p-4">
-            {/* Day of Week Headers */}
-            <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold text-muted-foreground">
-              <span>Sun</span>
-              <span>Mon</span>
-              <span>Tue</span>
-              <span>Wed</span>
-              <span>Thu</span>
-              <span>Fri</span>
-              <span>Sat</span>
-            </div>
+            <div className="overflow-x-auto">
+              <div className="min-w-[620px] md:min-w-0">
+                {/* Day of Week Headers */}
+                <div className="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold text-muted-foreground">
+                  <span>Sun</span>
+                  <span>Mon</span>
+                  <span>Tue</span>
+                  <span>Wed</span>
+                  <span>Thu</span>
+                  <span>Fri</span>
+                  <span>Sat</span>
+                </div>
 
-            {loading ? (
-              <div className="grid grid-cols-7 gap-2">
-                {Array.from({ length: 35 }).map((_, i) => (
-                  <Skeleton key={i} className="h-24 w-full rounded-xl" />
-                ))}
-              </div>
-            ) : (
-              <div className="grid grid-cols-7 gap-2">
-                {/* Leading spacer cells for date-day alignment */}
-                {Array.from({ length: firstDayOffset }).map((_, i) => (
-                  <div
-                    key={`empty-${i}`}
-                    className="min-h-[82px] rounded-xl border border-dashed border-border/30 bg-muted/5 opacity-30"
-                  />
-                ))}
+                {loading ? (
+                  <div className="grid grid-cols-7 gap-2">
+                    {Array.from({ length: 35 }).map((_, i) => (
+                      <Skeleton key={i} className="h-24 w-full rounded-xl" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-7 gap-2">
+                    {/* Leading spacer cells for date-day alignment */}
+                    {Array.from({ length: firstDayOffset }).map((_, i) => (
+                      <div
+                        key={`empty-${i}`}
+                        className="min-h-[82px] rounded-xl border border-dashed border-border/30 bg-muted/5 opacity-30"
+                      />
+                    ))}
 
-                {monthDays.map((dayItem) => {
-                  const isToday = dayItem.date === todayStr;
-                  const isLeave = dayItem.isLeave || dayItem.statusSummary === "ON_LEAVE";
-                  const isBooked = dayItem.bookedCount > 0;
+                    {monthDays.map((dayItem) => {
+                      const isToday = dayItem.date === todayStr;
+                      const isLeave = dayItem.isLeave || dayItem.statusSummary === "ON_LEAVE";
+                      const isBooked = dayItem.bookedCount > 0;
 
-                  return (
-                    <div
-                      key={dayItem.date}
-                      onClick={() => {
-                        setSelectedDate(dayItem.date);
-                        setViewMode("day");
-                      }}
-                      className={`min-h-[82px] p-2.5 rounded-xl border flex flex-col justify-between cursor-pointer transition-all hover:border-primary hover:shadow-xs ${
-                        isToday
-                          ? "bg-primary/5 border-primary/70 dark:bg-primary/10 ring-1 ring-primary/40"
-                          : isLeave
-                          ? "bg-purple-50/80 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800"
-                          : isBooked
-                          ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
-                          : "bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-200/70 dark:border-emerald-800/60"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span
-                          className={`text-xs font-bold ${
-                            isToday ? "text-primary font-extrabold" : "text-foreground"
+                      return (
+                        <div
+                          key={dayItem.date}
+                          onClick={() => {
+                            setSelectedDate(dayItem.date);
+                            setViewMode("day");
+                          }}
+                          className={`min-h-[82px] p-2.5 rounded-xl border flex flex-col justify-between cursor-pointer transition-all hover:border-primary hover:shadow-xs ${
+                            isToday
+                              ? "bg-primary/5 border-primary/70 dark:bg-primary/10 ring-1 ring-primary/40"
+                              : isLeave
+                              ? "bg-purple-50/80 dark:bg-purple-950/20 border-purple-200 dark:border-purple-800"
+                              : isBooked
+                              ? "bg-blue-50/60 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800"
+                              : "bg-emerald-50/40 dark:bg-emerald-950/15 border-emerald-200/70 dark:border-emerald-800/60"
                           }`}
                         >
-                          {dayItem.dayNumber}
-                        </span>
-                        {isLeave ? (
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200 border-none font-bold"
-                          >
-                            Leave
-                          </Badge>
-                        ) : isBooked ? (
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 border-none font-bold"
-                          >
-                            {dayItem.bookedCount} Booked
-                          </Badge>
-                        ) : (
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 border-none font-bold"
-                          >
-                            Free Whole Day
-                          </Badge>
-                        )}
-                      </div>
+                          <div className="flex items-center justify-between">
+                            <span
+                              className={`text-xs font-bold ${
+                                isToday ? "text-primary font-extrabold" : "text-foreground"
+                              }`}
+                            >
+                              {dayItem.dayNumber}
+                            </span>
+                            {isLeave ? (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1.5 py-0 bg-purple-100 text-purple-800 dark:bg-purple-900/60 dark:text-purple-200 border-none font-bold"
+                              >
+                                Leave
+                              </Badge>
+                            ) : isBooked ? (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1.5 py-0 bg-blue-100 text-blue-800 dark:bg-blue-900/60 dark:text-blue-200 border-none font-bold"
+                              >
+                                {dayItem.bookedCount} Booked
+                              </Badge>
+                            ) : (
+                              <Badge
+                                variant="secondary"
+                                className="text-[9px] px-1.5 py-0 bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200 border-none font-bold"
+                              >
+                                Free Whole Day
+                              </Badge>
+                            )}
+                          </div>
 
-                      <div className="space-y-0.5 text-[11px] font-medium">
-                        {isLeave ? (
-                          <p className="text-purple-700 dark:text-purple-300 text-[10px] font-semibold">
-                            On Leave
-                          </p>
-                        ) : isBooked ? (
-                          <div>
-                            <p className="text-blue-700 dark:text-blue-300 font-bold truncate">
-                              {dayItem.bookedCount} Appointment{dayItem.bookedCount > 1 ? "s" : ""}
-                            </p>
-                            {dayItem.availableCount > 0 && (
-                              <p className="text-muted-foreground text-[10px] truncate">
-                                +{dayItem.availableCount} free slots
+                          <div className="space-y-0.5 text-[11px] font-medium">
+                            {isLeave ? (
+                              <p className="text-purple-700 dark:text-purple-300 text-[10px] font-semibold">
+                                On Leave
+                              </p>
+                            ) : isBooked ? (
+                              <div>
+                                <p className="text-blue-700 dark:text-blue-300 font-bold truncate">
+                                  {dayItem.bookedCount} Appointment{dayItem.bookedCount > 1 ? "s" : ""}
+                                </p>
+                                {dayItem.availableCount > 0 && (
+                                  <p className="text-muted-foreground text-[10px] truncate">
+                                    +{dayItem.availableCount} free slots
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold">
+                                {dayItem.availableCount > 0
+                                  ? `${dayItem.availableCount} Free Slots`
+                                  : "Whole Day Free"}
                               </p>
                             )}
                           </div>
-                        ) : (
-                          <p className="text-emerald-700 dark:text-emerald-400 text-[10px] font-semibold">
-                            {dayItem.availableCount > 0
-                              ? `${dayItem.availableCount} Free Slots`
-                              : "Whole Day Free"}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  );
-                })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
       )}

@@ -114,28 +114,24 @@ export default function AppointmentCard({
         </div>
       </Link>
 
-      {/* Cancel button for pending/confirmed appointments */}
-      {canCancel && (
-        <div className="pt-3 border-t">
+      {/* Action buttons */}
+      <div className="pt-3 border-t flex flex-col sm:flex-row gap-2">
+        <Link href={`/patient/appointments/${appointment.id}`} className="flex-1">
+          <Button variant="outline" className="w-full text-xs sm:text-sm">
+            View Details
+          </Button>
+        </Link>
+        {canCancel && (
           <Button
             onClick={handleCancel}
             disabled={cancelling}
             variant="destructive"
-            className="w-full"
+            className="flex-1 text-xs sm:text-sm"
           >
             {cancelling ? 'Cancelling...' : 'Cancel Appointment'}
           </Button>
-        </div>
-      )}
-
-      {/* View details link for other statuses */}
-      {!canCancel && (
-        <Link href={`/patient/appointments/${appointment.id}`} className="block mt-3 pt-3 border-t">
-          <Button variant="outline" className="w-full">
-            View Details
-          </Button>
-        </Link>
-      )}
+        )}
+      </div>
     </div>
   );
 }

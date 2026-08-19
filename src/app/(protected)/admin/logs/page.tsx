@@ -16,6 +16,10 @@ import { showToast } from "@/lib/toast";
 import { LogFilters } from "@/components/admin/dashboard/LogFilters";
 import { useUserStore } from "@/store/userStore";
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
+
 type Log = {
     id: string;
     userId: string | null;
@@ -73,9 +77,17 @@ export default function LogsPage() {
     };
 
     return (
-        <div className="p-6 space-y-6">
+        <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight">System Logs</h1>
+                <Button variant="ghost" size="sm" asChild className="gap-1.5">
+                    <Link href="/admin">
+                        <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+                    </Link>
+                </Button>
+            </div>
+
+            <div className="flex items-center justify-between">
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">System Logs</h1>
             </div>
 
             <Card>
@@ -86,7 +98,7 @@ export default function LogsPage() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border">
+                    <div className="rounded-md border overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 <TableRow>

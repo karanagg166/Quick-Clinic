@@ -12,17 +12,15 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   const [isSidebarOpen, setSidebarOpen] = useState<boolean>(false);
 
   return (
-    <>
-      <div className="min-h-screen">
-        {isSidebarOpen && <PatientSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />}
-        <PatientNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
-        <main className="p-6 bg-background min-h-screen pt-24">
-          {children}
-          <div className="mt-8">
-            <Footer />
-          </div>
-        </main>
-      </div>
-    </>
+    <div className="min-h-screen">
+      <PatientSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <PatientNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setSidebarOpen} />
+      <main className="p-4 sm:p-6 bg-background min-h-screen pt-20 sm:pt-24 max-w-full overflow-x-hidden">
+        {children}
+        <div className="mt-8">
+          <Footer />
+        </div>
+      </main>
+    </div>
   );
 }

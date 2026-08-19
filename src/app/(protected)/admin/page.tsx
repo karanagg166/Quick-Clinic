@@ -52,8 +52,8 @@ export default function AdminDashboardPage() {
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Card>
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+                <Card className="col-span-1">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                         <CardTitle className="text-sm font-medium">Recent Logins</CardTitle>
                         <Clock className="h-4 w-4 text-muted-foreground" />
@@ -63,13 +63,13 @@ export default function AdminDashboardPage() {
                         <p className="text-xs text-muted-foreground">Past 24 hours</p>
                     </CardContent>
                 </Card>
-                <div className="col-span-3">
+                <div className="col-span-1 sm:col-span-2 lg:col-span-3">
                     <AdminStats />
                 </div>
             </div>
 
-            <div className="grid gap-4 md:grid-cols-7">
-                <div className="col-span-4">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-7">
+                <div className="col-span-1 lg:col-span-4">
                     <Card className="h-full">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -83,7 +83,7 @@ export default function AdminDashboardPage() {
                     </Card>
                 </div>
 
-                <div className="col-span-3">
+                <div className="col-span-1 lg:col-span-3">
                     <Card className="h-full">
                         <CardHeader>
                             <CardTitle>Quick Actions</CardTitle>

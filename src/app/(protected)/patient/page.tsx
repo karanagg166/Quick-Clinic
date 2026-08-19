@@ -112,7 +112,7 @@ export default function PatientDashboard() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((card, index) => (
           <motion.div
             key={card.label}
@@ -186,7 +186,7 @@ export default function PatientDashboard() {
             <CardContent className="space-y-2">
               {[
                 { href: "/patient/findDoctors", icon: UserPlus, title: "Find a doctor", desc: "Browse specializations and availability", color: "text-blue-600" },
-                { href: "/patient/chat", icon: MessageCircle, title: "Open chat", desc: "Message your doctor", color: "text-emerald-600" },
+                { href: "/patient/appointments", icon: CalendarDays, title: "My appointments", desc: "View bookings & status", color: "text-purple-600" },
               ].map((action, index) => (
                 <motion.div
                   key={action.href}
@@ -194,9 +194,9 @@ export default function PatientDashboard() {
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.6 + index * 0.1 }}
                 >
-                  <Button asChild variant="ghost" className="w-full justify-start hover:bg-accent/50 transition-colors">
+                  <Button asChild variant="ghost" className="w-full justify-start hover:bg-accent/50 transition-colors h-auto py-2.5">
                     <Link href={action.href}>
-                      <action.icon className={`w-5 h-5 mr-3 ${action.color}`} />
+                      <action.icon className={`w-5 h-5 mr-3 shrink-0 ${action.color}`} />
                       <div className="text-left">
                         <p className="font-semibold text-sm">{action.title}</p>
                         <p className="text-xs text-muted-foreground">{action.desc}</p>

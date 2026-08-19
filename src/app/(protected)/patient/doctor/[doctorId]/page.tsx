@@ -23,6 +23,7 @@ import { showToast } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import Link from "next/link";
 
 export default function DoctorDetails() {
   const router = useRouter();
@@ -113,10 +114,7 @@ export default function DoctorDetails() {
       }
 
       if (!doctor?.userId) {
-        console.log(doctor);
-        console.log(doctor?.age);
         showToast.warning("Doctor details are incomplete. Please try again.");
-
         return;
       }
 
@@ -194,19 +192,23 @@ export default function DoctorDetails() {
     }
   };
 
-
-
   return (
-    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+    <div className="min-h-screen bg-linear-to-br from-blue-50 via-white to-purple-50 py-6 px-3 sm:px-6">
       <div className="max-w-6xl mx-auto space-y-6">
-        {/* Back Button */}
-        <Button 
-          onClick={() => router.back()} 
-          variant="ghost" 
-          className="mb-4"
-        >
-          ← Back to Search
-        </Button>
+        {/* Navigation Buttons */}
+        <div className="flex items-center justify-between">
+          <Button 
+            onClick={() => router.back()} 
+            variant="ghost" 
+            size="sm"
+            className="gap-1.5"
+          >
+            ← Back to Search
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/patient">Dashboard</Link>
+          </Button>
+        </div>
 
         {/* Doctor Profile Header Card */}
         <Card className="overflow-hidden border-2 shadow-lg">

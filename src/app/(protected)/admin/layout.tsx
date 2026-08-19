@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <AdminSidebar isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
             <AdminNavbar isSidebarOpen={isSidebarOpen} setSidebarOpen={setIsSidebarOpen} />
 
-            <main className="md:ml-64 pt-24 min-h-screen p-6 bg-background">
+            <main className="pt-20 sm:pt-24 min-h-screen p-4 sm:p-6 bg-background max-w-full overflow-x-hidden">
                 {children}
                 <div className="mt-8">
                     <Footer />

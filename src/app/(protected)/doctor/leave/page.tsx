@@ -7,13 +7,16 @@ import { showToast } from "@/lib/toast";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, PlusCircle, Trash2, Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { Calendar, PlusCircle, Trash2, Clock, CheckCircle2, AlertCircle, Edit3, FastForward, ArrowLeft } from "lucide-react";
+import { EditLeaveDialog } from "@/components/doctor/EditLeaveDialog";
 
 export default function DoctorLeaveManagementPage() {
   const doctorId = useUserStore((state) => state.doctorId);
   const [loading, setLoading] = useState(false);
   const [leaves, setLeaves] = useState<any[]>([]);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [editingLeave, setEditingLeave] = useState<any | null>(null);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const fetchLeaves = async () => {
     if (!doctorId) return;
@@ -70,6 +73,41 @@ export default function DoctorLeaveManagementPage() {
     }
   };
 
+  const handleOpenEdit = (leave: any) => {
+    setEditingLeave(leave);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleEndLeaveEarly = async (leave: any) => {
+    if (!doctorId) return;
+    const confirmed = window.confirm(
+      "Doctor is back at clinic? This will end the leave today right now and restore all remaining slots back to AVAILABLE."
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch(`/api/doctors/${doctorId}/leave`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          leaveId: leave.id,
+          newEndDate: new Date().toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        showToast.success("Leave ended early! Remaining time slots are now available for booking.");
+        fetchLeaves();
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        showToast.error(errorData.error || "Failed to end leave early");
+      }
+    } catch (err: any) {
+      showToast.error(err?.message || "Error ending leave early");
+    }
+  };
+
   const now = new Date();
   const activeAndUpcoming = leaves.filter((l) => new Date(l.endDate) >= now);
   const pastLeaves = leaves.filter((l) => new Date(l.endDate) < now);
@@ -83,23 +121,31 @@ export default function DoctorLeaveManagementPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-8">
+    <div className="max-w-5xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Doctor Leave Management</h1>
-          <p className="text-muted-foreground mt-1">
-            Manage your scheduled time off, cancel leaves, and review past leave history.
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Doctor Leave Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your scheduled time off, modify leave dates, end leave early, and review past history.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button asChild>
+        <div className="flex flex-wrap gap-2.5 sm:gap-3">
+          <Button asChild className="text-xs sm:text-sm">
             <Link href="/doctor/leave/apply" className="flex items-center gap-2">
               <PlusCircle className="w-4 h-4" />
               Apply New Leave
             </Link>
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="text-xs sm:text-sm">
             <Link href="/doctor/leave/history" className="flex items-center gap-2">
               <Clock className="w-4 h-4" />
               Detailed History
@@ -116,7 +162,7 @@ export default function DoctorLeaveManagementPage() {
             Active & Upcoming Leaves ({activeAndUpcoming.length})
           </CardTitle>
           <CardDescription>
-            Scheduled leaves where time slots are locked as ON_LEAVE. Cancelling a leave frees the slots for new patient bookings.
+            Scheduled leaves where time slots are locked as ON_LEAVE. You can edit dates or end leave early to restore slots for bookings.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -133,6 +179,7 @@ export default function DoctorLeaveManagementPage() {
               {activeAndUpcoming.map((leave) => {
                 const status = getLeaveStatus(leave);
                 const isCancelling = cancellingId === leave.id;
+                const isActive = status.label === "Active Now";
 
                 return (
                   <div
@@ -157,7 +204,29 @@ export default function DoctorLeaveManagementPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      {isActive && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEndLeaveEarly(leave)}
+                          className="flex items-center gap-1.5 text-amber-700 border-amber-300 hover:bg-amber-50"
+                        >
+                          <FastForward className="w-4 h-4" />
+                          Return Early
+                        </Button>
+                      )}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenEdit(leave)}
+                        className="flex items-center gap-1.5"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                        Edit Leave
+                      </Button>
+
                       <Button
                         variant="destructive"
                         size="sm"
@@ -176,6 +245,20 @@ export default function DoctorLeaveManagementPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit Leave Modal */}
+      {doctorId && (
+        <EditLeaveDialog
+          leave={editingLeave}
+          isOpen={isEditDialogOpen}
+          onClose={() => {
+            setIsEditDialogOpen(false);
+            setEditingLeave(null);
+          }}
+          onSuccess={fetchLeaves}
+          doctorId={doctorId}
+        />
+      )}
 
       {/* Past / Older Leaves Section */}
       <Card className="border shadow-sm">

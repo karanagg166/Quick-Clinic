@@ -7,6 +7,10 @@ import { useParams, useRouter } from 'next/navigation';
 import type { AppointmentDetail } from '@/types/common';
 import { showToast } from '@/lib/toast';
 
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
 export default function AppointmentPage() {
     const params = useParams();
     const appointmentId = typeof params.appointmentId === 'string' ? params.appointmentId : Array.isArray(params.appointmentId) ? params.appointmentId[0] : '';
@@ -45,24 +49,24 @@ export default function AppointmentPage() {
 
     if (loading) {
         return (
-            <div className="p-6">
-                <p className="text-gray-600">Loading appointment...</p>
+            <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+                <p className="text-muted-foreground">Loading appointment...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="p-6">
-                <p className="text-red-600">{error}</p>
+            <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+                <p className="text-destructive">{error}</p>
             </div>
         );
     }
 
     if (!appointment) {
         return (
-            <div className="p-6">
-                <p className="text-gray-600">No appointment details available.</p>
+            <div className="p-4 sm:p-6 max-w-4xl mx-auto">
+                <p className="text-muted-foreground">No appointment details available.</p>
             </div>
         );
     }
@@ -146,8 +150,19 @@ export default function AppointmentPage() {
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold text-gray-900 mb-6">Appointment Details</h1>
+        <div className="p-4 sm:p-6 max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+                <Button variant="ghost" size="sm" asChild className="gap-1.5">
+                    <Link href="/patient/appointments">
+                        <ArrowLeft className="w-4 h-4" /> Back to Appointments
+                    </Link>
+                </Button>
+                <Button variant="outline" size="sm" asChild>
+                    <Link href="/patient">Dashboard</Link>
+                </Button>
+            </div>
+
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Appointment Details</h1>
 
             {/* Appointment Core Info */}
             <div className="bg-white rounded-lg shadow-md border p-6 mb-6">

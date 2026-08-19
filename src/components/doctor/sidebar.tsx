@@ -96,14 +96,24 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
 
   return (
     <>
+      {/* Backdrop overlay for mobile & desktop */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[55] transition-opacity animate-in fade-in"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
+        className={`fixed top-0 left-0 h-full w-64 bg-card border-r shadow-lg transform ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        } transition-transform duration-300 ease-in-out z-[60] overflow-y-auto`}
       >
         {/* Header */}
         <Card className="border-0 border-b rounded-none shadow-none">
-          <CardContent className="p-6 flex items-center justify-between">
+          <CardContent className="p-5 sm:p-6 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-foreground">Doctor Portal</h2>
               <p className="text-xs text-muted-foreground mt-1">Welcome back, Doctor!</p>
@@ -113,6 +123,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
               size="icon"
               onClick={() => setSidebarOpen(false)}
               className="h-8 w-8"
+              aria-label="Close sidebar"
             >
               <X className="w-5 h-5" />
             </Button>
@@ -135,8 +146,9 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                     <Button
                       asChild
                       variant={isItemActive ? "secondary" : "ghost"}
-                      className={`w-full justify-start ${isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
-                        }`}
+                      className={`w-full justify-start ${
+                        isItemActive ? "bg-primary/10 text-primary font-semibold" : ""
+                      }`}
                       onClick={() => !hasSubmenu && setSidebarOpen(false)}
                     >
                       <Link href={item.href} className="flex items-center gap-3">
@@ -155,8 +167,9 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                         className="h-8 w-8"
                       >
                         <ChevronDown
-                          className={`w-4 h-4 transition-transform ${isSubmenuOpen ? 'rotate-180' : ''
-                            }`}
+                          className={`w-4 h-4 transition-transform ${
+                            isSubmenuOpen ? 'rotate-180' : ''
+                          }`}
                         />
                       </Button>
                     )}
@@ -170,8 +183,9 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
                             asChild
                             variant={pathname === subitem.href ? "secondary" : "ghost"}
                             size="sm"
-                            className={`w-full justify-start text-sm ${pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
-                              }`}
+                            className={`w-full justify-start text-sm ${
+                              pathname === subitem.href ? "bg-primary/10 text-primary font-semibold" : ""
+                            }`}
                             onClick={() => setSidebarOpen(false)}
                           >
                             <Link href={subitem.href}>
@@ -187,7 +201,6 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
             })}
           </ul>
         </nav>
-
       </aside>
     </>
   );

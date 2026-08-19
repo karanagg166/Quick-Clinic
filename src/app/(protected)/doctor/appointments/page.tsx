@@ -11,6 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Skeleton } from "@/components/ui/skeleton";
 import { io, Socket } from "socket.io-client";
 
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
+
 export default function DoctorAppointmentsPage() {
   const doctorId = useUserStore((s) => s.doctorId);
   const userId = useUserStore((s) => s.user?.id);
@@ -95,8 +98,6 @@ export default function DoctorAppointmentsPage() {
 
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
 
-    console.log('Connecting to Socket.IO for appointment requests:', socketUrl);
-
     const socket = io(socketUrl, {
       auth: {
         userId, // Only userId, no relationId for notifications
@@ -113,54 +114,40 @@ export default function DoctorAppointmentsPage() {
     socketRef.current = socket;
 
     socket.on('connect', () => {
-      console.log('Appointment requests socket connected');
       setSocketConnected(true);
     });
 
-    socket.on('notification_connected', (data: { message: string; userId: string; userRole: string; userName: string }) => {
-      console.log('Notification connection confirmed:', data);
+    socket.on('notification_connected', () => {
+      // Notification connection confirmed
     });
 
     // Listen for new appointment requests
     socket.on('new_appointment_request', (data: { appointment: DoctorAppointment }) => {
-      console.log('Received new appointment request:', data.appointment);
-
       // Add the new appointment to the list (if it's pending and matches filters)
       setAppointments((prev) => {
-        // Check if appointment already exists
         const exists = prev.some((apt) => apt.id === data.appointment.id);
         if (exists) {
-          // Update existing appointment
           return prev.map((apt) =>
             apt.id === data.appointment.id ? data.appointment : apt
           );
         }
-        // Add new appointment at the beginning (most recent first)
         return [data.appointment, ...prev];
       });
 
-      // Optionally refetch to ensure consistency
       if (doctorId) {
         fetchAppointments();
       }
     });
 
     socket.on('disconnect', () => {
-      console.log('Appointment requests socket disconnected');
       setSocketConnected(false);
     });
 
-    socket.on('connect_error', (error: Error) => {
-      console.error('Appointment socket connection error:', error.message);
+    socket.on('connect_error', () => {
       setSocketConnected(false);
-    });
-
-    socket.on('error', (error: Error) => {
-      console.error('Appointment socket error:', error);
     });
 
     return () => {
-      console.log('Cleaning up appointment requests socket');
       socket.disconnect();
       socketRef.current = null;
     };
@@ -168,12 +155,20 @@ export default function DoctorAppointmentsPage() {
   }, [userId, doctorId]);
 
   return (
-    <div className="min-h-screen p-6 space-y-6">
+    <div className="min-h-screen p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+      </div>
+
       <div>
         <div className="flex items-center justify-between mb-2">
           <div>
-            <h1 className="text-3xl font-semibold mb-2">Your Appointments</h1>
-            <p className="text-muted-foreground">Manage and filter your appointments</p>
+            <h1 className="text-2xl sm:text-3xl font-semibold mb-2">Your Appointments</h1>
+            <p className="text-sm text-muted-foreground">Manage and filter your appointments</p>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${socketConnected ? 'bg-green-500' : 'bg-red-500'}`}></div>
@@ -190,7 +185,7 @@ export default function DoctorAppointmentsPage() {
           <CardTitle>Filter Appointments</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
             <Input
               value={patientName}
               onChange={(e) => setPatientName(e.target.value)}
