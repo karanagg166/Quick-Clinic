@@ -118,29 +118,34 @@ export const GET = async (req: NextRequest) => {
       userFilter.location = locationFilter;
     }
 
-    // --- get appointment rows for the doctor ---
-    const appointmentRows = await prisma.appointment.findMany({
-      where: { doctorId },
-      select: { patientId: true },
-    });
+    const scopeAll = searchParams.get("all") === "true" || searchParams.get("scope") === "all";
 
-    const patientIds = Array.from(
-      new Set(
-        appointmentRows
-          .map((r: any) => r?.patientId)
-          .filter((id: string | null | undefined): id is string => !!id)
-      )
-    );
-
-    if (patientIds.length === 0) {
-      return NextResponse.json([], { status: 200 });
-    }
-
-    // --- compose final where for patient.findMany ---
     const where: any = {
-      id: { in: patientIds },
       ...patientFilter,
     };
+
+    if (!scopeAll) {
+      // --- get appointment rows for the doctor ---
+      const appointmentRows = await prisma.appointment.findMany({
+        where: { doctorId },
+        select: { patientId: true },
+      });
+
+      const patientIds = Array.from(
+        new Set(
+          appointmentRows
+            .map((r: any) => r?.patientId)
+            .filter((id: string | null | undefined): id is string => !!id)
+        )
+      );
+
+      if (patientIds.length === 0) {
+        return NextResponse.json([], { status: 200 });
+      }
+
+      where.id = { in: patientIds };
+    }
+
     if (Object.keys(userFilter).length > 0) where.user = userFilter;
 
     // --- query patients with selected fields only ---

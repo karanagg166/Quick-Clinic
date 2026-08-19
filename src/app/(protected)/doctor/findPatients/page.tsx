@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import PatientCard from "@/components/patient/patientCard";
 import type { Patient } from "@/types/patient";
 import { useUserStore } from "@/store/userStore";
@@ -9,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { RotateCcw, Search } from "lucide-react";
+import { RotateCcw, Search, ChevronLeft, Users, FileText, Clock } from "lucide-react";
 
 export default function FindPatientsPage() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -23,16 +24,17 @@ export default function FindPatientsPage() {
   const [state, setState] = useState("");
 
   const [patients, setPatients] = useState<Patient[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [searched, setSearched] = useState(false);
 
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async (isInitial = false) => {
     setLoading(true);
-    setSearched(true);
+    if (!isInitial) setSearched(true);
 
     try {
       const params = new URLSearchParams();
       params.append("doctorId", doctorId || "");
+      params.append("scope", "all");
 
       if (name) params.append("name", name);
       if (gender && gender !== "all") params.append("gender", gender);
@@ -49,7 +51,6 @@ export default function FindPatientsPage() {
 
       if (res.ok) {
         const data = await res.json();
-        // Make sure medical arrays always exist
         const safePatients = (Array.isArray(data) ? data : data.patients ?? []).map((p: any) => ({
           ...p,
           medicalHistory: p.medicalHistory ?? [],
@@ -59,7 +60,6 @@ export default function FindPatientsPage() {
 
         setPatients(safePatients);
       } else {
-        console.error("Failed to fetch patients");
         setPatients([]);
       }
     } catch (error) {
@@ -68,7 +68,15 @@ export default function FindPatientsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [doctorId, name, gender, minAge, maxAge, email, city, state]);
+
+  useEffect(() => {
+    if (doctorId) {
+      handleSearch(true);
+    } else {
+      setLoading(false);
+    }
+  }, [doctorId]);
 
   const handleReset = () => {
     setName("");
@@ -78,16 +86,46 @@ export default function FindPatientsPage() {
     setEmail("");
     setCity("");
     setState("");
-    setPatients([]);
     setSearched(false);
+    if (doctorId) {
+      handleSearch(true);
+    }
   };
 
   return (
-    <div className="min-h-screen p-6 space-y-8">
+    <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6 sm:space-y-8 animate-fade-in">
+      {/* Navigation Bar */}
+      <div className="flex items-center justify-between">
+        <Button variant="ghost" size="sm" asChild className="gap-1.5">
+          <Link href="/doctor">
+            <ChevronLeft className="w-4 h-4" /> Back to Dashboard
+          </Link>
+        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" asChild className="text-xs">
+            <Link href="/doctor/patients" className="flex items-center gap-1.5">
+              <Users className="w-3.5 h-3.5 text-primary" />
+              My Patients
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild className="text-xs">
+            <Link href="/doctor/patients/reports" className="flex items-center gap-1.5">
+              <FileText className="w-3.5 h-3.5 text-primary" />
+              Reports
+            </Link>
+          </Button>
+        </div>
+      </div>
+
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-semibold mb-2">Find Patients</h1>
-        <p className="text-muted-foreground">Search patient records using flexible age range, demographic, and location filters</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground flex items-center gap-2.5">
+          <Users className="w-7 h-7 text-primary" />
+          Find Clinic Patients
+        </h1>
+        <p className="text-sm text-muted-foreground mt-1">
+          Search patient records across the clinic using flexible age range, demographic, and location filters.
+        </p>
       </div>
 
       {/* Filters */}
@@ -150,7 +188,7 @@ export default function FindPatientsPage() {
             />
             <div className="flex gap-2">
               <Button
-                onClick={handleSearch}
+                onClick={() => handleSearch(false)}
                 className="flex-1 flex items-center gap-1.5"
                 disabled={loading}
               >
