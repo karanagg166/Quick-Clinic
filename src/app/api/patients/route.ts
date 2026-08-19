@@ -170,6 +170,45 @@ export const GET = async (req: NextRequest) => {
       },
     });
 
+    // --- query appointments history for these patients with doctor ---
+    const patientAppointments = await prisma.appointment.findMany({
+      where: {
+        patientId: { in: patients.map((p) => p.id) },
+        doctorId,
+      },
+      include: {
+        slot: {
+          select: {
+            date: true,
+            startTime: true,
+            endTime: true,
+          },
+        },
+      },
+      orderBy: { bookedAt: "desc" },
+    });
+
+    const appointmentsByPatient = new Map<string, any[]>();
+    for (const appt of patientAppointments) {
+      if (!appointmentsByPatient.has(appt.patientId)) {
+        appointmentsByPatient.set(appt.patientId, []);
+      }
+      appointmentsByPatient.get(appt.patientId)!.push({
+        id: appt.id,
+        status: appt.status,
+        bookedAt: appt.bookedAt.toISOString(),
+        paymentMethod: appt.paymentMethod,
+        transactionId: appt.transactionId ?? null,
+        isAppointmentOffline: appt.isAppointmentOffline,
+        notes: appt.notes ?? null,
+        slot: {
+          date: appt.slot?.date?.toISOString().split("T")[0] || "",
+          startTime: appt.slot?.startTime?.toISOString() || "",
+          endTime: appt.slot?.endTime?.toISOString() || "",
+        },
+      });
+    }
+
     const formatted = patients.map((p: any) => ({
       id: p.id,
       name: p.user?.name || "Patient",
@@ -182,6 +221,7 @@ export const GET = async (req: NextRequest) => {
       medicalHistory: p.medicalHistory ?? "",
       allergies: p.allergies ?? "",
       currentMedications: p.currentMedications ?? "",
+      appointments: appointmentsByPatient.get(p.id) || [],
     }));
 
     return NextResponse.json(formatted, { status: 200 });

@@ -298,7 +298,7 @@ export async function confirmSlotHold(input: {
           isAppointmentOffline: input.paymentMethod === "OFFLINE",
         },
       });
-    });
+    }, { maxWait: 15000, timeout: 20000 });
     await deleteIfOwner(input.slotId, input.patientId, input.token);
     return appointment;
   } catch (error) {

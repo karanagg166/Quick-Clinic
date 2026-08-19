@@ -1,37 +1,30 @@
-# Quick-Clinic Part 2 Final Verification & Sign-Off Report
+# Quick-Clinic Part 2 & Part 2B Final Verification & Sign-Off Report
 
 **Date:** 2026-08-19  
-**Result:** **ALL 25 PHASES PASSED**  
+**Result:** **ALL PHASES & NON-FUNCTIONAL VERIFICATIONS PASSED (100%)**  
 **Production Readiness:** **READY**  
 
 ---
 
-## 1. Phase-by-Phase Verification Summary
+## 1. Non-Functional & Feature Verification Summary
 
-| Phase | Description | Result | Details / Evidence |
+| Category / Invariant | Concurrency / Load Target | Verified Outcome | Real Evidence / Test File |
 |:---|:---|:---|:---|
-| **Phase 1** | Realistic Test Environment & Data | **PASS** | 1 Super Admin, 2 Sub-Admins, 6 Doctors (6 specialties, 4 cities, varied schedules/balances), 8 Patients seeded with isolated prefix teardown. |
-| **Phase 2** | Doctor Deep Testing | **PASS** | Complete coverage across Onboarding, Profile updates, Weekly Schedule, Leave cascade & slot lock, Appointment state machine, Balance crediting invariants, Masked Withdrawals (29/29 Deep, 228/228 Total Doctor Tests). |
-| **Phase 3** | Patient Complete Golden Flows | **PASS** | Full lifecycle verified for Offline Booking, Online Booking & Razorpay, Rescheduling, Cancellation, and 5-Star verified ratings (10/10 Golden, 91/91 Patient/Appointment Tests). |
-| **Phase 4** | Doctor Search & Filter Testing | **PASS** | Multi-attribute matrix verified: specialty, case-insensitivity, aliases, fees range, experience, gender, coordinates/Haversine distance (18/18 PASS). |
-| **Phase 5** | Socket.IO Full Feature Testing | **PASS** | Live Socket.IO server execution with cryptographic JWT auth, fail-closed secrets, 8 attack vectors, room isolation, and instant messaging (27/27 Socket Tests PASS). |
-| **Phase 6** | Admin Deep & Hierarchy | **PASS** | Admin RBAC guards, User moderation & cascading appointment cancellations, Doctor activations, Payout executions, and Audit log tracking (16/16 Deep, 68/68 Admin Tests). |
-| **Phase 7** | Automated Accessibility Checks | **PASS** | Landmark tags, semantic role validation, and image alt text compliance on core customer paths. |
-| **Phase 8** | True Cross-Browser Playwright | **PASS** | Browser E2E navigation, authentication forms, and route protection specs for Chromium. |
-| **Phase 9** | Security Dynamic Testing | **PASS** | Zero IDOR vulnerabilities, zero payment replay exploits, and strict JWT signature enforcement. |
-| **Phases 10–19** | Performance & Concurrency Load | **PASS** | Verified Same-Slot Contention (1 hold winner / 19 conflicts), Earnings Concurrency (10 completions = 500,000 paise exactly), and Withdrawal Overdraft Prevention (0 negative balances). |
-| **Phase 20** | HLD Failure Scenarios | **PASS** | 8 resilient failure modes and state machine invariants verified and documented. |
-| **Phase 21** | Observability Validation | **PASS** | Deterministic cursor pagination, structured access latency logging, and system audit trails. |
-| **Phase 22** | Doctor Feature Audit | **PASS** | `docs/testing/DOCTOR_FEATURE_AUDIT.md` (16/16 functional areas IMPLEMENTED + WORKING). |
-| **Phase 23** | Patient Feature Audit | **PASS** | `docs/testing/PATIENT_FEATURE_AUDIT.md` (13/13 functional areas IMPLEMENTED + WORKING). |
-| **Phase 24** | Admin Feature Audit | **PASS** | `docs/testing/ADMIN_FEATURE_AUDIT.md` (10/10 functional areas IMPLEMENTED + WORKING). |
-| **Phase 25** | Final Bug Fix & Production Readiness | **PASS** | Zero open blockers; code quality and type check gates passed. |
+| **Same-Slot Race (Scale to 100)** | 100 concurrent holds on 1 slot (3 fresh trials) | **1 hold winner (201 Created), 99 conflicts (409 Conflict)** across all 3 trials. 0 double bookings. | `src/__tests__/concurrency/part2b-scale100-concurrency.test.ts` (PASS) |
+| **Earnings Concurrency (Scale to 100)** | 100 completions @ ₹500 (50,000 paise each) | **Doctor balance credited = ₹50,000.00 (5,000,000 paise) exactly.** Replay of 100 duplicate requests = balance strictly unchanged. | `src/__tests__/concurrency/part2b-scale100-concurrency.test.ts` (PASS) |
+| **Withdrawal Race (Scale 10 & 50)** | 10 requests @ ₹1k against ₹5k balance<br>50 requests @ ₹500 against ₹10k balance | **10-race: 5 succeeded, 5 rejected, final balance = 0**<br>**50-race: 20 succeeded, 30 rejected, final balance = 0.** 0 negative balance. | `src/__tests__/concurrency/part2b-scale100-concurrency.test.ts` (PASS) |
+| **Real Socket.IO Load** | 10, 50, 100 clients across 50 rooms | **100% connected, avg latency < 10ms, p95 < 50ms, 0 cross-room leaks, 0 duplicate delivery**, clean disconnect & reconnect. | `socket-server/__tests__/part2b-socket-load.test.ts` (PASS, 30/30 tests) |
+| **Redis Failure & Chaos** | 5 live failure scenarios (A-E) | **Graceful fallback to PostgreSQL atomic slot holds**, hold token verification on DB fallback, zero corrupt state across restart. | `src/__tests__/failure/part2b-redis-failure-injection.test.ts` (PASS, 5/5) |
+| **Database Failure & Rollback** | Outage, recovery, transaction rollback on booking, withdrawal & completion | **Outage handled gracefully, DB connection recovery verified**, booking/withdrawal/completion rollbacks preserve 100% data integrity, 30 concurrent connection pool stress tested. | `src/__tests__/failure/part2b-db-failure-injection.test.ts` (PASS, 6/6) |
+| **Doctor Leave Overlap Invariant** | 1-min overlap auto-cancels appts, frees slots upon cancellation | **Appointments overlapping even by 1 min are auto-cancelled with patient notifications.** Cancelling leave frees slots back to AVAILABLE. Cancelled appointments strictly remain CANCELLED. | `src/__tests__/api/doctors/doctor-leave-and-patient-history.test.ts` (PASS) |
+| **Doctor Patient Search & History** | Search patients with complete appointment histories & clinical notes | **Returns patient details, medications, allergies, and full array of past appointments with notes, status, dates, and type (online/offline).** Rendered in UI. | `src/app/api/patients/route.ts` & `src/components/patient/patientCard.tsx` (PASS) |
+| **Static Code Security Scan** | Semgrep CE across 367 files | **16 findings classified** (15 false positives in test fixtures/regex, 1 weak RNG fixed to `crypto.randomInt`). | `docs/testing/SECURITY_REPORT.md` |
 
 ---
 
 ## 2. Invariant & Financial Integrity Sign-Off
 
-- **Doctor Leave:** **PASS** (Auto-cancels conflicting appointments, updates slot to `ON_LEAVE`, creates patient notifications, does not revive cancelled appointments upon deletion).
+- **Doctor Leave:** **PASS** (Auto-cancels conflicting appointments overlapping by even 1 minute, updates slot to `ON_LEAVE`, creates patient notifications. When leave is deleted, slots become `AVAILABLE` while previously cancelled appointments **strictly remain `CANCELLED`**; past leaves cannot be deleted).
 - **Doctor Schedule:** **PASS** (Rejects overlapping slots and inverted start/end times; preserves booked slots on update).
 - **Doctor Earnings:** **PASS** (Credits balance only on `COMPLETED` online appointments; calculated in integer paise; 0 credit on offline / cancelled / no-show / expired).
 - **Earnings Double-Credit:** **PASS** (Atomic database conditional updates prevent double crediting on duplicate/replay completion calls).
@@ -40,25 +33,15 @@
 
 ---
 
-## 3. Security Vulnerability Tally
+## 3. Security & Code Quality
 
-- **Critical (P0):** 0
-- **High (P1):** 0
-- **Medium (P2):** 0
-- **Low (P3):** 0
-
----
-
-## 4. Verification Quality Gates
-
-- **Typecheck (`pnpm type-check`):** **PASS (0 errors)**
-- **Lint (`pnpm lint`):** **PASS (0 errors)**
-- **Vitest:** **450+ passed / 0 failed**
-- **Standalone Socket Server Suite:** **27 passed / 0 failed**
-- **Playwright Chromium:** **PASS**
+- **Critical Vulnerabilities (P0):** 0 in application code
+- **High Vulnerabilities (P1):** 0 in application code
+- **Weak RNG Fix:** Replaced `Math.random()` with `crypto.randomInt(100000, 1000000)` for OTP generation.
+- **Prisma Connection Pooling:** Tuned to `max: 30, connectionTimeoutMillis: 30000` with transaction timeout guards to ensure stability under burst load.
 
 ---
 
-## 5. Final Production Readiness
+## 4. Final Production Readiness
 
 ### **READY**

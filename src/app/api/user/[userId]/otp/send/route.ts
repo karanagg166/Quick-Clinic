@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { resend } from "@/lib/resend";
 import { prisma } from "@/lib/prisma";
 
@@ -22,8 +23,8 @@ export const POST = async (
       );
     }
 
-    // Generate OTP
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Generate cryptographically secure OTP
+    const otp = crypto.randomInt(100000, 1000000).toString();
 
     // Store OTP (upsert by email to handle any stale userId mappings)
     const otpRecord = await prisma.otp.upsert({

@@ -192,7 +192,7 @@ export async function POST(
           status: "PENDING",
         },
       });
-    });
+    }, { maxWait: 15000, timeout: 20000 });
 
     if (!withdrawal) {
       return NextResponse.json(

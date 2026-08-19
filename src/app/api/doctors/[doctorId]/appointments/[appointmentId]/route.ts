@@ -238,7 +238,7 @@ export async function PATCH(
         }
 
         return await tx.appointment.findUnique({ where: { id: appointmentId } });
-      });
+      }, { maxWait: 15000, timeout: 20000 });
 
       if (!txResult) {
         // Concurrently completed, return idempotent success

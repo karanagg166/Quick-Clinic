@@ -17,9 +17,9 @@ export const prisma =
   new PrismaClient({
     adapter: new PrismaPg({
       connectionString,
-      max: 10,
+      max: 30,
       idleTimeoutMillis: 30000,
-      connectionTimeoutMillis: 10000,
+      connectionTimeoutMillis: 30000,
     }),
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : [],
   });

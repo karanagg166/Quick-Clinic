@@ -4,12 +4,27 @@ export interface Patient {
   gender: string;
   age: number;
   email: string;
+  phoneNo?: string;
   city?: string;
   state?: string;
-  medicalHistory: string[];
-  allergies: string[];
-  currentMedications: string[];
+  medicalHistory: string | string[];
+  allergies: string | string[];
+  currentMedications: string | string[];
   profileImageUrl?: string;
+  appointments?: {
+    id: string;
+    status: string;
+    bookedAt: string;
+    paymentMethod: string;
+    transactionId?: string | null;
+    isAppointmentOffline: boolean;
+    notes?: string | null;
+    slot?: {
+      date: string;
+      startTime: string;
+      endTime: string;
+    };
+  }[];
 }
 
 export interface PatientAppointment {

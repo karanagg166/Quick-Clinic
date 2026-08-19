@@ -19,6 +19,7 @@ vi.mock('@/lib/prisma', () => ({
     slot: {
       findMany: vi.fn(),
       update: vi.fn(),
+      updateMany: vi.fn(),
     },
     appointment: {
       findMany: vi.fn(),
@@ -67,8 +68,8 @@ describe('Doctor Leave Route', () => {
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
-        startDate: '2026-07-10',
-        endDate: '2026-07-15',
+        startDate: '2026-11-10',
+        endDate: '2026-11-15',
         reason: 'Conference',
       }),
     });
@@ -84,15 +85,10 @@ describe('Doctor Leave Route', () => {
     vi.mocked(prisma.leave.create).mockResolvedValueOnce({
       id: 'leave_1',
       doctorId: 'doc_1',
-      startDate: new Date('2026-07-10'),
-      endDate: new Date('2026-07-15'),
+      startDate: new Date('2026-11-10'),
+      endDate: new Date('2026-11-15'),
       reason: 'Vacation',
     } as any);
-
-    // Mock slots to mark on leave
-    vi.mocked(prisma.slot.findMany).mockResolvedValue([
-      { id: 'slot_1', startTime: new Date('2026-07-11T10:00:00Z'), endTime: new Date('2026-07-11T10:10:00Z') },
-    ] as any);
 
     // Mock overlapping appointments
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
@@ -100,7 +96,7 @@ describe('Doctor Leave Route', () => {
         id: 'appt_1',
         status: 'CONFIRMED',
         slotId: 'slot_1',
-        slot: { date: new Date('2026-07-11') },
+        slot: { date: new Date('2026-11-11') },
         patient: { user: { id: 'patient_u1' } },
         doctor: { user: { name: 'Dr. John' } },
       },
@@ -109,8 +105,8 @@ describe('Doctor Leave Route', () => {
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
-        startDate: '2026-07-10',
-        endDate: '2026-07-15',
+        startDate: '2026-11-10',
+        endDate: '2026-11-15',
         reason: 'Vacation',
         userId: 'u_doc',
       }),
@@ -132,11 +128,11 @@ describe('Doctor Leave Route', () => {
     vi.mocked(prisma.leave.findUnique).mockResolvedValueOnce({
       id: 'leave_1',
       doctorId: 'doc_1',
-      startDate: new Date('2026-07-10'),
-      endDate: new Date('2026-07-15'),
+      startDate: new Date('2026-11-10'),
+      endDate: new Date('2026-11-15'),
     } as any);
     vi.mocked(prisma.slot.findMany).mockResolvedValueOnce([
-      { id: 'slot_1', startTime: new Date('2026-07-11T10:00:00Z'), endTime: new Date('2026-07-11T10:10:00Z') },
+      { id: 'slot_1', startTime: new Date('2026-11-11T10:00:00Z'), endTime: new Date('2026-11-11T10:10:00Z') },
     ] as any);
     vi.mocked(prisma.leave.findFirst).mockResolvedValueOnce(null); // No other leaves
     vi.mocked(prisma.leave.delete).mockResolvedValueOnce({} as any);

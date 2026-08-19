@@ -73,9 +73,10 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     },
     {
       label: 'Leave Management',
-      href: '/doctor/leave/apply',
+      href: '/doctor/leave',
       icon: ClipboardList,
       submenu: [
+        { label: 'Leave Overview', href: '/doctor/leave' },
         { label: 'Apply Leave', href: '/doctor/leave/apply' },
         { label: 'Leave History', href: '/doctor/leave/history' },
       ]

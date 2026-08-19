@@ -19,29 +19,18 @@ function getDatesBetween(start: Date, end: Date): Date[] {
 
 /**
  * Mark AVAILABLE slots as ON_LEAVE if they overlap with the leave period.
- * Only affects slots that fall within the leave start/end times.
+ * Any slot with startTime < leaveEnd and endTime > leaveStart is marked ON_LEAVE.
  */
 async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Date) {
-  const dates = getDatesBetween(leaveStart, leaveEnd);
-
-  for (const date of dates) {
-    const slots = await prisma.slot.findMany({
-      where: {
-        doctorId,
-        date,
-        status: "AVAILABLE",
-      },
-    });
-
-    for (const slot of slots) {
-      if (slot.startTime < leaveEnd && slot.endTime > leaveStart) {
-        await prisma.slot.update({
-          where: { id: slot.id },
-          data: { status: "ON_LEAVE" },
-        });
-      }
-    }
-  }
+  await prisma.slot.updateMany({
+    where: {
+      doctorId,
+      status: "AVAILABLE",
+      startTime: { lt: leaveEnd },
+      endTime: { gt: leaveStart },
+    },
+    data: { status: "ON_LEAVE" },
+  });
 }
 
 /**
@@ -49,36 +38,31 @@ async function markSlotsOnLeave(doctorId: string, leaveStart: Date, leaveEnd: Da
  * Only restores if they don't overlap with another active leave.
  */
 async function restoreSlotsFromLeave(doctorId: string, leaveStart: Date, leaveEnd: Date, excludeLeaveId: string) {
-  const dates = getDatesBetween(leaveStart, leaveEnd);
+  const onLeaveSlots = await prisma.slot.findMany({
+    where: {
+      doctorId,
+      status: "ON_LEAVE",
+      startTime: { lt: leaveEnd },
+      endTime: { gt: leaveStart },
+    },
+  });
 
-  for (const date of dates) {
-    const slots = await prisma.slot.findMany({
+  for (const slot of onLeaveSlots) {
+    // Check if any other leave covers this slot
+    const otherLeave = await prisma.leave.findFirst({
       where: {
         doctorId,
-        date,
-        status: "ON_LEAVE",
+        id: { not: excludeLeaveId },
+        startDate: { lt: slot.endTime },
+        endDate: { gt: slot.startTime },
       },
     });
 
-    for (const slot of slots) {
-      if (slot.startTime < leaveEnd && slot.endTime > leaveStart) {
-        // Check if any other leave covers this slot
-        const otherLeave = await prisma.leave.findFirst({
-          where: {
-            doctorId,
-            id: { not: excludeLeaveId },
-            startDate: { lt: slot.endTime },
-            endDate: { gt: slot.startTime },
-          },
-        });
-
-        if (!otherLeave) {
-          await prisma.slot.update({
-            where: { id: slot.id },
-            data: { status: "AVAILABLE" },
-          });
-        }
-      }
+    if (!otherLeave) {
+      await prisma.slot.update({
+        where: { id: slot.id },
+        data: { status: "AVAILABLE" },
+      });
     }
   }
 }
@@ -123,6 +107,11 @@ export async function POST(
 
     if (endDateTime < startDateTime) {
       return NextResponse.json({ error: "End date cannot be before start date" }, { status: 400 });
+    }
+
+    const now = new Date();
+    if (endDateTime <= now) {
+      return NextResponse.json({ error: "Cannot create leave in the past" }, { status: 400 });
     }
 
     // Check for conflicting leaves (any overlap)
@@ -316,6 +305,11 @@ export async function DELETE(
 
     if (leave.doctorId !== doctorId) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    const now = new Date();
+    if (leave.endDate <= now) {
+      return NextResponse.json({ error: "Cannot cancel past leaves that have already ended" }, { status: 400 });
     }
 
     // Restore ON_LEAVE slots back to AVAILABLE
