@@ -7,6 +7,7 @@ import {
   Calendar,
   Stethoscope,
   MessageCircle,
+  FolderHeart,
   ChevronDown,
   X
 } from 'lucide-react';
@@ -31,7 +32,7 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
   interface MenuItem {
     label: string;
     href: string;
-    icon: any;
+    icon: React.ComponentType<{ className?: string }>;
     submenu?: { label: string; href: string }[];
   }
 
@@ -47,18 +48,20 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
       icon: Calendar,
     },
     {
+      label: "Medical Documents",
+      href: "/patient/medical-documents",
+      icon: FolderHeart,
+    },
+    {
       label: "Find Doctors",
-      href: "/patient/findDoctors",   // UPDATED
+      href: "/patient/findDoctors",
       icon: Stethoscope,
     },
     {
       label: "Chat",
-      href: "/patient/chat",          // NEW ITEM
+      href: "/patient/chat",
       icon: MessageCircle,
     },
-
-
-
   ];
 
   return (
