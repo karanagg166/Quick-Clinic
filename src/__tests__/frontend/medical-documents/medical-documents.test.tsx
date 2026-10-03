@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import React from "react";
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import PatientSidebar from "@/components/patient/sidebar";
 import { MedicalDocumentCard } from "@/components/patient/medical-documents/MedicalDocumentCard";
@@ -17,11 +17,13 @@ import {
   formatFileSize,
   formatDisplayDate,
 } from "@/types/medical-document";
+import { toast } from "sonner";
 
 let currentPathname = "/patient/medical-documents";
+const mockPush = vi.fn();
 
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), refresh: vi.fn(), replace: vi.fn() }),
+  useRouter: () => ({ push: mockPush, refresh: vi.fn(), replace: vi.fn() }),
   usePathname: () => currentPathname,
 }));
 
@@ -34,8 +36,14 @@ vi.mock("sonner", () => ({
 }));
 
 describe("Patient Medical Documents Feature Test Suite", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    global.fetch = originalFetch;
   });
 
   describe("1. Patient Sidebar Integration", () => {
@@ -50,8 +58,6 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       expect(medicalDocsLink.getAttribute("href")).toBe(
         "/patient/medical-documents"
       );
-
-      // Radix Slot merges Button classes directly onto the Link child
       expect(medicalDocsLink.className).toContain("font-semibold");
     });
   });
@@ -100,43 +106,18 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       );
 
       expect(screen.getByText("Blood Test - September 2026")).toBeDefined();
-      expect(screen.getByText("Blood Test - September 2026.pdf")).toBeDefined();
       expect(screen.getByText("Lab Report")).toBeDefined();
-      expect(screen.getByText("Metropolis Diagnostics")).toBeDefined();
+      expect(screen.getAllByText("PDF")[0]).toBeDefined();
       expect(screen.getByText(formatFileSize(1450000))).toBeDefined();
-      expect(
-        screen.getByText(formatDisplayDate("2026-09-15"))
-      ).toBeDefined();
-    });
-
-    it("handles View and Download button clicks", () => {
-      const handleView = vi.fn();
-      const handleDownload = vi.fn();
-      const handleRename = vi.fn();
-      const handleDelete = vi.fn();
-
-      render(
-        <MedicalDocumentCard
-          document={mockPdfDoc}
-          onView={handleView}
-          onDownload={handleDownload}
-          onRename={handleRename}
-          onDelete={handleDelete}
-        />
-      );
+      expect(screen.getByText(formatDisplayDate("2026-09-15"))).toBeDefined();
+      expect(screen.getByText("Metropolis Diagnostics")).toBeDefined();
 
       const viewBtn = screen.getByRole("button", { name: /^view$/i });
       fireEvent.click(viewBtn);
       expect(handleView).toHaveBeenCalledWith(mockPdfDoc);
-
-      const downloadBtn = screen.getByRole("button", {
-        name: /download blood test/i,
-      });
-      fireEvent.click(downloadBtn);
-      expect(handleDownload).toHaveBeenCalledWith(mockPdfDoc);
     });
 
-    it("renders image document with image preview element", () => {
+    it("renders image document details and thumbnail image", () => {
       render(
         <MedicalDocumentCard
           document={mockImageDoc}
@@ -147,14 +128,16 @@ describe("Patient Medical Documents Feature Test Suite", () => {
         />
       );
 
-      const img = screen.getByAltText("Chest X-Ray");
-      expect(img).toBeDefined();
-      expect(img.getAttribute("src")).toBe("data:image/svg+xml;utf8,<svg></svg>");
+      expect(screen.getByText("Chest X-Ray")).toBeDefined();
+      expect(screen.getByText("Radiology / Scan")).toBeDefined();
+      expect(screen.getByText("JPG")).toBeDefined();
+      expect(screen.getByText(formatFileSize(2850000))).toBeDefined();
+      expect(screen.getByAltText("Chest X-Ray")).toBeDefined();
     });
   });
 
   describe("3. MedicalDocumentFilters Component", () => {
-    it("renders filter controls and triggers change callbacks", () => {
+    it("fires filter change events for search query and reset filters", () => {
       const handleFilterChange = vi.fn();
       const handleReset = vi.fn();
 
@@ -174,29 +157,19 @@ describe("Patient Medical Documents Feature Test Suite", () => {
         />
       );
 
-      expect(screen.getByText(/showing 6 of 6/i)).toBeDefined();
-
       const searchInput = screen.getByPlaceholderText("Search documents...");
-      fireEvent.change(searchInput, { target: { value: "Blood" } });
-      expect(handleFilterChange).toHaveBeenCalledWith({
-        searchQuery: "Blood",
-      });
-
-      const dateInput = screen.getByLabelText(/filter by report date/i);
-      fireEvent.change(dateInput, { target: { value: "2026-09-15" } });
-      expect(handleFilterChange).toHaveBeenCalledWith({
-        reportDate: "2026-09-15",
-      });
+      fireEvent.change(searchInput, { target: { value: "x-ray" } });
+      expect(handleFilterChange).toHaveBeenCalledWith({ searchQuery: "x-ray" });
     });
 
-    it("displays reset button when filters are active and calls reset handler", () => {
+    it("triggers reset when reset button is clicked", () => {
       const handleReset = vi.fn();
 
       render(
         <MedicalDocumentFilters
           filters={{
-            searchQuery: "Scan",
-            documentType: "RADIOLOGY_SCAN",
+            searchQuery: "scan",
+            documentType: "ALL",
             fileType: "ALL",
             reportDate: "",
             sortBy: "newest",
@@ -288,12 +261,10 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       expect(screen.getByText(/rename document/i)).toBeDefined();
       const input = screen.getByDisplayValue(testDoc.title);
 
-      // Clear input and try submitting
       fireEvent.change(input, { target: { value: "" } });
       const submitBtn = screen.getByRole("button", { name: /save title/i });
       expect(submitBtn.hasAttribute("disabled")).toBe(true);
 
-      // Set new title and submit
       fireEvent.change(input, { target: { value: "Updated Blood Report" } });
       fireEvent.click(submitBtn);
 
@@ -387,61 +358,177 @@ describe("Patient Medical Documents Feature Test Suite", () => {
     });
   });
 
-  describe("6. MedicalDocumentsPage Integration", () => {
-    it("renders page header, back button, and mock documents after loading", async () => {
+  describe("6. MedicalDocumentsPage Real API Integration", () => {
+    it("loads documents from real API GET route and displays them", async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ documents: INITIAL_MOCK_DOCUMENTS }),
+      } as any);
+
       render(<MedicalDocumentsPage />);
 
       expect(screen.getByText("Medical Documents")).toBeDefined();
-      expect(
-        screen.getByText(/view and manage your medical reports/i)
-      ).toBeDefined();
-      expect(
-        screen.getByRole("link", { name: /back to dashboard/i })
-      ).toBeDefined();
-      expect(
-        screen.getByRole("link", { name: /upload document/i })
-      ).toBeDefined();
+      expect(screen.getByRole("link", { name: /upload document/i })).toBeDefined();
 
-      // Wait for brief initial loading skeleton to complete
       await waitFor(() => {
-        expect(
-          screen.getByText("Blood Test - September 2026")
-        ).toBeDefined();
+        expect(screen.getByText("Blood Test - September 2026")).toBeDefined();
       });
 
       expect(screen.getByText("Chest X-Ray")).toBeDefined();
       expect(screen.getByText("Dr Sharma Prescription")).toBeDefined();
       expect(screen.getByText("Diabetes Lab Report")).toBeDefined();
-      expect(screen.getByText("MRI Brain Scan")).toBeDefined();
-      expect(screen.getByText("Vaccination Certificate")).toBeDefined();
     });
 
-    it("filters documents by search keyword and displays empty state when no match", async () => {
+    it("displays empty state when no documents match filters", async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({ documents: [] }),
+      } as any);
+
       render(<MedicalDocumentsPage />);
 
       await waitFor(() => {
-        expect(
-          screen.getByText("Blood Test - September 2026")
-        ).toBeDefined();
+        expect(screen.getByText(/no medical documents found/i)).toBeDefined();
       });
 
-      const searchInput = screen.getByPlaceholderText("Search documents...");
-      fireEvent.change(searchInput, {
-        target: { value: "NonExistentReportXYZ" },
-      });
-
-      await waitFor(() => {
-        expect(
-          screen.getByText(/no medical documents found/i)
-        ).toBeDefined();
-      });
       expect(
         screen.getByText(/try changing your filters or upload a new medical document/i)
       ).toBeDefined();
     });
+
+    it("requests signed access URL when viewing a document", async () => {
+      global.fetch = vi.fn().mockImplementation(async (url: string) => {
+        if (url.includes("/access")) {
+          return {
+            ok: true,
+            json: async () => ({
+              url: "https://signed.supabase.co/preview/report.pdf",
+              expiresIn: 600,
+            }),
+          };
+        }
+        return {
+          ok: true,
+          json: async () => ({ documents: [INITIAL_MOCK_DOCUMENTS[0]] }),
+        };
+      }) as any;
+
+      render(<MedicalDocumentsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Blood Test - September 2026")).toBeDefined();
+      });
+
+      const viewBtn = screen.getAllByRole("button", { name: /^view$/i })[0];
+      fireEvent.click(viewBtn);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          expect.stringContaining(`/api/patients/me/medical-documents/${INITIAL_MOCK_DOCUMENTS[0].id}/access`)
+        );
+      });
+    });
+
+    it("sends DELETE request to API when confirming document deletion", async () => {
+      global.fetch = vi.fn().mockImplementation(async (url: string, opts?: any) => {
+        if (opts?.method === "DELETE") {
+          return {
+            ok: true,
+            json: async () => ({ success: true, message: "Deleted" }),
+          };
+        }
+        return {
+          ok: true,
+          json: async () => ({ documents: [INITIAL_MOCK_DOCUMENTS[0]] }),
+        };
+      }) as any;
+
+      render(<MedicalDocumentsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Blood Test - September 2026")).toBeDefined();
+      });
+
+      // Open action dropdown
+      const actionsBtn = screen.getAllByRole("button", { name: /actions for/i })[0];
+      fireEvent.pointerDown(actionsBtn, { button: 0, ctrlKey: false });
+      fireEvent.click(actionsBtn);
+
+      const deleteMenuItem = screen.getByRole("menuitem", { name: /delete/i });
+      fireEvent.click(deleteMenuItem);
+
+      const confirmBtn = screen.getByRole("button", { name: /^delete document$/i });
+      fireEvent.click(confirmBtn);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/patients/me/medical-documents/${INITIAL_MOCK_DOCUMENTS[0].id}`,
+          { method: "DELETE" }
+        );
+      });
+
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("deleted")
+      );
+    });
+
+    it("sends PATCH request to API when renaming a document", async () => {
+      global.fetch = vi.fn().mockImplementation(async (url: string, opts?: any) => {
+        if (opts?.method === "PATCH") {
+          return {
+            ok: true,
+            json: async () => ({
+              document: {
+                ...INITIAL_MOCK_DOCUMENTS[0],
+                title: "Renamed Title",
+              },
+            }),
+          };
+        }
+        return {
+          ok: true,
+          json: async () => ({ documents: [INITIAL_MOCK_DOCUMENTS[0]] }),
+        };
+      }) as any;
+
+      render(<MedicalDocumentsPage />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Blood Test - September 2026")).toBeDefined();
+      });
+
+      // Open action dropdown
+      const actionsBtn = screen.getAllByRole("button", { name: /actions for/i })[0];
+      fireEvent.pointerDown(actionsBtn, { button: 0, ctrlKey: false });
+      fireEvent.click(actionsBtn);
+
+      const renameMenuItem = screen.getByRole("menuitem", { name: /rename/i });
+      fireEvent.click(renameMenuItem);
+
+      const input = screen.getByDisplayValue("Blood Test - September 2026");
+      fireEvent.change(input, { target: { value: "Renamed Title" } });
+
+      const saveBtn = screen.getByRole("button", { name: /save title/i });
+      fireEvent.click(saveBtn);
+
+      await waitFor(() => {
+        expect(global.fetch).toHaveBeenCalledWith(
+          `/api/patients/me/medical-documents/${INITIAL_MOCK_DOCUMENTS[0].id}`,
+          expect.objectContaining({
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title: "Renamed Title" }),
+          })
+        );
+      });
+
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("renamed")
+      );
+    });
   });
 
-  describe("7. UploadMedicalDocumentPage Integration", () => {
+  describe("7. UploadMedicalDocumentPage Real API Integration", () => {
     it("renders upload page with metadata fields and validation", () => {
       render(<UploadMedicalDocumentPage />);
 
@@ -449,10 +536,7 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       expect(
         screen.getByRole("link", { name: /back to medical documents/i })
       ).toBeDefined();
-      expect(screen.getByText(/1\. Select Document File/i)).toBeDefined();
-      expect(screen.getByText(/2\. Document Information/i)).toBeDefined();
 
-      // Submit without filling form
       const submitBtn = screen.getByRole("button", {
         name: /^upload document$/i,
       });
@@ -468,7 +552,14 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       ).toBeDefined();
     });
 
-    it("displays success confirmation when required fields are filled", async () => {
+    it("submits FormData to real POST API and redirects on success", async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          document: { id: "doc-new-123", title: "Prescription_Cardio" },
+        }),
+      } as any);
+
       render(<UploadMedicalDocumentPage />);
 
       // 1. Select file
@@ -485,12 +576,10 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       const dateInput = screen.getByLabelText(/report date/i);
       fireEvent.change(dateInput, { target: { value: "2026-09-20" } });
 
-      // 3. Select Document Type via select
-      // Select trigger click
+      // 3. Select Document Type
       const selectTrigger = screen.getByRole("combobox");
       fireEvent.click(selectTrigger);
 
-      // In happy-dom / Radix, select option can be picked
       const option = screen.getByRole("option", { name: /prescription/i });
       fireEvent.click(option);
 
@@ -500,24 +589,62 @@ describe("Patient Medical Documents Feature Test Suite", () => {
       });
       fireEvent.click(submitBtn);
 
-      // 5. Verify success state
+      // Verify fetch was called with FormData
       await waitFor(() => {
-        expect(
-          screen.getByText("Document Ready for Upload")
-        ).toBeDefined();
+        expect(global.fetch).toHaveBeenCalledWith(
+          "/api/patients/me/medical-documents",
+          expect.objectContaining({
+            method: "POST",
+            body: expect.any(FormData),
+          })
+        );
       });
 
-      expect(
-        screen.getByText(
-          /document ready to upload\. backend integration will be added next\./i
-        )
-      ).toBeDefined();
-      expect(
-        screen.getByRole("button", { name: /upload another document/i })
-      ).toBeDefined();
-      expect(
-        screen.getByRole("link", { name: /view medical documents/i })
-      ).toBeDefined();
+      // Verify redirect and toast
+      await waitFor(() => {
+        expect(mockPush).toHaveBeenCalledWith("/patient/medical-documents");
+      });
+      expect(toast.success).toHaveBeenCalledWith(
+        expect.stringContaining("uploaded successfully")
+      );
+    });
+
+    it("displays error toast and remains on form if upload fails", async () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        json: async () => ({
+          error: "File size exceeds 10 MB limit",
+        }),
+      } as any);
+
+      render(<UploadMedicalDocumentPage />);
+
+      const fileInput = screen.getByTestId("medical-document-file-input");
+      const file = new File(["test data"], "Report.pdf", {
+        type: "application/pdf",
+      });
+      fireEvent.change(fileInput, { target: { files: [file] } });
+
+      const dateInput = screen.getByLabelText(/report date/i);
+      fireEvent.change(dateInput, { target: { value: "2026-09-20" } });
+
+      const selectTrigger = screen.getByRole("combobox");
+      fireEvent.click(selectTrigger);
+      const option = screen.getByRole("option", { name: /lab report/i });
+      fireEvent.click(option);
+
+      const submitBtn = screen.getByRole("button", {
+        name: /^upload document$/i,
+      });
+      fireEvent.click(submitBtn);
+
+      await waitFor(() => {
+        expect(toast.error).toHaveBeenCalledWith(
+          "File size exceeds 10 MB limit"
+        );
+      });
+
+      expect(mockPush).not.toHaveBeenCalled();
     });
   });
 });

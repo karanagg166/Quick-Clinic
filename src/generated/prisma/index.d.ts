@@ -44,6 +44,11 @@ export type DoctorQualification = $Result.DefaultSelection<Prisma.$DoctorQualifi
  */
 export type Patient = $Result.DefaultSelection<Prisma.$PatientPayload>
 /**
+ * Model MedicalDocument
+ * 
+ */
+export type MedicalDocument = $Result.DefaultSelection<Prisma.$MedicalDocumentPayload>
+/**
  * Model Notification
  * 
  */
@@ -240,6 +245,19 @@ export const PaymentMethod: {
 export type PaymentMethod = (typeof PaymentMethod)[keyof typeof PaymentMethod]
 
 
+export const MedicalDocumentType: {
+  LAB_REPORT: 'LAB_REPORT',
+  PRESCRIPTION: 'PRESCRIPTION',
+  RADIOLOGY_SCAN: 'RADIOLOGY_SCAN',
+  DISCHARGE_SUMMARY: 'DISCHARGE_SUMMARY',
+  MEDICAL_CERTIFICATE: 'MEDICAL_CERTIFICATE',
+  VACCINATION_RECORD: 'VACCINATION_RECORD',
+  OTHER: 'OTHER'
+};
+
+export type MedicalDocumentType = (typeof MedicalDocumentType)[keyof typeof MedicalDocumentType]
+
+
 export const WithdrawalStatus: {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -279,6 +297,10 @@ export const AppointmentStatus: typeof $Enums.AppointmentStatus
 export type PaymentMethod = $Enums.PaymentMethod
 
 export const PaymentMethod: typeof $Enums.PaymentMethod
+
+export type MedicalDocumentType = $Enums.MedicalDocumentType
+
+export const MedicalDocumentType: typeof $Enums.MedicalDocumentType
 
 export type WithdrawalStatus = $Enums.WithdrawalStatus
 
@@ -464,6 +486,16 @@ export class PrismaClient<
     * ```
     */
   get patient(): Prisma.PatientDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.medicalDocument`: Exposes CRUD operations for the **MedicalDocument** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more MedicalDocuments
+    * const medicalDocuments = await prisma.medicalDocument.findMany()
+    * ```
+    */
+  get medicalDocument(): Prisma.MedicalDocumentDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.notification`: Exposes CRUD operations for the **Notification** model.
@@ -1054,6 +1086,7 @@ export namespace Prisma {
     Doctor: 'Doctor',
     DoctorQualification: 'DoctorQualification',
     Patient: 'Patient',
+    MedicalDocument: 'MedicalDocument',
     Notification: 'Notification',
     Leave: 'Leave',
     Schedule: 'Schedule',
@@ -1084,7 +1117,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
+      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "medicalDocument" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -1529,6 +1562,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PatientCountArgs<ExtArgs>
             result: $Utils.Optional<PatientCountAggregateOutputType> | number
+          }
+        }
+      }
+      MedicalDocument: {
+        payload: Prisma.$MedicalDocumentPayload<ExtArgs>
+        fields: Prisma.MedicalDocumentFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.MedicalDocumentFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.MedicalDocumentFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          findFirst: {
+            args: Prisma.MedicalDocumentFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.MedicalDocumentFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          findMany: {
+            args: Prisma.MedicalDocumentFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>[]
+          }
+          create: {
+            args: Prisma.MedicalDocumentCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          createMany: {
+            args: Prisma.MedicalDocumentCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.MedicalDocumentCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>[]
+          }
+          delete: {
+            args: Prisma.MedicalDocumentDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          update: {
+            args: Prisma.MedicalDocumentUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          deleteMany: {
+            args: Prisma.MedicalDocumentDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.MedicalDocumentUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.MedicalDocumentUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>[]
+          }
+          upsert: {
+            args: Prisma.MedicalDocumentUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$MedicalDocumentPayload>
+          }
+          aggregate: {
+            args: Prisma.MedicalDocumentAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateMedicalDocument>
+          }
+          groupBy: {
+            args: Prisma.MedicalDocumentGroupByArgs<ExtArgs>
+            result: $Utils.Optional<MedicalDocumentGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.MedicalDocumentCountArgs<ExtArgs>
+            result: $Utils.Optional<MedicalDocumentCountAggregateOutputType> | number
           }
         }
       }
@@ -2756,6 +2863,7 @@ export namespace Prisma {
     doctor?: DoctorOmit
     doctorQualification?: DoctorQualificationOmit
     patient?: PatientOmit
+    medicalDocument?: MedicalDocumentOmit
     notification?: NotificationOmit
     leave?: LeaveOmit
     schedule?: ScheduleOmit
@@ -3096,6 +3204,7 @@ export namespace Prisma {
     appointments: number
     comments: number
     ratings: number
+    medicalDocuments: number
   }
 
   export type PatientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3103,6 +3212,7 @@ export namespace Prisma {
     appointments?: boolean | PatientCountOutputTypeCountAppointmentsArgs
     comments?: boolean | PatientCountOutputTypeCountCommentsArgs
     ratings?: boolean | PatientCountOutputTypeCountRatingsArgs
+    medicalDocuments?: boolean | PatientCountOutputTypeCountMedicalDocumentsArgs
   }
 
   // Custom InputTypes
@@ -3142,6 +3252,13 @@ export namespace Prisma {
    */
   export type PatientCountOutputTypeCountRatingsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RatingWhereInput
+  }
+
+  /**
+   * PatientCountOutputType without action
+   */
+  export type PatientCountOutputTypeCountMedicalDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MedicalDocumentWhereInput
   }
 
 
@@ -9543,6 +9660,7 @@ export namespace Prisma {
     appointments?: boolean | Patient$appointmentsArgs<ExtArgs>
     comments?: boolean | Patient$commentsArgs<ExtArgs>
     ratings?: boolean | Patient$ratingsArgs<ExtArgs>
+    medicalDocuments?: boolean | Patient$medicalDocumentsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["patient"]>
 
@@ -9585,6 +9703,7 @@ export namespace Prisma {
     appointments?: boolean | Patient$appointmentsArgs<ExtArgs>
     comments?: boolean | Patient$commentsArgs<ExtArgs>
     ratings?: boolean | Patient$ratingsArgs<ExtArgs>
+    medicalDocuments?: boolean | Patient$medicalDocumentsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PatientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -9602,6 +9721,7 @@ export namespace Prisma {
       appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       comments: Prisma.$CommentPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
+      medicalDocuments: Prisma.$MedicalDocumentPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -10010,6 +10130,7 @@ export namespace Prisma {
     appointments<T extends Patient$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     comments<T extends Patient$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ratings<T extends Patient$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    medicalDocuments<T extends Patient$medicalDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$medicalDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -10543,6 +10664,30 @@ export namespace Prisma {
   }
 
   /**
+   * Patient.medicalDocuments
+   */
+  export type Patient$medicalDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    where?: MedicalDocumentWhereInput
+    orderBy?: MedicalDocumentOrderByWithRelationInput | MedicalDocumentOrderByWithRelationInput[]
+    cursor?: MedicalDocumentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: MedicalDocumentScalarFieldEnum | MedicalDocumentScalarFieldEnum[]
+  }
+
+  /**
    * Patient without action
    */
   export type PatientDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10558,6 +10703,1207 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PatientInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model MedicalDocument
+   */
+
+  export type AggregateMedicalDocument = {
+    _count: MedicalDocumentCountAggregateOutputType | null
+    _avg: MedicalDocumentAvgAggregateOutputType | null
+    _sum: MedicalDocumentSumAggregateOutputType | null
+    _min: MedicalDocumentMinAggregateOutputType | null
+    _max: MedicalDocumentMaxAggregateOutputType | null
+  }
+
+  export type MedicalDocumentAvgAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type MedicalDocumentSumAggregateOutputType = {
+    fileSize: number | null
+  }
+
+  export type MedicalDocumentMinAggregateOutputType = {
+    id: string | null
+    patientId: string | null
+    title: string | null
+    type: $Enums.MedicalDocumentType | null
+    fileName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    storagePath: string | null
+    reportDate: Date | null
+    hospitalOrDoctor: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MedicalDocumentMaxAggregateOutputType = {
+    id: string | null
+    patientId: string | null
+    title: string | null
+    type: $Enums.MedicalDocumentType | null
+    fileName: string | null
+    mimeType: string | null
+    fileSize: number | null
+    storagePath: string | null
+    reportDate: Date | null
+    hospitalOrDoctor: string | null
+    notes: string | null
+    createdAt: Date | null
+    updatedAt: Date | null
+  }
+
+  export type MedicalDocumentCountAggregateOutputType = {
+    id: number
+    patientId: number
+    title: number
+    type: number
+    fileName: number
+    mimeType: number
+    fileSize: number
+    storagePath: number
+    reportDate: number
+    hospitalOrDoctor: number
+    notes: number
+    createdAt: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type MedicalDocumentAvgAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type MedicalDocumentSumAggregateInputType = {
+    fileSize?: true
+  }
+
+  export type MedicalDocumentMinAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    type?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    storagePath?: true
+    reportDate?: true
+    hospitalOrDoctor?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MedicalDocumentMaxAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    type?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    storagePath?: true
+    reportDate?: true
+    hospitalOrDoctor?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+  }
+
+  export type MedicalDocumentCountAggregateInputType = {
+    id?: true
+    patientId?: true
+    title?: true
+    type?: true
+    fileName?: true
+    mimeType?: true
+    fileSize?: true
+    storagePath?: true
+    reportDate?: true
+    hospitalOrDoctor?: true
+    notes?: true
+    createdAt?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type MedicalDocumentAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MedicalDocument to aggregate.
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MedicalDocuments to fetch.
+     */
+    orderBy?: MedicalDocumentOrderByWithRelationInput | MedicalDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: MedicalDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MedicalDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MedicalDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned MedicalDocuments
+    **/
+    _count?: true | MedicalDocumentCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: MedicalDocumentAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: MedicalDocumentSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: MedicalDocumentMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: MedicalDocumentMaxAggregateInputType
+  }
+
+  export type GetMedicalDocumentAggregateType<T extends MedicalDocumentAggregateArgs> = {
+        [P in keyof T & keyof AggregateMedicalDocument]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateMedicalDocument[P]>
+      : GetScalarType<T[P], AggregateMedicalDocument[P]>
+  }
+
+
+
+
+  export type MedicalDocumentGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: MedicalDocumentWhereInput
+    orderBy?: MedicalDocumentOrderByWithAggregationInput | MedicalDocumentOrderByWithAggregationInput[]
+    by: MedicalDocumentScalarFieldEnum[] | MedicalDocumentScalarFieldEnum
+    having?: MedicalDocumentScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: MedicalDocumentCountAggregateInputType | true
+    _avg?: MedicalDocumentAvgAggregateInputType
+    _sum?: MedicalDocumentSumAggregateInputType
+    _min?: MedicalDocumentMinAggregateInputType
+    _max?: MedicalDocumentMaxAggregateInputType
+  }
+
+  export type MedicalDocumentGroupByOutputType = {
+    id: string
+    patientId: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date
+    hospitalOrDoctor: string | null
+    notes: string | null
+    createdAt: Date
+    updatedAt: Date
+    _count: MedicalDocumentCountAggregateOutputType | null
+    _avg: MedicalDocumentAvgAggregateOutputType | null
+    _sum: MedicalDocumentSumAggregateOutputType | null
+    _min: MedicalDocumentMinAggregateOutputType | null
+    _max: MedicalDocumentMaxAggregateOutputType | null
+  }
+
+  type GetMedicalDocumentGroupByPayload<T extends MedicalDocumentGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<MedicalDocumentGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof MedicalDocumentGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], MedicalDocumentGroupByOutputType[P]>
+            : GetScalarType<T[P], MedicalDocumentGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type MedicalDocumentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    type?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    storagePath?: boolean
+    reportDate?: boolean
+    hospitalOrDoctor?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["medicalDocument"]>
+
+  export type MedicalDocumentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    type?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    storagePath?: boolean
+    reportDate?: boolean
+    hospitalOrDoctor?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["medicalDocument"]>
+
+  export type MedicalDocumentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    type?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    storagePath?: boolean
+    reportDate?: boolean
+    hospitalOrDoctor?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["medicalDocument"]>
+
+  export type MedicalDocumentSelectScalar = {
+    id?: boolean
+    patientId?: boolean
+    title?: boolean
+    type?: boolean
+    fileName?: boolean
+    mimeType?: boolean
+    fileSize?: boolean
+    storagePath?: boolean
+    reportDate?: boolean
+    hospitalOrDoctor?: boolean
+    notes?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+  }
+
+  export type MedicalDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "patientId" | "title" | "type" | "fileName" | "mimeType" | "fileSize" | "storagePath" | "reportDate" | "hospitalOrDoctor" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalDocument"]>
+  export type MedicalDocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }
+  export type MedicalDocumentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }
+  export type MedicalDocumentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    patient?: boolean | PatientDefaultArgs<ExtArgs>
+  }
+
+  export type $MedicalDocumentPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "MedicalDocument"
+    objects: {
+      patient: Prisma.$PatientPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      patientId: string
+      title: string
+      type: $Enums.MedicalDocumentType
+      fileName: string
+      mimeType: string
+      fileSize: number
+      storagePath: string
+      reportDate: Date
+      hospitalOrDoctor: string | null
+      notes: string | null
+      createdAt: Date
+      updatedAt: Date
+    }, ExtArgs["result"]["medicalDocument"]>
+    composites: {}
+  }
+
+  type MedicalDocumentGetPayload<S extends boolean | null | undefined | MedicalDocumentDefaultArgs> = $Result.GetResult<Prisma.$MedicalDocumentPayload, S>
+
+  type MedicalDocumentCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<MedicalDocumentFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: MedicalDocumentCountAggregateInputType | true
+    }
+
+  export interface MedicalDocumentDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MedicalDocument'], meta: { name: 'MedicalDocument' } }
+    /**
+     * Find zero or one MedicalDocument that matches the filter.
+     * @param {MedicalDocumentFindUniqueArgs} args - Arguments to find a MedicalDocument
+     * @example
+     * // Get one MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends MedicalDocumentFindUniqueArgs>(args: SelectSubset<T, MedicalDocumentFindUniqueArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one MedicalDocument that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {MedicalDocumentFindUniqueOrThrowArgs} args - Arguments to find a MedicalDocument
+     * @example
+     * // Get one MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends MedicalDocumentFindUniqueOrThrowArgs>(args: SelectSubset<T, MedicalDocumentFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MedicalDocument that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentFindFirstArgs} args - Arguments to find a MedicalDocument
+     * @example
+     * // Get one MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends MedicalDocumentFindFirstArgs>(args?: SelectSubset<T, MedicalDocumentFindFirstArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first MedicalDocument that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentFindFirstOrThrowArgs} args - Arguments to find a MedicalDocument
+     * @example
+     * // Get one MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends MedicalDocumentFindFirstOrThrowArgs>(args?: SelectSubset<T, MedicalDocumentFindFirstOrThrowArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more MedicalDocuments that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all MedicalDocuments
+     * const medicalDocuments = await prisma.medicalDocument.findMany()
+     * 
+     * // Get first 10 MedicalDocuments
+     * const medicalDocuments = await prisma.medicalDocument.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const medicalDocumentWithIdOnly = await prisma.medicalDocument.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends MedicalDocumentFindManyArgs>(args?: SelectSubset<T, MedicalDocumentFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a MedicalDocument.
+     * @param {MedicalDocumentCreateArgs} args - Arguments to create a MedicalDocument.
+     * @example
+     * // Create one MedicalDocument
+     * const MedicalDocument = await prisma.medicalDocument.create({
+     *   data: {
+     *     // ... data to create a MedicalDocument
+     *   }
+     * })
+     * 
+     */
+    create<T extends MedicalDocumentCreateArgs>(args: SelectSubset<T, MedicalDocumentCreateArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many MedicalDocuments.
+     * @param {MedicalDocumentCreateManyArgs} args - Arguments to create many MedicalDocuments.
+     * @example
+     * // Create many MedicalDocuments
+     * const medicalDocument = await prisma.medicalDocument.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends MedicalDocumentCreateManyArgs>(args?: SelectSubset<T, MedicalDocumentCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many MedicalDocuments and returns the data saved in the database.
+     * @param {MedicalDocumentCreateManyAndReturnArgs} args - Arguments to create many MedicalDocuments.
+     * @example
+     * // Create many MedicalDocuments
+     * const medicalDocument = await prisma.medicalDocument.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many MedicalDocuments and only return the `id`
+     * const medicalDocumentWithIdOnly = await prisma.medicalDocument.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends MedicalDocumentCreateManyAndReturnArgs>(args?: SelectSubset<T, MedicalDocumentCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a MedicalDocument.
+     * @param {MedicalDocumentDeleteArgs} args - Arguments to delete one MedicalDocument.
+     * @example
+     * // Delete one MedicalDocument
+     * const MedicalDocument = await prisma.medicalDocument.delete({
+     *   where: {
+     *     // ... filter to delete one MedicalDocument
+     *   }
+     * })
+     * 
+     */
+    delete<T extends MedicalDocumentDeleteArgs>(args: SelectSubset<T, MedicalDocumentDeleteArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one MedicalDocument.
+     * @param {MedicalDocumentUpdateArgs} args - Arguments to update one MedicalDocument.
+     * @example
+     * // Update one MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends MedicalDocumentUpdateArgs>(args: SelectSubset<T, MedicalDocumentUpdateArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more MedicalDocuments.
+     * @param {MedicalDocumentDeleteManyArgs} args - Arguments to filter MedicalDocuments to delete.
+     * @example
+     * // Delete a few MedicalDocuments
+     * const { count } = await prisma.medicalDocument.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends MedicalDocumentDeleteManyArgs>(args?: SelectSubset<T, MedicalDocumentDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MedicalDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many MedicalDocuments
+     * const medicalDocument = await prisma.medicalDocument.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends MedicalDocumentUpdateManyArgs>(args: SelectSubset<T, MedicalDocumentUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more MedicalDocuments and returns the data updated in the database.
+     * @param {MedicalDocumentUpdateManyAndReturnArgs} args - Arguments to update many MedicalDocuments.
+     * @example
+     * // Update many MedicalDocuments
+     * const medicalDocument = await prisma.medicalDocument.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more MedicalDocuments and only return the `id`
+     * const medicalDocumentWithIdOnly = await prisma.medicalDocument.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends MedicalDocumentUpdateManyAndReturnArgs>(args: SelectSubset<T, MedicalDocumentUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one MedicalDocument.
+     * @param {MedicalDocumentUpsertArgs} args - Arguments to update or create a MedicalDocument.
+     * @example
+     * // Update or create a MedicalDocument
+     * const medicalDocument = await prisma.medicalDocument.upsert({
+     *   create: {
+     *     // ... data to create a MedicalDocument
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the MedicalDocument we want to update
+     *   }
+     * })
+     */
+    upsert<T extends MedicalDocumentUpsertArgs>(args: SelectSubset<T, MedicalDocumentUpsertArgs<ExtArgs>>): Prisma__MedicalDocumentClient<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of MedicalDocuments.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentCountArgs} args - Arguments to filter MedicalDocuments to count.
+     * @example
+     * // Count the number of MedicalDocuments
+     * const count = await prisma.medicalDocument.count({
+     *   where: {
+     *     // ... the filter for the MedicalDocuments we want to count
+     *   }
+     * })
+    **/
+    count<T extends MedicalDocumentCountArgs>(
+      args?: Subset<T, MedicalDocumentCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], MedicalDocumentCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a MedicalDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends MedicalDocumentAggregateArgs>(args: Subset<T, MedicalDocumentAggregateArgs>): Prisma.PrismaPromise<GetMedicalDocumentAggregateType<T>>
+
+    /**
+     * Group by MedicalDocument.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {MedicalDocumentGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends MedicalDocumentGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: MedicalDocumentGroupByArgs['orderBy'] }
+        : { orderBy?: MedicalDocumentGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, MedicalDocumentGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMedicalDocumentGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the MedicalDocument model
+   */
+  readonly fields: MedicalDocumentFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for MedicalDocument.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__MedicalDocumentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the MedicalDocument model
+   */
+  interface MedicalDocumentFieldRefs {
+    readonly id: FieldRef<"MedicalDocument", 'String'>
+    readonly patientId: FieldRef<"MedicalDocument", 'String'>
+    readonly title: FieldRef<"MedicalDocument", 'String'>
+    readonly type: FieldRef<"MedicalDocument", 'MedicalDocumentType'>
+    readonly fileName: FieldRef<"MedicalDocument", 'String'>
+    readonly mimeType: FieldRef<"MedicalDocument", 'String'>
+    readonly fileSize: FieldRef<"MedicalDocument", 'Int'>
+    readonly storagePath: FieldRef<"MedicalDocument", 'String'>
+    readonly reportDate: FieldRef<"MedicalDocument", 'DateTime'>
+    readonly hospitalOrDoctor: FieldRef<"MedicalDocument", 'String'>
+    readonly notes: FieldRef<"MedicalDocument", 'String'>
+    readonly createdAt: FieldRef<"MedicalDocument", 'DateTime'>
+    readonly updatedAt: FieldRef<"MedicalDocument", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * MedicalDocument findUnique
+   */
+  export type MedicalDocumentFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which MedicalDocument to fetch.
+     */
+    where: MedicalDocumentWhereUniqueInput
+  }
+
+  /**
+   * MedicalDocument findUniqueOrThrow
+   */
+  export type MedicalDocumentFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which MedicalDocument to fetch.
+     */
+    where: MedicalDocumentWhereUniqueInput
+  }
+
+  /**
+   * MedicalDocument findFirst
+   */
+  export type MedicalDocumentFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which MedicalDocument to fetch.
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MedicalDocuments to fetch.
+     */
+    orderBy?: MedicalDocumentOrderByWithRelationInput | MedicalDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MedicalDocuments.
+     */
+    cursor?: MedicalDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MedicalDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MedicalDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MedicalDocuments.
+     */
+    distinct?: MedicalDocumentScalarFieldEnum | MedicalDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * MedicalDocument findFirstOrThrow
+   */
+  export type MedicalDocumentFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which MedicalDocument to fetch.
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MedicalDocuments to fetch.
+     */
+    orderBy?: MedicalDocumentOrderByWithRelationInput | MedicalDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for MedicalDocuments.
+     */
+    cursor?: MedicalDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MedicalDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MedicalDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MedicalDocuments.
+     */
+    distinct?: MedicalDocumentScalarFieldEnum | MedicalDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * MedicalDocument findMany
+   */
+  export type MedicalDocumentFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter, which MedicalDocuments to fetch.
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of MedicalDocuments to fetch.
+     */
+    orderBy?: MedicalDocumentOrderByWithRelationInput | MedicalDocumentOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing MedicalDocuments.
+     */
+    cursor?: MedicalDocumentWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` MedicalDocuments from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` MedicalDocuments.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of MedicalDocuments.
+     */
+    distinct?: MedicalDocumentScalarFieldEnum | MedicalDocumentScalarFieldEnum[]
+  }
+
+  /**
+   * MedicalDocument create
+   */
+  export type MedicalDocumentCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * The data needed to create a MedicalDocument.
+     */
+    data: XOR<MedicalDocumentCreateInput, MedicalDocumentUncheckedCreateInput>
+  }
+
+  /**
+   * MedicalDocument createMany
+   */
+  export type MedicalDocumentCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many MedicalDocuments.
+     */
+    data: MedicalDocumentCreateManyInput | MedicalDocumentCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * MedicalDocument createManyAndReturn
+   */
+  export type MedicalDocumentCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * The data used to create many MedicalDocuments.
+     */
+    data: MedicalDocumentCreateManyInput | MedicalDocumentCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MedicalDocument update
+   */
+  export type MedicalDocumentUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * The data needed to update a MedicalDocument.
+     */
+    data: XOR<MedicalDocumentUpdateInput, MedicalDocumentUncheckedUpdateInput>
+    /**
+     * Choose, which MedicalDocument to update.
+     */
+    where: MedicalDocumentWhereUniqueInput
+  }
+
+  /**
+   * MedicalDocument updateMany
+   */
+  export type MedicalDocumentUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update MedicalDocuments.
+     */
+    data: XOR<MedicalDocumentUpdateManyMutationInput, MedicalDocumentUncheckedUpdateManyInput>
+    /**
+     * Filter which MedicalDocuments to update
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * Limit how many MedicalDocuments to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * MedicalDocument updateManyAndReturn
+   */
+  export type MedicalDocumentUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * The data used to update MedicalDocuments.
+     */
+    data: XOR<MedicalDocumentUpdateManyMutationInput, MedicalDocumentUncheckedUpdateManyInput>
+    /**
+     * Filter which MedicalDocuments to update
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * Limit how many MedicalDocuments to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * MedicalDocument upsert
+   */
+  export type MedicalDocumentUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * The filter to search for the MedicalDocument to update in case it exists.
+     */
+    where: MedicalDocumentWhereUniqueInput
+    /**
+     * In case the MedicalDocument found by the `where` argument doesn't exist, create a new MedicalDocument with this data.
+     */
+    create: XOR<MedicalDocumentCreateInput, MedicalDocumentUncheckedCreateInput>
+    /**
+     * In case the MedicalDocument was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<MedicalDocumentUpdateInput, MedicalDocumentUncheckedUpdateInput>
+  }
+
+  /**
+   * MedicalDocument delete
+   */
+  export type MedicalDocumentDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
+    /**
+     * Filter which MedicalDocument to delete.
+     */
+    where: MedicalDocumentWhereUniqueInput
+  }
+
+  /**
+   * MedicalDocument deleteMany
+   */
+  export type MedicalDocumentDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which MedicalDocuments to delete
+     */
+    where?: MedicalDocumentWhereInput
+    /**
+     * Limit how many MedicalDocuments to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * MedicalDocument without action
+   */
+  export type MedicalDocumentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the MedicalDocument
+     */
+    select?: MedicalDocumentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the MedicalDocument
+     */
+    omit?: MedicalDocumentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: MedicalDocumentInclude<ExtArgs> | null
   }
 
 
@@ -27301,6 +28647,25 @@ export namespace Prisma {
   export type PatientScalarFieldEnum = (typeof PatientScalarFieldEnum)[keyof typeof PatientScalarFieldEnum]
 
 
+  export const MedicalDocumentScalarFieldEnum: {
+    id: 'id',
+    patientId: 'patientId',
+    title: 'title',
+    type: 'type',
+    fileName: 'fileName',
+    mimeType: 'mimeType',
+    fileSize: 'fileSize',
+    storagePath: 'storagePath',
+    reportDate: 'reportDate',
+    hospitalOrDoctor: 'hospitalOrDoctor',
+    notes: 'notes',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
+  };
+
+  export type MedicalDocumentScalarFieldEnum = (typeof MedicalDocumentScalarFieldEnum)[keyof typeof MedicalDocumentScalarFieldEnum]
+
+
   export const NotificationScalarFieldEnum: {
     id: 'id',
     userId: 'userId',
@@ -27671,6 +29036,20 @@ export namespace Prisma {
    * Reference to a field of type 'Qualification[]'
    */
   export type ListEnumQualificationFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Qualification[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'MedicalDocumentType'
+   */
+  export type EnumMedicalDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalDocumentType'>
+    
+
+
+  /**
+   * Reference to a field of type 'MedicalDocumentType[]'
+   */
+  export type ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalDocumentType[]'>
     
 
 
@@ -28168,6 +29547,7 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    medicalDocuments?: MedicalDocumentListRelationFilter
   }
 
   export type PatientOrderByWithRelationInput = {
@@ -28183,6 +29563,7 @@ export namespace Prisma {
     appointments?: AppointmentOrderByRelationAggregateInput
     comments?: CommentOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
+    medicalDocuments?: MedicalDocumentOrderByRelationAggregateInput
   }
 
   export type PatientWhereUniqueInput = Prisma.AtLeast<{
@@ -28201,6 +29582,7 @@ export namespace Prisma {
     appointments?: AppointmentListRelationFilter
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
+    medicalDocuments?: MedicalDocumentListRelationFilter
   }, "id" | "userId">
 
   export type PatientOrderByWithAggregationInput = {
@@ -28227,6 +29609,103 @@ export namespace Prisma {
     currentMedications?: StringWithAggregatesFilter<"Patient"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Patient"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Patient"> | Date | string
+  }
+
+  export type MedicalDocumentWhereInput = {
+    AND?: MedicalDocumentWhereInput | MedicalDocumentWhereInput[]
+    OR?: MedicalDocumentWhereInput[]
+    NOT?: MedicalDocumentWhereInput | MedicalDocumentWhereInput[]
+    id?: StringFilter<"MedicalDocument"> | string
+    patientId?: StringFilter<"MedicalDocument"> | string
+    title?: StringFilter<"MedicalDocument"> | string
+    type?: EnumMedicalDocumentTypeFilter<"MedicalDocument"> | $Enums.MedicalDocumentType
+    fileName?: StringFilter<"MedicalDocument"> | string
+    mimeType?: StringFilter<"MedicalDocument"> | string
+    fileSize?: IntFilter<"MedicalDocument"> | number
+    storagePath?: StringFilter<"MedicalDocument"> | string
+    reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
+    hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
+    notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
+  }
+
+  export type MedicalDocumentOrderByWithRelationInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    type?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    storagePath?: SortOrder
+    reportDate?: SortOrder
+    hospitalOrDoctor?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    patient?: PatientOrderByWithRelationInput
+  }
+
+  export type MedicalDocumentWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    storagePath?: string
+    AND?: MedicalDocumentWhereInput | MedicalDocumentWhereInput[]
+    OR?: MedicalDocumentWhereInput[]
+    NOT?: MedicalDocumentWhereInput | MedicalDocumentWhereInput[]
+    patientId?: StringFilter<"MedicalDocument"> | string
+    title?: StringFilter<"MedicalDocument"> | string
+    type?: EnumMedicalDocumentTypeFilter<"MedicalDocument"> | $Enums.MedicalDocumentType
+    fileName?: StringFilter<"MedicalDocument"> | string
+    mimeType?: StringFilter<"MedicalDocument"> | string
+    fileSize?: IntFilter<"MedicalDocument"> | number
+    reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
+    hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
+    notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
+  }, "id" | "storagePath">
+
+  export type MedicalDocumentOrderByWithAggregationInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    type?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    storagePath?: SortOrder
+    reportDate?: SortOrder
+    hospitalOrDoctor?: SortOrderInput | SortOrder
+    notes?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    _count?: MedicalDocumentCountOrderByAggregateInput
+    _avg?: MedicalDocumentAvgOrderByAggregateInput
+    _max?: MedicalDocumentMaxOrderByAggregateInput
+    _min?: MedicalDocumentMinOrderByAggregateInput
+    _sum?: MedicalDocumentSumOrderByAggregateInput
+  }
+
+  export type MedicalDocumentScalarWhereWithAggregatesInput = {
+    AND?: MedicalDocumentScalarWhereWithAggregatesInput | MedicalDocumentScalarWhereWithAggregatesInput[]
+    OR?: MedicalDocumentScalarWhereWithAggregatesInput[]
+    NOT?: MedicalDocumentScalarWhereWithAggregatesInput | MedicalDocumentScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    patientId?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    title?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    type?: EnumMedicalDocumentTypeWithAggregatesFilter<"MedicalDocument"> | $Enums.MedicalDocumentType
+    fileName?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    mimeType?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    fileSize?: IntWithAggregatesFilter<"MedicalDocument"> | number
+    storagePath?: StringWithAggregatesFilter<"MedicalDocument"> | string
+    reportDate?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
+    hospitalOrDoctor?: StringNullableWithAggregatesFilter<"MedicalDocument"> | string | null
+    notes?: StringNullableWithAggregatesFilter<"MedicalDocument"> | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
   }
 
   export type NotificationWhereInput = {
@@ -29723,6 +31202,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateInput = {
@@ -29737,6 +31217,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUpdateInput = {
@@ -29751,6 +31232,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateInput = {
@@ -29765,6 +31247,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateManyInput = {
@@ -29792,6 +31275,117 @@ export namespace Prisma {
     medicalHistory?: StringFieldUpdateOperationsInput | string
     allergies?: StringFieldUpdateOperationsInput | string
     currentMedications?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentCreateInput = {
+    id?: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    patient: PatientCreateNestedOneWithoutMedicalDocumentsInput
+  }
+
+  export type MedicalDocumentUncheckedCreateInput = {
+    id?: string
+    patientId: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MedicalDocumentUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    patient?: PatientUpdateOneRequiredWithoutMedicalDocumentsNestedInput
+  }
+
+  export type MedicalDocumentUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentCreateManyInput = {
+    id?: string
+    patientId: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MedicalDocumentUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31506,6 +33100,16 @@ export namespace Prisma {
     _max?: NestedEnumQualificationFilter<$PrismaModel>
   }
 
+  export type MedicalDocumentListRelationFilter = {
+    every?: MedicalDocumentWhereInput
+    some?: MedicalDocumentWhereInput
+    none?: MedicalDocumentWhereInput
+  }
+
+  export type MedicalDocumentOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type PatientCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -31534,6 +33138,84 @@ export namespace Prisma {
     currentMedications?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+  }
+
+  export type EnumMedicalDocumentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel> | $Enums.MedicalDocumentType
+  }
+
+  export type PatientScalarRelationFilter = {
+    is?: PatientWhereInput
+    isNot?: PatientWhereInput
+  }
+
+  export type MedicalDocumentCountOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    type?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    storagePath?: SortOrder
+    reportDate?: SortOrder
+    hospitalOrDoctor?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MedicalDocumentAvgOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type MedicalDocumentMaxOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    type?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    storagePath?: SortOrder
+    reportDate?: SortOrder
+    hospitalOrDoctor?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MedicalDocumentMinOrderByAggregateInput = {
+    id?: SortOrder
+    patientId?: SortOrder
+    title?: SortOrder
+    type?: SortOrder
+    fileName?: SortOrder
+    mimeType?: SortOrder
+    fileSize?: SortOrder
+    storagePath?: SortOrder
+    reportDate?: SortOrder
+    hospitalOrDoctor?: SortOrder
+    notes?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type MedicalDocumentSumOrderByAggregateInput = {
+    fileSize?: SortOrder
+  }
+
+  export type EnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+    _max?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
   }
 
   export type DateTimeNullableFilter<$PrismaModel = never> = {
@@ -31791,11 +33473,6 @@ export namespace Prisma {
   export type SlotScalarRelationFilter = {
     is?: SlotWhereInput
     isNot?: SlotWhereInput
-  }
-
-  export type PatientScalarRelationFilter = {
-    is?: PatientWhereInput
-    isNot?: PatientWhereInput
   }
 
   export type AppointmentCountOrderByAggregateInput = {
@@ -33258,6 +34935,13 @@ export namespace Prisma {
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
   }
 
+  export type MedicalDocumentCreateNestedManyWithoutPatientInput = {
+    create?: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput> | MedicalDocumentCreateWithoutPatientInput[] | MedicalDocumentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: MedicalDocumentCreateOrConnectWithoutPatientInput | MedicalDocumentCreateOrConnectWithoutPatientInput[]
+    createMany?: MedicalDocumentCreateManyPatientInputEnvelope
+    connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+  }
+
   export type DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -33284,6 +34968,13 @@ export namespace Prisma {
     connectOrCreate?: RatingCreateOrConnectWithoutPatientInput | RatingCreateOrConnectWithoutPatientInput[]
     createMany?: RatingCreateManyPatientInputEnvelope
     connect?: RatingWhereUniqueInput | RatingWhereUniqueInput[]
+  }
+
+  export type MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput = {
+    create?: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput> | MedicalDocumentCreateWithoutPatientInput[] | MedicalDocumentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: MedicalDocumentCreateOrConnectWithoutPatientInput | MedicalDocumentCreateOrConnectWithoutPatientInput[]
+    createMany?: MedicalDocumentCreateManyPatientInputEnvelope
+    connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutPatientNestedInput = {
@@ -33350,6 +35041,20 @@ export namespace Prisma {
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
   }
 
+  export type MedicalDocumentUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput> | MedicalDocumentCreateWithoutPatientInput[] | MedicalDocumentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: MedicalDocumentCreateOrConnectWithoutPatientInput | MedicalDocumentCreateOrConnectWithoutPatientInput[]
+    upsert?: MedicalDocumentUpsertWithWhereUniqueWithoutPatientInput | MedicalDocumentUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: MedicalDocumentCreateManyPatientInputEnvelope
+    set?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    disconnect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    delete?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    update?: MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput | MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: MedicalDocumentUpdateManyWithWhereWithoutPatientInput | MedicalDocumentUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
+  }
+
   export type DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -33404,6 +35109,38 @@ export namespace Prisma {
     update?: RatingUpdateWithWhereUniqueWithoutPatientInput | RatingUpdateWithWhereUniqueWithoutPatientInput[]
     updateMany?: RatingUpdateManyWithWhereWithoutPatientInput | RatingUpdateManyWithWhereWithoutPatientInput[]
     deleteMany?: RatingScalarWhereInput | RatingScalarWhereInput[]
+  }
+
+  export type MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput = {
+    create?: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput> | MedicalDocumentCreateWithoutPatientInput[] | MedicalDocumentUncheckedCreateWithoutPatientInput[]
+    connectOrCreate?: MedicalDocumentCreateOrConnectWithoutPatientInput | MedicalDocumentCreateOrConnectWithoutPatientInput[]
+    upsert?: MedicalDocumentUpsertWithWhereUniqueWithoutPatientInput | MedicalDocumentUpsertWithWhereUniqueWithoutPatientInput[]
+    createMany?: MedicalDocumentCreateManyPatientInputEnvelope
+    set?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    disconnect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    delete?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
+    update?: MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput | MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput[]
+    updateMany?: MedicalDocumentUpdateManyWithWhereWithoutPatientInput | MedicalDocumentUpdateManyWithWhereWithoutPatientInput[]
+    deleteMany?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
+  }
+
+  export type PatientCreateNestedOneWithoutMedicalDocumentsInput = {
+    create?: XOR<PatientCreateWithoutMedicalDocumentsInput, PatientUncheckedCreateWithoutMedicalDocumentsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutMedicalDocumentsInput
+    connect?: PatientWhereUniqueInput
+  }
+
+  export type EnumMedicalDocumentTypeFieldUpdateOperationsInput = {
+    set?: $Enums.MedicalDocumentType
+  }
+
+  export type PatientUpdateOneRequiredWithoutMedicalDocumentsNestedInput = {
+    create?: XOR<PatientCreateWithoutMedicalDocumentsInput, PatientUncheckedCreateWithoutMedicalDocumentsInput>
+    connectOrCreate?: PatientCreateOrConnectWithoutMedicalDocumentsInput
+    upsert?: PatientUpsertWithoutMedicalDocumentsInput
+    connect?: PatientWhereUniqueInput
+    update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutMedicalDocumentsInput, PatientUpdateWithoutMedicalDocumentsInput>, PatientUncheckedUpdateWithoutMedicalDocumentsInput>
   }
 
   export type UserCreateNestedOneWithoutNotificationsInput = {
@@ -34042,6 +35779,23 @@ export namespace Prisma {
     _max?: NestedEnumQualificationFilter<$PrismaModel>
   }
 
+  export type NestedEnumMedicalDocumentTypeFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel> | $Enums.MedicalDocumentType
+  }
+
+  export type NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+    _max?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+  }
+
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -34262,6 +36016,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutUserInput = {
@@ -34275,6 +36030,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutUserInput = {
@@ -34601,6 +36357,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutUserInput = {
@@ -34614,6 +36371,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type OtpUpsertWithWhereUniqueWithoutUserInput = {
@@ -36083,6 +37841,46 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
+  export type MedicalDocumentCreateWithoutPatientInput = {
+    id?: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MedicalDocumentUncheckedCreateWithoutPatientInput = {
+    id?: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type MedicalDocumentCreateOrConnectWithoutPatientInput = {
+    where: MedicalDocumentWhereUniqueInput
+    create: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput>
+  }
+
+  export type MedicalDocumentCreateManyPatientInputEnvelope = {
+    data: MedicalDocumentCreateManyPatientInput | MedicalDocumentCreateManyPatientInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutPatientInput = {
     update: XOR<UserUpdateWithoutPatientInput, UserUncheckedUpdateWithoutPatientInput>
     create: XOR<UserCreateWithoutPatientInput, UserUncheckedCreateWithoutPatientInput>
@@ -36210,6 +38008,113 @@ export namespace Prisma {
   export type RatingUpdateManyWithWhereWithoutPatientInput = {
     where: RatingScalarWhereInput
     data: XOR<RatingUpdateManyMutationInput, RatingUncheckedUpdateManyWithoutPatientInput>
+  }
+
+  export type MedicalDocumentUpsertWithWhereUniqueWithoutPatientInput = {
+    where: MedicalDocumentWhereUniqueInput
+    update: XOR<MedicalDocumentUpdateWithoutPatientInput, MedicalDocumentUncheckedUpdateWithoutPatientInput>
+    create: XOR<MedicalDocumentCreateWithoutPatientInput, MedicalDocumentUncheckedCreateWithoutPatientInput>
+  }
+
+  export type MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput = {
+    where: MedicalDocumentWhereUniqueInput
+    data: XOR<MedicalDocumentUpdateWithoutPatientInput, MedicalDocumentUncheckedUpdateWithoutPatientInput>
+  }
+
+  export type MedicalDocumentUpdateManyWithWhereWithoutPatientInput = {
+    where: MedicalDocumentScalarWhereInput
+    data: XOR<MedicalDocumentUpdateManyMutationInput, MedicalDocumentUncheckedUpdateManyWithoutPatientInput>
+  }
+
+  export type MedicalDocumentScalarWhereInput = {
+    AND?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
+    OR?: MedicalDocumentScalarWhereInput[]
+    NOT?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
+    id?: StringFilter<"MedicalDocument"> | string
+    patientId?: StringFilter<"MedicalDocument"> | string
+    title?: StringFilter<"MedicalDocument"> | string
+    type?: EnumMedicalDocumentTypeFilter<"MedicalDocument"> | $Enums.MedicalDocumentType
+    fileName?: StringFilter<"MedicalDocument"> | string
+    mimeType?: StringFilter<"MedicalDocument"> | string
+    fileSize?: IntFilter<"MedicalDocument"> | number
+    storagePath?: StringFilter<"MedicalDocument"> | string
+    reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
+    hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
+    notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+    updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
+  }
+
+  export type PatientCreateWithoutMedicalDocumentsInput = {
+    id?: string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPatientInput
+    doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentCreateNestedManyWithoutPatientInput
+    comments?: CommentCreateNestedManyWithoutPatientInput
+    ratings?: RatingCreateNestedManyWithoutPatientInput
+  }
+
+  export type PatientUncheckedCreateWithoutMedicalDocumentsInput = {
+    id?: string
+    userId: string
+    medicalHistory?: string
+    allergies?: string
+    currentMedications?: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
+    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+  }
+
+  export type PatientCreateOrConnectWithoutMedicalDocumentsInput = {
+    where: PatientWhereUniqueInput
+    create: XOR<PatientCreateWithoutMedicalDocumentsInput, PatientUncheckedCreateWithoutMedicalDocumentsInput>
+  }
+
+  export type PatientUpsertWithoutMedicalDocumentsInput = {
+    update: XOR<PatientUpdateWithoutMedicalDocumentsInput, PatientUncheckedUpdateWithoutMedicalDocumentsInput>
+    create: XOR<PatientCreateWithoutMedicalDocumentsInput, PatientUncheckedCreateWithoutMedicalDocumentsInput>
+    where?: PatientWhereInput
+  }
+
+  export type PatientUpdateToOneWithWhereWithoutMedicalDocumentsInput = {
+    where?: PatientWhereInput
+    data: XOR<PatientUpdateWithoutMedicalDocumentsInput, PatientUncheckedUpdateWithoutMedicalDocumentsInput>
+  }
+
+  export type PatientUpdateWithoutMedicalDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPatientNestedInput
+    doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUpdateManyWithoutPatientNestedInput
+    comments?: CommentUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUpdateManyWithoutPatientNestedInput
+  }
+
+  export type PatientUncheckedUpdateWithoutMedicalDocumentsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    medicalHistory?: StringFieldUpdateOperationsInput | string
+    allergies?: StringFieldUpdateOperationsInput | string
+    currentMedications?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
+    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -36811,6 +38716,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutAppointmentsInput = {
@@ -36824,6 +38730,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutAppointmentsInput = {
@@ -36949,6 +38856,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutAppointmentsInput = {
@@ -36962,6 +38870,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type ChatMessagesCreateWithoutDoctorPatientRelationInput = {
@@ -37050,6 +38959,7 @@ export namespace Prisma {
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutDoctorRelationsInput = {
@@ -37063,6 +38973,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutDoctorRelationsInput = {
@@ -37163,6 +39074,7 @@ export namespace Prisma {
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutDoctorRelationsInput = {
@@ -37176,6 +39088,7 @@ export namespace Prisma {
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorPatientRelationCreateWithoutChatMessagesInput = {
@@ -38134,6 +40047,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutRatingsInput = {
@@ -38147,6 +40061,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutRatingsInput = {
@@ -38231,6 +40146,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutRatingsInput = {
@@ -38244,6 +40160,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorCreateWithoutCommentsInput = {
@@ -38306,6 +40223,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
     appointments?: AppointmentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutCommentsInput = {
@@ -38319,6 +40237,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
     appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
+    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutCommentsInput = {
@@ -38403,6 +40322,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutCommentsInput = {
@@ -38416,6 +40336,7 @@ export namespace Prisma {
     doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
     appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
+    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type OtpCreateManyUserInput = {
@@ -39132,6 +41053,21 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
+  export type MedicalDocumentCreateManyPatientInput = {
+    id?: string
+    title: string
+    type: $Enums.MedicalDocumentType
+    fileName: string
+    mimeType: string
+    fileSize: number
+    storagePath: string
+    reportDate: Date | string
+    hospitalOrDoctor?: string | null
+    notes?: string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
   export type DoctorPatientRelationUpdateWithoutPatientInput = {
     id?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -39238,6 +41174,51 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
     rating?: IntFieldUpdateOperationsInput | number
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentUncheckedUpdateWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type MedicalDocumentUncheckedUpdateManyWithoutPatientInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    type?: EnumMedicalDocumentTypeFieldUpdateOperationsInput | $Enums.MedicalDocumentType
+    fileName?: StringFieldUpdateOperationsInput | string
+    mimeType?: StringFieldUpdateOperationsInput | string
+    fileSize?: IntFieldUpdateOperationsInput | number
+    storagePath?: StringFieldUpdateOperationsInput | string
+    reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
+    hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

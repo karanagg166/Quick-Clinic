@@ -182,6 +182,22 @@ exports.Prisma.PatientScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MedicalDocumentScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  title: 'title',
+  type: 'type',
+  fileName: 'fileName',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  storagePath: 'storagePath',
+  reportDate: 'reportDate',
+  hospitalOrDoctor: 'hospitalOrDoctor',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.NotificationScalarFieldEnum = {
   id: 'id',
   userId: 'userId',
@@ -439,6 +455,16 @@ exports.Qualification = exports.$Enums.Qualification = {
   PGD: 'PGD'
 };
 
+exports.MedicalDocumentType = exports.$Enums.MedicalDocumentType = {
+  LAB_REPORT: 'LAB_REPORT',
+  PRESCRIPTION: 'PRESCRIPTION',
+  RADIOLOGY_SCAN: 'RADIOLOGY_SCAN',
+  DISCHARGE_SUMMARY: 'DISCHARGE_SUMMARY',
+  MEDICAL_CERTIFICATE: 'MEDICAL_CERTIFICATE',
+  VACCINATION_RECORD: 'VACCINATION_RECORD',
+  OTHER: 'OTHER'
+};
+
 exports.SlotStatus = exports.$Enums.SlotStatus = {
   AVAILABLE: 'AVAILABLE',
   HELD: 'HELD',
@@ -478,6 +504,7 @@ exports.Prisma.ModelName = {
   Doctor: 'Doctor',
   DoctorQualification: 'DoctorQualification',
   Patient: 'Patient',
+  MedicalDocument: 'MedicalDocument',
   Notification: 'Notification',
   Leave: 'Leave',
   Schedule: 'Schedule',

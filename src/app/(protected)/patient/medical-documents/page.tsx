@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
@@ -15,9 +15,6 @@ import { Button } from "@/components/ui/button";
 import {
   MedicalDocument,
   MedicalDocumentFiltersState,
-  INITIAL_MOCK_DOCUMENTS,
-  isPdfDocument,
-  isImageDocument,
 } from "@/types/medical-document";
 import { MedicalDocumentCard } from "@/components/patient/medical-documents/MedicalDocumentCard";
 import { MedicalDocumentFilters } from "@/components/patient/medical-documents/MedicalDocumentFilters";
@@ -35,24 +32,108 @@ const INITIAL_FILTERS: MedicalDocumentFiltersState = {
 };
 
 export default function MedicalDocumentsPage() {
-  const [documents, setDocuments] =
-    useState<MedicalDocument[]>(INITIAL_MOCK_DOCUMENTS);
+  const [documents, setDocuments] = useState<MedicalDocument[]>([]);
   const [filters, setFilters] =
     useState<MedicalDocumentFiltersState>(INITIAL_FILTERS);
   const [isLoading, setIsLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
 
   // Active dialog states
   const [previewDoc, setPreviewDoc] = useState<MedicalDocument | null>(null);
   const [deleteDoc, setDeleteDoc] = useState<MedicalDocument | null>(null);
   const [renameDoc, setRenameDoc] = useState<MedicalDocument | null>(null);
 
-  // Brief initial loading simulation to demonstrate loading skeleton state
+  // Search debounce ref
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Fetch documents from backend API with server-side filters and sorting
+  const fetchDocuments = useCallback(
+    async (currentFilters: MedicalDocumentFiltersState) => {
+      try {
+        setIsLoading(true);
+        const params = new URLSearchParams();
+
+        if (currentFilters.searchQuery.trim()) {
+          params.set("search", currentFilters.searchQuery.trim());
+        }
+        if (currentFilters.documentType && currentFilters.documentType !== "ALL") {
+          params.set("type", currentFilters.documentType);
+        }
+        if (currentFilters.fileType && currentFilters.fileType !== "ALL") {
+          params.set("fileType", currentFilters.fileType);
+        }
+        if (currentFilters.reportDate) {
+          params.set("reportDate", currentFilters.reportDate);
+        }
+        if (currentFilters.sortBy) {
+          params.set("sort", currentFilters.sortBy);
+        }
+
+        const res = await fetch(
+          `/api/patients/me/medical-documents?${params.toString()}`
+        );
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || "Failed to load medical documents");
+        }
+
+        const data = await res.json();
+        const docs: MedicalDocument[] = (data.documents || []).map(
+          (d: any) => ({
+            id: d.id,
+            title: d.title,
+            fileName: d.fileName,
+            mimeType: d.mimeType,
+            fileSize: d.fileSize,
+            type: d.type,
+            reportDate: typeof d.reportDate === "string" ? d.reportDate.split("T")[0] : d.reportDate,
+            uploadedAt: typeof d.createdAt === "string" ? d.createdAt.split("T")[0] : d.createdAt,
+            hospitalOrDoctor: d.hospitalOrDoctor || undefined,
+            notes: d.notes || undefined,
+          })
+        );
+
+        setDocuments(docs);
+
+        // If no search or filter is active, update the baseline totalCount
+        const isDefault =
+          !currentFilters.searchQuery.trim() &&
+          currentFilters.documentType === "ALL" &&
+          currentFilters.fileType === "ALL" &&
+          !currentFilters.reportDate;
+
+        if (isDefault) {
+          setTotalCount(docs.length);
+        }
+      } catch (err: any) {
+        console.error("Error loading medical documents:", err);
+        toast.error(err.message || "Failed to load medical documents");
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
+
+  // Debounced effect when filters change
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 400);
-    return () => clearTimeout(timer);
-  }, []);
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Debounce search query changes by 300ms, apply non-search filters immediately
+    const delay = filters.searchQuery ? 300 : 0;
+    debounceTimerRef.current = setTimeout(() => {
+      fetchDocuments(filters);
+    }, delay);
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [filters, fetchDocuments]);
 
   const handleFilterChange = (
     updated: Partial<MedicalDocumentFiltersState>
@@ -64,91 +145,114 @@ export default function MedicalDocumentsPage() {
     setFilters(INITIAL_FILTERS);
   };
 
-  // Filter and sort client-side
-  const filteredDocuments = useMemo(() => {
-    return documents
-      .filter((doc) => {
-        // 1. Search Query
-        if (filters.searchQuery.trim()) {
-          const q = filters.searchQuery.toLowerCase();
-          const matchTitle = doc.title.toLowerCase().includes(q);
-          const matchFileName = doc.fileName.toLowerCase().includes(q);
-          const matchDoctor = doc.hospitalOrDoctor
-            ?.toLowerCase()
-            .includes(q);
-          if (!matchTitle && !matchFileName && !matchDoctor) {
-            return false;
-          }
-        }
+  // View document handler: request temporary signed URL
+  const handleView = async (doc: MedicalDocument) => {
+    try {
+      const res = await fetch(
+        `/api/patients/me/medical-documents/${doc.id}/access`
+      );
+      const data = await res.json();
 
-        // 2. Document Type
-        if (filters.documentType !== "ALL" && doc.type !== filters.documentType) {
-          return false;
-        }
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate preview URL");
+      }
 
-        // 3. File Type
-        if (filters.fileType === "PDF") {
-          if (!isPdfDocument(doc.fileName, doc.mimeType)) return false;
-        } else if (filters.fileType === "IMAGE") {
-          if (!isImageDocument(doc.fileName, doc.mimeType)) return false;
-        }
-
-        // 4. Report Date
-        if (filters.reportDate) {
-          if (doc.reportDate !== filters.reportDate) return false;
-        }
-
-        return true;
-      })
-      .sort((a, b) => {
-        switch (filters.sortBy) {
-          case "newest":
-            return (
-              new Date(b.reportDate).getTime() -
-              new Date(a.reportDate).getTime()
-            );
-          case "oldest":
-            return (
-              new Date(a.reportDate).getTime() -
-              new Date(b.reportDate).getTime()
-            );
-          case "name_asc":
-            return a.title.localeCompare(b.title);
-          case "name_desc":
-            return b.title.localeCompare(a.title);
-          default:
-            return 0;
-        }
+      setPreviewDoc({
+        ...doc,
+        previewUrl: data.url,
       });
-  }, [documents, filters]);
-
-  // Handlers for document actions
-  const handleView = (doc: MedicalDocument) => {
-    setPreviewDoc(doc);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to open document preview");
+    }
   };
 
-  const handleDownload = (doc: MedicalDocument) => {
-    toast.success(`Downloading "${doc.fileName}" (mock preview)`);
+  // Download handler: request fresh temporary signed URL and trigger download
+  const handleDownload = async (doc: MedicalDocument) => {
+    try {
+      const res = await fetch(
+        `/api/patients/me/medical-documents/${doc.id}/access`
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to generate download URL");
+      }
+
+      const link = document.createElement("a");
+      link.href = data.url;
+      link.download = doc.fileName;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success(`Download started for "${doc.fileName}"`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to download document");
+    }
   };
 
+  // Delete handlers
   const handleDeleteRequest = (doc: MedicalDocument) => {
     setDeleteDoc(doc);
   };
 
-  const handleConfirmDelete = (doc: MedicalDocument) => {
-    setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
-    toast.success(`"${doc.title}" was deleted.`);
+  const handleConfirmDelete = async (doc: MedicalDocument) => {
+    try {
+      const res = await fetch(
+        `/api/patients/me/medical-documents/${doc.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to delete document");
+      }
+
+      setDocuments((prev) => prev.filter((d) => d.id !== doc.id));
+      setTotalCount((prev) => Math.max(0, prev - 1));
+      setDeleteDoc(null);
+      toast.success(`"${doc.title}" was deleted.`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete document");
+    }
   };
 
+  // Rename handlers
   const handleRenameRequest = (doc: MedicalDocument) => {
     setRenameDoc(doc);
   };
 
-  const handleConfirmRename = (doc: MedicalDocument, newTitle: string) => {
-    setDocuments((prev) =>
-      prev.map((d) => (d.id === doc.id ? { ...d, title: newTitle } : d))
-    );
-    toast.success(`Document renamed to "${newTitle}".`);
+  const handleConfirmRename = async (
+    doc: MedicalDocument,
+    newTitle: string
+  ) => {
+    try {
+      const res = await fetch(
+        `/api/patients/me/medical-documents/${doc.id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ title: newTitle }),
+        }
+      );
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to rename document");
+      }
+
+      setDocuments((prev) =>
+        prev.map((d) => (d.id === doc.id ? { ...d, title: newTitle } : d))
+      );
+      setRenameDoc(null);
+      toast.success(`Document renamed to "${newTitle}".`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to rename document");
+    }
   };
 
   return (
@@ -195,14 +299,14 @@ export default function MedicalDocumentsPage() {
         filters={filters}
         onFilterChange={handleFilterChange}
         onResetFilters={handleResetFilters}
-        totalCount={documents.length}
-        filteredCount={filteredDocuments.length}
+        totalCount={totalCount || documents.length}
+        filteredCount={documents.length}
       />
 
       {/* Document Grid / Loading / Empty State */}
       {isLoading ? (
         <MedicalDocumentSkeleton count={6} />
-      ) : filteredDocuments.length === 0 ? (
+      ) : documents.length === 0 ? (
         /* Empty State */
         <motion.div
           initial={{ opacity: 0, y: 10 }}
@@ -241,7 +345,7 @@ export default function MedicalDocumentsPage() {
       ) : (
         /* Grid */
         <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          {filteredDocuments.map((doc) => (
+          {documents.map((doc) => (
             <MedicalDocumentCard
               key={doc.id}
               document={doc}

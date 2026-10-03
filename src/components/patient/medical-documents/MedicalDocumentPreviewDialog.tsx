@@ -8,6 +8,7 @@ import {
   Building2,
   Download,
   Info,
+  ExternalLink,
 } from "lucide-react";
 import {
   Dialog,
@@ -113,13 +114,26 @@ export function MedicalDocumentPreviewDialog({
                 {formatFileSize(document.fileSize)} • Ready for viewing and download
               </p>
 
-              <div className="inline-flex items-center gap-2 p-2.5 rounded-md bg-muted/60 text-muted-foreground text-xs text-left">
-                <Info className="w-4 h-4 shrink-0 text-primary" />
-                <span>
-                  PDF preview mode. Full embedded PDF viewer will be enabled
-                  with backend integration.
-                </span>
-              </div>
+              {document.previewUrl ? (
+                <div className="flex flex-col items-center gap-2">
+                  <Button variant="default" size="sm" asChild className="gap-2">
+                    <a
+                      href={document.previewUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="w-4 h-4" /> Open PDF in New Tab
+                    </a>
+                  </Button>
+                </div>
+              ) : (
+                <div className="inline-flex items-center gap-2 p-2.5 rounded-md bg-muted/60 text-muted-foreground text-xs text-left">
+                  <Info className="w-4 h-4 shrink-0 text-primary" />
+                  <span>
+                    PDF preview mode. Loading secure preview link...
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-8">

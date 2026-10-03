@@ -111,6 +111,16 @@ enum PaymentMethod {
   ONLINE
 }
 
+enum MedicalDocumentType {
+  LAB_REPORT
+  PRESCRIPTION
+  RADIOLOGY_SCAN
+  DISCHARGE_SUMMARY
+  MEDICAL_CERTIFICATE
+  VACCINATION_RECORD
+  OTHER
+}
+
 // ======================================================
 // USER, ADMIN, DOCTOR, PATIENT MODELS
 // ======================================================
@@ -221,13 +231,41 @@ model Patient {
   allergies          String @default("")
   currentMedications String @default("")
 
-  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  doctorRelations DoctorPatientRelation[]
-  appointments    Appointment[]
-  comments        Comment[]
-  ratings         Rating[]
-  createdAt       DateTime                @default(now())
-  updatedAt       DateTime                @updatedAt
+  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorRelations  DoctorPatientRelation[]
+  appointments     Appointment[]
+  comments         Comment[]
+  ratings          Rating[]
+  medicalDocuments MedicalDocument[]
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+}
+
+model MedicalDocument {
+  id String @id @default(cuid())
+
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  title String
+  type  MedicalDocumentType
+
+  fileName String
+  mimeType String
+  fileSize Int
+
+  storagePath String @unique
+
+  reportDate       DateTime
+  hospitalOrDoctor String?
+  notes            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([patientId])
+  @@index([patientId, reportDate])
+  @@index([patientId, type])
 }
 
 // ======================================================
