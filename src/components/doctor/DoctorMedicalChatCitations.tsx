@@ -66,6 +66,8 @@ export function DoctorMedicalChatCitations({
         return "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border-purple-200 dark:border-purple-900";
       case "DISCHARGE_SUMMARY":
         return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-900";
+      case "OBSERVATION":
+        return "bg-teal-50 text-teal-700 dark:bg-teal-950/40 dark:text-teal-400 border-teal-200 dark:border-teal-900";
       default:
         return "bg-muted text-muted-foreground border-border";
     }
@@ -95,6 +97,7 @@ export function DoctorMedicalChatCitations({
             ? format(new Date(citation.reportDate), "MMM d, yyyy")
             : null;
           const isViewing = viewingDocId === citation.documentId;
+          const isObservation = citation.sourceType === "OBSERVATION" || citation.documentType === "OBSERVATION";
 
           return (
             <div
@@ -109,10 +112,10 @@ export function DoctorMedicalChatCitations({
                   <Badge
                     variant="outline"
                     className={`text-[10px] font-medium border ${getTypeBadgeVariant(
-                      citation.documentType
+                      isObservation ? "OBSERVATION" : citation.documentType
                     )}`}
                   >
-                    {citation.documentType.replace(/_/g, " ")}
+                    {isObservation ? "Observation" : citation.documentType.replace(/_/g, " ")}
                   </Badge>
                   <span
                     className="font-medium text-foreground truncate max-w-[180px] sm:max-w-[260px]"

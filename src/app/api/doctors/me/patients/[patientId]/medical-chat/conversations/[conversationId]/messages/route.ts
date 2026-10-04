@@ -266,6 +266,30 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       "MEDICAL_RECORD"
     );
 
+    if (chatResponse.answerMode === "STRUCTURED") {
+      await logAudit(
+        authUser.id,
+        "MEDICAL_STRUCTURED_QUERY",
+        {
+          patientId: cleanPatientId,
+          conversationId: cleanConversationId,
+          citationCount: chatResponse.citations.length,
+        },
+        "MEDICAL_RECORD"
+      );
+    } else if (chatResponse.answerMode === "HYBRID") {
+      await logAudit(
+        authUser.id,
+        "MEDICAL_HYBRID_QUERY",
+        {
+          patientId: cleanPatientId,
+          conversationId: cleanConversationId,
+          citationCount: chatResponse.citations.length,
+        },
+        "MEDICAL_RECORD"
+      );
+    }
+
     return NextResponse.json(
       {
         message: assistantMessage,

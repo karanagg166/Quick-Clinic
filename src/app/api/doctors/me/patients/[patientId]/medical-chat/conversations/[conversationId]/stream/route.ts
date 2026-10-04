@@ -200,6 +200,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     let accumulatedAnswer = "";
     let extractedCitations: MedicalRagCitation[] = [];
+    let streamMode: string | null = null;
     let isPersisted = false;
 
     const stream = new ReadableStream({
@@ -267,6 +268,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
                   }
                   if (parsed.citations && extractedCitations.length === 0) {
                     extractedCitations = parsed.citations;
+                  }
+                  if (parsed.mode) {
+                    streamMode = parsed.mode;
                   }
                 } catch {
                   // ignore
@@ -359,6 +363,30 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             },
             "MEDICAL_RECORD"
           );
+
+          if (streamMode === "STRUCTURED") {
+            await logAudit(
+              targetUserId,
+              "MEDICAL_STRUCTURED_QUERY",
+              {
+                patientId: targetPatientId,
+                conversationId: targetConversationId,
+                citationCount: extractedCitations.length,
+              },
+              "MEDICAL_RECORD"
+            );
+          } else if (streamMode === "HYBRID") {
+            await logAudit(
+              targetUserId,
+              "MEDICAL_HYBRID_QUERY",
+              {
+                patientId: targetPatientId,
+                conversationId: targetConversationId,
+                citationCount: extractedCitations.length,
+              },
+              "MEDICAL_RECORD"
+            );
+          }
 
           // Emit citations and done events with DB assistant message id
           controller.enqueue(

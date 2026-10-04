@@ -496,8 +496,189 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
         "MEDICAL_RECORD"
       );
 
-      // Verify assistant message was NOT persisted (only 1 create call for the user message)
       expect(prisma.medicalAiMessage.create).toHaveBeenCalledTimes(1);
+    });
+
+    it("Structured query chat response persists observation citations and logs MEDICAL_STRUCTURED_QUERY", async () => {
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+        id: conversationIdA,
+        doctorId: doctorProfileA.id,
+        patientId: patientIdA,
+        title: "BP check",
+      } as any);
+
+      vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({
+        id: "msg_user_struct",
+        conversationId: conversationIdA,
+        role: "USER",
+        content: "What is the latest BP?",
+        status: "COMPLETE",
+      } as any);
+
+      vi.mocked(prisma.medicalAiMessage.findMany).mockResolvedValueOnce([]);
+
+      vi.mocked(generatePatientMedicalChat).mockResolvedValueOnce({
+        answer: "The latest recorded Blood Pressure reading is 120/80 mmHg (observed on Oct 1, 2026) [1].",
+        citations: [
+          {
+            citationId: 1,
+            documentId: "doc_patA_1",
+            fileName: "vitals.pdf",
+            documentType: "OBSERVATION",
+            reportDate: "2026-10-01",
+            pageNumber: 1,
+            chunkIndex: 0,
+            sourceType: "OBSERVATION",
+            observationId: "obs_bp_1",
+          },
+        ],
+        resultCount: 1,
+        answerMode: "STRUCTURED",
+      });
+
+      vi.mocked(prisma.medicalDocument.findMany).mockResolvedValueOnce([
+        { id: "doc_patA_1" } as any,
+      ]);
+
+      vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({
+        id: "msg_ast_struct",
+        role: "ASSISTANT",
+      } as any);
+      vi.mocked(prisma.medicalAiConversation.update).mockResolvedValueOnce({} as any);
+
+      const req = new NextRequest(
+        `http://localhost:3000/api/doctors/me/patients/${patientIdA}/medical-chat/conversations/${conversationIdA}/messages`,
+        {
+          method: "POST",
+          body: JSON.stringify({ message: "What is the latest BP?" }),
+        }
+      );
+
+      const res = await sendMessage(req, {
+        params: Promise.resolve({ patientId: patientIdA, conversationId: conversationIdA }),
+      });
+
+      expect(res.status).toBe(200);
+
+      // Verify MEDICAL_STRUCTURED_QUERY was logged
+      expect(logAudit).toHaveBeenCalledWith(
+        doctorUserA.id,
+        "MEDICAL_STRUCTURED_QUERY",
+        expect.objectContaining({
+          patientId: patientIdA,
+          conversationId: conversationIdA,
+          citationCount: 1,
+        }),
+        "MEDICAL_RECORD"
+      );
+
+      // Verify assistant message persisted observation citations
+      expect(prisma.medicalAiMessage.create).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          data: expect.objectContaining({
+            role: "ASSISTANT",
+            citations: expect.arrayContaining([
+              expect.objectContaining({
+                sourceType: "OBSERVATION",
+                observationId: "obs_bp_1",
+              }),
+            ]),
+          }),
+        })
+      );
+    });
+
+    it("Hybrid query chat response logs MEDICAL_HYBRID_QUERY", async () => {
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+        id: conversationIdA,
+        doctorId: doctorProfileA.id,
+        patientId: patientIdA,
+        title: "BP & Doctor Advice",
+      } as any);
+
+      vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({
+        id: "msg_user_hyb",
+        conversationId: conversationIdA,
+        role: "USER",
+        content: "What is the BP and what did doctor note?",
+        status: "COMPLETE",
+      } as any);
+
+      vi.mocked(prisma.medicalAiMessage.findMany).mockResolvedValueOnce([]);
+
+      vi.mocked(generatePatientMedicalChat).mockResolvedValueOnce({
+        answer: "Blood pressure was 120/80 mmHg [1]. Doctor noted continuing meds [2].",
+        citations: [
+          {
+            citationId: 1,
+            documentId: "doc_patA_1",
+            fileName: "vitals.pdf",
+            documentType: "OBSERVATION",
+            reportDate: "2026-10-01",
+            pageNumber: 1,
+            chunkIndex: 0,
+            sourceType: "OBSERVATION",
+            observationId: "obs_bp_1",
+          },
+          {
+            citationId: 2,
+            documentId: "doc_patA_1",
+            fileName: "vitals.pdf",
+            documentType: "DISCHARGE_SUMMARY",
+            reportDate: "2026-10-01",
+            pageNumber: 2,
+            chunkIndex: 1,
+            sourceType: "DOCUMENT_CHUNK",
+          },
+        ],
+        resultCount: 2,
+        answerMode: "HYBRID",
+      });
+
+      vi.mocked(prisma.medicalDocument.findMany).mockResolvedValueOnce([
+        { id: "doc_patA_1" } as any,
+      ]);
+
+      vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({
+        id: "msg_ast_hyb",
+        role: "ASSISTANT",
+      } as any);
+      vi.mocked(prisma.medicalAiConversation.update).mockResolvedValueOnce({} as any);
+
+      const req = new NextRequest(
+        `http://localhost:3000/api/doctors/me/patients/${patientIdA}/medical-chat/conversations/${conversationIdA}/messages`,
+        {
+          method: "POST",
+          body: JSON.stringify({ message: "What is the BP and what did doctor note?" }),
+        }
+      );
+
+      const res = await sendMessage(req, {
+        params: Promise.resolve({ patientId: patientIdA, conversationId: conversationIdA }),
+      });
+
+      expect(res.status).toBe(200);
+
+      // Verify MEDICAL_HYBRID_QUERY was logged
+      expect(logAudit).toHaveBeenCalledWith(
+        doctorUserA.id,
+        "MEDICAL_HYBRID_QUERY",
+        expect.objectContaining({
+          patientId: patientIdA,
+          conversationId: conversationIdA,
+          citationCount: 2,
+        }),
+        "MEDICAL_RECORD"
+      );
     });
   });
 

@@ -388,6 +388,8 @@ export interface MedicalRagCitation {
   chunkIndex: number | null;
   content?: string | null;
   score?: number | null;
+  sourceType?: "OBSERVATION" | "DOCUMENT_CHUNK";
+  observationId?: string | null;
 }
 
 export interface MedicalRagAnswerResult {
@@ -471,6 +473,7 @@ export interface MedicalChatResult {
   resultCount: number;
   retrievalQuery?: string | null;
   rewritten?: boolean;
+  answerMode?: "STRUCTURED" | "RAG" | "HYBRID";
 }
 
 /**
@@ -560,5 +563,79 @@ export async function openPatientMedicalChatStream(
   }
 
   return response;
+}
+
+export interface MedicalObservationItem {
+  id: string;
+  type: string;
+  displayName: string;
+  value: number | null;
+  valueText?: string | null;
+  secondaryValue?: number | null;
+  unit?: string | null;
+  observedAt?: string | null;
+  reportedAt?: string | null;
+  isDateInferred?: boolean;
+  documentId: string;
+  pageNumber?: number | null;
+  chunkIndex?: number | null;
+  confidence: number;
+}
+
+export interface PatientMedicalObservationsResponse {
+  observations: MedicalObservationItem[];
+  totalCount: number;
+}
+
+export interface QueryPatientMedicalObservationsParams {
+  patientId: string;
+  observationTypes?: string[];
+  fromDate?: string;
+  toDate?: string;
+  limit?: number;
+  sort?: "asc" | "desc";
+}
+
+/**
+ * Queries patient structured medical observations from Search Sphere.
+ */
+export async function queryPatientMedicalObservations(
+  params: QueryPatientMedicalObservationsParams
+): Promise<PatientMedicalObservationsResponse> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(`${baseUrl}/internal/medical-observations/query`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      observationTypes: params.observationTypes,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+      limit: params.limit ?? 100,
+      sort: params.sort ?? "asc",
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to query patient medical observations";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Medical observations query failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    observations: data.observations || [],
+    totalCount: data.totalCount ?? (data.observations ? data.observations.length : 0),
+  };
 }
 
