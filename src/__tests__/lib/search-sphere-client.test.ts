@@ -50,7 +50,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
   });
 
   describe("generatePatientMedicalAnswer()", () => {
-    it("calls /internal/medical-rag/answer with correct headers and payload", async () => {
+    it("calls /internal/medical-rag/answer with correct headers, correlation ID, and payload", async () => {
       const mockResponse = {
         answer: "Blood pressure was 120/80 mmHg on Oct 1. [1]",
         citations: [
@@ -74,34 +74,79 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
         json: async () => mockResponse,
       } as any);
 
-      const result = await generatePatientMedicalAnswer({
-        patientId: "pat_123",
-        query: "What is the BP?",
-        limit: 5,
-        documentType: "LAB_REPORT",
-      });
+      const result = await generatePatientMedicalAnswer(
+        {
+          patientId: "pat_123",
+          query: "What is the BP?",
+          limit: 5,
+          documentType: "LAB_REPORT",
+        },
+        { requestId: "req-custom-correlation-123" }
+      );
 
       expect(global.fetch).toHaveBeenCalledWith(
         "http://localhost:8000/internal/medical-rag/answer",
-        {
+        expect.objectContaining({
           method: "POST",
-          headers: {
+          headers: expect.objectContaining({
             Authorization: "Bearer test-service-secret-123",
             "Content-Type": "application/json",
-          },
+            "X-Request-ID": "req-custom-correlation-123",
+          }),
           body: JSON.stringify({
             patientId: "pat_123",
             query: "What is the BP?",
             limit: 5,
             documentType: "LAB_REPORT",
           }),
-        }
+        })
       );
 
       expect(result.answer).toBe(mockResponse.answer);
       expect(result.citations.length).toBe(1);
       expect(result.citations[0].documentId).toBe("doc_1");
+      // Citations should have internal reranker score stripped
+      expect(result.citations[0].score).toBeUndefined();
       expect(result.resultCount).toBe(1);
+    });
+
+    it("retries on retryable 503 response and succeeds on second attempt", async () => {
+      global.fetch = vi
+        .fn()
+        .mockResolvedValueOnce({
+          ok: false,
+          status: 503,
+          text: async () => "Service Unavailable",
+        } as any)
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ answer: "Recovered answer", citations: [] }),
+        } as any);
+
+      const res = await generatePatientMedicalAnswer({
+        patientId: "pat_123",
+        query: "What is the BP?",
+      });
+
+      expect(res.answer).toBe("Recovered answer");
+      expect(global.fetch).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not retry non-retryable 401 client/auth errors", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 401,
+        text: async () => JSON.stringify({ detail: "Unauthorized service secret" }),
+      } as any);
+
+      await expect(
+        generatePatientMedicalAnswer({
+          patientId: "pat_123",
+          query: "BP?",
+        })
+      ).rejects.toThrow("Medical RAG generation failed (401)");
+
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
     it("handles error response cleanly and throws informative error", async () => {
@@ -121,7 +166,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
   });
 
   describe("searchPatientMedicalRecords()", () => {
-    it("calls /internal/medical-retrieval/search with proper payload", async () => {
+    it("calls /internal/medical-retrieval/search with proper payload and correlation ID", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ results: [] }),
@@ -137,10 +182,11 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
         "http://localhost:8000/internal/medical-retrieval/search",
         expect.objectContaining({
           method: "POST",
-          headers: {
+          headers: expect.objectContaining({
             Authorization: "Bearer test-service-secret-123",
             "Content-Type": "application/json",
-          },
+            "X-Request-ID": expect.any(String),
+          }),
           body: JSON.stringify({
             patientId: "pat_abc",
             query: "glucose level",
@@ -153,7 +199,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
   });
 
   describe("Storage Operations", () => {
-    it("uploadToStorage sends multipart FormData", async () => {
+    it("uploadToStorage sends multipart FormData and correlation ID", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -175,15 +221,16 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
         "http://localhost:8000/internal/medical-documents",
         expect.objectContaining({
           method: "POST",
-          headers: {
+          headers: expect.objectContaining({
             Authorization: "Bearer test-service-secret-123",
-          },
+            "X-Request-ID": expect.any(String),
+          }),
         })
       );
       expect(res.storagePath).toBe("quick_clinic/pat_1/doc_1.pdf");
     });
 
-    it("getSignedStorageUrl calls signed-url GET endpoint", async () => {
+    it("getSignedStorageUrl calls signed-url GET endpoint with correlation ID", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -198,9 +245,10 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
         "http://localhost:8000/internal/medical-documents/signed-url?storagePath=quick_clinic%2Fpat_1%2Fdoc_1.pdf&expiresIn=300",
         expect.objectContaining({
           method: "GET",
-          headers: {
+          headers: expect.objectContaining({
             Authorization: "Bearer test-service-secret-123",
-          },
+            "X-Request-ID": expect.any(String),
+          }),
         })
       );
       expect(res.url).toContain("storage.example.com");
@@ -218,7 +266,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
   });
 
   describe("Ingestion & Status", () => {
-    it("queueMedicalDocumentIngestion posts to /ingest", async () => {
+    it("queueMedicalDocumentIngestion posts to /ingest with correlation ID", async () => {
       global.fetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: async () => ({ documentId: "doc_1", status: "QUEUED" }),
@@ -235,6 +283,17 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
       });
 
       expect(res.status).toBe("QUEUED");
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/internal/medical-documents/doc_1/ingest",
+        expect.objectContaining({
+          method: "POST",
+          headers: expect.objectContaining({
+            Authorization: "Bearer test-service-secret-123",
+            "Content-Type": "application/json",
+            "X-Request-ID": expect.any(String),
+          }),
+        })
+      );
     });
 
     it("getMedicalDocumentProcessingStatus gets /status", async () => {

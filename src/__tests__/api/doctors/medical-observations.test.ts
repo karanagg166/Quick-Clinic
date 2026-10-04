@@ -273,7 +273,8 @@ describe("Doctor Patient Medical Observations API Test Suite", () => {
       const res = await queryObservations(req, { params: Promise.resolve({ patientId: patientIdA }) });
       expect(res.status).toBe(500);
       const data = await res.json();
-      expect(data.error).toContain("Search Sphere connection refused");
+      expect(data.error).toBe("Patient medical observations are temporarily unavailable.");
+      expect(data.error).not.toContain("Search Sphere");
     });
   });
 });
