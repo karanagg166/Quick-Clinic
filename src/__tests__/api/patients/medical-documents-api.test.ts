@@ -35,6 +35,10 @@ vi.mock("@/lib/search-sphere-client", () => ({
   uploadToStorage: vi.fn(),
   getSignedStorageUrl: vi.fn(),
   deleteFromStorage: vi.fn(),
+  queueMedicalDocumentIngestion: vi.fn().mockResolvedValue({ documentId: "doc_123", status: "QUEUED" }),
+  deleteMedicalDocumentIndex: vi.fn().mockResolvedValue({ success: true, message: "Deleted" }),
+  getMedicalDocumentProcessingStatus: vi.fn(),
+  retryMedicalDocumentIngestion: vi.fn(),
 }));
 
 vi.mock("@/lib/logger", () => ({
@@ -61,6 +65,9 @@ describe("Patient Medical Documents Backend API Suite", () => {
     reportDate: new Date("2026-09-15T00:00:00.000Z"),
     hospitalOrDoctor: "Metro Diagnostics",
     notes: "Fasting blood sugar test",
+    processingStatus: "QUEUED",
+    processingError: null,
+    processedAt: null,
     createdAt: new Date("2026-09-16T10:00:00.000Z"),
     updatedAt: new Date("2026-09-16T10:00:00.000Z"),
   };
@@ -252,6 +259,7 @@ describe("Patient Medical Documents Backend API Suite", () => {
       });
 
       vi.mocked(prisma.medicalDocument.create).mockResolvedValueOnce(sampleDocA as any);
+      vi.mocked(prisma.medicalDocument.update).mockResolvedValueOnce(sampleDocA as any);
 
       const req = new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
         method: "POST",

@@ -194,6 +194,9 @@ exports.Prisma.MedicalDocumentScalarFieldEnum = {
   reportDate: 'reportDate',
   hospitalOrDoctor: 'hospitalOrDoctor',
   notes: 'notes',
+  processingStatus: 'processingStatus',
+  processingError: 'processingError',
+  processedAt: 'processedAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -463,6 +466,14 @@ exports.MedicalDocumentType = exports.$Enums.MedicalDocumentType = {
   MEDICAL_CERTIFICATE: 'MEDICAL_CERTIFICATE',
   VACCINATION_RECORD: 'VACCINATION_RECORD',
   OTHER: 'OTHER'
+};
+
+exports.MedicalDocumentProcessingStatus = exports.$Enums.MedicalDocumentProcessingStatus = {
+  PENDING: 'PENDING',
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
 };
 
 exports.SlotStatus = exports.$Enums.SlotStatus = {

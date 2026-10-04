@@ -258,6 +258,17 @@ export const MedicalDocumentType: {
 export type MedicalDocumentType = (typeof MedicalDocumentType)[keyof typeof MedicalDocumentType]
 
 
+export const MedicalDocumentProcessingStatus: {
+  PENDING: 'PENDING',
+  QUEUED: 'QUEUED',
+  PROCESSING: 'PROCESSING',
+  READY: 'READY',
+  FAILED: 'FAILED'
+};
+
+export type MedicalDocumentProcessingStatus = (typeof MedicalDocumentProcessingStatus)[keyof typeof MedicalDocumentProcessingStatus]
+
+
 export const WithdrawalStatus: {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -301,6 +312,10 @@ export const PaymentMethod: typeof $Enums.PaymentMethod
 export type MedicalDocumentType = $Enums.MedicalDocumentType
 
 export const MedicalDocumentType: typeof $Enums.MedicalDocumentType
+
+export type MedicalDocumentProcessingStatus = $Enums.MedicalDocumentProcessingStatus
+
+export const MedicalDocumentProcessingStatus: typeof $Enums.MedicalDocumentProcessingStatus
 
 export type WithdrawalStatus = $Enums.WithdrawalStatus
 
@@ -10738,6 +10753,9 @@ export namespace Prisma {
     reportDate: Date | null
     hospitalOrDoctor: string | null
     notes: string | null
+    processingStatus: $Enums.MedicalDocumentProcessingStatus | null
+    processingError: string | null
+    processedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10754,6 +10772,9 @@ export namespace Prisma {
     reportDate: Date | null
     hospitalOrDoctor: string | null
     notes: string | null
+    processingStatus: $Enums.MedicalDocumentProcessingStatus | null
+    processingError: string | null
+    processedAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -10770,6 +10791,9 @@ export namespace Prisma {
     reportDate: number
     hospitalOrDoctor: number
     notes: number
+    processingStatus: number
+    processingError: number
+    processedAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -10796,6 +10820,9 @@ export namespace Prisma {
     reportDate?: true
     hospitalOrDoctor?: true
     notes?: true
+    processingStatus?: true
+    processingError?: true
+    processedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10812,6 +10839,9 @@ export namespace Prisma {
     reportDate?: true
     hospitalOrDoctor?: true
     notes?: true
+    processingStatus?: true
+    processingError?: true
+    processedAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -10828,6 +10858,9 @@ export namespace Prisma {
     reportDate?: true
     hospitalOrDoctor?: true
     notes?: true
+    processingStatus?: true
+    processingError?: true
+    processedAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -10931,6 +10964,9 @@ export namespace Prisma {
     reportDate: Date
     hospitalOrDoctor: string | null
     notes: string | null
+    processingStatus: $Enums.MedicalDocumentProcessingStatus
+    processingError: string | null
+    processedAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: MedicalDocumentCountAggregateOutputType | null
@@ -10966,6 +11002,9 @@ export namespace Prisma {
     reportDate?: boolean
     hospitalOrDoctor?: boolean
     notes?: boolean
+    processingStatus?: boolean
+    processingError?: boolean
+    processedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -10983,6 +11022,9 @@ export namespace Prisma {
     reportDate?: boolean
     hospitalOrDoctor?: boolean
     notes?: boolean
+    processingStatus?: boolean
+    processingError?: boolean
+    processedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11000,6 +11042,9 @@ export namespace Prisma {
     reportDate?: boolean
     hospitalOrDoctor?: boolean
     notes?: boolean
+    processingStatus?: boolean
+    processingError?: boolean
+    processedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -11017,11 +11062,14 @@ export namespace Prisma {
     reportDate?: boolean
     hospitalOrDoctor?: boolean
     notes?: boolean
+    processingStatus?: boolean
+    processingError?: boolean
+    processedAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type MedicalDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "patientId" | "title" | "type" | "fileName" | "mimeType" | "fileSize" | "storagePath" | "reportDate" | "hospitalOrDoctor" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalDocument"]>
+  export type MedicalDocumentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "patientId" | "title" | "type" | "fileName" | "mimeType" | "fileSize" | "storagePath" | "reportDate" | "hospitalOrDoctor" | "notes" | "processingStatus" | "processingError" | "processedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalDocument"]>
   export type MedicalDocumentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
@@ -11049,6 +11097,9 @@ export namespace Prisma {
       reportDate: Date
       hospitalOrDoctor: string | null
       notes: string | null
+      processingStatus: $Enums.MedicalDocumentProcessingStatus
+      processingError: string | null
+      processedAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["medicalDocument"]>
@@ -11486,6 +11537,9 @@ export namespace Prisma {
     readonly reportDate: FieldRef<"MedicalDocument", 'DateTime'>
     readonly hospitalOrDoctor: FieldRef<"MedicalDocument", 'String'>
     readonly notes: FieldRef<"MedicalDocument", 'String'>
+    readonly processingStatus: FieldRef<"MedicalDocument", 'MedicalDocumentProcessingStatus'>
+    readonly processingError: FieldRef<"MedicalDocument", 'String'>
+    readonly processedAt: FieldRef<"MedicalDocument", 'DateTime'>
     readonly createdAt: FieldRef<"MedicalDocument", 'DateTime'>
     readonly updatedAt: FieldRef<"MedicalDocument", 'DateTime'>
   }
@@ -28659,6 +28713,9 @@ export namespace Prisma {
     reportDate: 'reportDate',
     hospitalOrDoctor: 'hospitalOrDoctor',
     notes: 'notes',
+    processingStatus: 'processingStatus',
+    processingError: 'processingError',
+    processedAt: 'processedAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -29050,6 +29107,20 @@ export namespace Prisma {
    * Reference to a field of type 'MedicalDocumentType[]'
    */
   export type ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalDocumentType[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'MedicalDocumentProcessingStatus'
+   */
+  export type EnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalDocumentProcessingStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'MedicalDocumentProcessingStatus[]'
+   */
+  export type ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalDocumentProcessingStatus[]'>
     
 
 
@@ -29626,6 +29697,9 @@ export namespace Prisma {
     reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
     hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
     notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFilter<"MedicalDocument"> | $Enums.MedicalDocumentProcessingStatus
+    processingError?: StringNullableFilter<"MedicalDocument"> | string | null
+    processedAt?: DateTimeNullableFilter<"MedicalDocument"> | Date | string | null
     createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
     updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
@@ -29643,6 +29717,9 @@ export namespace Prisma {
     reportDate?: SortOrder
     hospitalOrDoctor?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    processingStatus?: SortOrder
+    processingError?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     patient?: PatientOrderByWithRelationInput
@@ -29663,6 +29740,9 @@ export namespace Prisma {
     reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
     hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
     notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFilter<"MedicalDocument"> | $Enums.MedicalDocumentProcessingStatus
+    processingError?: StringNullableFilter<"MedicalDocument"> | string | null
+    processedAt?: DateTimeNullableFilter<"MedicalDocument"> | Date | string | null
     createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
     updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
@@ -29680,6 +29760,9 @@ export namespace Prisma {
     reportDate?: SortOrder
     hospitalOrDoctor?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
+    processingStatus?: SortOrder
+    processingError?: SortOrderInput | SortOrder
+    processedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: MedicalDocumentCountOrderByAggregateInput
@@ -29704,6 +29787,9 @@ export namespace Prisma {
     reportDate?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
     hospitalOrDoctor?: StringNullableWithAggregatesFilter<"MedicalDocument"> | string | null
     notes?: StringNullableWithAggregatesFilter<"MedicalDocument"> | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusWithAggregatesFilter<"MedicalDocument"> | $Enums.MedicalDocumentProcessingStatus
+    processingError?: StringNullableWithAggregatesFilter<"MedicalDocument"> | string | null
+    processedAt?: DateTimeNullableWithAggregatesFilter<"MedicalDocument"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"MedicalDocument"> | Date | string
   }
@@ -31290,6 +31376,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     patient: PatientCreateNestedOneWithoutMedicalDocumentsInput
@@ -31307,6 +31396,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31322,6 +31414,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     patient?: PatientUpdateOneRequiredWithoutMedicalDocumentsNestedInput
@@ -31339,6 +31434,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31355,6 +31453,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -31370,6 +31471,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -31386,6 +31490,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -33147,6 +33254,24 @@ export namespace Prisma {
     not?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel> | $Enums.MedicalDocumentType
   }
 
+  export type EnumMedicalDocumentProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentProcessingStatus | EnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel> | $Enums.MedicalDocumentProcessingStatus
+  }
+
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
   export type PatientScalarRelationFilter = {
     is?: PatientWhereInput
     isNot?: PatientWhereInput
@@ -33164,6 +33289,9 @@ export namespace Prisma {
     reportDate?: SortOrder
     hospitalOrDoctor?: SortOrder
     notes?: SortOrder
+    processingStatus?: SortOrder
+    processingError?: SortOrder
+    processedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33184,6 +33312,9 @@ export namespace Prisma {
     reportDate?: SortOrder
     hospitalOrDoctor?: SortOrder
     notes?: SortOrder
+    processingStatus?: SortOrder
+    processingError?: SortOrder
+    processedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33200,6 +33331,9 @@ export namespace Prisma {
     reportDate?: SortOrder
     hospitalOrDoctor?: SortOrder
     notes?: SortOrder
+    processingStatus?: SortOrder
+    processingError?: SortOrder
+    processedAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -33218,7 +33352,17 @@ export namespace Prisma {
     _max?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
   }
 
-  export type DateTimeNullableFilter<$PrismaModel = never> = {
+  export type EnumMedicalDocumentProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentProcessingStatus | EnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentProcessingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel>
+    _max?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel>
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
     notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -33226,7 +33370,10 @@ export namespace Prisma {
     lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type NotificationCountOrderByAggregateInput = {
@@ -33263,20 +33410,6 @@ export namespace Prisma {
     status?: SortOrder
     readAt?: SortOrder
     createdAt?: SortOrder
-  }
-
-  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
-    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
-    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
-    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedDateTimeNullableFilter<$PrismaModel>
-    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
   export type LeaveDoctorIdStartDateEndDateCompoundUniqueInput = {
@@ -35135,6 +35268,14 @@ export namespace Prisma {
     set?: $Enums.MedicalDocumentType
   }
 
+  export type EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput = {
+    set?: $Enums.MedicalDocumentProcessingStatus
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
   export type PatientUpdateOneRequiredWithoutMedicalDocumentsNestedInput = {
     create?: XOR<PatientCreateWithoutMedicalDocumentsInput, PatientUncheckedCreateWithoutMedicalDocumentsInput>
     connectOrCreate?: PatientCreateOrConnectWithoutMedicalDocumentsInput
@@ -35147,10 +35288,6 @@ export namespace Prisma {
     create?: XOR<UserCreateWithoutNotificationsInput, UserUncheckedCreateWithoutNotificationsInput>
     connectOrCreate?: UserCreateOrConnectWithoutNotificationsInput
     connect?: UserWhereUniqueInput
-  }
-
-  export type NullableDateTimeFieldUpdateOperationsInput = {
-    set?: Date | string | null
   }
 
   export type UserUpdateOneRequiredWithoutNotificationsNestedInput = {
@@ -35786,14 +35923,11 @@ export namespace Prisma {
     not?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel> | $Enums.MedicalDocumentType
   }
 
-  export type NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentType
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
-    _max?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+  export type NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentProcessingStatus | EnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel> | $Enums.MedicalDocumentProcessingStatus
   }
 
   export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
@@ -35805,6 +35939,26 @@ export namespace Prisma {
     gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentType | EnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentType[] | ListEnumMedicalDocumentTypeFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentTypeWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentType
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+    _max?: NestedEnumMedicalDocumentTypeFilter<$PrismaModel>
+  }
+
+  export type NestedEnumMedicalDocumentProcessingStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.MedicalDocumentProcessingStatus | EnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.MedicalDocumentProcessingStatus[] | ListEnumMedicalDocumentProcessingStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumMedicalDocumentProcessingStatusWithAggregatesFilter<$PrismaModel> | $Enums.MedicalDocumentProcessingStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel>
+    _max?: NestedEnumMedicalDocumentProcessingStatusFilter<$PrismaModel>
   }
 
   export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -37852,6 +38006,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -37867,6 +38024,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -38041,6 +38201,9 @@ export namespace Prisma {
     reportDate?: DateTimeFilter<"MedicalDocument"> | Date | string
     hospitalOrDoctor?: StringNullableFilter<"MedicalDocument"> | string | null
     notes?: StringNullableFilter<"MedicalDocument"> | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFilter<"MedicalDocument"> | $Enums.MedicalDocumentProcessingStatus
+    processingError?: StringNullableFilter<"MedicalDocument"> | string | null
+    processedAt?: DateTimeNullableFilter<"MedicalDocument"> | Date | string | null
     createdAt?: DateTimeFilter<"MedicalDocument"> | Date | string
     updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
   }
@@ -41064,6 +41227,9 @@ export namespace Prisma {
     reportDate: Date | string
     hospitalOrDoctor?: string | null
     notes?: string | null
+    processingStatus?: $Enums.MedicalDocumentProcessingStatus
+    processingError?: string | null
+    processedAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41189,6 +41355,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41204,6 +41373,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41219,6 +41391,9 @@ export namespace Prisma {
     reportDate?: DateTimeFieldUpdateOperationsInput | Date | string
     hospitalOrDoctor?: NullableStringFieldUpdateOperationsInput | string | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

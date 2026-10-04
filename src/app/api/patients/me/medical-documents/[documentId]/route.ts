@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAudit } from "@/lib/logger";
-import { deleteFromStorage } from "@/lib/search-sphere-client";
+import {
+  deleteFromStorage,
+  deleteMedicalDocumentIndex,
+} from "@/lib/search-sphere-client";
 import { MedicalDocumentType } from "@/generated/prisma";
 
 interface RouteParams {
@@ -342,7 +345,14 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // 1. Delete object from storage via Search Sphere
+    // 1. Delete vector points & ingestion record from Search Sphere
+    try {
+      await deleteMedicalDocumentIndex(documentId);
+    } catch (indexError) {
+      console.warn("Failed to delete medical document vector index (may not exist yet):", indexError);
+    }
+
+    // 2. Delete object from storage via Search Sphere
     try {
       await deleteFromStorage(existingDoc.storagePath);
     } catch (storageError: any) {

@@ -5,6 +5,7 @@ import { logAudit } from "@/lib/logger";
 import {
   uploadToStorage,
   deleteFromStorage,
+  queueMedicalDocumentIngestion,
 } from "@/lib/search-sphere-client";
 import { MedicalDocumentType } from "@/generated/prisma";
 
@@ -202,7 +203,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 8. Audit Log
+    // 8. Trigger asynchronous Search Sphere indexing
+    try {
+      await queueMedicalDocumentIngestion({
+        documentId: createdDoc.id,
+        patientId: patient.id,
+        storagePath: createdDoc.storagePath,
+        fileName: createdDoc.fileName,
+        mimeType: createdDoc.mimeType,
+        fileSize: createdDoc.fileSize,
+        documentType: createdDoc.type,
+        reportDate: createdDoc.reportDate,
+      });
+
+      createdDoc = await prisma.medicalDocument.update({
+        where: { id: createdDoc.id },
+        data: {
+          processingStatus: "QUEUED",
+          processingError: null,
+        },
+      });
+    } catch (ingestError: any) {
+      console.error("Search Sphere ingestion queue failed:", ingestError);
+      // Important: Do NOT delete document or fail the upload. Mark FAILED so patient can still view/download and retry.
+      createdDoc = await prisma.medicalDocument.update({
+        where: { id: createdDoc.id },
+        data: {
+          processingStatus: "FAILED",
+          processingError: ingestError?.message || "Failed to trigger ingestion pipeline",
+        },
+      });
+    }
+
+    // 9. Audit Log
     await logAudit(
       user.id,
       "MEDICAL_DOCUMENT_UPLOAD",
@@ -212,6 +245,7 @@ export async function POST(req: NextRequest) {
         type: createdDoc.type,
         fileName: createdDoc.fileName,
         fileSize: createdDoc.fileSize,
+        processingStatus: createdDoc.processingStatus,
       },
       "MEDICAL_DOCUMENT"
     );

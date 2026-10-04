@@ -42,6 +42,7 @@ export default function MedicalDocumentsPage() {
   const [previewDoc, setPreviewDoc] = useState<MedicalDocument | null>(null);
   const [deleteDoc, setDeleteDoc] = useState<MedicalDocument | null>(null);
   const [renameDoc, setRenameDoc] = useState<MedicalDocument | null>(null);
+  const [retryingId, setRetryingId] = useState<string | null>(null);
 
   // Search debounce ref
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -91,6 +92,9 @@ export default function MedicalDocumentsPage() {
             uploadedAt: typeof d.createdAt === "string" ? d.createdAt.split("T")[0] : d.createdAt,
             hospitalOrDoctor: d.hospitalOrDoctor || undefined,
             notes: d.notes || undefined,
+            processingStatus: d.processingStatus || "PENDING",
+            processingError: d.processingError || null,
+            processedAt: d.processedAt || null,
           })
         );
 
@@ -255,6 +259,32 @@ export default function MedicalDocumentsPage() {
     }
   };
 
+  const handleRetryProcessing = async (doc: MedicalDocument) => {
+    try {
+      setRetryingId(doc.id);
+      const res = await fetch(
+        `/api/patients/me/medical-documents/${doc.id}/retry-processing`,
+        { method: "POST" }
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to retry document processing");
+      }
+      toast.success("Document re-queued for AI processing");
+      setDocuments((prev) =>
+        prev.map((d) =>
+          d.id === doc.id
+            ? { ...d, processingStatus: "QUEUED", processingError: null }
+            : d
+        )
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to retry processing");
+    } finally {
+      setRetryingId(null);
+    }
+  };
+
   return (
     <div className="min-h-screen p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
       {/* Back to Dashboard Navigation */}
@@ -353,6 +383,8 @@ export default function MedicalDocumentsPage() {
               onDownload={handleDownload}
               onRename={handleRenameRequest}
               onDelete={handleDeleteRequest}
+              onRetryProcessing={handleRetryProcessing}
+              isRetrying={retryingId === doc.id}
             />
           ))}
         </div>

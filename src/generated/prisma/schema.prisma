@@ -121,6 +121,14 @@ enum MedicalDocumentType {
   OTHER
 }
 
+enum MedicalDocumentProcessingStatus {
+  PENDING
+  QUEUED
+  PROCESSING
+  READY
+  FAILED
+}
+
 // ======================================================
 // USER, ADMIN, DOCTOR, PATIENT MODELS
 // ======================================================
@@ -260,12 +268,17 @@ model MedicalDocument {
   hospitalOrDoctor String?
   notes            String?
 
+  processingStatus MedicalDocumentProcessingStatus @default(PENDING)
+  processingError  String?
+  processedAt      DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([patientId])
   @@index([patientId, reportDate])
   @@index([patientId, type])
+  @@index([patientId, processingStatus])
 }
 
 // ======================================================

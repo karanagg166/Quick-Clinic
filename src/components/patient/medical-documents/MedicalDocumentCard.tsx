@@ -12,6 +12,10 @@ import {
   Pencil,
   Trash2,
   FileCheck,
+  RotateCw,
+  Sparkles,
+  AlertCircle,
+  Loader2,
 } from "lucide-react";
 import {
   Card,
@@ -32,6 +36,8 @@ import {
   MedicalDocument,
   DOCUMENT_TYPE_LABELS,
   DOCUMENT_TYPE_BADGE_CLASSES,
+  PROCESSING_STATUS_LABELS,
+  PROCESSING_STATUS_BADGE_CLASSES,
   formatFileSize,
   formatDisplayDate,
   isPdfDocument,
@@ -44,6 +50,8 @@ interface MedicalDocumentCardProps {
   onDownload: (doc: MedicalDocument) => void;
   onRename: (doc: MedicalDocument) => void;
   onDelete: (doc: MedicalDocument) => void;
+  onRetryProcessing?: (doc: MedicalDocument) => void;
+  isRetrying?: boolean;
 }
 
 export function MedicalDocumentCard({
@@ -52,6 +60,8 @@ export function MedicalDocumentCard({
   onDownload,
   onRename,
   onDelete,
+  onRetryProcessing,
+  isRetrying,
 }: MedicalDocumentCardProps) {
   const isPdf = isPdfDocument(document.fileName, document.mimeType);
   const isImage = isImageDocument(document.fileName, document.mimeType);
@@ -176,6 +186,14 @@ export function MedicalDocumentCard({
                 <DropdownMenuItem onClick={() => onRename(document)}>
                   <Pencil className="w-4 h-4 mr-2" /> Rename
                 </DropdownMenuItem>
+                {document.processingStatus === "FAILED" && onRetryProcessing && (
+                  <DropdownMenuItem
+                    onClick={() => onRetryProcessing(document)}
+                    disabled={isRetrying}
+                  >
+                    <RotateCw className={`w-4 h-4 mr-2 ${isRetrying ? "animate-spin" : ""}`} /> Retry Processing
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   variant="destructive"
@@ -194,7 +212,27 @@ export function MedicalDocumentCard({
             >
               {categoryLabel}
             </Badge>
-            <span className="text-[11px] text-muted-foreground">
+
+            {document.processingStatus && (
+              <Badge
+                variant="outline"
+                className={`text-[11px] font-medium border px-2 py-0.5 inline-flex items-center gap-1 ${
+                  PROCESSING_STATUS_BADGE_CLASSES[document.processingStatus] || ""
+                }`}
+                title={document.processingError || undefined}
+              >
+                {document.processingStatus === "READY" ? (
+                  <Sparkles className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
+                ) : document.processingStatus === "FAILED" ? (
+                  <AlertCircle className="w-3 h-3 text-rose-600 dark:text-rose-400" />
+                ) : (
+                  <Loader2 className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400" />
+                )}
+                {PROCESSING_STATUS_LABELS[document.processingStatus]}
+              </Badge>
+            )}
+
+            <span className="text-[11px] text-muted-foreground ml-auto">
               {formatFileSize(document.fileSize)}
             </span>
           </div>

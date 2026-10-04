@@ -139,3 +139,164 @@ export async function deleteFromStorage(
     message: data.message ?? "Medical document deleted successfully",
   };
 }
+
+export interface IngestionQueueResult {
+  documentId: string;
+  status: string;
+}
+
+export interface ProcessingStatusResult {
+  documentId: string;
+  status: string;
+  processedAt: string | null;
+  error: string | null;
+}
+
+export interface IngestionQueueParams {
+  documentId: string;
+  patientId: string;
+  storagePath: string;
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+  documentType: string;
+  reportDate?: string | Date | null;
+}
+
+/**
+ * Enqueues a medical document for asynchronous vector extraction and indexing in Search Sphere.
+ */
+export async function queueMedicalDocumentIngestion(
+  params: IngestionQueueParams
+): Promise<IngestionQueueResult> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const reportDateStr = params.reportDate
+    ? typeof params.reportDate === "string"
+      ? params.reportDate
+      : params.reportDate.toISOString()
+    : null;
+
+  const response = await fetch(
+    `${baseUrl}/internal/medical-documents/${encodeURIComponent(params.documentId)}/ingest`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        patientId: params.patientId,
+        storagePath: params.storagePath,
+        fileName: params.fileName,
+        mimeType: params.mimeType,
+        fileSize: params.fileSize,
+        documentType: params.documentType,
+        reportDate: reportDateStr,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to enqueue medical document for ingestion";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Ingestion queue failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    documentId: data.documentId || params.documentId,
+    status: data.status || "QUEUED",
+  };
+}
+
+/**
+ * Retrieves the asynchronous indexing status from Search Sphere.
+ */
+export async function getMedicalDocumentProcessingStatus(
+  documentId: string
+): Promise<ProcessingStatusResult> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(
+    `${baseUrl}/internal/medical-documents/${encodeURIComponent(documentId)}/status`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to fetch document processing status";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Status check failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    documentId: data.documentId || documentId,
+    status: data.status,
+    processedAt: data.processedAt ?? null,
+    error: data.error ?? null,
+  };
+}
+
+/**
+ * Requests Search Sphere to delete vector embeddings, extracted text, and indexing record for a medical document.
+ */
+export async function deleteMedicalDocumentIndex(
+  documentId: string
+): Promise<{ success: boolean; message: string }> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(
+    `${baseUrl}/internal/medical-documents/${encodeURIComponent(documentId)}/index`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${secret}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to delete medical document vector index";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Vector index deletion failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    success: data.success ?? true,
+    message: data.message ?? "Vector index deleted successfully",
+  };
+}
+
+/**
+ * Re-enqueues a medical document for indexing.
+ */
+export async function retryMedicalDocumentIngestion(
+  params: IngestionQueueParams
+): Promise<IngestionQueueResult> {
+  return queueMedicalDocumentIngestion(params);
+}
