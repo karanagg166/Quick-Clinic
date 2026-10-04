@@ -7,18 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showToast } from "@/lib/toast";
-import { format } from "date-fns";
 import {
   Search,
-  FileText,
-  Calendar,
-  ExternalLink,
   Loader2,
   RotateCcw,
   Sparkles,
-  AlertCircle,
   FileSearch,
 } from "lucide-react";
+import { MedicalRagCitation } from "@/lib/search-sphere-client";
+import { DoctorMedicalRagAnswer } from "@/components/doctor/DoctorMedicalRagAnswer";
+import { DoctorMedicalSearchResultsList } from "@/components/doctor/DoctorMedicalSearchResultsList";
 
 export interface MedicalRetrievalChunkResult {
   score: number;
@@ -44,6 +42,15 @@ export function DoctorMedicalSearchSection({
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [viewingDocId, setViewingDocId] = useState<string | null>(null);
+
+  // Grounded Medical RAG state
+  const [aiResult, setAiResult] = useState<{
+    answer: string;
+    citations: MedicalRagCitation[];
+    resultCount: number;
+  } | null>(null);
+  const [loadingAi, setLoadingAi] = useState(false);
+  const [hasAskedAi, setHasAskedAi] = useState(false);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -77,10 +84,48 @@ export function DoctorMedicalSearchSection({
     }
   };
 
+  const handleAskAi = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const cleanQuery = query.trim();
+    if (!cleanQuery) {
+      showToast.error("Please enter a question");
+      return;
+    }
+
+    setLoadingAi(true);
+    try {
+      const res = await fetch(`/api/doctors/me/patients/${patientId}/medical-answer`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: cleanQuery, limit: 8 }),
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => null);
+        throw new Error(errData?.error || "Failed to generate grounded medical answer");
+      }
+
+      const data = await res.json();
+      setAiResult({
+        answer: data.answer || "",
+        citations: data.citations || [],
+        resultCount: data.resultCount ?? (data.citations ? data.citations.length : 0),
+      });
+      setHasAskedAi(true);
+    } catch (err: any) {
+      console.error("Medical AI Q&A failed:", err);
+      showToast.error(err.message || "Failed to generate AI answer");
+    } finally {
+      setLoadingAi(false);
+    }
+  };
+
   const handleClear = () => {
     setQuery("");
     setResults([]);
     setHasSearched(false);
+    setAiResult(null);
+    setHasAskedAi(false);
   };
 
   const handleViewSource = async (docId: string) => {
@@ -108,21 +153,6 @@ export function DoctorMedicalSearchSection({
     }
   };
 
-  const getTypeBadgeVariant = (type: string) => {
-    switch (type) {
-      case "LAB_REPORT":
-        return "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border-blue-200 dark:border-blue-900";
-      case "PRESCRIPTION":
-        return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 border-emerald-200 dark:border-emerald-900";
-      case "RADIOLOGY_SCAN":
-        return "bg-purple-50 text-purple-700 dark:bg-purple-950/40 dark:text-purple-400 border-purple-200 dark:border-purple-900";
-      case "DISCHARGE_SUMMARY":
-        return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400 border-amber-200 dark:border-amber-900";
-      default:
-        return "bg-muted text-muted-foreground border-border";
-    }
-  };
-
   return (
     <Card className="border shadow-xs bg-linear-to-b from-card to-muted/10">
       <CardHeader className="p-4 pb-3">
@@ -130,38 +160,66 @@ export function DoctorMedicalSearchSection({
           <div>
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-primary" />
-              Search Medical Records
+              Ask about this patient&apos;s records
             </CardTitle>
             <CardDescription className="text-xs text-muted-foreground mt-0.5">
-              Retrieve relevant excerpts from this patient&apos;s indexed clinical documents
+              Grounded AI answers and semantic search over verified clinical documents
             </CardDescription>
           </div>
-          <Badge variant="outline" className="text-[10px] w-fit font-medium text-muted-foreground">
-            Semantic & Keyword Retrieval
-          </Badge>
+          <div className="flex items-center gap-1.5 flex-wrap">
+            <Badge variant="outline" className="text-[10px] w-fit font-medium text-muted-foreground">
+              Search Medical Records
+            </Badge>
+            <Badge variant="outline" className="text-[10px] w-fit font-medium text-primary border-primary/30">
+              Grounded AI
+            </Badge>
+          </div>
         </div>
       </CardHeader>
 
       <CardContent className="p-4 pt-1 space-y-4">
-        {/* Search Form */}
+        {/* Search & Ask AI Form */}
         <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2">
           <div className="relative flex-1">
             <Search className="w-4 h-4 text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2" />
             <Input
-              placeholder="Search this patient's medical records (e.g., blood pressure, HbA1c, allergies)..."
+              placeholder="Search this patient's medical records or ask AI (e.g. BP readings, medications)..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-9 text-xs h-9"
-              disabled={loading}
+              disabled={loading || loadingAi}
             />
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            {/* Ask AI Button */}
+            <Button
+              type="button"
+              size="sm"
+              disabled={loading || loadingAi}
+              onClick={handleAskAi}
+              className="text-xs h-9 gap-1.5 px-3.5 font-semibold shrink-0"
+            >
+              {loadingAi ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Thinking...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Ask AI
+                </>
+              )}
+            </Button>
+
+            {/* Keyword/Semantic Search Button */}
             <Button
               type="submit"
+              variant="outline"
               size="sm"
-              disabled={loading || !query.trim()}
-              className="text-xs h-9 gap-1.5 px-4 font-semibold shrink-0"
+              disabled={loading || loadingAi || !query.trim()}
+              className="text-xs h-9 gap-1.5 px-3 font-semibold shrink-0"
             >
               {loading ? (
                 <>
@@ -176,13 +234,13 @@ export function DoctorMedicalSearchSection({
               )}
             </Button>
 
-            {(query || hasSearched) && (
+            {(query || hasSearched || hasAskedAi) && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={handleClear}
-                disabled={loading}
+                disabled={loading || loadingAi}
                 className="text-xs h-9 gap-1 px-2.5 shrink-0"
                 title="Reset search"
                 aria-label="Reset search"
@@ -193,7 +251,35 @@ export function DoctorMedicalSearchSection({
           </div>
         </form>
 
-        {/* Loading State */}
+        {/* AI Answer Loading State */}
+        {loadingAi && (
+          <div className="p-4 border rounded-xl space-y-3 bg-card" data-testid="medical-rag-loading">
+            <div className="flex items-center gap-2">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-xs font-medium text-foreground">
+                Analyzing medical records and generating grounded response...
+              </span>
+            </div>
+            <Skeleton className="h-4 w-4/5 rounded" />
+            <Skeleton className="h-4 w-3/5 rounded" />
+            <Skeleton className="h-4 w-2/3 rounded" />
+            <div className="pt-1 flex gap-2">
+              <Skeleton className="h-6 w-24 rounded-md" />
+              <Skeleton className="h-6 w-28 rounded-md" />
+            </div>
+          </div>
+        )}
+
+        {/* AI Answer Presentation */}
+        {!loadingAi && aiResult && (
+          <DoctorMedicalRagAnswer
+            patientId={patientId}
+            answer={aiResult.answer}
+            citations={aiResult.citations}
+          />
+        )}
+
+        {/* Search Results Loading State */}
         {loading && (
           <div className="space-y-3 pt-2">
             {[1, 2].map((i) => (
@@ -212,7 +298,7 @@ export function DoctorMedicalSearchSection({
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Search Empty State */}
         {!loading && hasSearched && results.length === 0 && (
           <div className="p-6 text-center space-y-2 border border-dashed rounded-xl bg-card">
             <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center mx-auto text-muted-foreground">
@@ -225,88 +311,13 @@ export function DoctorMedicalSearchSection({
           </div>
         )}
 
-        {/* Results List */}
+        {/* Search Results List */}
         {!loading && results.length > 0 && (
-          <div className="space-y-3 pt-1">
-            <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
-              <span>Found {results.length} relevant excerpts</span>
-              <span className="text-[11px]">Ranked by relevance</span>
-            </div>
-
-            <div className="space-y-3">
-              {results.map((res, index) => {
-                const isViewing = viewingDocId === res.documentId;
-                const formattedDate = res.reportDate
-                  ? format(new Date(res.reportDate), "MMM d, yyyy")
-                  : null;
-
-                return (
-                  <div
-                    key={`${res.documentId}-${res.chunkIndex}-${index}`}
-                    className="p-3.5 border rounded-xl bg-card hover:border-primary/40 transition-colors duration-150 space-y-2.5 text-xs shadow-2xs"
-                  >
-                    {/* Excerpt Meta Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
-                        <Badge
-                          variant="outline"
-                          className={`text-[10px] font-medium border ${getTypeBadgeVariant(
-                            res.documentType
-                          )}`}
-                        >
-                          {res.documentType.replace(/_/g, " ")}
-                        </Badge>
-                        <span className="font-medium text-foreground truncate max-w-[200px] sm:max-w-[300px]" title={res.fileName}>
-                          {res.fileName}
-                        </span>
-                      </div>
-
-                      <div className="flex items-center gap-2 text-muted-foreground text-[11px] shrink-0">
-                        {formattedDate && (
-                          <span className="flex items-center gap-1">
-                            <Calendar className="w-3 h-3 text-primary" />
-                            {formattedDate}
-                          </span>
-                        )}
-                        <span className="bg-muted px-1.5 py-0.5 rounded text-[10px]">
-                          p. {res.pageNumber}
-                        </span>
-                        <span className="bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 font-medium px-1.5 py-0.5 rounded text-[10px] border border-emerald-200 dark:border-emerald-800">
-                          {Math.round(res.score * 100)}% match
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Excerpt Content */}
-                    <div className="p-2.5 rounded-lg bg-muted/40 border border-border/60 text-foreground font-mono text-[11px] leading-relaxed whitespace-pre-wrap">
-                      {res.content}
-                    </div>
-
-                    {/* Action Bar */}
-                    <div className="flex items-center justify-between pt-1">
-                      <span className="text-[10px] text-muted-foreground">
-                        Excerpt #{res.chunkIndex + 1}
-                      </span>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isViewing}
-                        onClick={() => handleViewSource(res.documentId)}
-                        className="text-xs h-7 gap-1.5 font-medium rounded-lg"
-                      >
-                        {isViewing ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <ExternalLink className="w-3 h-3 text-primary" />
-                        )}
-                        View Source
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <DoctorMedicalSearchResultsList
+            results={results}
+            viewingDocId={viewingDocId}
+            onViewSource={handleViewSource}
+          />
         )}
       </CardContent>
     </Card>

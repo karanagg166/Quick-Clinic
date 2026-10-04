@@ -1,0 +1,265 @@
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import {
+  uploadToStorage,
+  getSignedStorageUrl,
+  deleteFromStorage,
+  queueMedicalDocumentIngestion,
+  getMedicalDocumentProcessingStatus,
+  deleteMedicalDocumentIndex,
+  searchPatientMedicalRecords,
+  generatePatientMedicalAnswer,
+} from "@/lib/search-sphere-client";
+
+describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
+  const originalEnv = { ...process.env };
+  const originalFetch = global.fetch;
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    process.env.SEARCH_SPHERE_API_URL = "http://localhost:8000";
+    process.env.SEARCH_SPHERE_SERVICE_SECRET = "test-service-secret-123";
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+    global.fetch = originalFetch;
+  });
+
+  describe("Fail-Closed Configuration", () => {
+    it("throws error when SEARCH_SPHERE_SERVICE_SECRET is missing", async () => {
+      delete process.env.SEARCH_SPHERE_SERVICE_SECRET;
+
+      await expect(
+        generatePatientMedicalAnswer({
+          patientId: "pat_1",
+          query: "test query",
+        })
+      ).rejects.toThrow("SEARCH_SPHERE_SERVICE_SECRET is not configured");
+    });
+
+    it("throws error when SEARCH_SPHERE_API_URL is missing", async () => {
+      delete process.env.SEARCH_SPHERE_API_URL;
+
+      await expect(
+        generatePatientMedicalAnswer({
+          patientId: "pat_1",
+          query: "test query",
+        })
+      ).rejects.toThrow("SEARCH_SPHERE_API_URL is not configured");
+    });
+  });
+
+  describe("generatePatientMedicalAnswer()", () => {
+    it("calls /internal/medical-rag/answer with correct headers and payload", async () => {
+      const mockResponse = {
+        answer: "Blood pressure was 120/80 mmHg on Oct 1. [1]",
+        citations: [
+          {
+            citationId: 1,
+            documentId: "doc_1",
+            fileName: "bp.pdf",
+            documentType: "LAB_REPORT",
+            reportDate: "2026-10-01T00:00:00Z",
+            pageNumber: 1,
+            chunkIndex: 0,
+            content: "BP 120/80",
+            score: 0.95,
+          },
+        ],
+        resultCount: 1,
+      };
+
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResponse,
+      } as any);
+
+      const result = await generatePatientMedicalAnswer({
+        patientId: "pat_123",
+        query: "What is the BP?",
+        limit: 5,
+        documentType: "LAB_REPORT",
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/internal/medical-rag/answer",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer test-service-secret-123",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            patientId: "pat_123",
+            query: "What is the BP?",
+            limit: 5,
+            documentType: "LAB_REPORT",
+          }),
+        }
+      );
+
+      expect(result.answer).toBe(mockResponse.answer);
+      expect(result.citations.length).toBe(1);
+      expect(result.citations[0].documentId).toBe("doc_1");
+      expect(result.resultCount).toBe(1);
+    });
+
+    it("handles error response cleanly and throws informative error", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        text: async () => JSON.stringify({ detail: "Cohere API key missing" }),
+      } as any);
+
+      await expect(
+        generatePatientMedicalAnswer({
+          patientId: "pat_123",
+          query: "BP?",
+        })
+      ).rejects.toThrow("Medical RAG generation failed (500): Cohere API key missing");
+    });
+  });
+
+  describe("searchPatientMedicalRecords()", () => {
+    it("calls /internal/medical-retrieval/search with proper payload", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ results: [] }),
+      } as any);
+
+      const res = await searchPatientMedicalRecords({
+        patientId: "pat_abc",
+        query: "glucose level",
+        limit: 10,
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/internal/medical-retrieval/search",
+        expect.objectContaining({
+          method: "POST",
+          headers: {
+            Authorization: "Bearer test-service-secret-123",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            patientId: "pat_abc",
+            query: "glucose level",
+            limit: 10,
+          }),
+        })
+      );
+      expect(res.results).toEqual([]);
+    });
+  });
+
+  describe("Storage Operations", () => {
+    it("uploadToStorage sends multipart FormData", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          storagePath: "quick_clinic/pat_1/doc_1.pdf",
+          mimeType: "application/pdf",
+          fileSize: 1024,
+        }),
+      } as any);
+
+      const blob = new Blob(["fake pdf content"], { type: "application/pdf" });
+      const res = await uploadToStorage({
+        file: blob,
+        fileName: "test.pdf",
+        patientId: "pat_1",
+        documentId: "doc_1",
+      });
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/internal/medical-documents",
+        expect.objectContaining({
+          method: "POST",
+          headers: {
+            Authorization: "Bearer test-service-secret-123",
+          },
+        })
+      );
+      expect(res.storagePath).toBe("quick_clinic/pat_1/doc_1.pdf");
+    });
+
+    it("getSignedStorageUrl calls signed-url GET endpoint", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          url: "https://storage.example.com/signed/token",
+          expiresIn: 300,
+        }),
+      } as any);
+
+      const res = await getSignedStorageUrl("quick_clinic/pat_1/doc_1.pdf", 300);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        "http://localhost:8000/internal/medical-documents/signed-url?storagePath=quick_clinic%2Fpat_1%2Fdoc_1.pdf&expiresIn=300",
+        expect.objectContaining({
+          method: "GET",
+          headers: {
+            Authorization: "Bearer test-service-secret-123",
+          },
+        })
+      );
+      expect(res.url).toContain("storage.example.com");
+    });
+
+    it("deleteFromStorage calls DELETE endpoint", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, message: "Deleted" }),
+      } as any);
+
+      const res = await deleteFromStorage("quick_clinic/pat_1/doc_1.pdf");
+      expect(res.success).toBe(true);
+    });
+  });
+
+  describe("Ingestion & Status", () => {
+    it("queueMedicalDocumentIngestion posts to /ingest", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ documentId: "doc_1", status: "QUEUED" }),
+      } as any);
+
+      const res = await queueMedicalDocumentIngestion({
+        documentId: "doc_1",
+        patientId: "pat_1",
+        storagePath: "path/doc_1.pdf",
+        fileName: "doc_1.pdf",
+        mimeType: "application/pdf",
+        fileSize: 500,
+        documentType: "LAB_REPORT",
+      });
+
+      expect(res.status).toBe("QUEUED");
+    });
+
+    it("getMedicalDocumentProcessingStatus gets /status", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          documentId: "doc_1",
+          status: "READY",
+          processedAt: "2026-10-01T00:00:00Z",
+          error: null,
+        }),
+      } as any);
+
+      const res = await getMedicalDocumentProcessingStatus("doc_1");
+      expect(res.status).toBe("READY");
+    });
+
+    it("deleteMedicalDocumentIndex calls DELETE /index", async () => {
+      global.fetch = vi.fn().mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true, message: "Indexed vectors deleted" }),
+      } as any);
+
+      const res = await deleteMedicalDocumentIndex("doc_1");
+      expect(res.success).toBe(true);
+    });
+  });
+});

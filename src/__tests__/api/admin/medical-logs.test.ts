@@ -213,5 +213,67 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
       const parsedMeta = JSON.parse(data.logs[0].metadata);
       expect(parsedMeta.reason).toBe("NO_ELIGIBLE_APPOINTMENT");
     });
+
+    it("allows admin to retrieve medical RAG query access logs with action=MEDICAL_RAG_QUERY", async () => {
+      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+
+      const mockAccessLogs = [
+        {
+          id: "log_acc_rag_1",
+          userId: "user_doc_1",
+          targetId: "pat_123",
+          action: "MEDICAL_RAG_QUERY",
+          tag: "MEDICAL_RECORD",
+          createdAt: new Date("2026-10-04T12:00:00Z"),
+          user: { id: "user_doc_1", name: "Dr. Sharma", email: "sharma@example.com", role: "DOCTOR" },
+        },
+      ];
+
+      vi.mocked(prisma.accessLog.findMany).mockResolvedValueOnce(mockAccessLogs as any);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/admin/logs?type=access&tag=MEDICAL_RECORD&action=MEDICAL_RAG_QUERY"
+      );
+      const res = await GET(req);
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      expect(data.logs.length).toBe(1);
+      expect(data.logs[0].action).toBe("MEDICAL_RAG_QUERY");
+      expect(data.logs[0].targetId).toBe("pat_123");
+    });
+
+    it("allows admin to retrieve medical RAG security anomaly logs", async () => {
+      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+
+      const mockAnomalyLogs = [
+        {
+          id: "log_aud_anomaly_1",
+          userId: "user_doc_1",
+          action: "MEDICAL_RAG_SECURITY_ANOMALY",
+          tag: "MEDICAL_RECORD",
+          metadata: JSON.stringify({ patientId: "pat_123", doctorId: "doc_1", reason: "CROSS_PATIENT_CITATION_DETECTED" }),
+          createdAt: new Date("2026-10-04T12:10:00Z"),
+          user: { id: "user_doc_1", name: "Dr. Sharma", email: "sharma@example.com", role: "DOCTOR" },
+        },
+      ];
+
+      vi.mocked(prisma.auditLog.findMany).mockResolvedValueOnce(mockAnomalyLogs as any);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/admin/logs?type=audit&tag=MEDICAL_RECORD&action=MEDICAL_RAG_SECURITY_ANOMALY"
+      );
+      const res = await GET(req);
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      expect(data.logs.length).toBe(1);
+      expect(data.logs[0].action).toBe("MEDICAL_RAG_SECURITY_ANOMALY");
+      const parsedMeta = JSON.parse(data.logs[0].metadata);
+      expect(parsedMeta.reason).toBe("CROSS_PATIENT_CITATION_DETECTED");
+    });
   });
 });
+

@@ -15,10 +15,20 @@ export interface StorageDeleteResult {
 }
 
 function getServiceConfig() {
-  const baseUrl = (process.env.SEARCH_SPHERE_API_URL || "http://localhost:8000").replace(/\/$/, "");
-  const secret = process.env.SEARCH_SPHERE_SERVICE_SECRET || "quick-clinic-internal-service-secret-2026";
+  const secret = process.env.SEARCH_SPHERE_SERVICE_SECRET;
+  if (!secret) {
+    throw new Error("SEARCH_SPHERE_SERVICE_SECRET is not configured");
+  }
+
+  const rawUrl = process.env.SEARCH_SPHERE_API_URL;
+  if (!rawUrl) {
+    throw new Error("SEARCH_SPHERE_API_URL is not configured");
+  }
+
+  const baseUrl = rawUrl.replace(/\/$/, "");
   return { baseUrl, secret };
 }
+
 
 /**
  * Uploads medical document file bytes to Search Sphere internal storage API.
@@ -365,6 +375,78 @@ export async function searchPatientMedicalRecords(
   const data = await response.json();
   return {
     results: data.results || [],
+  };
+}
+
+export interface MedicalRagCitation {
+  citationId: number;
+  documentId: string;
+  fileName: string;
+  documentType: string;
+  reportDate: string | null;
+  pageNumber: number | null;
+  chunkIndex: number | null;
+  content?: string | null;
+  score?: number | null;
+}
+
+export interface MedicalRagAnswerResult {
+  answer: string;
+  citations: MedicalRagCitation[];
+  resultCount: number;
+}
+
+export interface MedicalRagAnswerParams {
+  patientId: string;
+  query: string;
+  limit?: number;
+  documentType?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+/**
+ * Calls Search Sphere internal medical RAG endpoint to generate a grounded answer
+ * based solely on indexed, verified medical documents belonging to the specified patient.
+ */
+export async function generatePatientMedicalAnswer(
+  params: MedicalRagAnswerParams
+): Promise<MedicalRagAnswerResult> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(`${baseUrl}/internal/medical-rag/answer`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      query: params.query,
+      limit: params.limit ?? 8,
+      documentType: params.documentType,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to generate grounded medical answer";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Medical RAG generation failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    answer: data.answer || "",
+    citations: data.citations || [],
+    resultCount: data.resultCount ?? (data.citations ? data.citations.length : 0),
   };
 }
 
