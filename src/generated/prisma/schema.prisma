@@ -217,7 +217,8 @@ model Doctor {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  doctorQualifications DoctorQualification[]
+  doctorQualifications   DoctorQualification[]
+  medicalAiConversations MedicalAiConversation[]
 
   @@index([latitude, longitude])
 }
@@ -239,14 +240,15 @@ model Patient {
   allergies          String @default("")
   currentMedications String @default("")
 
-  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  doctorRelations  DoctorPatientRelation[]
-  appointments     Appointment[]
-  comments         Comment[]
-  ratings          Rating[]
-  medicalDocuments MedicalDocument[]
-  createdAt        DateTime                @default(now())
-  updatedAt        DateTime                @updatedAt
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorRelations        DoctorPatientRelation[]
+  appointments           Appointment[]
+  comments               Comment[]
+  ratings                Rating[]
+  medicalDocuments       MedicalDocument[]
+  medicalAiConversations MedicalAiConversation[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 }
 
 model MedicalDocument {
@@ -558,4 +560,48 @@ model Comment {
   @@index([doctorId])
   @@index([patientId])
   @@index([createdAt])
+}
+
+// ======================================================
+// MEDICAL AI CHAT MODELS
+// ======================================================
+
+enum MedicalAiMessageRole {
+  USER
+  ASSISTANT
+}
+
+enum MedicalAiMessageStatus {
+  COMPLETE
+  FAILED
+}
+
+model MedicalAiConversation {
+  id        String   @id @default(cuid())
+  doctorId  String
+  patientId String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  doctor   Doctor             @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient  Patient            @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  messages MedicalAiMessage[]
+
+  @@index([doctorId, patientId])
+  @@index([doctorId, updatedAt])
+}
+
+model MedicalAiMessage {
+  id             String                 @id @default(cuid())
+  conversationId String
+  role           MedicalAiMessageRole
+  content        String
+  citations      Json?
+  status         MedicalAiMessageStatus @default(COMPLETE)
+  createdAt      DateTime               @default(now())
+
+  conversation MedicalAiConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, createdAt])
 }

@@ -357,6 +357,25 @@ exports.Prisma.CommentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MedicalAiConversationScalarFieldEnum = {
+  id: 'id',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  title: 'title',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MedicalAiMessageScalarFieldEnum = {
+  id: 'id',
+  conversationId: 'conversationId',
+  role: 'role',
+  content: 'content',
+  citations: 'citations',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -508,6 +527,16 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.MedicalAiMessageRole = exports.$Enums.MedicalAiMessageRole = {
+  USER: 'USER',
+  ASSISTANT: 'ASSISTANT'
+};
+
+exports.MedicalAiMessageStatus = exports.$Enums.MedicalAiMessageStatus = {
+  COMPLETE: 'COMPLETE',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Location: 'Location',
@@ -530,7 +559,9 @@ exports.Prisma.ModelName = {
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog',
   Rating: 'Rating',
-  Comment: 'Comment'
+  Comment: 'Comment',
+  MedicalAiConversation: 'MedicalAiConversation',
+  MedicalAiMessage: 'MedicalAiMessage'
 };
 
 /**

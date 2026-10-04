@@ -450,3 +450,115 @@ export async function generatePatientMedicalAnswer(
   };
 }
 
+export interface MedicalChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
+export interface MedicalChatParams {
+  patientId: string;
+  message: string;
+  history?: MedicalChatMessage[];
+  limit?: number;
+  documentType?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+export interface MedicalChatResult {
+  answer: string;
+  citations: MedicalRagCitation[];
+  resultCount: number;
+  retrievalQuery?: string | null;
+  rewritten?: boolean;
+}
+
+/**
+ * Calls Search Sphere internal medical chat endpoint to generate a multi-turn grounded answer.
+ */
+export async function generatePatientMedicalChat(
+  params: MedicalChatParams
+): Promise<MedicalChatResult> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(`${baseUrl}/internal/medical-rag/chat`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      message: params.message,
+      history: params.history || [],
+      limit: params.limit ?? 8,
+      documentType: params.documentType,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to generate medical chat answer";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Medical chat generation failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    answer: data.answer || "",
+    citations: data.citations || [],
+    resultCount: data.resultCount ?? (data.citations ? data.citations.length : 0),
+    retrievalQuery: data.retrievalQuery ?? null,
+    rewritten: data.rewritten ?? false,
+  };
+}
+
+/**
+ * Initiates a streaming connection with Search Sphere internal medical chat endpoint.
+ * Returns the raw Fetch Response whose body can be streamed.
+ */
+export async function openPatientMedicalChatStream(
+  params: MedicalChatParams
+): Promise<Response> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(`${baseUrl}/internal/medical-rag/chat/stream`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+      Accept: "text/event-stream",
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      message: params.message,
+      history: params.history || [],
+      limit: params.limit ?? 8,
+      documentType: params.documentType,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to initiate medical chat stream";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Medical chat streaming failed (${response.status}): ${detail}`);
+  }
+
+  return response;
+}
+

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Avatar from "@/components/general/Avatar";
-import { ArrowLeft, ShieldCheck, CalendarCheck } from "lucide-react";
+import { ArrowLeft, ShieldCheck, CalendarCheck, FileText, MessageSquare } from "lucide-react";
 
 export interface PatientSummary {
   id: string;
@@ -34,9 +34,10 @@ interface DoctorMedicalDocumentHeaderProps {
   accessiblePatients: AccessiblePatient[];
   currentPatientId: string;
   onPatientSwitch: (newId: string) => void;
-  labCount: number;
-  scanCount: number;
-  rxCount: number;
+  labCount?: number;
+  scanCount?: number;
+  rxCount?: number;
+  activeTab?: "documents" | "chat";
 }
 
 export function DoctorMedicalDocumentHeader({
@@ -44,15 +45,16 @@ export function DoctorMedicalDocumentHeader({
   accessiblePatients,
   currentPatientId,
   onPatientSwitch,
-  labCount,
-  scanCount,
-  rxCount,
+  labCount = 0,
+  scanCount = 0,
+  rxCount = 0,
+  activeTab = "documents",
 }: DoctorMedicalDocumentHeaderProps) {
   return (
     <div className="space-y-4">
       {/* Top Navigation & Patient Selector */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
           <Button variant="ghost" size="sm" asChild className="gap-1.5">
             <Link href="/doctor/patients">
               <ArrowLeft className="w-4 h-4" /> Patient Roster
@@ -61,7 +63,7 @@ export function DoctorMedicalDocumentHeader({
 
           {accessiblePatients.length > 1 && (
             <Select value={currentPatientId} onValueChange={onPatientSwitch}>
-              <SelectTrigger className="w-[220px] text-xs h-8">
+              <SelectTrigger className="w-[200px] text-xs h-8">
                 <SelectValue placeholder="Switch Patient" />
               </SelectTrigger>
               <SelectContent>
@@ -73,6 +75,31 @@ export function DoctorMedicalDocumentHeader({
               </SelectContent>
             </Select>
           )}
+
+          <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border">
+            <Button
+              variant={activeTab === "documents" ? "secondary" : "ghost"}
+              size="sm"
+              asChild
+              className="text-xs h-7 gap-1 px-2.5"
+            >
+              <Link href={`/doctor/patients/${currentPatientId}/medical-documents`}>
+                <FileText className="w-3.5 h-3.5" />
+                <span>Documents</span>
+              </Link>
+            </Button>
+            <Button
+              variant={activeTab === "chat" ? "secondary" : "ghost"}
+              size="sm"
+              asChild
+              className="text-xs h-7 gap-1 px-2.5"
+            >
+              <Link href={`/doctor/patients/${currentPatientId}/medical-chat`}>
+                <MessageSquare className="w-3.5 h-3.5" />
+                <span>AI Chat</span>
+              </Link>
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 px-3 py-1.5 rounded-lg border">
