@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Gender } from "@/generated/prisma";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export const POST = async (req: NextRequest) => {
   try {
@@ -51,9 +52,36 @@ export const POST = async (req: NextRequest) => {
 export const GET = async (req: NextRequest) => {
   try {
     const { searchParams } = new URL(req.url);
-    const doctorId = searchParams.get("doctorId");
+    const clientDoctorId = searchParams.get("doctorId");
+    const authUser = await getAuthenticatedUser(req);
 
-    if (!doctorId) {
+    let effectiveDoctorId = clientDoctorId;
+
+    if (authUser) {
+      if (authUser.role === "DOCTOR") {
+        const doctorRecord = await prisma.doctor.findUnique({
+          where: { userId: authUser.id },
+          select: { id: true },
+        });
+
+        if (!doctorRecord) {
+          return NextResponse.json({ error: "Doctor profile not found" }, { status: 404 });
+        }
+
+        // Prevent doctor impersonation: reject conflicting client-supplied doctorId
+        if (clientDoctorId && clientDoctorId !== doctorRecord.id) {
+          return NextResponse.json(
+            { error: "Access denied. Cannot query patients for another doctor." },
+            { status: 403 }
+          );
+        }
+        effectiveDoctorId = doctorRecord.id;
+      } else if (authUser.role !== "ADMIN") {
+        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      }
+    }
+
+    if (!effectiveDoctorId) {
       return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
     }
 
@@ -126,10 +154,10 @@ export const GET = async (req: NextRequest) => {
 
     if (!scopeAll) {
       // --- get appointment rows for the doctor ---
-      const appointmentRows = await prisma.appointment.findMany({
-        where: { doctorId },
+      const appointmentRows = (await prisma.appointment.findMany({
+        where: { doctorId: effectiveDoctorId },
         select: { patientId: true },
-      });
+      })) || [];
 
       const patientIds = Array.from(
         new Set(
@@ -149,7 +177,7 @@ export const GET = async (req: NextRequest) => {
     if (Object.keys(userFilter).length > 0) where.user = userFilter;
 
     // --- query patients with selected fields only ---
-    const patients = await prisma.patient.findMany({
+    const patients = (await prisma.patient.findMany({
       where,
       select: {
         id: true,
@@ -173,13 +201,13 @@ export const GET = async (req: NextRequest) => {
           },
         },
       },
-    });
+    })) || [];
 
     // --- query appointments history for these patients with doctor ---
-    const patientAppointments = await prisma.appointment.findMany({
+    const patientAppointments = (await prisma.appointment.findMany({
       where: {
         patientId: { in: patients.map((p) => p.id) },
-        doctorId,
+        doctorId: effectiveDoctorId,
       },
       include: {
         slot: {
@@ -191,7 +219,7 @@ export const GET = async (req: NextRequest) => {
         },
       },
       orderBy: { bookedAt: "desc" },
-    });
+    })) || [];
 
     const appointmentsByPatient = new Map<string, any[]>();
     for (const appt of patientAppointments) {

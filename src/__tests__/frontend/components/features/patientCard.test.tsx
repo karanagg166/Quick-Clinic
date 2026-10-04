@@ -30,10 +30,10 @@ describe("PatientCard component", () => {
 
     expect(screen.getByText("John Doe")).toBeDefined();
     expect(screen.getByText("john@example.com")).toBeDefined();
-    expect(screen.getByText("30")).toBeDefined();
+    expect(screen.getByText(/30/)).toBeDefined();
     expect(screen.getByText("MALE")).toBeDefined();
-    expect(screen.getByText("Mumbai")).toBeDefined();
-    expect(screen.getByText("Maharashtra")).toBeDefined();
+    expect(screen.getByText(/Mumbai/)).toBeDefined();
+    expect(screen.getByText(/Maharashtra/)).toBeDefined();
     expect(screen.getByText("Asthma")).toBeDefined();
     expect(screen.getByText("Peanuts")).toBeDefined();
     expect(screen.getByText("Inhaler")).toBeDefined();

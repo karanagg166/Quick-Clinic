@@ -11,6 +11,14 @@ vi.mock('@/store/userStore', () => ({
   useUserStore: vi.fn(),
 }));
 
+// Mock next/navigation
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+    refresh: vi.fn(),
+  }),
+}));
+
 // Mock toast helper
 vi.mock('@/lib/toast', () => ({
   showToast: {

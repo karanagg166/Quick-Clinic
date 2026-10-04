@@ -26,7 +26,8 @@ import {
   CalendarCheck,
   HeartPulse,
   Activity,
-  ArrowRight
+  ArrowRight,
+  ShieldCheck
 } from "lucide-react";
 
 export default function DoctorPatientsPage() {
@@ -339,6 +340,9 @@ export default function DoctorPatientsPage() {
                 : patient.currentMedications || "None";
 
               const apptCount = patient.appointments?.length || 0;
+              const hasQualifyingAccess = patient.appointments?.some(
+                (a: any) => a.status === "CONFIRMED" || a.status === "COMPLETED"
+              );
 
               return (
                 <Card
@@ -448,10 +452,23 @@ export default function DoctorPatientsPage() {
                       </Button>
                     </div>
 
+                    {hasQualifyingAccess && (
+                      <Button
+                        asChild
+                        size="sm"
+                        className="w-full rounded-xl text-xs font-semibold gap-1.5 shadow-xs bg-primary hover:bg-primary/90 text-primary-foreground"
+                      >
+                        <Link href={`/doctor/patients/${patient.id}/medical-documents`}>
+                          <ShieldCheck className="w-3.5 h-3.5" /> Medical Documents
+                        </Link>
+                      </Button>
+                    )}
+
                     <div className="flex gap-2">
                       <Button
                         asChild
                         size="sm"
+                        variant="outline"
                         className="w-full rounded-xl text-xs font-semibold gap-1.5 shadow-xs"
                       >
                         <Link href={`/doctor/chat`}>

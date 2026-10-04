@@ -29,6 +29,7 @@ type Log = {
         role: string;
     };
     action: string;
+    tag?: string | null;
     metadata?: any;
     targetId?: string;
     createdAt: string;
@@ -38,7 +39,12 @@ export default function LogsPage() {
     const { user } = useUserStore(); // Get current user for scope
     const [logs, setLogs] = useState<Log[]>([]);
     const [loading, setLoading] = useState(true);
-    const [filters, setFilters] = useState({ type: "audit", scope: "all" });
+    const [filters, setFilters] = useState<{
+        type: string;
+        scope: string;
+        tag?: string;
+        action?: string;
+    }>({ type: "audit", scope: "all", tag: "", action: "" });
 
     const fetchLogs = async () => {
         try {
@@ -49,6 +55,14 @@ export default function LogsPage() {
             if (filters.scope === "my" && user?.id) {
                 params.append("userId", user.id);
                 params.append("scope", "my");
+            }
+
+            if (filters.tag) {
+                params.append("tag", filters.tag);
+            }
+
+            if (filters.action) {
+                params.append("action", filters.action);
             }
 
             const res = await fetch(`/api/admin/logs?${params.toString()}`);
@@ -68,12 +82,17 @@ export default function LogsPage() {
     };
 
     useEffect(() => {
-        // debounce or just fetch on filter change
         fetchLogs();
     }, [filters, user]);
 
     const handleFilterChange = (newFilters: any) => {
         setFilters(prev => ({ ...prev, ...newFilters }));
+    };
+
+    const getActionBadgeVariant = (action: string) => {
+        if (action.includes("DENIED")) return "destructive";
+        if (action.includes("VIEW") || action.includes("DOWNLOAD") || action.includes("LIST")) return "secondary";
+        return "default";
     };
 
     return (
@@ -87,7 +106,7 @@ export default function LogsPage() {
             </div>
 
             <div className="flex items-center justify-between">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">System Logs</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">System & Audit Logs</h1>
             </div>
 
             <Card>
@@ -103,48 +122,74 @@ export default function LogsPage() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Timestamp</TableHead>
-                                    <TableHead>User</TableHead>
+                                    <TableHead>User / Actor</TableHead>
+                                    <TableHead>Category / Tag</TableHead>
                                     <TableHead>Action</TableHead>
-                                    <TableHead>Details</TableHead>
+                                    <TableHead>Details / Target</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {loading ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center">
-                                            Loading...
+                                        <TableCell colSpan={5} className="h-24 text-center">
+                                            Loading logs...
                                         </TableCell>
                                     </TableRow>
                                 ) : logs.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="h-24 text-center">
-                                            No logs found.
+                                        <TableCell colSpan={5} className="h-24 text-center">
+                                            No logs found matching criteria.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     logs.map((log) => (
                                         <TableRow key={log.id}>
-                                            <TableCell className="whitespace-nowrap">
+                                            <TableCell className="whitespace-nowrap text-xs">
                                                 {format(new Date(log.createdAt), "PP p")}
                                             </TableCell>
                                             <TableCell>
                                                 <div className="flex flex-col">
-                                                    <span className="font-medium">{log.user?.name || "Unknown"}</span>
-                                                    <span className="text-xs text-muted-foreground">{log.user?.email}</span>
-                                                    <Badge variant="outline" className="w-fit mt-1 text-[10px]">{log.user?.role || "N/A"}</Badge>
+                                                    <span className="font-medium text-xs">
+                                                        {log.user?.name || "System"}
+                                                    </span>
+                                                    <span className="text-[11px] text-muted-foreground">
+                                                        {log.user?.email || "No email"}
+                                                    </span>
+                                                    <Badge variant="outline" className="w-fit mt-1 text-[10px]">
+                                                        {log.user?.role || "SYSTEM"}
+                                                    </Badge>
                                                 </div>
                                             </TableCell>
                                             <TableCell>
-                                                <Badge variant={filters.type === "audit" ? "default" : "secondary"}>
+                                                <Badge
+                                                    variant="outline"
+                                                    className={`text-[10px] ${
+                                                        log.tag === "MEDICAL_RECORD"
+                                                            ? "border-primary/50 text-primary font-semibold"
+                                                            : ""
+                                                    }`}
+                                                >
+                                                    {log.tag || "SYSTEM"}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge
+                                                    variant={getActionBadgeVariant(log.action)}
+                                                    className="text-xs"
+                                                >
                                                     {log.action}
                                                 </Badge>
                                             </TableCell>
-                                            <TableCell className="max-w-md truncate">
+                                            <TableCell className="max-w-md text-xs">
                                                 {filters.type === "access" ? (
-                                                    <span className="text-sm text-muted-foreground">Target ID: {log.targetId || "N/A"}</span>
+                                                    <span className="text-muted-foreground">
+                                                        Target ID: <span className="font-mono text-foreground">{log.targetId || "N/A"}</span>
+                                                    </span>
                                                 ) : (
-                                                    <code className="text-xs bg-muted p-1 rounded">
-                                                        {JSON.stringify(log.metadata || {})}
+                                                    <code className="text-[11px] bg-muted px-1.5 py-0.5 rounded break-all">
+                                                        {typeof log.metadata === "string"
+                                                            ? log.metadata
+                                                            : JSON.stringify(log.metadata || {})}
                                                     </code>
                                                 )}
                                             </TableCell>

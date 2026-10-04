@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { logAudit } from "@/lib/logger";
+import { logAudit, logAccess } from "@/lib/logger";
 import {
   uploadToStorage,
   deleteFromStorage,
@@ -247,7 +247,7 @@ export async function POST(req: NextRequest) {
         fileSize: createdDoc.fileSize,
         processingStatus: createdDoc.processingStatus,
       },
-      "MEDICAL_DOCUMENT"
+      "MEDICAL_RECORD"
     );
 
     return NextResponse.json({ document: createdDoc }, { status: 201 });
@@ -349,6 +349,14 @@ export async function GET(req: NextRequest) {
       where,
       orderBy,
     });
+
+    // Access Log for listing own medical documents
+    await logAccess(
+      user.id,
+      patient.id,
+      "MEDICAL_DOCUMENT_LIST",
+      "MEDICAL_RECORD"
+    );
 
     return NextResponse.json({ documents }, { status: 200 });
   } catch (error: any) {

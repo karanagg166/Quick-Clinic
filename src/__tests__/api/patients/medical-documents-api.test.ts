@@ -43,6 +43,7 @@ vi.mock("@/lib/search-sphere-client", () => ({
 
 vi.mock("@/lib/logger", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
+  logAccess: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe("Patient Medical Documents Backend API Suite", () => {

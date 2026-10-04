@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
-import { logAudit } from "@/lib/logger";
+import { logAccess } from "@/lib/logger";
 import { getSignedStorageUrl } from "@/lib/search-sphere-client";
 
 interface RouteParams {
@@ -81,17 +81,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Audit Log for document viewing
-    // Do NOT log signed URLs or file content
-    await logAudit(
+    // Access Log for document viewing/downloading
+    const { searchParams } = new URL(req.url);
+    const actionQuery = searchParams.get("action")?.toLowerCase();
+    const actionName =
+      actionQuery === "download"
+        ? "MEDICAL_DOCUMENT_DOWNLOAD"
+        : "MEDICAL_DOCUMENT_VIEW";
+
+    // Strictly log identifiers only - no signed URLs or file content
+    await logAccess(
       user.id,
-      "MEDICAL_DOCUMENT_VIEW",
-      {
-        documentId: doc.id,
-        patientId: patient.id,
-        type: doc.type,
-      },
-      "MEDICAL_DOCUMENT"
+      doc.id,
+      actionName,
+      "MEDICAL_RECORD"
     );
 
     return NextResponse.json(

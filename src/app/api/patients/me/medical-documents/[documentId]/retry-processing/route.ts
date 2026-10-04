@@ -96,7 +96,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           documentId: doc.id,
           patientId: patient.id,
         },
-        "MEDICAL_DOCUMENT"
+        "MEDICAL_RECORD"
       );
 
       return NextResponse.json(

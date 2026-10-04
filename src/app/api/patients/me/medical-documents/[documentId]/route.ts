@@ -276,7 +276,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
         patientId: patient.id,
         updatedFields,
       },
-      "MEDICAL_DOCUMENT"
+      "MEDICAL_RECORD"
     );
 
     return NextResponse.json({ document: updatedDoc }, { status: 200 });
@@ -385,7 +385,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         storagePath: existingDoc.storagePath,
         fileName: existingDoc.fileName,
       },
-      "MEDICAL_DOCUMENT"
+      "MEDICAL_RECORD"
     );
 
     return NextResponse.json(
