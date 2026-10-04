@@ -141,5 +141,77 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
         })
       );
     });
+
+    it("allows admin to retrieve medical search access logs with action=MEDICAL_RECORD_SEARCH", async () => {
+      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+
+      const mockAccessLogs = [
+        {
+          id: "log_acc_search_1",
+          userId: "user_doc_1",
+          targetId: "pat_123",
+          action: "MEDICAL_RECORD_SEARCH",
+          tag: "MEDICAL_RECORD",
+          createdAt: new Date("2026-10-04T11:00:00Z"),
+          user: { id: "user_doc_1", name: "Dr. Sharma", email: "sharma@example.com", role: "DOCTOR" },
+        },
+      ];
+
+      vi.mocked(prisma.accessLog.findMany).mockResolvedValueOnce(mockAccessLogs as any);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/admin/logs?type=access&tag=MEDICAL_RECORD&action=MEDICAL_RECORD_SEARCH"
+      );
+      const res = await GET(req);
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      expect(data.logs.length).toBe(1);
+      expect(data.logs[0].action).toBe("MEDICAL_RECORD_SEARCH");
+      expect(data.logs[0].targetId).toBe("pat_123");
+      expect(data.logs[0].tag).toBe("MEDICAL_RECORD");
+
+      expect(prisma.accessLog.findMany).toHaveBeenCalledWith(
+        expect.objectContaining({
+          where: expect.objectContaining({
+            tag: "MEDICAL_RECORD",
+            action: { contains: "MEDICAL_RECORD_SEARCH", mode: "insensitive" },
+          }),
+        })
+      );
+    });
+
+    it("allows admin to retrieve denied search audit logs with action=MEDICAL_RECORD_SEARCH_DENIED", async () => {
+      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+
+      const mockAuditLogs = [
+        {
+          id: "log_aud_search_denied_1",
+          userId: "user_doc_2",
+          action: "MEDICAL_RECORD_SEARCH_DENIED",
+          tag: "MEDICAL_RECORD",
+          metadata: JSON.stringify({ patientId: "pat_456", doctorId: "doc_2", reason: "NO_ELIGIBLE_APPOINTMENT" }),
+          createdAt: new Date("2026-10-04T11:05:00Z"),
+          user: { id: "user_doc_2", name: "Dr. Verma", email: "verma@example.com", role: "DOCTOR" },
+        },
+      ];
+
+      vi.mocked(prisma.auditLog.findMany).mockResolvedValueOnce(mockAuditLogs as any);
+
+      const req = new NextRequest(
+        "http://localhost:3000/api/admin/logs?type=audit&tag=MEDICAL_RECORD&action=MEDICAL_RECORD_SEARCH_DENIED"
+      );
+      const res = await GET(req);
+
+      expect(res.status).toBe(200);
+      const data = await res.json();
+
+      expect(data.logs.length).toBe(1);
+      expect(data.logs[0].action).toBe("MEDICAL_RECORD_SEARCH_DENIED");
+      expect(data.logs[0].tag).toBe("MEDICAL_RECORD");
+      const parsedMeta = JSON.parse(data.logs[0].metadata);
+      expect(parsedMeta.reason).toBe("NO_ELIGIBLE_APPOINTMENT");
+    });
   });
 });

@@ -300,3 +300,71 @@ export async function retryMedicalDocumentIngestion(
 ): Promise<IngestionQueueResult> {
   return queueMedicalDocumentIngestion(params);
 }
+
+export interface MedicalRetrievalChunk {
+  score: number;
+  content: string;
+  documentId: string;
+  documentType: string;
+  reportDate: string | null;
+  fileName: string;
+  pageNumber: number;
+  chunkIndex: number;
+  patientId: string;
+}
+
+export interface MedicalRetrievalResponse {
+  results: MedicalRetrievalChunk[];
+}
+
+export interface MedicalRetrievalSearchParams {
+  patientId: string;
+  query: string;
+  limit?: number;
+  documentType?: string;
+  fromDate?: string;
+  toDate?: string;
+}
+
+/**
+ * Executes a patient-scoped medical record search against Search Sphere internal retrieval API.
+ */
+export async function searchPatientMedicalRecords(
+  params: MedicalRetrievalSearchParams
+): Promise<MedicalRetrievalResponse> {
+  const { baseUrl, secret } = getServiceConfig();
+
+  const response = await fetch(`${baseUrl}/internal/medical-retrieval/search`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      patientId: params.patientId,
+      query: params.query,
+      limit: params.limit ?? 8,
+      documentType: params.documentType,
+      fromDate: params.fromDate,
+      toDate: params.toDate,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    let detail = "Failed to search patient medical records";
+    try {
+      const parsed = JSON.parse(errorText);
+      detail = parsed.detail || detail;
+    } catch {
+      // ignore
+    }
+    throw new Error(`Medical retrieval failed (${response.status}): ${detail}`);
+  }
+
+  const data = await response.json();
+  return {
+    results: data.results || [],
+  };
+}
+

@@ -18,6 +18,7 @@ import {
   AccessiblePatient,
 } from "@/components/doctor/DoctorMedicalDocumentHeader";
 import { MedicalRecordAccessDenied } from "@/components/doctor/MedicalRecordAccessDenied";
+import { DoctorMedicalSearchSection } from "@/components/doctor/DoctorMedicalSearchSection";
 import { FileText, Search, RotateCcw } from "lucide-react";
 
 interface RouteParams {
@@ -182,6 +183,9 @@ export default function DoctorPatientMedicalDocumentsPage({ params }: RouteParam
         scanCount={scanCount}
         rxCount={rxCount}
       />
+
+      {/* Semantic and Keyword Medical Record Search */}
+      <DoctorMedicalSearchSection patientId={patientId} />
 
       {/* Filter and Search Bar */}
       <Card className="border shadow-xs">
