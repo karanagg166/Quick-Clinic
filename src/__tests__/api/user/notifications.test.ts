@@ -1,13 +1,16 @@
-import { test, expect } from "vitest";
+import { test, expect, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 import { GET as notificationsGET } from "@/app/api/user/[userId]/notification/route";
 import { PATCH as notificationPATCH, DELETE as notificationDELETE } from "@/app/api/user/[userId]/notification/[id]/route";
 import { prisma } from "@/lib/prisma";
 
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+let user: Awaited<ReturnType<typeof createTestUser>>;
+beforeEach(async () => { user = await createTestUser(); });
+afterEach(async () => { if (user) await cleanupTestUsers([user.id]); });
+
 test("GET /api/user/[userId]/notification - fetches notifications for user", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
   // Create test notification
   const notification = await prisma.notification.create({
@@ -38,9 +41,6 @@ test("GET /api/user/[userId]/notification - fetches notifications for user", asy
 });
 
 test("PATCH /api/user/[userId]/notification/[id] - marks notification as read", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
   const notification = await prisma.notification.create({
     data: {
@@ -68,9 +68,6 @@ test("PATCH /api/user/[userId]/notification/[id] - marks notification as read", 
 });
 
 test("DELETE /api/user/[userId]/notification/[id] - deletes notification", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
   const notification = await prisma.notification.create({
     data: {

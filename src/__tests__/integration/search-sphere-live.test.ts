@@ -69,6 +69,7 @@ describe.skipIf(!live)("live Search-Sphere synthetic medical lifecycle", () => {
       expect((await fetch(`${base}/internal/medical-documents/${docs[1].id}/status`, { headers })).status).toBe(403);
       expect((await fetch(`${base}/api/v1/search`, { method: "POST", headers: { ...headers, "X-Client-ID": "exam_arena" }, body: JSON.stringify({ query: "glucose" }) })).status).toBe(403);
       expect((await fetch(`${base}/api/v1/search`, { method: "POST", headers: { ...headers, "X-Tenant-ID": "unauthorized" }, body: JSON.stringify({ query: "glucose" }) })).status).toBe(403);
+      expect((await fetch(`${base}/api/v1/search`, { method: "POST", headers: { ...headers, Authorization: "Bearer synthetic-invalid-token" }, body: JSON.stringify({ query: "glucose" }) })).status).toBe(401);
       const observations = await queryPatientMedicalObservations({ patientId: patientA, observationTypes: ["HBA1C"] });
       expect(observations.observations.some(o => o.value === 7.4 && o.documentId === docs[0].id)).toBe(true);
       if (process.env.RUN_SEARCH_SPHERE_COHERE_SMOKE === "1") {

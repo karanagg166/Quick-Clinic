@@ -99,3 +99,15 @@ The test suite across `Quick-Clinic` and `socket-server` has been classified acc
 - `src/__tests__/concurrency/part2-withdrawal-concurrency-load.test.ts`: Parallel withdrawal overdraft prevention invariant test.
 - `tests/load/*`: k6 load testing scripts for search baseline, slot contention, earnings concurrency, and withdrawals.
 
+
+## Fixture ownership and verification
+
+Run database tests against an explicitly configured isolated PostgreSQL database with the Prisma schema applied, using the commands in `commands.md`. `src/__tests__/setup.ts` clears mocks but does not reset the database. `fileParallelism: false` serializes files; it does not isolate their records. `src/lib/test-db.ts` is a development inspection script, not test setup.
+
+Database suites must create their own users and dependent records and remove only those records in teardown, including after assertion failures. Login fixtures use known hashed passwords and explicit role profiles. Shared canonical locations may be connected without changing their fields or deleting them. Guard cleanup against undefined IDs, since omitted Prisma filters can match unrelated records. UUID email/run identifiers prevent accidental collisions across suite reloads; factory defaults still allow explicit overrides.
+
+The security and financial regression suites enforce JWT verification, resource ownership, masked bank responses, deterministic log pagination, payment/refund replay protection, single-winner slot holds, integer-paise credits and withdrawal balance reservation. See the corresponding test files above and `src/__tests__/security/part1c-payment-refund-idempotency.test.ts`, `src/__tests__/api/admin/part1c-admin-logs-pagination.test.ts`, and `src/__tests__/api/doctors/part1c-withdrawal-lifecycle-masking.test.ts` for executable assertions. Historical pass counts, security scan outputs and latency measurements are temporary run artifacts, not a production-readiness guarantee. Keep the ZAP configuration and load scripts; regenerate their outputs when needed and remove them after review.
+
+The live synthetic RAG lifecycle is opt-in via `RUN_SEARCH_SPHERE_INTEGRATION=1`; actual Cohere calls additionally require `RUN_SEARCH_SPHERE_COHERE_SMOKE=1` and private service/provider credentials. A skipped live test does not verify ingestion, retrieval or generation.
+
+`GET /api/doctors` keeps its existing response contracts: queries without coordinates return a doctor array; queries with valid latitude/longitude return `{ doctors, distanceUnavailable }`, sorted by distance when coordinates are available. The phase 10 search tests cover both forms. Consumers must normalize these forms rather than assume every response is an array.

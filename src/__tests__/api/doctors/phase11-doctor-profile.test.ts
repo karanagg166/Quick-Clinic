@@ -115,16 +115,19 @@ describe('Phase 11: Doctor Profile Visibility & Privacy Test Suite', () => {
   });
 
   afterAll(async () => {
-    try {
+    // Setup may fail partway through. Undefined Prisma filters match every row.
+    if (doctorId) {
       await prisma.accessLog.deleteMany({ where: { targetId: doctorId } });
       await prisma.comment.deleteMany({ where: { doctorId } });
       await prisma.rating.deleteMany({ where: { doctorId } });
       await prisma.doctorQualification.deleteMany({ where: { doctorId } });
       await prisma.doctor.deleteMany({ where: { id: doctorId } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [doctorUserId, patientUserId] } } });
-    } catch (e) {
-      console.warn('Phase 11 cleanup warning:', e);
+    }
+    if (patientId) await prisma.patient.deleteMany({ where: { id: patientId } });
+    const userIds = [doctorUserId, patientUserId].filter((id): id is string => Boolean(id));
+    if (userIds.length) {
+      await prisma.accessLog.deleteMany({ where: { userId: { in: userIds } } });
+      await prisma.user.deleteMany({ where: { id: { in: userIds } } });
     }
   });
 

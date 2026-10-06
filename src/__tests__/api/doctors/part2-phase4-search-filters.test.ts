@@ -79,15 +79,15 @@ describe('Phase 4 — Doctor Search & Filter Testing Suite', () => {
       expect(doctors.some((d: any) => d.name.includes('Amit'))).toBe(true);
     });
 
-    it('4.2.2 Case-insensitive partial name search (e.g. "priya")', async () => {
-      const req = new NextRequest('http://localhost:3000/api/doctors?name=priya');
+    it('4.2.2 Case-insensitive partial name search (e.g. "bhavna")', async () => {
+      const req = new NextRequest('http://localhost:3000/api/doctors?name=bHaVnA');
       const res = await doctorsGET(req);
       expect(res.status).toBe(200);
 
       const data = await res.json();
       const doctors = Array.isArray(data) ? data : data.doctors;
       expect(doctors.length).toBeGreaterThanOrEqual(1);
-      expect(doctors.some((d: any) => d.name.toLowerCase().includes('priya'))).toBe(true);
+      expect(doctors.some((d: any) => d.name.toLowerCase().includes('bhavna'))).toBe(true);
     });
 
     it('4.2.3 Returns empty array when searching nonexistent doctor name', async () => {
