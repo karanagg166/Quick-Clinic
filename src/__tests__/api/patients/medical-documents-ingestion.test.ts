@@ -324,7 +324,7 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
       const res = await DELETE_DOC(req, { params: Promise.resolve({ documentId: "doc_123" }) });
 
       expect(res.status).toBe(200);
-      expect(searchSphereClient.deleteMedicalDocumentIndex).toHaveBeenCalledWith("doc_123");
+      expect(searchSphereClient.deleteMedicalDocumentIndex).toHaveBeenCalledWith("doc_123", { subjectId: "pat_record_a" });
       expect(searchSphereClient.deleteFromStorage).toHaveBeenCalledWith(sampleDocA.storagePath);
       expect(prisma.medicalDocument.delete).toHaveBeenCalledWith({ where: { id: "doc_123" } });
     });

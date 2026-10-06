@@ -68,7 +68,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
 
     // Call Search Sphere processing status API
     try {
-      const statusResult = await getMedicalDocumentProcessingStatus(documentId);
+      const statusResult = await getMedicalDocumentProcessingStatus(documentId, { subjectId: patient.id });
 
       const normalizedStatus = statusResult.status.toUpperCase() as MedicalDocumentProcessingStatus;
       const validStatuses = Object.values(MedicalDocumentProcessingStatus);

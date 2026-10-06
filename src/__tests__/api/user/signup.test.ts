@@ -1,14 +1,28 @@
-import { test, expect } from "vitest";
+import { test, expect, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as signupPOST } from "@/app/api/user/signup/route";
 import { prisma } from "@/lib/prisma";
+
+import { buildUserPayload } from "@/__tests__/helpers/factories";
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+let existingUser: Awaited<ReturnType<typeof createTestUser>>;
+const createdEmails: string[] = [];
+beforeAll(async () => {
+  existingUser = await createTestUser();
+  createdEmails.push(existingUser.email);
+});
+afterAll(async () => {
+  const users = await prisma.user.findMany({ where: { email: { in: createdEmails } }, select: { id: true } });
+  await cleanupTestUsers(users.map(user => user.id));
+});
 
 test("POST /api/user/signup - rejects already registered email", async () => {
   const req = new NextRequest("http://localhost:3000/api/user/signup", {
     method: "POST",
     body: JSON.stringify({
       name: "Existing User",
-      email: "karan@gmail.com",
+      email: existingUser.email,
       phoneNo: "7838222130",
       age: 22,
       city: "Faridabad",
@@ -29,7 +43,8 @@ test("POST /api/user/signup - rejects already registered email", async () => {
 });
 
 test("POST /api/user/signup - registers new user successfully and sets cookies", async () => {
-  const uniqueEmail = `test_signup_${Date.now()}@example.com`;
+  const uniqueEmail = buildUserPayload().email;
+  createdEmails.push(uniqueEmail);
 
   const req = new NextRequest("http://localhost:3000/api/user/signup", {
     method: "POST",
@@ -59,8 +74,5 @@ test("POST /api/user/signup - registers new user successfully and sets cookies",
   const tokenCookie = res.cookies.get("token");
   expect(tokenCookie).toBeDefined();
 
-  // Cleanup created user
-  await prisma.user.delete({
-    where: { email: uniqueEmail },
-  });
+
 });

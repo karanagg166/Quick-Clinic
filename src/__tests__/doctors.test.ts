@@ -1,6 +1,23 @@
-import { test, expect, assert } from "vitest";
+import { test, assert, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "../app/api/doctors/route";
+
+import { prisma } from "@/lib/prisma";
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+const userIds: string[] = [];
+beforeAll(async () => {
+  for (const spec of [
+    { name: "Dr. Priyanshu Search Fixture", age: 38, fees: 900, experience: 18 },
+    { name: "Dr. Other Search Fixture", age: 30, fees: 700, experience: 8 },
+  ]) {
+    const { fees, experience, ...fields } = spec;
+    const user = await createTestUser({ ...fields, role: "DOCTOR", city: "Bangalore", state: "Karnataka", pinCode: 560001 });
+    userIds.push(user.id);
+    await prisma.doctor.create({ data: { userId: user.id, specialty: "PEDIATRICIAN", fees, experience } });
+  }
+});
+afterAll(() => cleanupTestUsers(userIds));
 
 test("GET /api/doctors - retrieves all doctors when no filters are applied", async () => {
   const req = new NextRequest("http://localhost:3000/api/doctors");

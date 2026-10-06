@@ -11,7 +11,7 @@ describe('PART 2B — Phase 5: Actual Redis Failure Injection & Fallback Suite',
   const originalEnvToken = process.env.UPSTASH_REDIS_REST_TOKEN;
 
   beforeAll(async () => {
-    dataset = await seedPart2Dataset('p2b_redis');
+    dataset = await seedPart2Dataset();
     doctor = dataset.doctors[0];
     patient = dataset.patients[0];
   }, 30000);

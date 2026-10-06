@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { prisma } from '@/lib/prisma';
 import { hash } from 'bcryptjs';
 import type { Specialty, Qualification, Gender, Role } from '@/generated/prisma';
@@ -38,7 +39,7 @@ export interface Part2Dataset {
 }
 
 export function generateRunId(): string {
-  return `p2_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`;
+  return `p2_${Date.now().toString(36)}_${randomUUID().replaceAll("-", "")}`;
 }
 
 export async function seedPart2Dataset(customRunId?: string): Promise<Part2Dataset> {

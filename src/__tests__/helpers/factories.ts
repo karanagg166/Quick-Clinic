@@ -1,3 +1,4 @@
+import { randomUUID, randomInt } from "node:crypto";
 import type { Gender, Role, Specialty, Qualification, SlotStatus, AppointmentStatus, PaymentMethod, WithdrawalStatus } from '@/generated/prisma';
 
 let counter = 1;
@@ -7,8 +8,8 @@ export function buildUserPayload(overrides: Partial<any> = {}) {
   const idx = getUniqueIndex();
   return {
     name: `Test User ${idx}`,
-    email: `test_user_${idx}_${Date.now()}@quickclinic.test`,
-    phoneNo: `98765${String(idx).padStart(5, '0')}`,
+    email: `test_user_${randomUUID()}@quickclinic.test`,
+    phoneNo: `9${String(randomInt(0, 1_000_000_000)).padStart(9, '0')}`,
     age: 30,
     city: 'Faridabad',
     state: 'Haryana',

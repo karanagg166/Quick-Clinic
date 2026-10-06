@@ -1,14 +1,18 @@
-import { test, expect } from "vitest";
+import { test, expect, beforeEach, afterEach, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as sendOtpPOST } from "@/app/api/user/[userId]/otp/send/route";
 import { POST as verifyOtpPOST } from "@/app/api/user/[userId]/otp/verify/route";
 import { prisma } from "@/lib/prisma";
 
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+vi.mock("@/lib/resend", () => ({ resend: { emails: { send: vi.fn().mockRejectedValue(new Error("synthetic email failure")) } } }));
+
+let user: Awaited<ReturnType<typeof createTestUser>>;
+beforeEach(async () => { user = await createTestUser(); });
+afterEach(async () => { if (user) await cleanupTestUsers([user.id]); });
+
 test("POST /api/user/[userId]/otp/send - sends/generates OTP in development mode", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
-  expect(user).toBeDefined();
 
   const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}/otp/send`, {
     method: "POST",
@@ -27,9 +31,6 @@ test("POST /api/user/[userId]/otp/send - sends/generates OTP in development mode
 });
 
 test("POST /api/user/[userId]/otp/verify - rejects missing OTP", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
   const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}/otp/verify`, {
     method: "POST",
@@ -46,10 +47,8 @@ test("POST /api/user/[userId]/otp/verify - rejects missing OTP", async () => {
 });
 
 test("POST /api/user/[userId]/otp/verify - rejects incorrect OTP", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
+  await prisma.otp.create({ data: { email: user.email, userId: user.id, code: "123456", expiresAt: new Date(Date.now() + 600_000) } });
   const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}/otp/verify`, {
     method: "POST",
     body: JSON.stringify({ otp: "000000" }),
@@ -65,9 +64,6 @@ test("POST /api/user/[userId]/otp/verify - rejects incorrect OTP", async () => {
 });
 
 test("POST /api/user/[userId]/otp/verify - verifies valid OTP and marks emailVerified", async () => {
-  const user = await prisma.user.findFirst({
-    where: { email: "karan@gmail.com" },
-  });
 
   // Ensure an OTP exists
   const code = "789123";

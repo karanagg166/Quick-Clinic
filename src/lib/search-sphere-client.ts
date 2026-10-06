@@ -1,4 +1,5 @@
-import { randomUUID } from "crypto";
+import "server-only";
+import { createHash, randomUUID } from "crypto";
 import { getCurrentRequestId } from "@/lib/correlation-id";
 import type {
   StorageUploadResult,
@@ -22,9 +23,9 @@ import type {
 export * from "@/types/search-sphere";
 
 function getServiceConfig() {
-  const secret = process.env.SEARCH_SPHERE_SERVICE_SECRET;
+  const secret = process.env.SEARCH_SPHERE_API_KEY || process.env.SEARCH_SPHERE_SERVICE_SECRET;
   if (!secret) {
-    throw new Error("SEARCH_SPHERE_SERVICE_SECRET is not configured");
+    throw new Error("SEARCH_SPHERE_API_KEY or SEARCH_SPHERE_SERVICE_SECRET is not configured");
   }
 
   const rawUrl = process.env.SEARCH_SPHERE_API_URL;
@@ -33,7 +34,28 @@ function getServiceConfig() {
   }
 
   const baseUrl = rawUrl.replace(/\/$/, "");
-  return { baseUrl, secret };
+  const clientId = process.env.SEARCH_SPHERE_CLIENT_ID || "quick_clinic";
+  const tenantId = process.env.SEARCH_SPHERE_TENANT_ID || "quick_clinic_default";
+  if (clientId !== "quick_clinic") throw new Error("Invalid Search Sphere client configuration");
+  return { baseUrl, secret, clientId, tenantId };
+}
+
+export function patientCollectionId(patientId: string): string {
+  return `patient_${createHash("sha256").update(patientId).digest("hex").slice(0, 32)}_records`;
+}
+
+function subjectFromRequest(url: string, init: RequestInit): string | undefined {
+  if (init.body instanceof FormData) {
+    const patient = init.body.get("patient_id");
+    return typeof patient === "string" ? patient : undefined;
+  }
+  if (typeof init.body === "string") {
+    const body = JSON.parse(init.body) as { patientId?: string; storagePath?: string };
+    if (body.patientId) return body.patientId;
+    if (body.storagePath) return body.storagePath.split("/")[1];
+  }
+  const storagePath = new URL(url).searchParams.get("storagePath");
+  return storagePath?.split("/")[1];
 }
 
 const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
@@ -54,6 +76,10 @@ function isRetryableError(error: any): boolean {
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export class SearchSphereServiceError extends Error {
+  constructor(public readonly status: number, message: string) { super(message); }
 }
 
 export function sanitizeCitations(
@@ -98,6 +124,15 @@ async function fetchWithRetry(
       Object.assign(rawHeaders, init.headers);
     }
   }
+  const config = getServiceConfig();
+  rawHeaders["Authorization"] = `Bearer ${config.secret}`;
+  rawHeaders["X-Client-ID"] = config.clientId;
+  rawHeaders["X-Tenant-ID"] = config.tenantId;
+  const subjectId = options?.subjectId || subjectFromRequest(url, init);
+  if (subjectId) {
+    rawHeaders["X-Subject-ID"] = subjectId;
+    rawHeaders["X-Collection-ID"] = patientCollectionId(subjectId);
+  }
   rawHeaders["X-Request-ID"] = requestId;
 
   let lastError: any = null;
@@ -136,7 +171,7 @@ async function fetchWithRetry(
         continue;
       }
 
-      throw err;
+      throw new Error("Search-Sphere is temporarily unavailable.");
     }
   }
 
@@ -179,7 +214,7 @@ export async function uploadToStorage(
     let detail = "Failed to store document in object storage";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -224,7 +259,7 @@ export async function getSignedStorageUrl(
     let detail = "Failed to generate signed document URL";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -266,7 +301,7 @@ export async function deleteFromStorage(
     let detail = "Failed to delete document from object storage";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -321,7 +356,7 @@ export async function queueMedicalDocumentIngestion(
     let detail = "Failed to enqueue medical document for ingestion";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -360,7 +395,7 @@ export async function getMedicalDocumentProcessingStatus(
     let detail = "Failed to fetch document processing status";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -401,11 +436,11 @@ export async function deleteMedicalDocumentIndex(
     let detail = "Failed to delete medical document vector index";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
-    throw new Error(`Vector index deletion failed (${response.status}): ${detail}`);
+    throw new SearchSphereServiceError(response.status, `Vector index deletion failed (${response.status}): ${detail}`);
   }
 
   const data = await response.json();
@@ -459,7 +494,7 @@ export async function searchPatientMedicalRecords(
     let detail = "Failed to search patient medical records";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -510,7 +545,7 @@ export async function generatePatientMedicalAnswer(
     let detail = "Failed to generate grounded medical answer";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -561,7 +596,7 @@ export async function generatePatientMedicalChat(
     let detail = "Failed to generate medical chat answer";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }
@@ -592,7 +627,12 @@ export async function openPatientMedicalChatStream(
   const requestId = params.requestId || options?.requestId || getCurrentRequestId() || randomUUID();
 
   const headers = new Headers();
+  const config = getServiceConfig();
   headers.set("Authorization", `Bearer ${secret}`);
+  headers.set("X-Client-ID", config.clientId);
+  headers.set("X-Tenant-ID", config.tenantId);
+  headers.set("X-Subject-ID", params.patientId);
+  headers.set("X-Collection-ID", patientCollectionId(params.patientId));
   headers.set("Content-Type", "application/json");
   headers.set("Accept", "text/event-stream");
   headers.set("X-Request-ID", requestId);
@@ -605,7 +645,7 @@ export async function openPatientMedicalChatStream(
     const response = await fetch(`${baseUrl}/internal/medical-rag/chat/stream`, {
       method: "POST",
       headers,
-      signal: controller.signal,
+      signal: options?.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
       body: JSON.stringify({
         patientId: params.patientId,
         message: params.message,
@@ -617,21 +657,44 @@ export async function openPatientMedicalChatStream(
       }),
     });
 
-    clearTimeout(timer);
-
     if (!response.ok) {
       const errorText = await response.text();
       let detail = "Failed to initiate medical chat stream";
       try {
         const parsed = JSON.parse(errorText);
-        detail = parsed.detail || detail;
+        void parsed; // Upstream details may contain infrastructure or credentials.
       } catch {
         // ignore
       }
       throw new Error(`Medical chat streaming failed (${response.status}): ${detail}`);
     }
 
-    return response;
+    if (!response.body || !response.headers.get("content-type")?.includes("text/event-stream")) {
+      throw new Error("Invalid medical chat stream response");
+    }
+    const reader = response.body.getReader();
+    const body = new ReadableStream<Uint8Array>({
+      async pull(streamController) {
+        try {
+          const next = await reader.read();
+          if (next.done) {
+            clearTimeout(timer);
+            streamController.close();
+          } else {
+            streamController.enqueue(next.value);
+          }
+        } catch (error) {
+          clearTimeout(timer);
+          streamController.error(error);
+        }
+      },
+      async cancel(reason) {
+        clearTimeout(timer);
+        controller.abort();
+        await reader.cancel(reason);
+      },
+    });
+    return new Response(body, { status: response.status, headers: response.headers });
   } catch (err) {
     clearTimeout(timer);
     throw err;
@@ -672,7 +735,7 @@ export async function queryPatientMedicalObservations(
     let detail = "Failed to query patient medical observations";
     try {
       const parsed = JSON.parse(errorText);
-      detail = parsed.detail || detail;
+      void parsed; // Upstream details may contain infrastructure or credentials.
     } catch {
       // ignore
     }

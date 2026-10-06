@@ -1042,6 +1042,8 @@ If existing architecture blocks a safe implementation, perform only the smallest
 
 # 38. Documentation
 
+Temporary audit/test/verification reports and generated investigation artifacts must be removed once they are no longer actively needed; do not keep them permanently in the repository.
+
 When a change introduces a new project-wide convention, update relevant documentation.
 
 Possible files:
