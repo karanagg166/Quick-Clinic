@@ -105,7 +105,7 @@ describe("Medical AI Hardening Suite", () => {
 
   describe("PART 4 & 5: Correlation IDs", () => {
     it("extracts and validates a safe X-Request-ID header", () => {
-      const safeId = "custom-req-id-uuid-12345678";
+      const safeId = "ba4b44b9-a2f8-413a-9b41-94b84fbcf33a";
       const req = new NextRequest("http://localhost:3000/api/test", {
         headers: { "x-request-id": safeId },
       });

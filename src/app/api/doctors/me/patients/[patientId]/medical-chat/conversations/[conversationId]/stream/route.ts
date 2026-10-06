@@ -227,7 +227,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           message: userText,
           history: historyPayload,
           limit,
-        });
+        }, { signal: req.signal });
       } catch (streamInitErr) {
         await releaseConversationLock(cleanConversationId);
         lockAcquired = false;

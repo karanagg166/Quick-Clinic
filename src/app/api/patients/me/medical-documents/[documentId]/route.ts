@@ -74,7 +74,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   } catch (error: any) {
     console.error("GET medical document by ID error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -283,7 +283,7 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   } catch (error: any) {
     console.error("PATCH medical document error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -347,9 +347,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
 
     // 1. Delete vector points & ingestion record from Search Sphere
     try {
-      await deleteMedicalDocumentIndex(documentId);
+      await deleteMedicalDocumentIndex(documentId, { subjectId: patient.id });
     } catch (indexError) {
-      console.warn("Failed to delete medical document vector index (may not exist yet):", indexError);
+      console.warn("Failed to delete medical document vector index:", indexError);
+      const status = indexError instanceof Error && "status" in indexError ? indexError.status : undefined;
+      if (status !== 404) {
+        return NextResponse.json({ error: "Document deletion is temporarily unavailable. Please retry." }, { status: 503 });
+      }
     }
 
     // 2. Delete object from storage via Search Sphere
@@ -364,7 +368,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
         {
           error:
             "Failed to delete document from object storage. Metadata was not deleted to preserve data integrity.",
-          details: storageError.message,
+
         },
         { status: 502 }
       );
@@ -395,7 +399,7 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
   } catch (error: any) {
     console.error("DELETE medical document error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

@@ -166,7 +166,7 @@ export async function POST(req: NextRequest) {
     } catch (storageError: any) {
       console.error("Search Sphere storage upload failed:", storageError);
       return NextResponse.json(
-        { error: storageError.message || "Failed to upload document to storage" },
+        { error: "Failed to upload document to storage" },
         { status: 502 }
       );
     }
@@ -254,7 +254,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("Unhandled medical document upload error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
@@ -362,7 +362,7 @@ export async function GET(req: NextRequest) {
   } catch (error: any) {
     console.error("GET medical documents error:", error);
     return NextResponse.json(
-      { error: error?.message || "Internal server error" },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }

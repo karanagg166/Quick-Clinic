@@ -34,7 +34,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
           patientId: "pat_1",
           query: "test query",
         })
-      ).rejects.toThrow("SEARCH_SPHERE_SERVICE_SECRET is not configured");
+      ).rejects.toThrow("SEARCH_SPHERE_API_KEY or SEARCH_SPHERE_SERVICE_SECRET is not configured");
     });
 
     it("throws error when SEARCH_SPHERE_API_URL is missing", async () => {
@@ -161,7 +161,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
           patientId: "pat_123",
           query: "BP?",
         })
-      ).rejects.toThrow("Medical RAG generation failed (500): Cohere API key missing");
+      ).rejects.toThrow("Medical RAG generation failed (500): Failed to generate grounded medical answer");
     });
   });
 

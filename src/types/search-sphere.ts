@@ -152,6 +152,8 @@ export interface QueryPatientMedicalObservationsParams {
 }
 
 export interface ClientRequestOptions {
+  subjectId?: string;
+  signal?: AbortSignal;
   requestId?: string;
   timeoutMs?: number;
   retries?: number;
