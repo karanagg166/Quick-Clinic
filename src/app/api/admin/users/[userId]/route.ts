@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -59,7 +59,7 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -181,7 +181,7 @@ export async function DELETE(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

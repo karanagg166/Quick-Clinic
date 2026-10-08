@@ -17,7 +17,7 @@ const createConversationSchema = z.object({
 
 export async function POST(req: NextRequest, { params }: RouteParams) {
   try {
-    const authUser = await getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!authUser) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -122,7 +122,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const authUser = await getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!authUser) {
       return NextResponse.json(
         { error: "Authentication required" },

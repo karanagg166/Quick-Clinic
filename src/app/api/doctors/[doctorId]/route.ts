@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { Doctor } from "@/types/doctor";
 import { logAccess } from "@/lib/logger";
-import { verifyToken, getAuthenticatedUser } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { parseCoordinates } from "@/lib/coordinates";
 import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
@@ -122,19 +122,15 @@ export const GET = async (
     }));
 
     // Check viewer & review eligibility
-    const authHeader = req.headers.get("authorization");
-    const headerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    const cookieToken = req.cookies.get("token")?.value;
-    const token = headerToken || cookieToken;
+    const viewer = await getAuthenticatedUser(req, { verifyDb: true });
 
     let viewerId = null;
     let canReview = false;
     let userRating: number | null = null;
 
-    if (token) {
-      const { payload } = await verifyToken(token);
-      if (payload) {
-        viewerId = (payload as any).id;
+    if (viewer) {
+      if (viewer.role === "PATIENT") {
+        viewerId = viewer.id;
         try {
           const patient = await prisma.patient.findUnique({ where: { userId: viewerId } });
           if (patient) {
@@ -182,6 +178,11 @@ export const PUT = async (
   { params }: { params: Promise<{ doctorId: string }> }
 ) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { doctorId } = await params;
 
     if (!doctorId || typeof doctorId !== "string") {
@@ -197,8 +198,7 @@ export const PUT = async (
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -254,6 +254,11 @@ export const PATCH = async (
   { params }: { params: Promise<{ doctorId: string }> }
 ) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { doctorId } = await params;
 
     if (!doctorId || typeof doctorId !== "string") {
@@ -269,8 +274,7 @@ export const PATCH = async (
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

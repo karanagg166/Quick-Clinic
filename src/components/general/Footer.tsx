@@ -36,9 +36,9 @@ export default function Footer() {
   return (
     <footer className="bg-muted/30 border-t mt-auto">
       <div className="max-w-7xl mx-auto px-6 py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-6">
           {/* Brand Section */}
-          <div className="col-span-1 md:col-span-1 space-y-4">
+          <div className="space-y-4">
             <Logo />
             <p className="text-sm text-muted-foreground leading-relaxed">
               Your trusted healthcare companion. Connecting doctors and patients seamlessly with modern technology.
@@ -67,28 +67,6 @@ export default function Footer() {
               <li>
                 <Link href="/auth/signup" className="hover:text-primary transition-colors">
                   Sign Up
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal / Resources */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-foreground">Legal</h3>
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Terms of Service
-                </Link>
-              </li>
-              <li>
-                <Link href="#" className="hover:text-primary transition-colors">
-                  Cookie Policy
                 </Link>
               </li>
             </ul>

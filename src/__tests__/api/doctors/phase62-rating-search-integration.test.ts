@@ -7,6 +7,7 @@ import * as auth from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -29,14 +30,10 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/auth', () => ({
-  getUserId: vi.fn(),
-  verifyToken: vi.fn(),
-}));
-
 describe('Phase 62: Doctor Rating and Search Integration Test Suite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user_pat_1", role: "PATIENT", isActive: true } as never);
   });
 
   it('62.1 Returns average: 0 and count: 0 for an unrated doctor', async () => {
@@ -70,11 +67,10 @@ describe('Phase 62: Doctor Rating and Search Integration Test Suite', () => {
   });
 
   it('62.3 Rejects rating submission when rating value is out of 1-5 range', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/rating', {
       method: 'POST',
-      headers: { authorization: 'Bearer valid_token' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ rating: 6 }),
     });
 
@@ -86,14 +82,13 @@ describe('Phase 62: Doctor Rating and Search Integration Test Suite', () => {
   });
 
   it('62.4 Rejects rating submission when patient has no completed appointment with doctor (403 Forbidden)', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'user_pat_1' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null); // No completed appointment
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/rating', {
       method: 'POST',
-      headers: { authorization: 'Bearer valid_token' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ rating: 5 }),
     });
 
@@ -105,7 +100,6 @@ describe('Phase 62: Doctor Rating and Search Integration Test Suite', () => {
   });
 
   it('62.5 Upserts rating when patient has completed appointment and returns updated aggregate', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'user_pat_1' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({ id: 'appt_1', status: 'COMPLETED' } as any);
@@ -117,7 +111,7 @@ describe('Phase 62: Doctor Rating and Search Integration Test Suite', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/rating', {
       method: 'POST',
-      headers: { authorization: 'Bearer valid_token' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ rating: 5 }),
     });
 

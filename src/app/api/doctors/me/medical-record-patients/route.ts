@@ -6,7 +6,7 @@ import { AppointmentStatus } from "@/generated/prisma";
 
 export async function GET(req: NextRequest) {
   try {
-    const authUser = await getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!authUser) {
       return NextResponse.json(
         { error: "Authentication required" },

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
 import { GET } from "@/app/api/admin/logs/route";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -16,7 +16,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/auth", () => ({
-  requireAdmin: vi.fn(),
+  getAuthenticatedUser: vi.fn(),
 }));
 
 describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
@@ -28,7 +28,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
 
   describe("Role-Based Access Control", () => {
     it("returns 401 when unauthenticated", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(null);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(null);
 
       const req = new NextRequest("http://localhost:3000/api/admin/logs");
       const res = await GET(req);
@@ -38,31 +38,30 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
       expect(data.error).toContain("Unauthorized");
     });
 
-    it("returns 401 when called by a doctor", async () => {
-      // requireAdmin returns null for non-admin users
-      vi.mocked(requireAdmin).mockResolvedValueOnce(null);
+    it("returns 403 when called by a doctor", async () => {
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce({ id: "doctor", role: "DOCTOR" });
 
       const req = new NextRequest("http://localhost:3000/api/admin/logs");
       const res = await GET(req);
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(403);
       const data = await res.json();
-      expect(data.error).toContain("Unauthorized");
+      expect(data.error).toContain("Forbidden");
     });
 
-    it("returns 401 when called by a patient", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(null);
+    it("returns 403 when called by a patient", async () => {
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce({ id: "patient", role: "PATIENT" });
 
       const req = new NextRequest("http://localhost:3000/api/admin/logs");
       const res = await GET(req);
 
-      expect(res.status).toBe(401);
+      expect(res.status).toBe(403);
     });
   });
 
   describe("Medical Record Log Filtering", () => {
     it("allows admin to retrieve medical access logs with tag=MEDICAL_RECORD", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAccessLogs = [
         {
@@ -103,7 +102,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
     });
 
     it("allows admin to retrieve denied-access audit logs with action=MEDICAL_DOCUMENT_ACCESS_DENIED", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAuditLogs = [
         {
@@ -143,7 +142,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
     });
 
     it("allows admin to retrieve medical search access logs with action=MEDICAL_RECORD_SEARCH", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAccessLogs = [
         {
@@ -183,7 +182,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
     });
 
     it("allows admin to retrieve denied search audit logs with action=MEDICAL_RECORD_SEARCH_DENIED", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAuditLogs = [
         {
@@ -215,7 +214,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
     });
 
     it("allows admin to retrieve medical RAG query access logs with action=MEDICAL_RAG_QUERY", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAccessLogs = [
         {
@@ -245,7 +244,7 @@ describe("Admin Medical Logs API (GET /api/admin/logs)", () => {
     });
 
     it("allows admin to retrieve medical RAG security anomaly logs", async () => {
-      vi.mocked(requireAdmin).mockResolvedValueOnce(adminUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(adminUser as any);
 
       const mockAnomalyLogs = [
         {

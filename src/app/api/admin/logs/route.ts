@@ -1,12 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireAdmin } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
     try {
-        const adminUser = await requireAdmin(req);
+        const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
         if (!adminUser) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        if (adminUser.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const { searchParams } = new URL(req.url);

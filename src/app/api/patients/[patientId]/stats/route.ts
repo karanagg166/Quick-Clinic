@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
@@ -6,10 +7,19 @@ export async function GET(
   { params }: { params: Promise<{ patientId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { patientId } = await params;
 
     if (!patientId) {
       return NextResponse.json({ error: "Missing patientId" }, { status: 400 });
+    }
+
+    const owner = await prisma.patient.findUnique({ where: { id: patientId }, select: { userId: true } });
+    if (!owner) return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || owner.userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const today = new Date();

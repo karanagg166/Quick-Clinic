@@ -9,10 +9,32 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Clock } from "lucide-react";
 
+interface AnalyticsData {
+    users?: {
+        total: number;
+        doctors: number;
+        patients: number;
+        admins: number;
+        activeDoctors: number;
+    };
+    appointments?: {
+        total: number;
+        completed: number;
+        cancelled: number;
+    };
+    activity?: {
+        recentLogins24h: number;
+    };
+}
+
 export default function AdminDashboardPage() {
     const { user } = useUserStore();
     const [logs, setLogs] = useState([]);
     const [loadingLogs, setLoadingLogs] = useState(true);
+
+    const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+    const [loadingAnalytics, setLoadingAnalytics] = useState(true);
+    const [analyticsError, setAnalyticsError] = useState(false);
 
     useEffect(() => {
         const fetchLogs = async () => {
@@ -33,10 +55,32 @@ export default function AdminDashboardPage() {
             }
         };
 
+        const fetchAnalytics = async () => {
+            setLoadingAnalytics(true);
+            setAnalyticsError(false);
+            try {
+                const res = await fetch("/api/admin/analytics");
+                if (res.ok) {
+                    const data = await res.json();
+                    setAnalytics(data);
+                } else {
+                    setAnalyticsError(true);
+                }
+            } catch (error) {
+                console.error("Failed to fetch admin analytics", error);
+                setAnalyticsError(true);
+            } finally {
+                setLoadingAnalytics(false);
+            }
+        };
+
         if (user) {
             fetchLogs();
+            fetchAnalytics();
         }
     }, [user]);
+
+    const recentLogins = analytics?.activity?.recentLogins24h;
 
     return (
         <div className="space-y-8">
@@ -59,12 +103,22 @@ export default function AdminDashboardPage() {
                         <Clock className="h-4 w-4 text-muted-foreground" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">--</div>
+                        <div className="text-2xl font-bold">
+                            {loadingAnalytics
+                                ? "--"
+                                : analyticsError || recentLogins === undefined
+                                ? "Unavailable"
+                                : recentLogins.toLocaleString()}
+                        </div>
                         <p className="text-xs text-muted-foreground">Past 24 hours</p>
                     </CardContent>
                 </Card>
                 <div className="col-span-1 sm:col-span-2 lg:col-span-3">
-                    <AdminStats />
+                    <AdminStats
+                        totalUsers={analytics?.users?.total}
+                        totalAppointments={analytics?.appointments?.total}
+                        loading={loadingAnalytics}
+                    />
                 </div>
             </div>
 

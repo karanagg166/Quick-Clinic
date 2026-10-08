@@ -114,17 +114,17 @@ describe('Phase 55: Formal Access Control Matrix Test Suite', () => {
     const unauthReq = new NextRequest('http://localhost:3000/api/admin/logs');
     expect((await adminLogsGET(unauthReq)).status).toBe(401);
 
-    // Patient -> 401
+    // Patient -> 403
     const patReq = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: { Cookie: `token=${patientToken}` },
     });
-    expect((await adminLogsGET(patReq)).status).toBe(401);
+    expect((await adminLogsGET(patReq)).status).toBe(403);
 
-    // Doctor -> 401
+    // Doctor -> 403
     const docReq = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: { Cookie: `token=${docToken}` },
     });
-    expect((await adminLogsGET(docReq)).status).toBe(401);
+    expect((await adminLogsGET(docReq)).status).toBe(403);
 
     // Admin -> 200
     const adminReq = new NextRequest('http://localhost:3000/api/admin/logs', {
@@ -134,9 +134,10 @@ describe('Phase 55: Formal Access Control Matrix Test Suite', () => {
   });
 
   it('55.2 Matrix: Doctor Withdrawal Resource Access (Patient cannot withdraw)', async () => {
-    // Patient attempting doctor withdrawal endpoint
+    // An authenticated patient cannot use a patient profile ID as a doctor resource.
     const patWithdrawReq = new NextRequest(`http://localhost:3000/api/doctors/${patientId}/withdrawals`, {
       method: 'POST',
+      headers: { Cookie: `token=${patientToken}` },
       body: JSON.stringify({ amount: 500 }),
     });
     const res = await doctorWithdrawalPOST(patWithdrawReq, { params: Promise.resolve({ doctorId: patientId }) });

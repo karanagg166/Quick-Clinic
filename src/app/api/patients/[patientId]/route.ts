@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAccess } from "@/lib/logger";
-import { verifyToken, getAuthenticatedUser } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
+
+import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
 
 // GET - Fetch patient by ID
 export const GET = async (
@@ -9,6 +11,11 @@ export const GET = async (
   { params }: { params: Promise<{ patientId: string }> }
 ) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { patientId } = await params;
 
     if (!patientId || typeof patientId !== "string") {
@@ -17,7 +24,11 @@ export const GET = async (
 
     const patient = await prisma.patient.findUnique({
       where: { id: patientId },
-      include: { user: true },
+      include: { user: { select: {
+        id: true, name: true, email: true, phoneNo: true, age: true,
+        gender: true, role: true, address: true, pinCode: true,
+        profileImageUrl: true, emailVerified: true, createdAt: true, updatedAt: true,
+      } } },
     });
 
     if (!patient) {
@@ -25,8 +36,15 @@ export const GET = async (
     }
 
     // Log Access
-    const authUser = await getAuthenticatedUser(req);
-    const viewerId = authUser?.id || null;
+    if (authUser.role !== "ADMIN" && !(authUser.role === "PATIENT" && patient.userId === authUser.id)) {
+      const doctor = authUser.role === "DOCTOR"
+        ? await prisma.doctor.findUnique({ where: { userId: authUser.id }, select: { id: true } })
+        : null;
+      if (!doctor || !(await verifyDoctorPatientMedicalAccess(doctor.id, patientId)).allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
+    const viewerId = authUser.id;
     await logAccess(viewerId, patientId, "Viewed Patient Profile");
 
     return NextResponse.json({ patient }, { status: 200 });
@@ -45,6 +63,11 @@ export const PUT = async (
   { params }: { params: Promise<{ patientId: string }> }
 ) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { patientId } = await params;
 
     if (!patientId || typeof patientId !== "string") {
@@ -60,8 +83,7 @@ export const PUT = async (
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || patient.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -98,6 +120,11 @@ export const PATCH = async (
   { params }: { params: Promise<{ patientId: string }> }
 ) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { patientId } = await params;
 
     if (!patientId || typeof patientId !== "string") {
@@ -113,8 +140,7 @@ export const PATCH = async (
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || patient.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

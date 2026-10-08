@@ -4,13 +4,15 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     if (adminUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
+
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
     const [
       totalUsers,
@@ -23,6 +25,7 @@ export async function GET(req: NextRequest) {
       cancelledAppointments,
       totalPayments,
       totalWithdrawals,
+      recentLogins24h,
     ] = await Promise.all([
       prisma.user.count(),
       prisma.user.count({ where: { role: "DOCTOR" } }),
@@ -42,6 +45,12 @@ export async function GET(req: NextRequest) {
         _sum: { amount: true },
         _count: { id: true },
       }),
+      prisma.auditLog.count({
+        where: {
+          action: { contains: "login", mode: "insensitive" },
+          createdAt: { gte: twentyFourHoursAgo },
+        },
+      }),
     ]);
 
     const grossTransactionVolumePaise = totalPayments._sum.amount || 0;
@@ -60,6 +69,9 @@ export async function GET(req: NextRequest) {
           total: totalAppointments,
           completed: completedAppointments,
           cancelled: cancelledAppointments,
+        },
+        activity: {
+          recentLogins24h,
         },
         financials: {
           grossTransactionVolumePaise,

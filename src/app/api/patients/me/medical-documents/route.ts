@@ -31,7 +31,7 @@ function sanitizeFileName(fileName: string): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req, { verifyDb: true });
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },
@@ -262,7 +262,7 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const user = await getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req, { verifyDb: true });
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },

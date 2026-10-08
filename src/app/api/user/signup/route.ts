@@ -20,7 +20,13 @@ export const POST = async (req: NextRequest) => {
       gender
     } = await req.json();
 
-    const normalizedRole = role.toUpperCase();
+    const normalizedRole = typeof role === "string" ? role.toUpperCase() : "";
+    if (normalizedRole !== "PATIENT" && normalizedRole !== "DOCTOR") {
+      return NextResponse.json(
+        { error: "Invalid role specified for registration. ADMIN accounts cannot be self-registered." },
+        { status: 403 }
+      );
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -62,7 +68,6 @@ export const POST = async (req: NextRequest) => {
       }
     });
 
-    console.log("New User Created:", user);
 
     const userDetails: UserDetail = {
       id: user.id,
@@ -93,7 +98,7 @@ export const POST = async (req: NextRequest) => {
     });
     res.cookies.set("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 24 * 7,

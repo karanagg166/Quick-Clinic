@@ -232,6 +232,11 @@ export async function GET(req: NextRequest) {
 
 export const POST = async (req: NextRequest) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json().catch(() => ({}));
     const {
       userId,
@@ -248,12 +253,8 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (!authUser) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
-    if (authUser.id !== userId && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || authUser.id !== userId)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

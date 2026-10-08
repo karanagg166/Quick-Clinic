@@ -1,9 +1,13 @@
+import { NextRequest } from "next/server";
+import { authenticatedRequestClass, businessTestAdmin } from "@/__tests__/helpers/authenticated-request";
+let AuthenticatedRequest: typeof NextRequest;
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, PATCH } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => {
   const mockPrisma = {
+    user: { findUnique: vi.fn() },
     $transaction: vi.fn(async (cb) => cb(mockPrisma)),
     appointment: {
       findFirst: vi.fn(),
@@ -36,14 +40,16 @@ vi.mock('@/lib/prisma', () => {
 });
 
 describe('Doctor Appointment Detail Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('GET returns 404 when appointment does not exist', async () => {
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
 
-    const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_999');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_999');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1', appointmentId: 'appt_999' }) });
     expect(res.status).toBe(404);
   });
@@ -112,7 +118,7 @@ describe('Doctor Appointment Detail Route', () => {
 
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(mockAppt as any);
 
-    const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_1');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_1');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1', appointmentId: 'appt_1' }) });
     expect(res.status).toBe(200);
 
@@ -143,7 +149,7 @@ describe('Doctor Appointment Detail Route', () => {
     vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
     vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({} as any);
 
-    const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'COMPLETED' }),
@@ -177,7 +183,7 @@ describe('Doctor Appointment Detail Route', () => {
     vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
     vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({} as any);
 
-    const req = new Request('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/appointments/appt_1', {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status: 'CANCELLED' }),

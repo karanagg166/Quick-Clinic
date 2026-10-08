@@ -13,7 +13,7 @@ function maskAccountNumber(accountNumber?: string | null): string {
 
 export async function GET(req: NextRequest) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -85,7 +85,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

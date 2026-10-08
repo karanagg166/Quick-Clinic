@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
@@ -5,6 +6,8 @@ import { logAudit } from "@/lib/logger";
 
 export async function POST(req: NextRequest) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { email, userId, currentPassword, newPassword } = await req.json();
 
     if ((!email && !userId) || !newPassword) {
@@ -30,7 +33,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // 2. If currentPassword is provided, verify it
+    if (user.id !== authUser.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    if (typeof currentPassword !== "string" || !currentPassword) {
+      return NextResponse.json({ error: "Current password is required" }, { status: 400 });
+    }
+
+    // 2. Verify the required current password
     if (currentPassword) {
       const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
       if (!isPasswordValid) {

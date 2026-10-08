@@ -1,9 +1,13 @@
+import { NextRequest } from "next/server";
+import { authenticatedRequestClass, businessTestAdmin } from "@/__tests__/helpers/authenticated-request";
+let AuthenticatedRequest: typeof NextRequest;
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET, PATCH } from '@/app/api/patients/[patientId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     appointment: {
       findFirst: vi.fn(),
       update: vi.fn(),
@@ -29,8 +33,10 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Patient Appointment Detail & Cancellation Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('PATCH rejects cancellation if appointment is already COMPLETED or CANCELLED', async () => {
@@ -42,7 +48,7 @@ describe('Patient Appointment Detail & Cancellation Route', () => {
       slot: { date: new Date(), startTime: new Date() },
     } as any);
 
-    const req = new Request('http://localhost:3000/api/patients/pat_1/appointments/appt_1', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients/pat_1/appointments/appt_1', {
       method: 'PATCH',
     });
 
@@ -67,7 +73,7 @@ describe('Patient Appointment Detail & Cancellation Route', () => {
     vi.mocked(prisma.appointment.update).mockResolvedValueOnce({} as any);
     vi.mocked(prisma.slot.update).mockResolvedValueOnce({} as any);
 
-    const req = new Request('http://localhost:3000/api/patients/pat_1/appointments/appt_1', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients/pat_1/appointments/appt_1', {
       method: 'PATCH',
     });
 

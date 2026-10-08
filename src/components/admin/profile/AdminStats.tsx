@@ -1,7 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart3, Users, Calendar } from "lucide-react";
 
-export function AdminStats() {
+interface AdminStatsProps {
+    totalUsers?: number | null;
+    totalAppointments?: number | null;
+    loading?: boolean;
+}
+
+export function AdminStats({ totalUsers, totalAppointments, loading = false }: AdminStatsProps) {
     return (
         <div className="grid gap-4 md:grid-cols-3">
             <Card>
@@ -10,7 +16,9 @@ export function AdminStats() {
                     <Users className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">--</div>
+                    <div className="text-2xl font-bold">
+                        {loading ? "--" : totalUsers !== null && totalUsers !== undefined ? totalUsers.toLocaleString() : "Unavailable"}
+                    </div>
                     <p className="text-xs text-muted-foreground">Active platform users</p>
                 </CardContent>
             </Card>
@@ -20,8 +28,10 @@ export function AdminStats() {
                     <Calendar className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">--</div>
-                    <p className="text-xs text-muted-foreground">+0% from last month</p>
+                    <div className="text-2xl font-bold">
+                        {loading ? "--" : totalAppointments !== null && totalAppointments !== undefined ? totalAppointments.toLocaleString() : "Unavailable"}
+                    </div>
+                    <p className="text-xs text-muted-foreground">Total scheduled bookings</p>
                 </CardContent>
             </Card>
             <Card>
@@ -30,8 +40,8 @@ export function AdminStats() {
                     <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">Good</div>
-                    <p className="text-xs text-muted-foreground">All systems operational</p>
+                    <div className="text-2xl font-bold text-emerald-600">Operational</div>
+                    <p className="text-xs text-muted-foreground">Core services active</p>
                 </CardContent>
             </Card>
         </div>

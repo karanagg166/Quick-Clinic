@@ -1,9 +1,16 @@
-import { test, expect } from "vitest";
+import { createToken } from "@/lib/auth";
+import { test, expect, beforeAll } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as changePasswordPOST } from "@/app/api/user/change-password/route";
 import { POST as resetPasswordPOST } from "@/app/api/user/reset-password/route";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+
+beforeAll(async () => {
+  for (const pincode of [121004, 110001]) {
+    await prisma.location.upsert({ where: { pincode }, update: {}, create: { pincode, city: "Test", state: "Test" } });
+  }
+});
 
 test("POST /api/user/change-password - changes password successfully for any role", async () => {
   const testEmail = `test_pwd_change_${Date.now()}@example.com`;
@@ -25,6 +32,7 @@ test("POST /api/user/change-password - changes password successfully for any rol
 
   const req = new NextRequest("http://localhost:3000/api/user/change-password", {
     method: "POST",
+    headers: { authorization: `Bearer ${await createToken({ id: testUser.id, role: testUser.role })}` },
     body: JSON.stringify({
       email: testEmail,
       currentPassword: "initial_pass_123",
@@ -67,6 +75,7 @@ test("POST /api/user/change-password - returns 400 for incorrect current passwor
 
   const req = new NextRequest("http://localhost:3000/api/user/change-password", {
     method: "POST",
+    headers: { authorization: `Bearer ${await createToken({ id: testUser.id, role: testUser.role })}` },
     body: JSON.stringify({
       email: testEmail,
       currentPassword: "wrongpassword",
@@ -102,10 +111,13 @@ test("POST /api/user/reset-password - resets password successfully for any role"
     },
   });
 
+  await prisma.otp.create({ data: { email: testEmail, userId: testUser.id, code: "synthetic-proof", expiresAt: new Date(Date.now() + 60_000) } });
+
   const req = new NextRequest("http://localhost:3000/api/user/reset-password", {
     method: "POST",
     body: JSON.stringify({
       email: testEmail,
+      otp: "synthetic-proof",
       newPassword: "brand_new_pass_999",
     }),
   });

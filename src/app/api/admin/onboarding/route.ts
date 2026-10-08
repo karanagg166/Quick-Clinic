@@ -1,15 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { logAudit } from "@/lib/logger";
-import { requireAdmin } from "@/lib/auth";
-
-const SUPER_ADMIN_CODE = process.env.SUPER_ADMIN_CODE || "QUICK_CLINIC_SUPER_ADMIN";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
     try {
-        const adminUser = await requireAdmin(req);
+        const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
         if (!adminUser) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+        if (adminUser.role !== "ADMIN") {
+            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
         const { userId, managerEmail, secretCode, name, phoneNo, gender, age } = await req.json();
@@ -25,7 +26,8 @@ export async function POST(req: NextRequest) {
 
         // Reject an invalid super-admin code before reading or mutating a user.
         // This keeps the validation deterministic and avoids exposing user state.
-        if (secretCode && secretCode !== SUPER_ADMIN_CODE) {
+        const superAdminCode = process.env.SUPER_ADMIN_CODE;
+        if (secretCode && (!superAdminCode || secretCode !== superAdminCode)) {
             return NextResponse.json({ error: "Invalid Super Admin Code" }, { status: 400 });
         }
 

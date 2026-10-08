@@ -43,6 +43,10 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
+    if (!user.isActive) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return NextResponse.json(

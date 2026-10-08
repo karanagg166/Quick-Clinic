@@ -6,6 +6,7 @@ import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     comment: {
       findMany: vi.fn(),
       create: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock('@/lib/prisma', () => ({
 describe('Doctor Comments Route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "u_patient", role: "PATIENT", isActive: true } as never);
   });
 
   it('GET returns comments for doctor', async () => {
@@ -48,7 +50,7 @@ describe('Doctor Comments Route', () => {
   });
 
   it('POST rejects comment if patient has no completed appointment with doctor', async () => {
-    const token = await createToken({ id: 'u_patient' });
+    const token = await createToken({ id: 'u_patient', role: 'PATIENT' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
@@ -66,7 +68,7 @@ describe('Doctor Comments Route', () => {
   });
 
   it('POST creates comment for patient with completed appointment', async () => {
-    const token = await createToken({ id: 'u_patient' });
+    const token = await createToken({ id: 'u_patient', role: 'PATIENT' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({ id: 'appt_1', status: 'COMPLETED' } as any);

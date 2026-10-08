@@ -11,6 +11,11 @@ export async function POST(
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { doctorId } = await params;
 
     if (!doctorId) {
@@ -26,8 +31,7 @@ export async function POST(
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && doctor.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
   

@@ -115,26 +115,26 @@ describe('Phase 46: Admin Authentication & RBAC Test Suite', () => {
     expect(data.error).toBe('Unauthorized');
   });
 
-  it('46.2 Rejects PATIENT user attempting to access admin route (401)', async () => {
+  it('46.2 Rejects PATIENT user attempting to access admin route (403)', async () => {
     const req = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: {
         Cookie: `token=${patientToken}`,
       },
     });
     const res = await adminLogsGET(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
     const data = await res.json();
-    expect(data.error).toBe('Unauthorized');
+    expect(data.error).toBe('Forbidden');
   });
 
-  it('46.3 Rejects DOCTOR user attempting to access admin route (401)', async () => {
+  it('46.3 Rejects DOCTOR user attempting to access admin route (403)', async () => {
     const req = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: {
         Cookie: `token=${doctorToken}`,
       },
     });
     const res = await adminLogsGET(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('46.4 Rejects forged token with invalid signature (401)', async () => {

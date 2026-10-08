@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET, POST } from '@/app/api/doctorpatientrelations/[relationId]/chats/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctorPatientRelation: {
       findUnique: vi.fn(),
     },
@@ -17,19 +20,21 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Chat Messages Route API', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   describe('GET /api/doctorpatientrelations/[relationId]/chats', () => {
     it('returns 400 if relationId is missing', async () => {
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations//chats');
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations//chats');
       const res = await GET(req, { params: Promise.resolve({ relationId: '' }) });
       expect(res.status).toBe(400);
     });
 
     it('returns 400 for invalid page or limit query parameters', async () => {
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=invalid&limit=-5');
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=invalid&limit=-5');
       const res = await GET(req, { params: Promise.resolve({ relationId: 'rel_1' }) });
       expect(res.status).toBe(400);
       const data = await res.json();
@@ -37,7 +42,7 @@ describe('Chat Messages Route API', () => {
     });
 
     it('returns 400 if limit exceeds 100', async () => {
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=200');
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=200');
       const res = await GET(req, { params: Promise.resolve({ relationId: 'rel_1' }) });
       expect(res.status).toBe(400);
       const data = await res.json();
@@ -47,7 +52,7 @@ describe('Chat Messages Route API', () => {
     it('returns 404 when doctor-patient relation is not found', async () => {
       vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce(null);
 
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/non_existent/chats');
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/non_existent/chats');
       const res = await GET(req, { params: Promise.resolve({ relationId: 'non_existent' }) });
       expect(res.status).toBe(404);
       const data = await res.json();
@@ -65,7 +70,7 @@ describe('Chat Messages Route API', () => {
         { id: 'm2', text: 'Hello, how can I help?', senderId: 'u_doc', createdAt: new Date() },
       ] as any);
 
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=10');
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=10');
       const res = await GET(req, { params: Promise.resolve({ relationId: 'rel_1' }) });
       expect(res.status).toBe(200);
 
@@ -80,7 +85,7 @@ describe('Chat Messages Route API', () => {
 
   describe('POST /api/doctorpatientrelations/[relationId]/chats', () => {
     it('returns 400 when text or senderId is missing', async () => {
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats', {
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats', {
         method: 'POST',
         body: JSON.stringify({ message: '' }),
       });
@@ -94,7 +99,7 @@ describe('Chat Messages Route API', () => {
     it('returns 404 when relation does not exist', async () => {
       vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce(null);
 
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_missing/chats', {
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_missing/chats', {
         method: 'POST',
         body: JSON.stringify({ text: 'Hello', senderId: 'u_1' }),
       });
@@ -118,7 +123,7 @@ describe('Chat Messages Route API', () => {
         createdAt: new Date(),
       } as any);
 
-      const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats', {
+      const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats', {
         method: 'POST',
         body: JSON.stringify({ text: 'Prescription sent', senderId: 'u_doc' }),
       });

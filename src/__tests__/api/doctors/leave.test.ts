@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { POST, GET, DELETE, PATCH } from '@/app/api/doctors/[doctorId]/leave/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctor: {
       findUnique: vi.fn().mockResolvedValue({
         id: 'doc_1',
@@ -54,12 +57,14 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Doctor Leave Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('POST rejects when missing required fields', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({ reason: 'Vacation' }),
     });
@@ -69,7 +74,7 @@ describe('Doctor Leave Route', () => {
   });
 
   it('POST rejects when endDate is before startDate', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
         startDate: '2026-07-20',
@@ -87,7 +92,7 @@ describe('Doctor Leave Route', () => {
   it('POST rejects when conflicting leave already exists', async () => {
     vi.mocked(prisma.leave.findFirst).mockResolvedValueOnce({ id: 'leave_existing' } as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
         startDate: '2026-11-10',
@@ -129,7 +134,7 @@ describe('Doctor Leave Route', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
         startDate: '2026-11-10T00:00:00.000Z',
@@ -216,7 +221,7 @@ describe('Doctor Leave Route', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave', {
       method: 'POST',
       body: JSON.stringify({
         startDate: '2026-12-01T10:00:00.000Z',
@@ -252,7 +257,7 @@ describe('Doctor Leave Route', () => {
     vi.mocked(prisma.leave.findFirst).mockResolvedValueOnce(null); // No other leaves
     vi.mocked(prisma.leave.delete).mockResolvedValueOnce({} as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/leave?leaveId=leave_1', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/leave?leaveId=leave_1', {
       method: 'DELETE',
     });
 

@@ -5,6 +5,11 @@ import { getAuthenticatedUser } from "@/lib/auth";
 // GET → list relations for a user (patient or doctor) with last message
 export async function GET(req: NextRequest) {
     try {
+        const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+        if (!authUser) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { searchParams } = new URL(req.url);
         const userId = searchParams.get("userId");
         const role = searchParams.get("role");
@@ -26,8 +31,7 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const authUser = await getAuthenticatedUser(req);
-        if (authUser && userId !== authUser.id && authUser.role !== "ADMIN") {
+        if (authUser.role !== "ADMIN" && (userId !== authUser.id || role !== authUser.role)) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
@@ -77,6 +81,11 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {  
     try {
+        const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+        if (!authUser) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body = await req.json().catch(() => ({}));
         const { doctorsUserId, patientsUserId } = body;
 
@@ -84,8 +93,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "doctorsUserId and patientsUserId are required" }, { status: 400 });
         }
 
-        const authUser = await getAuthenticatedUser(req);
-        if (authUser && doctorsUserId !== authUser.id && patientsUserId !== authUser.id && authUser.role !== "ADMIN") {
+        if (authUser.role !== "ADMIN" && !((authUser.role === "DOCTOR" && doctorsUserId === authUser.id) || (authUser.role === "PATIENT" && patientsUserId === authUser.id))) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 

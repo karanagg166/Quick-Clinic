@@ -122,12 +122,6 @@ function ContributorsSection() {
           name="Harsh Mishra"
           role="Full-Stack Developer | Frontend Specialist"
           bio="Responsible for UI/UX design, frontend implementation, and component architecture."
-          instagram="#"
-          linkedin="#"
-          github="#"
-          portfolio="#"
-          mail="#"
-        // Add other links if available
         />
       </div>
     </section>
@@ -155,6 +149,8 @@ function ContributorCard({
   x,
   image,
 }: any) {
+  const isValidUrl = (url?: string) => Boolean(url && url.trim() !== "" && url !== "#");
+
   return (
     <Card className="hover:shadow-md transition-shadow border overflow-hidden">
       {image && (
@@ -172,16 +168,16 @@ function ContributorCard({
         <p className="text-muted-foreground mb-3 text-sm font-medium text-primary">{role}</p>
         <p className="text-muted-foreground text-sm mb-6">{bio}</p>
         <div className="flex flex-wrap gap-3 text-lg">
-          {github && <a href={github} target="_blank" rel="noopener noreferrer" title="GitHub"><SiGithub /></a>}
-          {linkedin && <a href={linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><FaLinkedin color="#0A66C2" /></a>}
-          {instagram && <a href={instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><SiInstagram color="#E1306C" /></a>}
-          {x && <a href={x} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><SiX /></a>}
-          {portfolio && <a href={portfolio} target="_blank" rel="noopener noreferrer" title="Portfolio"><Globe /></a>}
-          {mail && <a href={`mailto:${mail}`} title="Email"><Mail /></a>}
-          {leetcode && <a href={leetcode} target="_blank" rel="noopener noreferrer" title="LeetCode"><SiLeetcode color="#FFA116" /></a>}
-          {codeforces && <a href={codeforces} target="_blank" rel="noopener noreferrer" title="CodeForces"><SiCodeforces color="#1F8ACB" /></a>}
-          {codechef && <a href={codechef} target="_blank" rel="noopener noreferrer" title="CodeChef"><SiCodechef color="#5B4638" /></a>}
-          {geeksforgeeks && <a href={geeksforgeeks} target="_blank" rel="noopener noreferrer" title="GeeksForGeeks"><SiGeeksforgeeks color="#2F8D46" /></a>}
+          {isValidUrl(github) && <a href={github} target="_blank" rel="noopener noreferrer" title="GitHub"><SiGithub /></a>}
+          {isValidUrl(linkedin) && <a href={linkedin} target="_blank" rel="noopener noreferrer" title="LinkedIn"><FaLinkedin color="#0A66C2" /></a>}
+          {isValidUrl(instagram) && <a href={instagram} target="_blank" rel="noopener noreferrer" title="Instagram"><SiInstagram color="#E1306C" /></a>}
+          {isValidUrl(x) && <a href={x} target="_blank" rel="noopener noreferrer" title="X (Twitter)"><SiX /></a>}
+          {isValidUrl(portfolio) && <a href={portfolio} target="_blank" rel="noopener noreferrer" title="Portfolio"><Globe /></a>}
+          {isValidUrl(mail) && <a href={`mailto:${mail}`} title="Email"><Mail /></a>}
+          {isValidUrl(leetcode) && <a href={leetcode} target="_blank" rel="noopener noreferrer" title="LeetCode"><SiLeetcode color="#FFA116" /></a>}
+          {isValidUrl(codeforces) && <a href={codeforces} target="_blank" rel="noopener noreferrer" title="CodeForces"><SiCodeforces color="#1F8ACB" /></a>}
+          {isValidUrl(codechef) && <a href={codechef} target="_blank" rel="noopener noreferrer" title="CodeChef"><SiCodechef color="#5B4638" /></a>}
+          {isValidUrl(geeksforgeeks) && <a href={geeksforgeeks} target="_blank" rel="noopener noreferrer" title="GeeksForGeeks"><SiGeeksforgeeks color="#2F8D46" /></a>}
         </div>
       </CardContent>
     </Card>

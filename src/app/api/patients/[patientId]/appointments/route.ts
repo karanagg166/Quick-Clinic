@@ -7,6 +7,11 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ patientId: string }> }) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { patientId } = await params;
 
     if (!patientId) {
@@ -22,8 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ pati
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && patient.userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || patient.userId !== authUser.id)) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

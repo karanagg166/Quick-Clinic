@@ -6,6 +6,7 @@ import * as auth from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -22,13 +23,10 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/auth', () => ({
-  getUserId: vi.fn(),
-}));
-
 describe('Phase 65: Appointment & Doctor Rating/Comment Integration Test Suite', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "user_pat_1", role: "PATIENT", isActive: true } as never);
   });
 
   it('65.1 Blocks comment creation with 401 when no auth token is provided', async () => {
@@ -42,14 +40,13 @@ describe('Phase 65: Appointment & Doctor Rating/Comment Integration Test Suite',
   });
 
   it('65.2 Blocks comment submission with 403 when patient has only PENDING/CANCELLED appointment', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'user_pat_1' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null); // No completed appointment found
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/comments', {
       method: 'POST',
-      headers: { authorization: 'Bearer token_123' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ text: 'Doctor was friendly.' }),
     });
 
@@ -60,7 +57,6 @@ describe('Phase 65: Appointment & Doctor Rating/Comment Integration Test Suite',
   });
 
   it('65.3 Allows comment submission (201 Created) when patient has a COMPLETED appointment', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'user_pat_1' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({ id: 'appt_comp', status: 'COMPLETED' } as any);
@@ -74,7 +70,7 @@ describe('Phase 65: Appointment & Doctor Rating/Comment Integration Test Suite',
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/comments', {
       method: 'POST',
-      headers: { authorization: 'Bearer token_123' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ text: 'Accurate diagnosis and excellent bedside manner.' }),
     });
 
@@ -87,11 +83,10 @@ describe('Phase 65: Appointment & Doctor Rating/Comment Integration Test Suite',
   });
 
   it('65.4 Rejects empty comment text with 400 Bad Request', async () => {
-    vi.mocked(auth.getUserId).mockResolvedValueOnce({ valid: true, userId: 'user_pat_1' });
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/comments', {
       method: 'POST',
-      headers: { authorization: 'Bearer token_123' },
+      headers: { authorization: `Bearer ${await auth.createToken({ id: "user_pat_1", role: "PATIENT" })}` },
       body: JSON.stringify({ text: '   ' }),
     });
 

@@ -12,7 +12,7 @@ interface RouteParams {
 
 export async function GET(req: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req, { verifyDb: true });
     if (!user) {
       return NextResponse.json(
         { error: "Authentication required" },

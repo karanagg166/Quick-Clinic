@@ -7,6 +7,11 @@ export async function GET(
     { params }: { params: Promise<{ relationId: string }> }
 ) {
     try {
+        const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+        if (!authUser) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { relationId: doctorPatientRelationId } = await params;
 
         if (!doctorPatientRelationId) {
@@ -43,12 +48,10 @@ export async function GET(
             return NextResponse.json({ error: "Relation not found" }, { status: 404 });
         }
 
-        const authUser = await getAuthenticatedUser(req);
         if (
-            authUser &&
-            relation.doctorsUserId !== authUser.id &&
-            relation.patientsUserId !== authUser.id &&
-            authUser.role !== "ADMIN"
+            authUser.role !== "ADMIN" &&
+            !((authUser.role === "DOCTOR" && relation.doctorsUserId === authUser.id) ||
+              (authUser.role === "PATIENT" && relation.patientsUserId === authUser.id))
         ) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
@@ -103,6 +106,11 @@ export async function POST(
     { params }: { params: Promise<{ relationId: string }> }
 ) {
     try {
+        const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+        if (!authUser) {
+          return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const { relationId: doctorPatientRelationId } = await params;
 
         if (!doctorPatientRelationId) {
@@ -128,17 +136,15 @@ export async function POST(
             return NextResponse.json({ error: "Relation not found" }, { status: 404 });
         }
 
-        const authUser = await getAuthenticatedUser(req);
         if (
-            authUser &&
-            relation.doctorsUserId !== authUser.id &&
-            relation.patientsUserId !== authUser.id &&
-            authUser.role !== "ADMIN"
+            authUser.role !== "ADMIN" &&
+            !((authUser.role === "DOCTOR" && relation.doctorsUserId === authUser.id) ||
+              (authUser.role === "PATIENT" && relation.patientsUserId === authUser.id))
         ) {
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
-        const senderId = authUser?.id || body.senderId || relation.patientsUserId;
+        const senderId = authUser.id;
 
         const newChat = await prisma.chatMessages.create({
             data: {

@@ -29,7 +29,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
   return runWithRequestId(requestId, async () => {
     try {
-      const authUser = await getAuthenticatedUser(req);
+      const authUser = await getAuthenticatedUser(req, { verifyDb: true });
       if (!authUser) {
         return NextResponse.json(
           { error: "Authentication required" },

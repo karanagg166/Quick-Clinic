@@ -5,6 +5,9 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 export const POST = async (req: NextRequest) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const body = await req.json();
     const {
       userId,
@@ -17,6 +20,9 @@ export const POST = async (req: NextRequest) => {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
@@ -51,9 +57,13 @@ export const POST = async (req: NextRequest) => {
 
 export const GET = async (req: NextRequest) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const clientDoctorId = searchParams.get("doctorId");
-    const authUser = await getAuthenticatedUser(req);
 
     let effectiveDoctorId = clientDoctorId;
 
@@ -152,10 +162,13 @@ export const GET = async (req: NextRequest) => {
       ...patientFilter,
     };
 
+    if (scopeAll && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     if (!scopeAll) {
       // --- get appointment rows for the doctor ---
       const appointmentRows = (await prisma.appointment.findMany({
-        where: { doctorId: effectiveDoctorId },
+        where: { doctorId: effectiveDoctorId, status: { in: ["CONFIRMED", "COMPLETED"] } },
         select: { patientId: true },
       })) || [];
 
@@ -266,6 +279,9 @@ export const GET = async (req: NextRequest) => {
 
 export const PATCH = async (req: NextRequest) => {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { patientId, medicalHistory, allergies, currentMedications } = await req.json();
     if (!patientId) {
       return NextResponse.json({ error: "patientId is required" }, { status: 400 });
@@ -273,6 +289,9 @@ export const PATCH = async (req: NextRequest) => {
     const existingPatient = await prisma.patient.findUnique({ where: { id: patientId } });
     if (!existingPatient) {
       return NextResponse.json({ error: "Patient not found" }, { status: 404 });
+    }
+    if (authUser.role !== "ADMIN" && (authUser.role !== "PATIENT" || existingPatient.userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
     const updatedPatient = await prisma.patient.update({
       where: { id: patientId },
