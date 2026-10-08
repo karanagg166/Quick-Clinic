@@ -214,25 +214,21 @@ export default function DoctorDashboard() {
           </Card>
 
           <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-lg font-bold">Recent Documents</CardTitle>
+              <FileText className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-2">
-              {["Lab report upload", "Prescription updated", "Follow-up note"].map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                >
-                  <FileText className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="font-semibold text-sm">{item}</p>
-                    <p className="text-xs text-muted-foreground">Just now</p>
-                  </div>
-                </motion.div>
-              ))}
+            <CardContent>
+              <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground space-y-2">
+                <FileText className="w-8 h-8 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-foreground">No recent documents</p>
+                <p className="text-xs max-w-xs text-muted-foreground">
+                  Clinical records and lab reports are managed directly within individual patient charts.
+                </p>
+                <Button asChild variant="outline" size="sm" className="mt-2 text-xs">
+                  <Link href="/doctor/patients">View Patient Records</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>

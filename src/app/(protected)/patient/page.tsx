@@ -187,6 +187,8 @@ export default function PatientDashboard() {
               {[
                 { href: "/patient/findDoctors", icon: UserPlus, title: "Find a doctor", desc: "Browse specializations and availability", color: "text-blue-600" },
                 { href: "/patient/appointments", icon: CalendarDays, title: "My appointments", desc: "View bookings & status", color: "text-purple-600" },
+                { href: "/patient/medical-documents", icon: FileText, title: "Medical documents", desc: "Upload and view clinical records", color: "text-emerald-600" },
+                { href: "/patient/chat", icon: MessageCircle, title: "Messages", desc: "Chat with your assigned doctors", color: "text-teal-600" },
               ].map((action, index) => (
                 <motion.div
                   key={action.href}
@@ -209,25 +211,21 @@ export default function PatientDashboard() {
           </Card>
 
           <Card className="border shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="text-lg font-bold">Recent Activity</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-lg font-bold">Health Records</CardTitle>
+              <FileText className="w-4 h-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent className="space-y-2">
-              {["Appointment confirmed", "Prescription added", "Lab results updated"].map((item, index) => (
-                <motion.div
-                  key={item}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.8 + index * 0.1 }}
-                  className="flex items-center gap-3 p-3 rounded-lg hover:bg-accent transition-colors cursor-pointer"
-                >
-                  <FileText className="w-5 h-5 text-emerald-600" />
-                  <div>
-                    <p className="font-semibold text-sm">{item}</p>
-                    <p className="text-xs text-muted-foreground">Just now</p>
-                  </div>
-                </motion.div>
-              ))}
+            <CardContent>
+              <div className="flex flex-col items-center justify-center py-6 text-center text-muted-foreground space-y-2">
+                <FileText className="w-8 h-8 text-muted-foreground/40" />
+                <p className="text-sm font-medium text-foreground">Manage Your Clinical Documents</p>
+                <p className="text-xs max-w-xs text-muted-foreground">
+                  Upload prescriptions, lab reports, and medical records to share with your healthcare providers.
+                </p>
+                <Button asChild variant="outline" size="sm" className="mt-2 text-xs">
+                  <Link href="/patient/medical-documents">View Documents</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
