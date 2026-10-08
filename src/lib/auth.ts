@@ -37,7 +37,14 @@ export interface AuthenticatedUser {
   name?: string;
 }
 
-export async function getAuthenticatedUser(req: Request): Promise<AuthenticatedUser | null> {
+export interface GetAuthenticatedUserOptions {
+  verifyDb?: boolean;
+}
+
+export async function getAuthenticatedUser(
+  req: Request,
+  options?: GetAuthenticatedUserOptions
+): Promise<AuthenticatedUser | null> {
   let token: string | undefined;
 
   // 1. NextRequest cookies
@@ -73,16 +80,48 @@ export async function getAuthenticatedUser(req: Request): Promise<AuthenticatedU
   const userId = p.id || p.userId;
   if (!userId) return null;
 
+  // Authoritative identity: missing or invalid role claim must fail authentication, never fallback
+  if (!p.role || typeof p.role !== "string") {
+    return null;
+  }
+
+  const normalizedRole = p.role.toUpperCase();
+  if (!["PATIENT", "DOCTOR", "ADMIN"].includes(normalizedRole)) {
+    return null;
+  }
+
+  let role = normalizedRole;
+  let email = p.email;
+  let name = p.name;
+
+  if (options?.verifyDb) {
+    try {
+      const { prisma } = await import("@/lib/prisma");
+      const dbUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, role: true, email: true, name: true },
+      });
+      if (!dbUser) return null;
+      if (dbUser.role !== normalizedRole) {
+        return null;
+      }
+      email = dbUser.email;
+      name = dbUser.name;
+    } catch {
+      return null;
+    }
+  }
+
   return {
     id: userId,
-    role: p.role || "PATIENT",
-    email: p.email,
-    name: p.name,
+    role,
+    email,
+    name,
   };
 }
 
-export async function requireAdmin(req: Request) {
-  const user = await getAuthenticatedUser(req);
+export async function requireAdmin(req: Request, options?: GetAuthenticatedUserOptions) {
+  const user = await getAuthenticatedUser(req, options);
   if (!user || user.role !== "ADMIN") {
     return null;
   }

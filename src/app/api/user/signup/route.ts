@@ -20,7 +20,13 @@ export const POST = async (req: NextRequest) => {
       gender
     } = await req.json();
 
-    const normalizedRole = role.toUpperCase();
+    const normalizedRole = typeof role === "string" ? role.toUpperCase() : "";
+    if (normalizedRole === "ADMIN" || !["PATIENT", "DOCTOR"].includes(normalizedRole)) {
+      return NextResponse.json(
+        { error: "Invalid role specified for registration. ADMIN accounts cannot be self-registered." },
+        { status: 403 }
+      );
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({

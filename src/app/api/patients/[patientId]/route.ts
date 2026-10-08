@@ -26,6 +26,9 @@ export const GET = async (
 
     // Log Access
     const authUser = await getAuthenticatedUser(req);
+    if (authUser && authUser.role === "PATIENT" && patient.userId !== authUser.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
     const viewerId = authUser?.id || null;
     await logAccess(viewerId, patientId, "Viewed Patient Profile");
 
