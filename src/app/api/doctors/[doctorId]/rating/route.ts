@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getUserId } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(
   req: NextRequest,
@@ -34,19 +34,10 @@ export async function POST(
 ) {
   try {
     const { doctorId } = await params;
-    const authHeader = req.headers.get("authorization");
-    const token = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
-    const cookieToken = req.cookies.get("token")?.value;
-    const actualToken = token || cookieToken;
-
-    if (!actualToken) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const { valid, userId } = await getUserId(actualToken);
-    if (!valid || !userId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (authUser.role !== "PATIENT") return NextResponse.json({ message: "Forbidden" }, { status: 403 });
+    const userId = authUser.id;
 
     const body = await req.json();
     const rating = Number(body?.rating);
@@ -61,12 +52,9 @@ export async function POST(
     }
 
     // Find the patient corresponding to the logged in user
-    let patient = await prisma.patient.findUnique({ where: { userId } });
-    if (!patient) {
-      // If the caller provided a patientId directly in body
-      if (body.patientId) {
-        patient = await prisma.patient.findUnique({ where: { id: body.patientId } });
-      }
+    const patient = await prisma.patient.findUnique({ where: { userId } });
+    if (body.patientId && body.patientId !== patient?.id) {
+      return NextResponse.json({ message: "Forbidden" }, { status: 403 });
     }
 
     if (!patient) {

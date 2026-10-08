@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET, POST } from '@/app/api/doctorpatientrelations/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctorPatientRelation: {
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -20,12 +23,14 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Doctor-Patient Relations Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('GET returns 400 if userId or role is missing', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations');
     const res = await GET(req);
     expect(res.status).toBe(400);
   });
@@ -43,7 +48,7 @@ describe('Doctor-Patient Relations Route', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations?userId=u_pat&role=PATIENT');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations?userId=u_pat&role=PATIENT');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -63,7 +68,7 @@ describe('Doctor-Patient Relations Route', () => {
       patientsUserId: 'u_pat',
     } as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
       body: JSON.stringify({ doctorsUserId: 'u_doc', patientsUserId: 'u_pat' }),
     });

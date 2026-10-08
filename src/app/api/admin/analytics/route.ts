@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   try {
-    const adminUser = await getAuthenticatedUser(req);
+    const adminUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!adminUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

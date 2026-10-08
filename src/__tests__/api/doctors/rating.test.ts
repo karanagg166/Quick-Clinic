@@ -6,6 +6,7 @@ import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     rating: {
       aggregate: vi.fn(),
       upsert: vi.fn(),
@@ -25,6 +26,7 @@ vi.mock('@/lib/prisma', () => ({
 describe('Doctor Rating Route', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue({ id: "u_patient", role: "PATIENT", isActive: true } as never);
   });
 
   it('GET returns average rating and total reviews count', async () => {
@@ -53,7 +55,7 @@ describe('Doctor Rating Route', () => {
   });
 
   it('POST rejects rating outside 1 to 5 range', async () => {
-    const token = await createToken({ id: 'u_patient' });
+    const token = await createToken({ id: 'u_patient', role: 'PATIENT' });
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/rating', {
       method: 'POST',
       headers: { authorization: `Bearer ${token}` },
@@ -67,7 +69,7 @@ describe('Doctor Rating Route', () => {
   });
 
   it('POST rejects rating if patient has no completed appointment with doctor', async () => {
-    const token = await createToken({ id: 'u_patient' });
+    const token = await createToken({ id: 'u_patient', role: 'PATIENT' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
@@ -85,7 +87,7 @@ describe('Doctor Rating Route', () => {
   });
 
   it('POST upserts rating for patient with completed appointment and returns aggregate', async () => {
-    const token = await createToken({ id: 'u_patient' });
+    const token = await createToken({ id: 'u_patient', role: 'PATIENT' });
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({ id: 'doc_1' } as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce({ id: 'pat_1', userId: 'u_patient' } as any);
     vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({ id: 'appt_1', status: 'COMPLETED' } as any);

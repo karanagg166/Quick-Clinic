@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import type { UserDetail } from "@/types/common";
 import { logAccess, logAudit } from "@/lib/logger";
-import { verifyToken, getAuthenticatedUser } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth";
 import { sanitizeProfileImageUrl } from "@/lib/avatar";
 
 // 1. GET: Fetch User Details
@@ -11,10 +11,17 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { userId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
+    }
+
+    if (userId !== authUser.id && authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     // 2. Fetch User + Relations
@@ -32,8 +39,7 @@ export async function GET(
     }
 
     // Log Access
-    const authUser = await getAuthenticatedUser(req);
-    const viewerId = authUser?.id || null;
+    const viewerId = authUser.id;
     await logAccess(viewerId, userId, "Viewed Profile");
 
     // 3. Map DB result to unified UserDetail shape
@@ -78,7 +84,7 @@ export async function PATCH(
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
     if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

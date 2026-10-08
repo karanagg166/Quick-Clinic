@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET, POST, PATCH } from '@/app/api/patients/route';
 import { prisma } from '@/lib/prisma';
 
@@ -21,12 +23,14 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Patients API CRUD & Filters', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('POST creates patient medical profile', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: 'u_1' } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ ...businessTestAdmin } as never);
     vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce(null);
     vi.mocked(prisma.patient.create).mockResolvedValueOnce({
       id: 'pat_1',
@@ -36,7 +40,7 @@ describe('Patients API CRUD & Filters', () => {
       currentMedications: 'Inhaler',
     } as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients', {
       method: 'POST',
       body: JSON.stringify({
         userId: 'u_1',
@@ -76,7 +80,7 @@ describe('Patients API CRUD & Filters', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients?doctorId=doc_1');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -106,7 +110,7 @@ describe('Patients API CRUD & Filters', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=20&maxAge=35');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=20&maxAge=35');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -139,7 +143,7 @@ describe('Patients API CRUD & Filters', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=40');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients?doctorId=doc_1&minAge=40');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -161,7 +165,7 @@ describe('Patients API CRUD & Filters', () => {
 
     vi.mocked(prisma.patient.findMany).mockResolvedValueOnce([]);
 
-    const req = new NextRequest('http://localhost:3000/api/patients?doctorId=doc_1&maxAge=60');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients?doctorId=doc_1&maxAge=60');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -191,7 +195,7 @@ describe('Patients API CRUD & Filters', () => {
       currentMedications: 'Inhaler, Amlodipine',
     } as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients', {
       method: 'PATCH',
       body: JSON.stringify({
         patientId: 'pat_1',

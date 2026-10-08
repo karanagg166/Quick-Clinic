@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 
 export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
@@ -13,13 +13,13 @@ export async function middleware(request: NextRequest) {
             return NextResponse.redirect(new URL('/auth/login', request.url));
         }
 
-        const { valid, payload } = await verifyToken(token);
+        const user = await getAuthenticatedUser(request);
 
-        if (!valid || !payload) {
+        if (!user) {
             return NextResponse.redirect(new URL('/auth/login', request.url));
         }
 
-        if ((payload as Record<string, unknown>).role !== "ADMIN") {
+        if (user.role !== "ADMIN") {
             return NextResponse.redirect(new URL('/unauthorized', request.url));
         }
     }
@@ -29,10 +29,10 @@ export async function middleware(request: NextRequest) {
         const token = request.cookies.get('token')?.value;
         if (!token) return NextResponse.redirect(new URL('/auth/login', request.url));
 
-        const { valid, payload } = await verifyToken(token);
-        if (!valid || !payload) return NextResponse.redirect(new URL('/auth/login', request.url));
+        const user = await getAuthenticatedUser(request);
+        if (!user) return NextResponse.redirect(new URL('/auth/login', request.url));
 
-        if ((payload as Record<string, unknown>).role !== "DOCTOR") {
+        if (user.role !== "DOCTOR") {
             return NextResponse.redirect(new URL('/unauthorized', request.url));
         }
     }
@@ -42,10 +42,10 @@ export async function middleware(request: NextRequest) {
         const token = request.cookies.get('token')?.value;
         if (!token) return NextResponse.redirect(new URL('/auth/login', request.url));
 
-        const { valid, payload } = await verifyToken(token);
-        if (!valid || !payload) return NextResponse.redirect(new URL('/auth/login', request.url));
+        const user = await getAuthenticatedUser(request);
+        if (!user) return NextResponse.redirect(new URL('/auth/login', request.url));
 
-        if ((payload as Record<string, unknown>).role !== "PATIENT") {
+        if (user.role !== "PATIENT") {
             return NextResponse.redirect(new URL('/unauthorized', request.url));
         }
     }

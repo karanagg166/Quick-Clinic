@@ -10,6 +10,11 @@ export async function GET(
   { params }: { params: Promise<{ doctorId: string; appointmentId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { doctorId, appointmentId } = await params;
 
     if (!doctorId || !appointmentId) {
@@ -39,10 +44,9 @@ export async function GET(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
     if (authUser) {
-      const isDoctor = appointment.doctor.userId === authUser.id;
-      const isPatient = appointment.patient.userId === authUser.id;
+      const isDoctor = authUser.role === 'DOCTOR' && appointment.doctor.userId === authUser.id;
+      const isPatient = authUser.role === 'PATIENT' && appointment.patient.userId === authUser.id;
       const isAdmin = authUser.role === 'ADMIN';
 
       if (!isDoctor && !isPatient && !isAdmin) {
@@ -131,6 +135,11 @@ export async function PATCH(
   { params }: { params: Promise<{ doctorId: string; appointmentId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { doctorId, appointmentId } = await params;
     if (!doctorId || !appointmentId) {
       return NextResponse.json({ error: 'doctorId and appointmentId are required' }, { status: 400 });
@@ -149,8 +158,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Appointment not found' }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && appointmentBefore.doctor.userId !== authUser.id && authUser.role !== 'ADMIN') {
+    if (authUser.role !== 'ADMIN' && (authUser.role !== 'DOCTOR' || appointmentBefore.doctor.userId !== authUser.id)) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 

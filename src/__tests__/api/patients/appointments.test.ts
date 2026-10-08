@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET, POST } from '@/app/api/patients/[patientId]/appointments/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     patient: {
       findUnique: vi.fn().mockResolvedValue({ id: 'pat_1', userId: 'user_1' }),
     },
@@ -23,8 +26,10 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Patient Appointments Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('GET returns patient appointments mapped to PatientAppointment interface', async () => {
@@ -48,7 +53,7 @@ describe('Patient Appointments Route', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/patients/pat_1/appointments');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/patients/pat_1/appointments');
     const res = await GET(req, { params: Promise.resolve({ patientId: 'pat_1' }) });
     expect(res.status).toBe(200);
 

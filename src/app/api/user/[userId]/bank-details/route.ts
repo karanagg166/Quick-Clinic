@@ -8,14 +8,18 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { userId } = await params;
 
     if (!userId) {
       return NextResponse.json({ error: "userId is required" }, { status: 400 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -47,6 +51,11 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { userId } = await params;
 
     if (!userId) {
@@ -61,8 +70,7 @@ export async function PATCH(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const authUser = await getAuthenticatedUser(req);
-    if (authUser && userId !== authUser.id && authUser.role !== "ADMIN") {
+    if (userId !== authUser.id && authUser.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

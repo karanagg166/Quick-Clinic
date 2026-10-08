@@ -16,7 +16,7 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 vi.mock('@/lib/auth', () => ({
-  requireAdmin: vi.fn(),
+  getAuthenticatedUser: vi.fn(),
 }));
 
 describe('Phase 77: Admin Audit & Access Logs Filtering Test Suite', () => {
@@ -25,7 +25,7 @@ describe('Phase 77: Admin Audit & Access Logs Filtering Test Suite', () => {
   });
 
   it('77.1 Blocks non-admin callers with 401 Unauthorized', async () => {
-    vi.mocked(auth.requireAdmin).mockResolvedValueOnce(null);
+    vi.mocked(auth.getAuthenticatedUser).mockResolvedValueOnce(null);
 
     const req = new NextRequest('http://localhost:3000/api/admin/logs');
     const res = await GET(req);
@@ -33,7 +33,7 @@ describe('Phase 77: Admin Audit & Access Logs Filtering Test Suite', () => {
   });
 
   it('77.2 Queries Audit Logs with tag and action filters for authenticated Admin', async () => {
-    vi.mocked(auth.requireAdmin).mockResolvedValueOnce({ id: 'admin_u_1', role: 'ADMIN' } as any);
+    vi.mocked(auth.getAuthenticatedUser).mockResolvedValueOnce({ id: 'admin_u_1', role: 'ADMIN' } as any);
     vi.mocked(prisma.auditLog.findMany).mockResolvedValueOnce([
       {
         id: 'audit_1',
@@ -64,7 +64,7 @@ describe('Phase 77: Admin Audit & Access Logs Filtering Test Suite', () => {
   });
 
   it('77.3 Queries Access Logs with date filter for authenticated Admin', async () => {
-    vi.mocked(auth.requireAdmin).mockResolvedValueOnce({ id: 'admin_u_1', role: 'ADMIN' } as any);
+    vi.mocked(auth.getAuthenticatedUser).mockResolvedValueOnce({ id: 'admin_u_1', role: 'ADMIN' } as any);
     vi.mocked(prisma.accessLog.findMany).mockResolvedValueOnce([
       {
         id: 'access_1',

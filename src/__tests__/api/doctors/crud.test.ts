@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET, POST } from '@/app/api/doctors/route';
 import { prisma } from '@/lib/prisma';
 
@@ -16,13 +18,11 @@ vi.mock('@/lib/prisma', () => ({
   },
 }));
 
-vi.mock('@/lib/auth', () => ({
-  getAuthenticatedUser: vi.fn().mockResolvedValue({ id: 'u_1', role: 'DOCTOR' }),
-}));
-
 describe('Doctors API CRUD & Filters', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('GET filters doctors by specialty, city, and min/max fees', async () => {
@@ -44,7 +44,7 @@ describe('Doctors API CRUD & Filters', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors?specialty=CARDIOLOGIST&city=Mumbai&minFees=500&maxFees=1500');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors?specialty=CARDIOLOGIST&city=Mumbai&minFees=500&maxFees=1500');
     const res = await GET(req);
     expect(res.status).toBe(200);
 
@@ -56,7 +56,7 @@ describe('Doctors API CRUD & Filters', () => {
   });
 
   it('POST creates doctor profile with qualifications', async () => {
-    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ id: 'u_1' } as any);
+    vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({ ...businessTestAdmin } as never);
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(null);
     vi.mocked(prisma.doctor.create).mockResolvedValueOnce({
       id: 'doc_new',
@@ -67,7 +67,7 @@ describe('Doctors API CRUD & Filters', () => {
       doctorQualifications: [{ qualification: 'MBBS' }, { qualification: 'DM' }],
     } as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors', {
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors', {
       method: 'POST',
       body: JSON.stringify({
         userId: 'u_1',

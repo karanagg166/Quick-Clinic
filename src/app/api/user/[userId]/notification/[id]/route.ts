@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -6,7 +7,12 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string; id: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { userId, id } = await params;
+    if (authUser.role !== "ADMIN" && userId !== authUser.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Verify notification belongs to user
     const existing = await prisma.notification.findUnique({
@@ -44,7 +50,12 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const { id, userId } = await params;
+    if (authUser.role !== "ADMIN" && userId !== authUser.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Verify notification belongs to user
     const existing = await prisma.notification.findUnique({

@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET } from '@/app/api/doctors/[doctorId]/appointments/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctor: {
       findUnique: vi.fn().mockResolvedValue({ id: 'doc_1', userId: 'user_1' }),
     },
@@ -15,12 +18,14 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('GET /api/doctors/[doctorId]/appointments', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('returns 400 if doctorId is missing', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors//appointments');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors//appointments');
     const res = await GET(req, { params: Promise.resolve({ doctorId: '' }) });
     expect(res.status).toBe(400);
     const data = await res.json();
@@ -51,7 +56,7 @@ describe('GET /api/doctors/[doctorId]/appointments', () => {
 
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce(mockAppointments as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/appointments?status=CONFIRMED');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/appointments?status=CONFIRMED');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 

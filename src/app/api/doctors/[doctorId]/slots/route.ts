@@ -1,3 +1,4 @@
+import { getAuthenticatedUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { expireDoctorHolds } from "@/lib/booking";
@@ -54,8 +55,9 @@ function formatSlotsWithAvailability(slots: any[]) {
       startTime: slot.startTime,
       endTime: slot.endTime,
       status,
-      heldByPatientId: slot.heldByPatientId,
-      heldAt: slot.heldAt,
+      // Public availability must not disclose the patient holding a slot.
+      heldByPatientId: null,
+      heldAt: null,
     };
   });
 }
@@ -229,7 +231,17 @@ export async function PATCH(
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { doctorId } = await params;
+    if (!doctorId) return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId }, select: { userId: true } });
+    if (!doctor) return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const body = await req.json();
     const { slotId, slotIds, status } = body;
 
@@ -285,7 +297,17 @@ export async function DELETE(
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { doctorId } = await params;
+    if (!doctorId) return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId }, select: { userId: true } });
+    if (!doctor) return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { slotId } = await req.json();
 
     if (!doctorId || !slotId) {
@@ -327,7 +349,17 @@ export async function POST(
   { params }: { params: Promise<{ doctorId: string }> }
 ) {
   try {
+    const authUser = await getAuthenticatedUser(req, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
     const { doctorId } = await params;
+    if (!doctorId) return NextResponse.json({ error: "Missing doctorId" }, { status: 400 });
+    const doctor = await prisma.doctor.findUnique({ where: { id: doctorId }, select: { userId: true } });
+    if (!doctor) return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
+    if (authUser.role !== "ADMIN" && (authUser.role !== "DOCTOR" || doctor.userId !== authUser.id)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
     const { date, startTime, endTime } = await req.json();
 
     if (!doctorId || !date || !startTime || !endTime) {

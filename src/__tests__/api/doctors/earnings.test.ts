@@ -1,10 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
+import { authenticatedRequestClass, businessTestAdmin } from '@/__tests__/helpers/authenticated-request';
+let AuthenticatedRequest: typeof NextRequest;
 import { GET } from '@/app/api/doctors/[doctorId]/earnings/route';
 import { prisma } from '@/lib/prisma';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: { findUnique: vi.fn() },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -15,14 +18,16 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Doctor Earnings Route', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
+    AuthenticatedRequest = await authenticatedRequestClass();
+    vi.mocked(prisma.user.findUnique).mockResolvedValue(businessTestAdmin as never);
   });
 
   it('returns 404 when doctor does not exist', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(null);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/earnings');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(404);
   });
@@ -45,7 +50,7 @@ describe('Doctor Earnings Route', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings');
+    const req = new AuthenticatedRequest('http://localhost:3000/api/doctors/doc_1/earnings');
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 

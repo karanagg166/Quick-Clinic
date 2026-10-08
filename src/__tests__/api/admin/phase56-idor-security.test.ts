@@ -133,11 +133,11 @@ describe('Phase 56: IDOR (Insecure Direct Object Reference) Protection Test Suit
   });
 
   it('56.1 Doctor earnings endpoints are isolated strictly by doctorId and do not cross-leak', async () => {
-    const req1 = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/balance`);
+    const req1 = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/balance`, { headers: { authorization: `Bearer ${await createToken({ id: doc1UserId, role: "DOCTOR" })}` } });
     const res1 = await balanceGET(req1, { params: Promise.resolve({ doctorId: doc1Id }) });
     const data1 = await res1.json();
 
-    const req2 = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/balance`);
+    const req2 = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/balance`, { headers: { authorization: `Bearer ${await createToken({ id: doc2UserId, role: "DOCTOR" })}` } });
     const res2 = await balanceGET(req2, { params: Promise.resolve({ doctorId: doc2Id }) });
     const data2 = await res2.json();
 

@@ -58,7 +58,6 @@ export const POST = async (
         `,
       });
       console.log("Email sent:", emailSent);
-      console.log("OTP Code:", otpRecord.code);
 
       return NextResponse.json(
         { message: "OTP sent successfully" },

@@ -1,3 +1,4 @@
+import { createToken } from "@/lib/auth";
 import { test, expect, beforeEach, afterEach } from "vitest";
 import { NextRequest } from "next/server";
 import { GET as notificationsGET } from "@/app/api/user/[userId]/notification/route";
@@ -22,7 +23,7 @@ test("GET /api/user/[userId]/notification - fetches notifications for user", asy
     },
   });
 
-  const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}/notification`);
+  const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}/notification`, { headers: { authorization: `Bearer ${await createToken({ id: user.id, role: user.role })}` } });
   const res = await notificationsGET(req, {
     params: Promise.resolve({ userId: user!.id }),
   });
@@ -52,6 +53,7 @@ test("PATCH /api/user/[userId]/notification/[id] - marks notification as read", 
 
   const req = new Request(`http://localhost:3000/api/user/${user!.id}/notification/${notification.id}`, {
     method: "PATCH",
+    headers: { authorization: `Bearer ${await createToken({ id: user.id, role: user.role })}` },
   });
 
   const res = await notificationPATCH(req, {
@@ -78,6 +80,7 @@ test("DELETE /api/user/[userId]/notification/[id] - deletes notification", async
 
   const req = new Request(`http://localhost:3000/api/user/${user!.id}/notification/${notification.id}`, {
     method: "DELETE",
+    headers: { authorization: `Bearer ${await createToken({ id: user.id, role: user.role })}` },
   });
 
   const res = await notificationDELETE(req, {

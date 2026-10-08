@@ -26,6 +26,12 @@ vi.mock('@/lib/prisma', () => ({
 describe('Quick-Clinic: Authentication, RBAC, and IDOR Security Matrix', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(prisma.user.findUnique).mockImplementation(async (args) => ({
+      id: args.where.id,
+      role: args.where.id?.includes("doctor") ? "DOCTOR" : "PATIENT",
+      isActive: true,
+      email: "user@test.com", name: "User",
+    }) as never);
   });
 
   describe('JWT Verification & Authoritative Identity Claims', () => {
@@ -65,6 +71,7 @@ describe('Quick-Clinic: Authentication, RBAC, and IDOR Security Matrix', () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
         id: 'user_tampered_role',
         role: 'PATIENT',
+        isActive: true,
         email: 'user@test.com',
         name: 'Normal User',
       } as any);
@@ -83,6 +90,7 @@ describe('Quick-Clinic: Authentication, RBAC, and IDOR Security Matrix', () => {
       vi.mocked(prisma.user.findUnique).mockResolvedValueOnce({
         id: 'demoted_user',
         role: 'DOCTOR',
+        isActive: true,
         email: 'demoted@test.com',
         name: 'Demoted Doc',
       } as any);

@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getUserId } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { sanitizeProfileImageUrl } from '@/lib/avatar';
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
@@ -37,16 +37,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     try {
         const { userId } = await params;
 
-        // Auth: only the owner can update their avatar
-        const authHeader = request.headers.get('authorization');
-        const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-        if (!token) {
-            return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-        }
-        const { valid, userId: requesterId } = await getUserId(token);
-        if (!valid || requesterId !== userId) {
-            return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-        }
+        const authUser = await getAuthenticatedUser(request, { verifyDb: true });
+        if (!authUser) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+        if (authUser.id !== userId) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
         const user = await prisma.user.findUnique({
             where: { id: userId },

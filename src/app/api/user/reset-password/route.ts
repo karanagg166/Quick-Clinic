@@ -7,9 +7,9 @@ export async function POST(req: NextRequest) {
   try {
     const { email, otp, newPassword } = await req.json();
 
-    if (!email || !newPassword) {
+    if (!email || !newPassword || typeof otp !== "string" || !otp.trim()) {
       return NextResponse.json(
-        { error: "Email and newPassword are required" },
+        { error: "Email, OTP and newPassword are required" },
         { status: 400 }
       );
     }
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    // 2. If OTP is provided, verify it
+    // 2. Verify and atomically consume the required OTP
     if (otp) {
       const record = await prisma.otp.findFirst({
         where: { email },
@@ -50,10 +50,13 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      // Delete used OTP
-      await prisma.otp.deleteMany({
-        where: { email },
+      // Only one concurrent request may consume this proof.
+      const consumed = await prisma.otp.deleteMany({
+        where: { id: record.id, userId: user.id, code: otp, expiresAt: { gt: new Date() } },
       });
+      if (consumed.count !== 1) {
+        return NextResponse.json({ error: "Invalid or expired OTP" }, { status: 400 });
+      }
     }
 
     // 3. Hash new password & update

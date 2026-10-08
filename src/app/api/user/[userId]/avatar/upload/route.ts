@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { getUserId } from '@/lib/auth';
+import { getAuthenticatedUser } from '@/lib/auth';
 import { v2 as cloudinary } from 'cloudinary';
 
 // Configure Cloudinary
@@ -54,22 +54,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { userId } = await params;
 
-    // Auth: only the owner can upload their avatar
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
-    
-    // For cookie-based auth, check if token exists in cookies
-    const cookieToken = request.cookies.get('token')?.value;
-    const actualToken = token || cookieToken;
-    
-    if (!actualToken) {
-      return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
-    }
-    
-    const { valid, userId: requesterId } = await getUserId(actualToken);
-    if (!valid || requesterId !== userId) {
-      return NextResponse.json({ message: 'Forbidden' }, { status: 403 });
-    }
+    const authUser = await getAuthenticatedUser(request, { verifyDb: true });
+    if (!authUser) return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    if (authUser.id !== userId) return NextResponse.json({ message: "Forbidden" }, { status: 403 });
 
     // Check if user exists and get current avatar URL
     const user = await prisma.user.findUnique({
