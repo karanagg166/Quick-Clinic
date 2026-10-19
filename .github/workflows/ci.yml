@@ -37,6 +37,7 @@ jobs:
       CRON_SECRET: "ci_cron_secret_1234567890"
       RAZORPAY_KEY_ID: "rzp_test_dummy_key_id"
       RAZORPAY_KEY_SECRET: "rzp_test_dummy_key_secret"
+      SUPER_ADMIN_CODE: "QUICK_CLINIC_SUPER_ADMIN"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
