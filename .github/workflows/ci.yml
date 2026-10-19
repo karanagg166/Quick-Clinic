@@ -60,7 +60,11 @@ jobs:
         run: pnpm prisma generate
 
       - name: Push Database Schema
-        run: pnpm prisma db push --accept-data-loss
+        run: |
+          pnpm prisma db push --accept-data-loss
+          pnpm prisma db execute --stdin << 'EOF'
+          CREATE UNIQUE INDEX IF NOT EXISTS "Appointment_active_slot_unique" ON "Appointment"("slotId") WHERE "status" IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW');
+          EOF
 
       - name: Type check
         run: pnpm type-check
