@@ -3,10 +3,12 @@ import { NextRequest } from 'next/server';
 import { POST as createPatientPOST } from '@/app/api/patients/route';
 import { GET as getPatientGET, PATCH as updatePatientPATCH } from '@/app/api/patients/[patientId]/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload, buildPatientProfilePayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
   let patientUser: any;
+  let patientToken: string;
 
   beforeEach(async () => {
     const payload = buildUserPayload({ role: 'PATIENT' });
@@ -32,6 +34,12 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
         },
       },
     });
+    patientToken = await createToken({
+      id: patientUser.id,
+      role: 'PATIENT',
+      name: patientUser.name,
+      email: patientUser.email,
+    });
   });
 
   afterAll(async () => {
@@ -56,6 +64,10 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req = new NextRequest('http://localhost:3000/api/patients', {
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify(profilePayload),
     });
 
@@ -72,6 +84,10 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req1 = new NextRequest('http://localhost:3000/api/patients', {
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify(profilePayload),
     });
     const res1 = await createPatientPOST(req1);
@@ -79,6 +95,10 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
 
     const req2 = new NextRequest('http://localhost:3000/api/patients', {
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify(profilePayload),
     });
     const res2 = await createPatientPOST(req2);
@@ -89,6 +109,10 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
     const profilePayload = buildPatientProfilePayload({ userId: patientUser.id });
     const createReq = new NextRequest('http://localhost:3000/api/patients', {
       method: 'POST',
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify(profilePayload),
     });
     const createRes = await createPatientPOST(createReq);
@@ -96,12 +120,20 @@ describe('Phase 9: Patient Onboarding & Profile Lifecycle Test Suite', () => {
 
     const patchReq = new NextRequest(`http://localhost:3000/api/patients/${patient.id}`, {
       method: 'PATCH',
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+        'content-type': 'application/json',
+      },
       body: JSON.stringify({ allergies: 'No known drug allergies' }),
     });
     const patchRes = await updatePatientPATCH(patchReq, { params: Promise.resolve({ patientId: patient.id }) });
     expect(patchRes.status).toBe(200);
 
-    const getReq = new NextRequest(`http://localhost:3000/api/patients/${patient.id}`);
+    const getReq = new NextRequest(`http://localhost:3000/api/patients/${patient.id}`, {
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+      },
+    });
     const getRes = await getPatientGET(getReq, { params: Promise.resolve({ patientId: patient.id }) });
     expect(getRes.status).toBe(200);
     const getBody = await getRes.json();
