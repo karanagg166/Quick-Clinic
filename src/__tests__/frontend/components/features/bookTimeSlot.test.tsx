@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BookTimeSlot from '@/components/patient/bookTimeSlot';
@@ -58,6 +58,8 @@ describe('BookTimeSlot Component - User Interaction & Component Test', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-10T08:00:00.000Z'));
     (useUserStore as any).mockImplementation((selector: any) =>
       selector({
         user: { id: 'user_pat_1', name: 'Patient Test' },
@@ -77,6 +79,10 @@ describe('BookTimeSlot Component - User Interaction & Component Test', () => {
         json: async () => ({}),
       });
     });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   it('renders date selector and fetches available slots', async () => {
