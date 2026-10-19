@@ -59,7 +59,7 @@ jobs:
         run: pnpm prisma generate
 
       - name: Push Database Schema
-        run: pnpm prisma db push --skip-generate
+        run: pnpm prisma db push --accept-data-loss
 
       - name: Type check
         run: pnpm type-check
@@ -94,6 +94,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'pnpm'
+
+      - name: Install root dependencies & generate Prisma
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm prisma generate
 
       - name: Install socket-server dependencies
         run: pnpm -C socket-server install --frozen-lockfile
