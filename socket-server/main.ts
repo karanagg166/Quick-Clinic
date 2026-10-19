@@ -41,29 +41,48 @@ const prisma = new PrismaClient({
   log: ['error', 'warn'],
 }) as PrismaClientType;
 
-// CORS configuration
-const envFrontendUrls = (process.env.FRONTEND_URL || '')
+// Origin & CORS configuration
+const envFrontendUrls = (process.env.FRONTEND_URL || process.env.ALLOWED_ORIGINS || '')
   .split(',')
   .map((u) => u.trim().replace(/\/$/, ''))
   .filter(Boolean);
 
-const defaultAllowedOrigins = [
-  'http://localhost:3000',
-  'http://localhost:3001',
-  'http://127.0.0.1:3000',
+const defaultProductionOrigins = [
   'https://quick-clinic-nine.vercel.app',
   'https://quick-clinic.vercel.app',
 ];
 
-const allowedOriginsSet = new Set([...envFrontendUrls, ...defaultAllowedOrigins]);
+const developmentOrigins = [
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://127.0.0.1:3000',
+];
 
-function isOriginAllowed(origin?: string): boolean {
-  if (!origin) return true;
-  const normalized = origin.replace(/\/$/, '');
-  if (allowedOriginsSet.has(normalized)) return true;
-  if (/^https:\/\/.*\.vercel\.app$/.test(normalized)) return true;
-  if (/^http:\/\/localhost(:\d+)?$/.test(normalized)) return true;
-  if (/^http:\/\/127\.0\.0\.1(:\d+)?$/.test(normalized)) return true;
+const isProduction = process.env.NODE_ENV === 'production';
+const PREVIEW_REGEX = /^https:\/\/quick-clinic(-[a-zA-Z0-9-]+)?-karan-aggarwals-projects\.vercel\.app$/;
+
+export function isOriginAllowed(origin?: string): boolean {
+  if (!origin) return true; // non-browser clients or direct HTTP (handled by internal auth)
+  let normalized: string;
+  try {
+    const url = new URL(origin);
+    normalized = `${url.protocol}//${url.host}`;
+  } catch {
+    return false;
+  }
+
+  // Explicit env configuration
+  if (envFrontendUrls.includes(normalized)) return true;
+
+  // Production allowlist
+  if (defaultProductionOrigins.includes(normalized)) return true;
+
+  // Development allowlist (disabled in production)
+  if (!isProduction && developmentOrigins.includes(normalized)) return true;
+
+  // Strictly-scoped Vercel preview domain pattern for this project
+  if (PREVIEW_REGEX.test(normalized)) return true;
+
   return false;
 }
 
@@ -80,7 +99,7 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: '1mb' }));
 
 // Root & Health check endpoints
 app.get('/', (req: express.Request, res: express.Response) => {
@@ -90,6 +109,24 @@ app.get('/', (req: express.Request, res: express.Response) => {
 app.get('/health', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
+
+// Internal server-to-server publishing authentication middleware
+export function requireInternalAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
+  const secret = process.env.INTERNAL_API_SECRET || process.env.JWT_SECRET;
+  if (!secret) {
+    return res.status(500).json({ error: 'Server misconfiguration: internal secret not set' });
+  }
+
+  const headerSecret =
+    req.headers['x-internal-secret'] ||
+    (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7) : null);
+
+  if (!headerSecret || typeof headerSecret !== 'string' || headerSecret !== secret) {
+    return res.status(401).json({ error: 'Unauthorized: valid internal credential required' });
+  }
+
+  next();
+}
 
 // Initialize Socket.IO
 const io = new Server(httpServer, {
@@ -104,6 +141,13 @@ const io = new Server(httpServer, {
     methods: ['GET', 'POST'],
     credentials: true,
     allowedHeaders: ['Content-Type', 'Authorization'],
+  },
+  allowRequest: (req, callback) => {
+    const origin = req.headers.origin;
+    if (origin && !isOriginAllowed(origin)) {
+      return callback('Origin not allowed', false);
+    }
+    callback(null, true);
   },
   allowEIO3: true,
   transports: ['websocket', 'polling'],
@@ -121,12 +165,12 @@ type SocketNotification = {
   isRead: boolean;
 };
 
-// Notification records are persisted by the Next.js API. This endpoint only
-// broadcasts that record, preventing a second database notification per event.
-app.post('/api/notifications/broadcast', (req: express.Request, res: express.Response) => {
+// Notification records are persisted by the Next.js API. This endpoint broadcasts
+// that record, preventing a second database notification per event.
+app.post('/api/notifications/broadcast', requireInternalAuth, (req: express.Request, res: express.Response) => {
   const { userId, notification } = req.body as { userId?: string; notification?: SocketNotification };
-  if (!userId || !notification?.id || !notification.message) {
-    return res.status(400).json({ error: 'userId and a notification are required' });
+  if (!userId || typeof userId !== 'string' || !notification?.id || !notification.message) {
+    return res.status(400).json({ error: 'userId and a valid notification object are required' });
   }
 
   socketServer.sendNotificationToUser(userId, notification);
@@ -135,13 +179,13 @@ app.post('/api/notifications/broadcast', (req: express.Request, res: express.Res
 
 // A newly-booked appointment has already been persisted by Next.js. Emit its
 // notification and appointment payload so the doctor's list updates instantly.
-app.post('/api/notifications/new-appointment', (req: express.Request, res: express.Response) => {
+app.post('/api/notifications/new-appointment', requireInternalAuth, (req: express.Request, res: express.Response) => {
   const { doctorUserId, notification, appointment } = req.body as {
     doctorUserId?: string;
     notification?: SocketNotification;
     appointment?: Parameters<SocketServer['sendAppointmentRequest']>[1];
   };
-  if (!doctorUserId || !notification?.id || !appointment?.id) {
+  if (!doctorUserId || typeof doctorUserId !== 'string' || !notification?.id || !appointment?.id) {
     return res.status(400).json({ error: 'doctorUserId, notification, and appointment are required' });
   }
 
@@ -150,63 +194,68 @@ app.post('/api/notifications/new-appointment', (req: express.Request, res: expre
   return res.json({ success: true });
 });
 
-// API endpoint to send appointment status update (called from Next.js API routes)
-app.post('/api/notifications/appointment-status', async (req: express.Request, res: express.Response) => {
+// API endpoint to send appointment status update
+app.post('/api/notifications/appointment-status', requireInternalAuth, async (req: express.Request, res: express.Response) => {
   try {
-    const { patientUserId, appointmentId, status, appointmentDate, appointmentTime, doctorName } = req.body;
+    const { patientUserId, appointmentId, status, appointmentDate, appointmentTime, doctorName, notification } = req.body;
 
     if (!patientUserId || !appointmentId || !status) {
       return res.status(400).json({ error: 'patientUserId, appointmentId, and status are required' });
     }
 
-    // Create notification message
-    const statusMessages: Record<string, string> = {
-      CONFIRMED: `Your appointment with Dr. ${doctorName} has been confirmed`,
-      CANCELLED: `Your appointment with Dr. ${doctorName} has been cancelled`,
-      COMPLETED: `Your appointment with Dr. ${doctorName} has been marked as completed`,
-      RESCHEDULED: `Your appointment with Dr. ${doctorName} has been rescheduled`,
-    };
+    let canonicalNotification = notification;
 
-    const message = statusMessages[status] || `Your appointment status has been updated to ${status}`;
+    // If caller didn't provide pre-persisted notification, create it once safely
+    if (!canonicalNotification || !canonicalNotification.id) {
+      const statusMessages: Record<string, string> = {
+        CONFIRMED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been confirmed`,
+        CANCELLED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been cancelled`,
+        COMPLETED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been marked as completed`,
+        RESCHEDULED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been rescheduled`,
+      };
 
-    // Create notification in database
-    const notification = await prisma.notification.create({
-      data: {
-        userId: patientUserId,
-        message,
-        isRead: false,
-        status: 'UNREAD',
-      },
-    });
+      const message = statusMessages[status] || `Your appointment status has been updated to ${status}`;
+
+      const created = await prisma.notification.create({
+        data: {
+          userId: patientUserId,
+          message,
+          isRead: false,
+          status: 'UNREAD',
+        },
+      });
+
+      canonicalNotification = {
+        id: created.id,
+        message: created.message,
+        createdAt: created.createdAt.toISOString(),
+        isRead: created.isRead,
+      };
+    }
 
     // Send notification via socket
-    socketServer.sendNotificationToUser(patientUserId, {
-      id: notification.id,
-      message: notification.message,
-      createdAt: notification.createdAt.toISOString(),
-      isRead: notification.isRead,
-    });
+    socketServer.sendNotificationToUser(patientUserId, canonicalNotification);
 
     // Send appointment status update via socket
     socketServer.sendAppointmentStatusUpdate(patientUserId, {
       id: appointmentId,
       status,
-      appointmentDate,
-      appointmentTime,
+      appointmentDate: appointmentDate || new Date().toISOString(),
+      appointmentTime: appointmentTime || new Date().toISOString(),
       doctorName: doctorName || 'Doctor',
     });
 
-    return res.json({ success: true, notification });
+    return res.json({ success: true, notification: canonicalNotification });
   } catch (error: unknown) {
     console.error('Error sending appointment status update:', error);
     return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to send status update'
+      error: error instanceof Error ? error.message : 'Failed to send status update',
     });
   }
 });
 
-// API endpoint to send appointment notification (called from Next.js API routes)
-app.post('/api/notifications/appointment', async (req: express.Request, res: express.Response) => {
+// API endpoint to send appointment notification
+app.post('/api/notifications/appointment', requireInternalAuth, async (req: express.Request, res: express.Response) => {
   try {
     const { doctorId, appointmentId } = req.body;
 
@@ -228,18 +277,18 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
       return res.status(404).json({ error: 'Appointment not found' });
     }
 
-    // Get doctor's userId
+    if (appointment.doctorId !== doctorId) {
+      return res.status(400).json({ error: 'Appointment does not belong to specified doctor' });
+    }
+
     const doctorUserId = appointment.doctor.user.id;
     const patientName = appointment.patient.user.name;
 
-    // Format date and time
-    const slotDate = appointment.slot.date.toLocaleDateString();
-    const slotTime = new Date(appointment.slot.startTime).toLocaleTimeString([], {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
+    const slotDate = appointment.slot?.date ? appointment.slot.date.toLocaleDateString() : '';
+    const slotTime = appointment.slot?.startTime
+      ? new Date(appointment.slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      : '';
 
-    // Create notification message
     const message = `New appointment booking from ${patientName} for ${slotDate} at ${slotTime}`;
 
     // Create notification in database
@@ -260,16 +309,15 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
       isRead: notification.isRead,
     });
 
-    // Send appointment request data via socket for real-time UI update
     const appointmentData = {
       id: appointment.id,
       patientName: appointment.patient.user.name,
       patientString: appointment.patient.user.email,
       gender: appointment.patient.user.gender,
-      appointmentDate: appointment.slot.date.toISOString(),
-      appointmentTime: appointment.slot.startTime.toISOString(),
+      appointmentDate: appointment.slot?.date?.toISOString() || new Date().toISOString(),
+      appointmentTime: appointment.slot?.startTime?.toISOString() || new Date().toISOString(),
       status: appointment.status,
-      city: appointment.patient.user.location?.city || "N/A",
+      city: appointment.patient.user.location?.city || 'N/A',
       age: appointment.patient.user.age,
       paymentMethod: appointment.paymentMethod,
     };
@@ -280,7 +328,7 @@ app.post('/api/notifications/appointment', async (req: express.Request, res: exp
   } catch (error: unknown) {
     console.error('Error sending appointment notification:', error);
     return res.status(500).json({
-      error: error instanceof Error ? error.message : 'Failed to send notification'
+      error: error instanceof Error ? error.message : 'Failed to send notification',
     });
   }
 });
@@ -316,6 +364,6 @@ if (process.env.NODE_ENV !== 'test') {
   httpServer.listen(PORT, HOST, () => {
     console.log(`🚀 Socket.IO server running on ${HOST}:${PORT}`);
     console.log(`📡 WebSocket endpoint: ws://localhost:${PORT}`);
-    console.log(`🌐 Allowed origins: ${Array.from(allowedOriginsSet).join(', ')}`);
+    console.log(`🌐 Allowed origins: ${Array.from(new Set([...envFrontendUrls, ...defaultProductionOrigins])).join(', ')}`);
   });
 }
