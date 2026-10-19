@@ -9,6 +9,7 @@ export interface PersistChatMessageInput {
   clientMessageId?: unknown;
   isAdmin?: boolean;
   prismaClient?: PrismaClientInstance;
+  includeSender?: boolean;
 }
 
 export interface PersistChatMessageResult {
@@ -31,6 +32,7 @@ export async function persistChatMessage({
   clientMessageId,
   isAdmin = false,
   prismaClient = prisma,
+  includeSender = false,
 }: PersistChatMessageInput): Promise<PersistChatMessageResult> {
   const db = (prismaClient || prisma) as PrismaClientInstance;
   // 1. Validate relationId
@@ -88,19 +90,22 @@ export async function persistChatMessage({
 
   // 5. Deduplication pre-check
   if (normalizedClientMessageId) {
-    const existing = await db.chatMessages.findFirst({
+    const findArgs: Record<string, unknown> = {
       where: {
         OR: [
           { clientMessageId: normalizedClientMessageId },
           { id: normalizedClientMessageId },
         ],
       },
-      include: {
+    };
+    if (includeSender) {
+      findArgs.include = {
         sender: {
           select: { id: true, name: true, role: true },
         },
-      },
-    });
+      };
+    }
+    const existing = await (db.chatMessages.findFirst as any)(findArgs);
 
     if (existing) {
       // Must not reveal messages from another relation
@@ -131,7 +136,7 @@ export async function persistChatMessage({
 
   // 6. Persist with race condition handling
   try {
-    const newChat = await db.chatMessages.create({
+    const createArgs: Record<string, unknown> = {
       data: {
         ...(normalizedClientMessageId
           ? { id: normalizedClientMessageId, clientMessageId: normalizedClientMessageId }
@@ -140,31 +145,37 @@ export async function persistChatMessage({
         text: trimmedText,
         senderId,
       },
-      include: {
+    };
+    if (includeSender) {
+      createArgs.include = {
         sender: {
           select: { id: true, name: true, role: true },
         },
-      },
-    });
+      };
+    }
+    const newChat = await (db.chatMessages.create as any)(createArgs);
 
     return { success: true, chat: newChat, isDuplicate: false, statusCode: 201 };
   } catch (error: unknown) {
     // Concurrent insert collision on unique constraint (P2002)
     const errObj = error as { code?: string } | null;
     if (errObj?.code === "P2002" && normalizedClientMessageId) {
-      const existing = await db.chatMessages.findFirst({
+      const collisionArgs: Record<string, unknown> = {
         where: {
           OR: [
             { clientMessageId: normalizedClientMessageId },
             { id: normalizedClientMessageId },
           ],
         },
-        include: {
+      };
+      if (includeSender) {
+        collisionArgs.include = {
           sender: {
             select: { id: true, name: true, role: true },
           },
-        },
-      });
+        };
+      }
+      const existing = await (db.chatMessages.findFirst as any)(collisionArgs);
 
       if (existing) {
         if (existing.doctorPatientRelationId !== doctorPatientRelationId) {
