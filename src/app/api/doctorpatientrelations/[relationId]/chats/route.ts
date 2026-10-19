@@ -201,11 +201,6 @@ export async function POST(
                 text,
                 senderId,
             },
-            include: {
-                sender: {
-                    select: { id: true, name: true, role: true },
-                },
-            },
         });
 
         return NextResponse.json({ chat: newChat }, { status: 201 });

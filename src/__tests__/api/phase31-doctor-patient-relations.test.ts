@@ -6,16 +6,19 @@ import {
 } from '@/app/api/doctorpatientrelations/route';
 import { prisma } from '@/lib/prisma';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { createToken } from '@/lib/auth-token';
 
 describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () => {
   let doc1UserId: string;
   let doc1Id: string;
+  let doc1Token: string;
 
   let doc2UserId: string;
   let doc2Id: string;
 
   let patient1UserId: string;
   let patient1Id: string;
+  let patient1Token: string;
 
   let patient2UserId: string;
   let patient2Id: string;
@@ -160,6 +163,9 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
       },
     });
     patient2Id = p2.id;
+
+    doc1Token = await createToken({ id: doc1UserId, role: 'DOCTOR' });
+    patient1Token = await createToken({ id: patient1UserId, role: 'PATIENT' });
   });
 
   afterAll(async () => {
@@ -187,6 +193,7 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
   it('31.1 Creates a new DoctorPatientRelation for Doctor 1 and Patient 1', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${doc1Token}` },
       body: JSON.stringify({
         doctorsUserId: doc1UserId,
         patientsUserId: patient1UserId,
@@ -205,6 +212,7 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
   it('31.2 Idempotency & Duplicate prevention: Repeated POST returns existing relation without creating duplicate', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${doc1Token}` },
       body: JSON.stringify({
         doctorsUserId: doc1UserId,
         patientsUserId: patient1UserId,
@@ -238,7 +246,10 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
     });
 
     const req = new NextRequest(
-      `http://localhost:3000/api/doctorpatientrelations?userId=${patient1UserId}&role=PATIENT`
+      `http://localhost:3000/api/doctorpatientrelations?userId=${patient1UserId}&role=PATIENT`,
+      {
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res = await relationsGET(req);
     expect(res.status).toBe(200);
@@ -250,7 +261,10 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
 
   it('31.4 GET relations for DOCTOR lists Patient 1 and latest message metadata', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctorpatientrelations?userId=${doc1UserId}&role=DOCTOR`
+      `http://localhost:3000/api/doctorpatientrelations?userId=${doc1UserId}&role=DOCTOR`,
+      {
+        headers: { authorization: `Bearer ${doc1Token}` },
+      }
     );
     const res = await relationsGET(req);
     expect(res.status).toBe(200);
@@ -263,6 +277,7 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
   it('31.5 Rejects creation with non-existent doctor or patient with 404', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${patient1Token}` },
       body: JSON.stringify({
         doctorsUserId: 'non_existent_doctor_user_id',
         patientsUserId: patient1UserId,
@@ -276,7 +291,9 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
   });
 
   it('31.6 GET rejects requests with missing userId or role with 400', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations?userId=');
+    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations?userId=', {
+      headers: { authorization: `Bearer ${patient1Token}` },
+    });
     const res = await relationsGET(req);
     expect(res.status).toBe(400);
     const body = await res.json();
@@ -285,7 +302,10 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
 
   it('31.7 GET rejects requests with invalid role with 400', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctorpatientrelations?userId=${patient1UserId}&role=UNKNOWN`
+      `http://localhost:3000/api/doctorpatientrelations?userId=${patient1UserId}&role=UNKNOWN`,
+      {
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res = await relationsGET(req);
     expect(res.status).toBe(400);
@@ -296,6 +316,7 @@ describe('Phase 31: Doctor-Patient Relationship & Room Binding Test Suite', () =
   it('31.8 POST rejects creation with missing doctorsUserId or patientsUserId with 400', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${patient1Token}` },
       body: JSON.stringify({
         doctorsUserId: '',
         patientsUserId: patient1UserId,
