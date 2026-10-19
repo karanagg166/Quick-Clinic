@@ -116,20 +116,20 @@ describe('Phase 53: Log Visibility & Scope Access Control Test Suite', () => {
     expect(res.status).toBe(401);
   });
 
-  it('53.2 Direct request from DOCTOR client is rejected with 401', async () => {
+  it('53.2 Direct request from DOCTOR client is rejected with 403', async () => {
     const req = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: { Cookie: `token=${doctorToken}` },
     });
     const res = await adminLogsGET(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
-  it('53.3 Direct request from PATIENT client is rejected with 401', async () => {
+  it('53.3 Direct request from PATIENT client is rejected with 403', async () => {
     const req = new NextRequest('http://localhost:3000/api/admin/logs', {
       headers: { Cookie: `token=${patientToken}` },
     });
     const res = await adminLogsGET(req);
-    expect(res.status).toBe(401);
+    expect(res.status).toBe(403);
   });
 
   it('53.4 Authorized ADMIN can query logs with scope=all', async () => {

@@ -6,13 +6,16 @@ import {
 } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { createToken } from '@/lib/auth';
 
 describe('Phase 20: Doctor Appointment Confirmation & Detail Inspection Test Suite', () => {
   let doc1UserId: string;
   let doc1Id: string;
+  let doc1Token: string;
 
   let doc2UserId: string;
   let doc2Id: string;
+  let doc2Token: string;
 
   let patientUserId: string;
   let patientId: string;
@@ -157,25 +160,42 @@ describe('Phase 20: Doctor Appointment Confirmation & Detail Inspection Test Sui
       },
     });
     appointmentId = appt.id;
+
+    doc1Token = await createToken({ id: doc1UserId, role: 'DOCTOR' });
+    doc2Token = await createToken({ id: doc2UserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.notification.deleteMany({ where: { userId: { in: [doc1UserId, doc2UserId, patientUserId] } } });
-      await prisma.appointment.deleteMany({ where: { doctorId: { in: [doc1Id, doc2Id] } } });
-      await prisma.slot.deleteMany({ where: { doctorId: { in: [doc1Id, doc2Id] } } });
-      await prisma.auditLog.deleteMany({ where: { userId: doc1UserId } });
-      await prisma.doctorQualification.deleteMany({ where: { doctorId: doc1Id } });
-      await prisma.doctor.deleteMany({ where: { id: { in: [doc1Id, doc2Id] } } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [doc1UserId, doc2UserId, patientUserId] } } });
+      const userIds = [doc1UserId, doc2UserId, patientUserId].filter(Boolean) as string[];
+      const doctorIds = [doc1Id, doc2Id].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
+      }
+      if (doctorIds.length > 0) {
+        await prisma.appointment.deleteMany({ where: { doctorId: { in: doctorIds } } });
+        await prisma.slot.deleteMany({ where: { doctorId: { in: doctorIds } } });
+        await prisma.doctorQualification.deleteMany({ where: { doctorId: { in: doctorIds } } });
+        await prisma.doctor.deleteMany({ where: { id: { in: doctorIds } } });
+      }
+      if (doc1UserId) {
+        await prisma.auditLog.deleteMany({ where: { userId: doc1UserId } });
+      }
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 20 cleanup warning:', e);
     }
   });
 
   it('20.1 Doctor 1 retrieves detailed appointment structure with qualifications & medical history', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appointmentId}`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appointmentId}`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await doctorAppointmentGET(req, { params: Promise.resolve({ doctorId: doc1Id, appointmentId }) });
 
     expect(res.status).toBe(200);
@@ -193,6 +213,7 @@ describe('Phase 20: Doctor Appointment Confirmation & Detail Inspection Test Sui
   it('20.2 Doctor 1 confirms appointment and synchronizes slot status to BOOKED', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appointmentId}`, {
       method: 'PATCH',
+      headers: { authorization: `Bearer ${doc1Token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ status: 'CONFIRMED' }),
     });
 
@@ -208,13 +229,16 @@ describe('Phase 20: Doctor Appointment Confirmation & Detail Inspection Test Sui
 
   it('20.3 isolates doctor scope: Doctor 2 cannot view or modify Doctor 1 appointment', async () => {
     // Attempt GET by Doctor 2
-    const getReq = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/appointments/${appointmentId}`);
+    const getReq = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/appointments/${appointmentId}`, {
+      headers: { authorization: `Bearer ${doc2Token}` },
+    });
     const getRes = await doctorAppointmentGET(getReq, { params: Promise.resolve({ doctorId: doc2Id, appointmentId }) });
     expect(getRes.status).toBe(404);
 
     // Attempt PATCH by Doctor 2
     const patchReq = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/appointments/${appointmentId}`, {
       method: 'PATCH',
+      headers: { authorization: `Bearer ${doc2Token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ status: 'COMPLETED' }),
     });
     const patchRes = await doctorAppointmentPATCH(patchReq, { params: Promise.resolve({ doctorId: doc2Id, appointmentId }) });
@@ -224,6 +248,7 @@ describe('Phase 20: Doctor Appointment Confirmation & Detail Inspection Test Sui
   it('20.4 rejects invalid update request with unsupported status or empty body', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appointmentId}`, {
       method: 'PATCH',
+      headers: { authorization: `Bearer ${doc1Token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ status: 'INVALID_STATUS_ENUM' }),
     });
 

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET as chatsGET, POST as chatsPOST } from '@/app/api/doctorpatientrelations/[relationId]/chats/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
@@ -10,6 +11,8 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
   let patientUserId: string;
   let patientId: string;
   let relationId: string;
+  let docToken: string;
+  let patientToken: string;
 
   beforeAll(async () => {
     // 1. Create Doctor
@@ -89,26 +92,35 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
       },
     });
     relationId = relation.id;
+
+    docToken = await createToken({ id: docUserId, role: 'DOCTOR' });
+    patientToken = await createToken({ id: patientUserId, role: 'PATIENT' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.chatMessages.deleteMany({
-        where: { doctorPatientRelationId: relationId },
+      if (relationId) {
+        await prisma.chatMessages.deleteMany({
+          where: { doctorPatientRelationId: relationId },
+        });
+        await prisma.doctorPatientRelation.deleteMany({
+          where: { id: relationId },
+        });
+      }
+      if (docId) await prisma.doctor.deleteMany({ where: { id: docId } });
+      if (patientId) await prisma.patient.deleteMany({ where: { id: patientId } });
+      await prisma.user.deleteMany({
+        where: { id: { in: [docUserId, patientUserId].filter(Boolean) as string[] } },
       });
-      await prisma.doctorPatientRelation.deleteMany({
-        where: { id: relationId },
-      });
-      await prisma.doctor.deleteMany({ where: { id: docId } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [docUserId, patientUserId] } } });
     } catch (e) {
       console.warn('Phase 34 cleanup warning:', e);
     }
   });
 
   it('34.1 Returns 400 if relationId parameter is missing or empty', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations//chats');
+    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations//chats', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await chatsGET(req, { params: Promise.resolve({ relationId: '' }) });
     expect(res.status).toBe(400);
     const data = await res.json();
@@ -117,7 +129,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
 
   it('34.2 Returns 400 for invalid page or limit query parameters', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=abc&limit=-1`
+      `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=abc&limit=-1`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const res = await chatsGET(req, { params: Promise.resolve({ relationId }) });
     expect(res.status).toBe(400);
@@ -127,7 +142,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
 
   it('34.3 Returns 400 if limit exceeds maximum threshold (100)', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=150`
+      `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=150`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const res = await chatsGET(req, { params: Promise.resolve({ relationId }) });
     expect(res.status).toBe(400);
@@ -136,7 +154,9 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
   });
 
   it('34.4 Returns 404 when querying chats for non-existent relationId', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/non_existent_relation/chats');
+    const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/non_existent_relation/chats', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await chatsGET(req, { params: Promise.resolve({ relationId: 'non_existent_relation' }) });
     expect(res.status).toBe(404);
     const data = await res.json();
@@ -144,7 +164,9 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
   });
 
   it('34.5 GET returns empty chat list with pagination metadata when no messages exist', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=20`);
+    const req = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=20`, {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await chatsGET(req, { params: Promise.resolve({ relationId }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -161,6 +183,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
       `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats`,
       {
         method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${patientToken}`,
+        },
         body: JSON.stringify({
           text: 'Hello Doctor, I have a question about my medication.',
           senderId: patientUserId,
@@ -177,6 +203,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
       `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats`,
       {
         method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${docToken}`,
+        },
         body: JSON.stringify({
           text: 'Sure, please let me know what dosage you are taking.',
           senderId: docUserId,
@@ -195,6 +225,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
       `http://localhost:3000/api/doctorpatientrelations/${relationId}/chats`,
       {
         method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${patientToken}`,
+        },
         body: JSON.stringify({
           text: '   ',
           senderId: patientUserId,
@@ -212,6 +246,10 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
       'http://localhost:3000/api/doctorpatientrelations/non_existent_rel/chats',
       {
         method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${patientToken}`,
+        },
         body: JSON.stringify({
           text: 'Hello',
           senderId: patientUserId,
@@ -225,7 +263,9 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
   });
 
   it('34.9 GET returns paginated messages with chronological ordering and pagination controls', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=1`);
+    const req = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=1&limit=1&order=asc`, {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await chatsGET(req, { params: Promise.resolve({ relationId }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -240,7 +280,9 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
     expect(data.pagination.hasPreviousPage).toBe(false);
 
     // Page 2
-    const reqPage2 = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=2&limit=1`);
+    const reqPage2 = new NextRequest(`http://localhost:3000/api/doctorpatientrelations/${relationId}/chats?page=2&limit=1&order=asc`, {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const resPage2 = await chatsGET(reqPage2, { params: Promise.resolve({ relationId }) });
     expect(resPage2.status).toBe(200);
     const dataPage2 = await resPage2.json();

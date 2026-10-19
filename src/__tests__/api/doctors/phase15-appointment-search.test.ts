@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { GET as slotsGET } from '@/app/api/doctors/[doctorId]/slots/route';
 import { GET as patientAppointmentsGET } from '@/app/api/patients/[patientId]/appointments/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', () => {
@@ -10,6 +11,7 @@ describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', (
   let doctorId: string;
   let patientUserId: string;
   let patientId: string;
+  let patientToken: string;
 
   const testFutureDate = '2028-11-20'; // Future date for availability test
   const testPastDate = '2020-01-10'; // Past date
@@ -86,6 +88,7 @@ describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', (
       },
     });
     patientId = pat.id;
+    patientToken = await createToken({ id: patientUserId, role: 'PATIENT' });
 
     // 3. Create discrete slots on testFutureDate with different appointment statuses:
     // Slot 1: AVAILABLE
@@ -146,11 +149,18 @@ describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', (
 
   afterAll(async () => {
     try {
-      await prisma.appointment.deleteMany({ where: { doctorId } });
-      await prisma.slot.deleteMany({ where: { doctorId } });
-      await prisma.doctor.deleteMany({ where: { id: doctorId } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [doctorUserId, patientUserId] } } });
+      if (doctorId) {
+        await prisma.appointment.deleteMany({ where: { doctorId } });
+        await prisma.slot.deleteMany({ where: { doctorId } });
+        await prisma.doctor.deleteMany({ where: { id: doctorId } });
+      }
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      const userIds = [doctorUserId, patientUserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 15 cleanup warning:', e);
     }
@@ -186,7 +196,10 @@ describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', (
 
   it('15.3 filters patient appointments by status, specialty, and doctor name', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/patients/${patientId}/appointments?status=CONFIRMED&specialty=PEDIATRICIAN&doctorName=Availability`
+      `http://localhost:3000/api/patients/${patientId}/appointments?status=CONFIRMED&specialty=PEDIATRICIAN&doctorName=Availability`,
+      {
+        headers: { authorization: `Bearer ${patientToken}` },
+      }
     );
     const res = await patientAppointmentsGET(req, { params: Promise.resolve({ patientId }) });
 
@@ -200,7 +213,9 @@ describe('Phase 15: Appointment & Slot Availability Search Engine Test Suite', (
   });
 
   it('15.4 returns empty array when patient search criteria yield no matches', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/patients/${patientId}/appointments?status=CANCELLED`);
+    const req = new NextRequest(`http://localhost:3000/api/patients/${patientId}/appointments?status=CANCELLED`, {
+      headers: { authorization: `Bearer ${patientToken}` },
+    });
     const res = await patientAppointmentsGET(req, { params: Promise.resolve({ patientId }) });
 
     expect(res.status).toBe(200);

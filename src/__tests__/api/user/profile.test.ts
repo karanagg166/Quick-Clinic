@@ -6,11 +6,23 @@ import { createAuthHeaders } from "@/__tests__/helpers/factories";
 import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
 
 let user: Awaited<ReturnType<typeof createTestUser>>;
-beforeEach(async () => { user = await createTestUser(); });
-afterEach(async () => { if (user) await cleanupTestUsers([user.id]); });
+let adminUser: Awaited<ReturnType<typeof createTestUser>>;
+let otherUser: Awaited<ReturnType<typeof createTestUser>>;
+
+beforeEach(async () => {
+  user = await createTestUser();
+  adminUser = await createTestUser({ role: 'ADMIN' });
+  otherUser = await createTestUser();
+});
+afterEach(async () => {
+  await cleanupTestUsers([user?.id, adminUser?.id, otherUser?.id].filter(Boolean) as string[]);
+});
 
 test("GET /api/user/[userId] - returns 404 for invalid user ID", async () => {
-  const req = new NextRequest("http://localhost:3000/api/user/invalid_user_id_123");
+  const adminHeaders = await createAuthHeaders({ id: adminUser.id, role: adminUser.role });
+  const req = new NextRequest("http://localhost:3000/api/user/invalid_user_id_123", {
+    headers: adminHeaders,
+  });
   const res = await profileGET(req, {
     params: Promise.resolve({ userId: "invalid_user_id_123" }),
   });
@@ -21,24 +33,25 @@ test("GET /api/user/[userId] - returns 404 for invalid user ID", async () => {
 });
 
 test("GET /api/user/[userId] - returns user details for valid user", async () => {
-
-  const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}`);
+  const authHeaders = await createAuthHeaders({ id: user.id, role: user.role });
+  const req = new NextRequest(`http://localhost:3000/api/user/${user.id}`, {
+    headers: authHeaders,
+  });
   const res = await profileGET(req, {
-    params: Promise.resolve({ userId: user!.id }),
+    params: Promise.resolve({ userId: user.id }),
   });
   expect(res.status).toBe(200);
 
   const data = await res.json();
-  expect(data.id).toBe(user!.id);
-  expect(data.email).toBe(user!.email);
-  expect(data.name).toBe(user!.name);
+  expect(data.id).toBe(user.id);
+  expect(data.email).toBe(user.email);
+  expect(data.name).toBe(user.name);
 });
 
 test("PATCH /api/user/[userId] - updates user profile fields successfully", async () => {
+  const authHeaders = await createAuthHeaders({ id: user.id, role: user.role });
 
-  const authHeaders = await createAuthHeaders({ id: user!.id, role: user!.role });
-
-  const req = new NextRequest(`http://localhost:3000/api/user/${user!.id}`, {
+  const req = new NextRequest(`http://localhost:3000/api/user/${user.id}`, {
     method: "PATCH",
     headers: authHeaders,
     body: JSON.stringify({
@@ -48,14 +61,13 @@ test("PATCH /api/user/[userId] - updates user profile fields successfully", asyn
   });
 
   const res = await profilePATCH(req, {
-    params: Promise.resolve({ userId: user!.id }),
+    params: Promise.resolve({ userId: user.id }),
   });
   expect(res.status).toBe(200);
 
   const data = await res.json();
   expect(data.address).toBe("Updated Test Address 123");
   expect(data.age).toBe(23);
-
 });
 
 test("PATCH /api/user/[userId] - rejects unauthenticated and other-user updates", async () => {
@@ -63,7 +75,8 @@ test("PATCH /api/user/[userId] - rejects unauthenticated and other-user updates"
   const params = { params: Promise.resolve({ userId: user.id }) };
   const unauthorized = await profilePATCH(new NextRequest(url, { method: "PATCH", body: JSON.stringify({ age: 40 }) }), params);
   expect(unauthorized.status).toBe(401);
-  const headers = await createAuthHeaders({ id: "different_test_user", role: "PATIENT" });
+
+  const headers = await createAuthHeaders({ id: otherUser.id, role: otherUser.role });
   const forbidden = await profilePATCH(new NextRequest(url, { method: "PATCH", headers, body: JSON.stringify({ age: 40 }) }), params);
   expect(forbidden.status).toBe(403);
 });

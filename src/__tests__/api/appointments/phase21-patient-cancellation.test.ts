@@ -6,6 +6,7 @@ import {
 } from '@/app/api/patients/[patientId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { createToken } from '@/lib/auth';
 
 describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
   let docUserId: string;
@@ -13,9 +14,11 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
 
   let patient1UserId: string;
   let patient1Id: string;
+  let patient1Token: string;
 
   let patient2UserId: string;
   let patient2Id: string;
+  let patient2Token: string;
 
   let apptPendingId: string;
   let slotPendingId: string;
@@ -217,31 +220,48 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
       },
     });
     apptCompletedId = appt3.id;
+
+    patient1Token = await createToken({ id: patient1UserId, role: 'PATIENT' });
+    patient2Token = await createToken({ id: patient2UserId, role: 'PATIENT' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.chatMessages.deleteMany({
-        where: {
-          doctorPatientRelation: {
+      const userIds = [docUserId, patient1UserId, patient2UserId].filter(Boolean) as string[];
+      const patientIds = [patient1Id, patient2Id].filter(Boolean) as string[];
+      if (docUserId) {
+        await prisma.chatMessages.deleteMany({
+          where: {
+            doctorPatientRelation: {
+              doctorsUserId: docUserId,
+            },
+          },
+        });
+        await prisma.doctorPatientRelation.deleteMany({
+          where: {
             doctorsUserId: docUserId,
           },
-        },
-      });
-      await prisma.doctorPatientRelation.deleteMany({
-        where: {
-          doctorsUserId: docUserId,
-        },
-      });
-      await prisma.notification.deleteMany({
-        where: { userId: { in: [docUserId, patient1UserId, patient2UserId] } },
-      });
-      await prisma.appointment.deleteMany({ where: { doctorId: docId } });
-      await prisma.payment.deleteMany({ where: { id: paymentId } });
-      await prisma.slot.deleteMany({ where: { doctorId: docId } });
-      await prisma.doctor.deleteMany({ where: { id: docId } });
-      await prisma.patient.deleteMany({ where: { id: { in: [patient1Id, patient2Id] } } });
-      await prisma.user.deleteMany({ where: { id: { in: [docUserId, patient1UserId, patient2UserId] } } });
+        });
+      }
+      if (userIds.length > 0) {
+        await prisma.notification.deleteMany({
+          where: { userId: { in: userIds } },
+        });
+      }
+      if (docId) {
+        await prisma.appointment.deleteMany({ where: { doctorId: docId } });
+        await prisma.slot.deleteMany({ where: { doctorId: docId } });
+        await prisma.doctor.deleteMany({ where: { id: docId } });
+      }
+      if (paymentId) {
+        await prisma.payment.deleteMany({ where: { id: paymentId } });
+      }
+      if (patientIds.length > 0) {
+        await prisma.patient.deleteMany({ where: { id: { in: patientIds } } });
+      }
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 21 cleanup warning:', e);
     }
@@ -250,7 +270,10 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
   it('21.1 Patient 1 successfully cancels a PENDING appointment', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/patients/${patient1Id}/appointments/${apptPendingId}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res = await patientAppointmentPATCH(req, {
       params: Promise.resolve({ patientId: patient1Id, appointmentId: apptPendingId }),
@@ -276,7 +299,10 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
   it('21.2 Patient 1 cancels an ONLINE-paid CONFIRMED appointment and triggers refund handling', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/patients/${patient1Id}/appointments/${apptOnlineId}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res = await patientAppointmentPATCH(req, {
       params: Promise.resolve({ patientId: patient1Id, appointmentId: apptOnlineId }),
@@ -297,7 +323,10 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
     // Attempt to cancel already cancelled appointment
     const req1 = new NextRequest(
       `http://localhost:3000/api/patients/${patient1Id}/appointments/${apptPendingId}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res1 = await patientAppointmentPATCH(req1, {
       params: Promise.resolve({ patientId: patient1Id, appointmentId: apptPendingId }),
@@ -309,7 +338,10 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
     // Attempt to cancel COMPLETED appointment
     const req2 = new NextRequest(
       `http://localhost:3000/api/patients/${patient1Id}/appointments/${apptCompletedId}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${patient1Token}` },
+      }
     );
     const res2 = await patientAppointmentPATCH(req2, {
       params: Promise.resolve({ patientId: patient1Id, appointmentId: apptCompletedId }),
@@ -322,7 +354,10 @@ describe('Phase 21: Appointment Cancellation by Patient Test Suite', () => {
   it('21.4 IDOR Protection: Patient 2 cannot cancel Patient 1 appointment', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/patients/${patient2Id}/appointments/${apptPendingId}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${patient2Token}` },
+      }
     );
     const res = await patientAppointmentPATCH(req, {
       params: Promise.resolve({ patientId: patient2Id, appointmentId: apptPendingId }),

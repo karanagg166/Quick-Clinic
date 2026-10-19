@@ -2,9 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: 'DOCTOR',
+        isActive: true,
+        email: 'doc@quickclinic.test',
+        name: 'Dr. Test',
+      })),
+    },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -15,12 +25,16 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Phase 76: Doctor Withdrawals History & Data Isolation Test Suite', () => {
-  beforeEach(() => {
+  let docToken: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    docToken = await createToken({ id: 'user_doc_1', role: 'DOCTOR' });
   });
 
   it('76.1 Returns withdrawal records with amount in rupees and masked bank info', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      userId: 'user_doc_1',
       user: {
         bankAccounts: [
           {
@@ -56,7 +70,9 @@ describe('Phase 76: Doctor Withdrawals History & Data Isolation Test Suite', () 
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/withdrawals', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 
@@ -71,11 +87,14 @@ describe('Phase 76: Doctor Withdrawals History & Data Isolation Test Suite', () 
 
   it('76.2 Returns empty array when doctor has no previous withdrawal requests', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
+      userId: 'user_doc_1',
       user: { bankAccounts: [] },
     } as any);
     vi.mocked(prisma.withdrawal.findMany).mockResolvedValueOnce([]);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_new/withdrawals');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_new/withdrawals', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_new' }) });
     expect(res.status).toBe(200);
 

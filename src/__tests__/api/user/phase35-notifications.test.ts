@@ -6,11 +6,16 @@ import {
   DELETE as notificationDELETE,
 } from '@/app/api/user/[userId]/notification/[id]/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite', () => {
   let user1Id: string;
+  let user1Token: string;
   let user2Id: string;
+  let user2Token: string;
+  let user3Id: string;
+  let user3Token: string;
   let notif1Id: string;
   let notif2Id: string;
   let notifUser2Id: string;
@@ -41,6 +46,7 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
       },
     });
     user1Id = u1.id;
+    user1Token = await createToken({ id: user1Id, role: 'PATIENT' });
 
     // 2. Create User 2
     const u2Payload = buildUserPayload({
@@ -67,8 +73,36 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
       },
     });
     user2Id = u2.id;
+    user2Token = await createToken({ id: user2Id, role: 'PATIENT' });
 
-    // 3. Create sample notifications for User 1
+    // 3. Create User 3 (no notifications)
+    const u3Payload = buildUserPayload({
+      name: 'Notification User Three',
+      email: `notif_u3_${Date.now()}@quickclinic.test`,
+      role: 'PATIENT',
+    });
+    const u3 = await prisma.user.create({
+      data: {
+        name: u3Payload.name,
+        email: u3Payload.email,
+        phoneNo: u3Payload.phoneNo,
+        password: u3Payload.password,
+        age: 22,
+        address: u3Payload.address,
+        role: 'PATIENT',
+        gender: 'MALE',
+        location: {
+          connectOrCreate: {
+            where: { pincode: 121004 },
+            create: { pincode: 121004, city: 'Faridabad', state: 'Haryana' },
+          },
+        },
+      },
+    });
+    user3Id = u3.id;
+    user3Token = await createToken({ id: user3Id, role: 'PATIENT' });
+
+    // 4. Create sample notifications for User 1
     const n1 = await prisma.notification.create({
       data: {
         userId: user1Id,
@@ -93,7 +127,7 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
     });
     notif2Id = n2.id;
 
-    // 4. Create sample notification for User 2
+    // 5. Create sample notification for User 2
     const n3 = await prisma.notification.create({
       data: {
         userId: user2Id,
@@ -107,19 +141,24 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
 
   afterAll(async () => {
     try {
-      await prisma.notification.deleteMany({
-        where: { userId: { in: [user1Id, user2Id] } },
-      });
-      await prisma.user.deleteMany({
-        where: { id: { in: [user1Id, user2Id] } },
-      });
+      const userIds = [user1Id, user2Id, user3Id].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.notification.deleteMany({
+          where: { userId: { in: userIds } },
+        });
+        await prisma.user.deleteMany({
+          where: { id: { in: userIds } },
+        });
+      }
     } catch (e) {
       console.warn('Phase 35 cleanup warning:', e);
     }
   });
 
   it('35.1 GET returns all notifications for User 1 ordered by newest first', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/user/${user1Id}/notification`);
+    const req = new NextRequest(`http://localhost:3000/api/user/${user1Id}/notification`, {
+      headers: { authorization: `Bearer ${user1Token}` },
+    });
     const res = await notificationsGET(req, { params: Promise.resolve({ userId: user1Id }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -133,8 +172,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   });
 
   it('35.2 GET returns empty list for user with no notifications', async () => {
-    const req = new NextRequest('http://localhost:3000/api/user/non_existent_user_id/notification');
-    const res = await notificationsGET(req, { params: Promise.resolve({ userId: 'non_existent_user_id' }) });
+    const req = new NextRequest(`http://localhost:3000/api/user/${user3Id}/notification`, {
+      headers: { authorization: `Bearer ${user3Token}` },
+    });
+    const res = await notificationsGET(req, { params: Promise.resolve({ userId: user3Id }) });
     expect(res.status).toBe(200);
     const data = await res.json();
     expect(data).toEqual([]);
@@ -143,7 +184,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   it('35.3 PATCH updates notification status to READ and isRead=true', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/user/${user1Id}/notification/${notif1Id}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${user1Token}` },
+      }
     );
     const res = await notificationPATCH(req, {
       params: Promise.resolve({ userId: user1Id, id: notif1Id }),
@@ -165,7 +209,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   it('35.4 Isolation: User 1 cannot mark User 2 notification as read (403 Forbidden)', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/user/${user1Id}/notification/${notifUser2Id}`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${user1Token}` },
+      }
     );
     const res = await notificationPATCH(req, {
       params: Promise.resolve({ userId: user1Id, id: notifUser2Id }),
@@ -182,7 +229,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   it('35.5 Isolation: User 1 cannot delete User 2 notification (403 Forbidden)', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/user/${user1Id}/notification/${notifUser2Id}`,
-      { method: 'DELETE' }
+      {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${user1Token}` },
+      }
     );
     const res = await notificationDELETE(req, {
       params: Promise.resolve({ userId: user1Id, id: notifUser2Id }),
@@ -197,7 +247,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   it('35.6 DELETE removes notification from database when authorized', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/user/${user1Id}/notification/${notif2Id}`,
-      { method: 'DELETE' }
+      {
+        method: 'DELETE',
+        headers: { authorization: `Bearer ${user1Token}` },
+      }
     );
     const res = await notificationDELETE(req, {
       params: Promise.resolve({ userId: user1Id, id: notif2Id }),
@@ -214,7 +267,10 @@ describe('Phase 35: User Notifications Lifecycle & Access Isolation Test Suite',
   it('35.7 PATCH returns 403 when updating non-existent notification ID', async () => {
     const req = new NextRequest(
       `http://localhost:3000/api/user/${user1Id}/notification/non_existent_notif`,
-      { method: 'PATCH' }
+      {
+        method: 'PATCH',
+        headers: { authorization: `Bearer ${user1Token}` },
+      }
     );
     const res = await notificationPATCH(req, {
       params: Promise.resolve({ userId: user1Id, id: 'non_existent_notif' }),

@@ -40,6 +40,15 @@ vi.mock('@/lib/prisma', () => {
       findUnique: vi.fn().mockResolvedValue({ id: 'rel_1' }),
       create: vi.fn().mockResolvedValue({ id: 'rel_1' }),
     },
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: where.id?.includes('doc') ? 'DOCTOR' : 'PATIENT',
+        isActive: true,
+        email: 'user@quickclinic.test',
+        name: 'Test User',
+      })),
+    },
     chatMessages: {
       create: vi.fn(),
     },

@@ -2,11 +2,13 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as schedulePOST, GET as scheduleGET } from '@/app/api/doctors/[doctorId]/schedule/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () => {
   let doctorUserId: string;
   let doctorId: string;
+  let doctorToken: string;
 
   beforeAll(async () => {
     const userPayload = buildUserPayload({
@@ -44,13 +46,18 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
       },
     });
     doctorId = doc.id;
+    doctorToken = await createToken({ id: doctorUserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.schedule.deleteMany({ where: { doctorId } });
-      await prisma.doctor.deleteMany({ where: { id: doctorId } });
-      await prisma.user.deleteMany({ where: { id: doctorUserId } });
+      if (doctorId) {
+        await prisma.schedule.deleteMany({ where: { doctorId } });
+        await prisma.doctor.deleteMany({ where: { id: doctorId } });
+      }
+      if (doctorUserId) {
+        await prisma.user.deleteMany({ where: { id: doctorUserId } });
+      }
     } catch (e) {
       console.warn('Phase 12 cleanup warning:', e);
     }
@@ -80,6 +87,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ weeklySchedule }),
     });
 
@@ -118,6 +129,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ weeklySchedule: overlappingSchedule }),
     });
 
@@ -137,6 +152,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ weeklySchedule: invertedSchedule }),
     });
 
@@ -156,6 +175,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ weeklySchedule: malformedSchedule }),
     });
 
@@ -168,6 +191,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
   it('12.6 rejects request when weeklySchedule is missing or invalid structure', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({}),
     });
 
@@ -187,6 +214,10 @@ describe('Phase 12: Doctor Schedule Configuration & Validation Test Suite', () =
 
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/schedule`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({ weeklySchedule: updatedSchedule }),
     });
 

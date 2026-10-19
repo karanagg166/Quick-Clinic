@@ -2,9 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST, GET } from '@/app/api/doctors/[doctorId]/schedule/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: 'DOCTOR',
+        isActive: true,
+        email: 'doc@quickclinic.test',
+        name: 'Dr. Test',
+      })),
+    },
     doctor: {
       findUnique: vi.fn().mockResolvedValue({ id: 'doc_1', userId: 'user_1' }),
     },
@@ -16,13 +26,17 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Doctor Schedule Route', () => {
-  beforeEach(() => {
+  let docToken: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    docToken = await createToken({ id: 'user_1', role: 'DOCTOR' });
   });
 
   it('POST rejects when weeklySchedule is missing', async () => {
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/schedule', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({}),
     });
 
@@ -49,6 +63,7 @@ describe('Doctor Schedule Route', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/schedule', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ weeklySchedule: mockSchedule }),
     });
 
@@ -71,6 +86,7 @@ describe('Doctor Schedule Route', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/schedule', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ weeklySchedule: overlappingSchedule }),
     });
 
@@ -91,6 +107,7 @@ describe('Doctor Schedule Route', () => {
 
     const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/schedule', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ weeklySchedule: invalidSchedule }),
     });
 

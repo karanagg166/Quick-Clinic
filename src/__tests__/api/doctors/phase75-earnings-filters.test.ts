@@ -2,9 +2,19 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET } from '@/app/api/doctors/[doctorId]/earnings/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: 'DOCTOR',
+        isActive: true,
+        email: 'doc@quickclinic.test',
+        name: 'Dr. Test',
+      })),
+    },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -15,13 +25,17 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
-  beforeEach(() => {
+  let docToken: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    docToken = await createToken({ id: 'user_doc_1', role: 'DOCTOR' });
   });
 
   it('75.1 Calculates total earnings accurately across multiple completed appointments', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
       fees: 750,
+      userId: 'user_doc_1',
     } as any);
 
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
@@ -43,7 +57,9 @@ describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 
@@ -57,6 +73,7 @@ describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
   it('75.2 Filters earnings by custom date range (startDate & endDate)', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
       fees: 600,
+      userId: 'user_doc_1',
     } as any);
 
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([
@@ -70,7 +87,9 @@ describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
       },
     ] as any);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings?startDate=2026-10-10&endDate=2026-10-20');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings?startDate=2026-10-10&endDate=2026-10-20', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 
@@ -97,11 +116,14 @@ describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
   it('75.3 Returns total: 0 and count: 0 when doctor has no completed appointments', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce({
       fees: 500,
+      userId: 'user_doc_1',
     } as any);
 
     vi.mocked(prisma.appointment.findMany).mockResolvedValueOnce([]);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/earnings', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(200);
 
@@ -114,7 +136,9 @@ describe('Phase 75: Doctor Earnings Filtering & Calculation Test Suite', () => {
   it('75.4 Returns 404 when doctor does not exist', async () => {
     vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(null);
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_missing/earnings');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_missing/earnings', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await GET(req, { params: Promise.resolve({ doctorId: 'doc_missing' }) });
     expect(res.status).toBe(404);
   });

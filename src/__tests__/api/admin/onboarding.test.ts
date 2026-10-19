@@ -1,8 +1,24 @@
-import { test, expect } from "vitest";
+import { test, expect, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { POST as onboardingPOST } from "@/app/api/admin/onboarding/route";
 import { createToken } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+let adminUser: Awaited<ReturnType<typeof createTestUser>>;
+let adminToken: string;
+
+beforeAll(async () => {
+  adminUser = await createTestUser({ role: "ADMIN" });
+  adminToken = await createToken({
+    id: adminUser.id,
+    email: adminUser.email,
+    role: "ADMIN",
+  });
+});
+
+afterAll(async () => {
+  if (adminUser) await cleanupTestUsers([adminUser.id]);
+});
 
 test("POST /api/admin/onboarding - returns 401 Unauthorized without admin token", async () => {
   const req = new NextRequest("http://localhost:3000/api/admin/onboarding", {
@@ -14,12 +30,6 @@ test("POST /api/admin/onboarding - returns 401 Unauthorized without admin token"
 });
 
 test("POST /api/admin/onboarding - returns 403 when onboarding another user id", async () => {
-  const adminToken = await createToken({
-    id: "admin_id_1",
-    email: "admin@quickclinic.com",
-    role: "ADMIN",
-  });
-
   const req = new NextRequest("http://localhost:3000/api/admin/onboarding", {
     method: "POST",
     headers: {
@@ -32,19 +42,13 @@ test("POST /api/admin/onboarding - returns 403 when onboarding another user id",
 });
 
 test("POST /api/admin/onboarding - rejects invalid secret code", async () => {
-  const adminToken = await createToken({
-    id: "admin_test_id",
-    email: "admin@quickclinic.com",
-    role: "ADMIN",
-  });
-
   const req = new NextRequest("http://localhost:3000/api/admin/onboarding", {
     method: "POST",
     headers: {
       cookie: `token=${adminToken}; role=ADMIN`,
     },
     body: JSON.stringify({
-      userId: "admin_test_id",
+      userId: adminUser.id,
       secretCode: "WRONG_SECRET_CODE",
       name: "Admin Tester",
       phoneNo: "1234567890",

@@ -5,11 +5,13 @@ import {
   POST as withdrawalsPOST,
 } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 45: Patient Withdrawal & Refund Boundary Test Suite', () => {
   let patientUserId: string;
   let patientId: string;
+  let patientToken: string;
 
   beforeAll(async () => {
     const patPayload = buildUserPayload({
@@ -41,12 +43,18 @@ describe('Phase 45: Patient Withdrawal & Refund Boundary Test Suite', () => {
       data: { userId: patUser.id },
     });
     patientId = p.id;
+
+    patientToken = await createToken({ id: patientUserId, role: 'PATIENT' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: patientUserId } });
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      if (patientUserId) {
+        await prisma.user.deleteMany({ where: { id: patientUserId } });
+      }
     } catch (e) {
       console.warn('Phase 45 cleanup warning:', e);
     }
@@ -61,6 +69,10 @@ describe('Phase 45: Patient Withdrawal & Refund Boundary Test Suite', () => {
   it('45.2 Calling POST /api/doctors/[doctorId]/withdrawals with a patientId returns 404', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${patientId}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${patientToken}`,
+      },
       body: JSON.stringify({ amount: 500 }),
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: patientId }) });
@@ -70,7 +82,11 @@ describe('Phase 45: Patient Withdrawal & Refund Boundary Test Suite', () => {
   });
 
   it('45.3 Calling GET /api/doctors/[doctorId]/withdrawals with a patientId returns 404', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${patientId}/withdrawals`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${patientId}/withdrawals`, {
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+      },
+    });
     const res = await withdrawalsGET(req, { params: Promise.resolve({ doctorId: patientId }) });
     expect(res.status).toBe(404);
     const data = await res.json();
@@ -78,7 +94,11 @@ describe('Phase 45: Patient Withdrawal & Refund Boundary Test Suite', () => {
   });
 
   it('45.4 Calling withdrawals API with patient userId returns 404', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${patientUserId}/withdrawals`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${patientUserId}/withdrawals`, {
+      headers: {
+        authorization: `Bearer ${patientToken}`,
+      },
+    });
     const res = await withdrawalsGET(req, { params: Promise.resolve({ doctorId: patientUserId }) });
     expect(res.status).toBe(404);
   });

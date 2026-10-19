@@ -35,9 +35,9 @@ describe('Phase 63: Doctor Schedule, Slots & Availability Search Integration Tes
         {
           id: 'slot_1',
           doctorId: 'doc_1',
-          date: new Date('2026-10-12T00:00:00.000Z'), // Monday
-          startTime: new Date('2026-10-12T09:00:00.000Z'),
-          endTime: new Date('2026-10-12T09:10:00.000Z'),
+          date: new Date('2028-10-16T00:00:00.000Z'), // Monday
+          startTime: new Date('2028-10-16T09:00:00.000Z'),
+          endTime: new Date('2028-10-16T09:10:00.000Z'),
           status: 'AVAILABLE',
           appointment: null,
         },
@@ -56,7 +56,7 @@ describe('Phase 63: Doctor Schedule, Slots & Availability Search Integration Tes
     vi.mocked(prisma.leave.findMany).mockResolvedValueOnce([]); // No leave
     vi.mocked(prisma.slot.createMany).mockResolvedValueOnce({ count: 6 });
 
-    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots?date=2026-10-12');
+    const req = new NextRequest('http://localhost:3000/api/doctors/doc_1/slots?date=2028-10-16');
     const res = await getSlotsGET(req, { params: Promise.resolve({ doctorId: 'doc_1' }) });
     expect(res.status).toBe(201);
 
