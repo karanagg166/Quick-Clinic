@@ -8,6 +8,7 @@ function createTestToken(payload: Record<string, any>, secret = TEST_SECRET) {
   const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
   const fullPayload = {
     exp: Math.floor(Date.now() / 1000) + 3600,
+    aud: "quick-clinic-socket",
     ...payload,
   };
   const body = Buffer.from(JSON.stringify(fullPayload)).toString("base64url");

@@ -297,8 +297,12 @@ model Notification {
   isRead      Boolean   @default(false)
   status      String    @default("UNREAD")
   readAt      DateTime?
+  eventId     String?
 
   createdAt DateTime @default(now())
+
+  @@unique([userId, eventId])
+  @@index([userId])
 }
 
 // ======================================================
@@ -407,9 +411,10 @@ model ChatMessages {
   doctorPatientRelationId String
   doctorPatientRelation   DoctorPatientRelation @relation(fields: [doctorPatientRelationId], references: [id], onDelete: Cascade)
 
-  text     String
-  senderId String
-  sender   User   @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  text            String
+  senderId        String
+  sender          User    @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  clientMessageId String? @unique
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -1,5 +1,7 @@
 import {
   AuthenticatedUser,
+  TOKEN_AUDIENCE,
+  VerifyTokenOptions,
   createToken,
   extractTokenFromRequest,
   getAuthenticatedUserFromToken,
@@ -8,8 +10,8 @@ import {
   verifyToken,
 } from "./auth-token";
 
-export type { AuthenticatedUser };
-export { createToken, extractTokenFromRequest, getAuthenticatedUserFromToken, getSecretKey, getUserId, verifyToken };
+export type { AuthenticatedUser, VerifyTokenOptions };
+export { TOKEN_AUDIENCE, createToken, extractTokenFromRequest, getAuthenticatedUserFromToken, getSecretKey, getUserId, verifyToken };
 
 export interface GetAuthenticatedUserOptions {
   verifyDb?: boolean;

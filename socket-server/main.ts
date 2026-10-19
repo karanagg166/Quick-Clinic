@@ -101,13 +101,23 @@ app.use(
 
 app.use(express.json({ limit: '1mb' }));
 
+const gitRevision =
+  process.env.RENDER_GIT_COMMIT ||
+  process.env.GIT_COMMIT ||
+  process.env.COMMIT_SHA ||
+  'development';
+
 // Root & Health check endpoints
 app.get('/', (req: express.Request, res: express.Response) => {
   res.json({ status: 'ok', service: 'quick-clinic-socket-server' });
 });
 
 app.get('/health', (req: express.Request, res: express.Response) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    gitCommit: gitRevision,
+  });
 });
 
 // Internal server-to-server publishing authentication middleware
@@ -194,56 +204,130 @@ app.post('/api/notifications/new-appointment', requireInternalAuth, (req: expres
   return res.json({ success: true });
 });
 
-// API endpoint to send appointment status update
+// API endpoint to send appointment status update (replay-safe)
 app.post('/api/notifications/appointment-status', requireInternalAuth, async (req: express.Request, res: express.Response) => {
   try {
     const { patientUserId, appointmentId, status, appointmentDate, appointmentTime, doctorName, notification } = req.body;
 
-    if (!patientUserId || !appointmentId || !status) {
-      return res.status(400).json({ error: 'patientUserId, appointmentId, and status are required' });
+    if (!patientUserId || typeof patientUserId !== 'string' || !appointmentId || typeof appointmentId !== 'string' || !status || typeof status !== 'string') {
+      return res.status(400).json({ error: 'patientUserId, appointmentId, and status are required strings' });
+    }
+
+    // Authoritative verification against database
+    const appointment = await prisma.appointment.findUnique({
+      where: { id: appointmentId },
+      include: {
+        patient: { include: { user: true } },
+        doctor: { include: { user: true } },
+      },
+    });
+
+    if (!appointment) {
+      return res.status(404).json({ error: 'Appointment not found' });
+    }
+
+    if (appointment.patient?.user?.id !== patientUserId) {
+      return res.status(400).json({ error: 'Mismatched appointment or recipient' });
     }
 
     let canonicalNotification = notification;
 
-    // If caller didn't provide pre-persisted notification, create it once safely
+    // Stable business event identity surviving retries: apt:<appointmentId>:<status>
+    const eventId = `apt:${appointmentId}:${status}`;
+
+    // If caller didn't provide pre-persisted notification, create/reuse replay-safe canonical notification
     if (!canonicalNotification || !canonicalNotification.id) {
-      const statusMessages: Record<string, string> = {
-        CONFIRMED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been confirmed`,
-        CANCELLED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been cancelled`,
-        COMPLETED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been marked as completed`,
-        RESCHEDULED: `Your appointment with Dr. ${doctorName || 'Doctor'} has been rescheduled`,
-      };
-
-      const message = statusMessages[status] || `Your appointment status has been updated to ${status}`;
-
-      const created = await prisma.notification.create({
-        data: {
-          userId: patientUserId,
-          message,
-          isRead: false,
-          status: 'UNREAD',
+      const existing = await prisma.notification.findUnique({
+        where: {
+          userId_eventId: {
+            userId: patientUserId,
+            eventId,
+          },
         },
       });
 
-      canonicalNotification = {
-        id: created.id,
-        message: created.message,
-        createdAt: created.createdAt.toISOString(),
-        isRead: created.isRead,
-      };
+      if (existing) {
+        canonicalNotification = {
+          id: existing.id,
+          message: existing.message,
+          actionHref: existing.actionHref,
+          actionLabel: existing.actionLabel,
+          createdAt: existing.createdAt.toISOString(),
+          isRead: existing.isRead,
+        };
+      } else {
+        const statusMessages: Record<string, string> = {
+          CONFIRMED: `Your appointment with Dr. ${doctorName || appointment.doctor?.user?.name || 'Doctor'} has been confirmed`,
+          CANCELLED: `Your appointment with Dr. ${doctorName || appointment.doctor?.user?.name || 'Doctor'} has been cancelled`,
+          COMPLETED: `Your appointment with Dr. ${doctorName || appointment.doctor?.user?.name || 'Doctor'} has been marked as completed`,
+          RESCHEDULED: `Your appointment with Dr. ${doctorName || appointment.doctor?.user?.name || 'Doctor'} has been rescheduled`,
+        };
+
+        const message = statusMessages[status] || `Your appointment status has been updated to ${status}`;
+
+        try {
+          const created = await prisma.notification.create({
+            data: {
+              userId: patientUserId,
+              message,
+              eventId,
+              actionHref: `/patient/appointments/${appointmentId}`,
+              actionLabel: 'View appointment',
+              isRead: false,
+              status: 'UNREAD',
+            },
+          });
+
+          canonicalNotification = {
+            id: created.id,
+            message: created.message,
+            actionHref: created.actionHref,
+            actionLabel: created.actionLabel,
+            createdAt: created.createdAt.toISOString(),
+            isRead: created.isRead,
+          };
+        } catch (createErr: any) {
+          if (createErr?.code === 'P2002') {
+            const retryExisting = await prisma.notification.findUnique({
+              where: {
+                userId_eventId: {
+                  userId: patientUserId,
+                  eventId,
+                },
+              },
+            });
+            if (retryExisting) {
+              canonicalNotification = {
+                id: retryExisting.id,
+                message: retryExisting.message,
+                actionHref: retryExisting.actionHref,
+                actionLabel: retryExisting.actionLabel,
+                createdAt: retryExisting.createdAt.toISOString(),
+                isRead: retryExisting.isRead,
+              };
+            } else {
+              throw createErr;
+            }
+          } else {
+            throw createErr;
+          }
+        }
+      }
     }
 
-    // Send notification via socket
-    socketServer.sendNotificationToUser(patientUserId, canonicalNotification);
-
-    // Send appointment status update via socket
-    socketServer.sendAppointmentStatusUpdate(patientUserId, {
-      id: appointmentId,
-      status,
-      appointmentDate: appointmentDate || new Date().toISOString(),
-      appointmentTime: appointmentTime || new Date().toISOString(),
-      doctorName: doctorName || 'Doctor',
-    });
+    // Persist before emitting; emit safely so socket emission failure does not fail persistence
+    try {
+      socketServer.sendNotificationToUser(patientUserId, canonicalNotification);
+      socketServer.sendAppointmentStatusUpdate(patientUserId, {
+        id: appointmentId,
+        status,
+        appointmentDate: appointmentDate || new Date().toISOString(),
+        appointmentTime: appointmentTime || new Date().toISOString(),
+        doctorName: doctorName || appointment.doctor?.user?.name || 'Doctor',
+      });
+    } catch (emitErr) {
+      console.warn('Socket emission warning during status update:', emitErr);
+    }
 
     return res.json({ success: true, notification: canonicalNotification });
   } catch (error: unknown) {
@@ -254,13 +338,13 @@ app.post('/api/notifications/appointment-status', requireInternalAuth, async (re
   }
 });
 
-// API endpoint to send appointment notification
+// API endpoint to send appointment notification (replay-safe)
 app.post('/api/notifications/appointment', requireInternalAuth, async (req: express.Request, res: express.Response) => {
   try {
     const { doctorId, appointmentId } = req.body;
 
-    if (!doctorId || !appointmentId) {
-      return res.status(400).json({ error: 'doctorId and appointmentId are required' });
+    if (!doctorId || typeof doctorId !== 'string' || !appointmentId || typeof appointmentId !== 'string') {
+      return res.status(400).json({ error: 'doctorId and appointmentId are required strings' });
     }
 
     // Get appointment details
@@ -284,30 +368,63 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
     const doctorUserId = appointment.doctor.user.id;
     const patientName = appointment.patient.user.name;
 
-    const slotDate = appointment.slot?.date ? appointment.slot.date.toLocaleDateString() : '';
-    const slotTime = appointment.slot?.startTime
-      ? new Date(appointment.slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      : '';
+    const eventId = `apt:${appointmentId}:BOOKED`;
 
-    const message = `New appointment booking from ${patientName} for ${slotDate} at ${slotTime}`;
-
-    // Create notification in database
-    const notification = await prisma.notification.create({
-      data: {
-        userId: doctorUserId,
-        message,
-        isRead: false,
-        status: 'UNREAD',
+    // Deduplication check: check if notification already exists for doctorUserId and eventId
+    let notificationRecord = await prisma.notification.findUnique({
+      where: {
+        userId_eventId: {
+          userId: doctorUserId,
+          eventId,
+        },
       },
     });
 
-    // Send notification via socket
-    socketServer.sendNotificationToUser(doctorUserId, {
-      id: notification.id,
-      message: notification.message,
-      createdAt: notification.createdAt.toISOString(),
-      isRead: notification.isRead,
-    });
+    if (!notificationRecord) {
+      const slotDate = appointment.slot?.date ? appointment.slot.date.toLocaleDateString() : '';
+      const slotTime = appointment.slot?.startTime
+        ? new Date(appointment.slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        : '';
+
+      const message = `New appointment booking from ${patientName} for ${slotDate} at ${slotTime}`;
+
+      try {
+        notificationRecord = await prisma.notification.create({
+          data: {
+            userId: doctorUserId,
+            message,
+            eventId,
+            actionHref: `/doctor/appointments/${appointment.id}`,
+            actionLabel: 'View appointment',
+            isRead: false,
+            status: 'UNREAD',
+          },
+        });
+      } catch (createErr: any) {
+        if (createErr?.code === 'P2002') {
+          notificationRecord = await prisma.notification.findUnique({
+            where: {
+              userId_eventId: {
+                userId: doctorUserId,
+                eventId,
+              },
+            },
+          });
+          if (!notificationRecord) throw createErr;
+        } else {
+          throw createErr;
+        }
+      }
+    }
+
+    const canonicalNotification = {
+      id: notificationRecord.id,
+      message: notificationRecord.message,
+      actionHref: notificationRecord.actionHref,
+      actionLabel: notificationRecord.actionLabel,
+      createdAt: notificationRecord.createdAt.toISOString(),
+      isRead: notificationRecord.isRead,
+    };
 
     const appointmentData = {
       id: appointment.id,
@@ -322,9 +439,15 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
       paymentMethod: appointment.paymentMethod,
     };
 
-    socketServer.sendAppointmentRequest(doctorUserId, appointmentData);
+    // Persist before emitting; emit safely so socket emission failure does not fail persistence
+    try {
+      socketServer.sendNotificationToUser(doctorUserId, canonicalNotification);
+      socketServer.sendAppointmentRequest(doctorUserId, appointmentData);
+    } catch (emitErr) {
+      console.warn('Socket emission warning during new appointment:', emitErr);
+    }
 
-    return res.json({ success: true, notification, appointment: appointmentData });
+    return res.json({ success: true, notification: canonicalNotification, appointment: appointmentData });
   } catch (error: unknown) {
     console.error('Error sending appointment notification:', error);
     return res.status(500).json({

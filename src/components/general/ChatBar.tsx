@@ -20,11 +20,92 @@ export interface Message {
   createdAt: string;
   status?: 'pending' | 'sent' | 'failed';
   clientMessageId?: string;
+  isRead?: boolean;
 }
 
 interface ChatBarProps {
   doctorPatientRelationId: string;
   userId: string;
+}
+
+export function reconcileMessages(prev: Message[], incoming: Message[]): Message[] {
+  const result = [...prev];
+
+  for (const msg of incoming) {
+    const existingIdx = result.findIndex(
+      (m) =>
+        m.id === msg.id ||
+        (msg.clientMessageId && m.clientMessageId === msg.clientMessageId) ||
+        (msg.clientMessageId && m.id === msg.clientMessageId) ||
+        (m.clientMessageId && m.clientMessageId === msg.id)
+    );
+
+    if (existingIdx !== -1) {
+      const existing = result[existingIdx];
+      const preferredId =
+        msg.id && !msg.id.startsWith('msg_')
+          ? msg.id
+          : existing.id && !existing.id.startsWith('msg_')
+          ? existing.id
+          : msg.id || existing.id;
+
+      result[existingIdx] = {
+        ...existing,
+        ...msg,
+        id: preferredId,
+        clientMessageId: msg.clientMessageId || existing.clientMessageId,
+        status:
+          msg.status === 'failed' || existing.status === 'failed'
+            ? msg.status === 'sent' || existing.status === 'sent'
+              ? 'sent'
+              : 'failed'
+            : msg.status || 'sent',
+      };
+    } else {
+      result.push({
+        ...msg,
+        status: msg.status || 'sent',
+      });
+    }
+  }
+
+  // Deduplicate in case prev already had partial duplicates
+  const deduplicated: Message[] = [];
+  for (const msg of result) {
+    const dupIdx = deduplicated.findIndex(
+      (m) =>
+        m.id === msg.id ||
+        (msg.clientMessageId && m.clientMessageId === msg.clientMessageId) ||
+        (msg.clientMessageId && m.id === msg.clientMessageId) ||
+        (m.clientMessageId && m.clientMessageId === msg.id)
+    );
+
+    if (dupIdx !== -1) {
+      const existing = deduplicated[dupIdx];
+      const preferredId =
+        msg.id && !msg.id.startsWith('msg_')
+          ? msg.id
+          : existing.id && !existing.id.startsWith('msg_')
+          ? existing.id
+          : msg.id;
+      deduplicated[dupIdx] = {
+        ...existing,
+        ...msg,
+        id: preferredId,
+        clientMessageId: msg.clientMessageId || existing.clientMessageId,
+        status:
+          msg.status === 'sent' || existing.status === 'sent'
+            ? 'sent'
+            : msg.status || existing.status || 'sent',
+      };
+    } else {
+      deduplicated.push(msg);
+    }
+  }
+
+  return deduplicated.sort(
+    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+  );
 }
 
 function renderFormattedMessage(text: string, isMe: boolean, currentRole?: string) {
@@ -175,6 +256,25 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
   return elements;
 }
 
+export function createOptimisticMessage(
+  text: string,
+  userId: string,
+  userName?: string,
+  userRole?: string
+): Message {
+  const clientMessageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+  return {
+    id: clientMessageId,
+    clientMessageId,
+    text,
+    senderId: userId,
+    senderName: userName || 'Me',
+    senderRole: userRole,
+    createdAt: new Date().toISOString(),
+    status: 'pending',
+  };
+}
+
 export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProps) {
   const currentRole = useUserStore((s) => s.user?.role);
   const currentUserName = useUserStore((s) => s.user?.name);
@@ -189,30 +289,11 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const ackTimersRef = useRef<Set<NodeJS.Timeout>>(new Set());
 
   // Helper: merge messages without creating duplicates or discarding newer ones
   const mergeMessages = useCallback((incoming: Message[]) => {
-    setMessages((prev) => {
-      const map = new Map<string, Message>();
-      // Keep existing messages
-      for (const msg of prev) {
-        map.set(msg.id, msg);
-        if (msg.clientMessageId) map.set(msg.clientMessageId, msg);
-      }
-      // Upsert incoming messages
-      for (const msg of incoming) {
-        const existing = map.get(msg.id) || (msg.clientMessageId ? map.get(msg.clientMessageId) : undefined);
-        if (existing) {
-          map.set(msg.id, { ...existing, ...msg, status: 'sent' });
-        } else {
-          map.set(msg.id, { ...msg, status: msg.status || 'sent' });
-        }
-      }
-      // Return sorted by createdAt ascending
-      return Array.from(map.values()).sort(
-        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-    });
+    setMessages((prev) => reconcileMessages(prev, incoming));
   }, []);
 
   // 1. Fetch initial/recent messages via REST API
@@ -224,6 +305,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
         if (data?.chats && Array.isArray(data.chats)) {
           const formatted: Message[] = data.chats.map((c: any) => ({
             id: c.id,
+            clientMessageId: c.clientMessageId,
             text: c.text,
             senderId: c.senderId,
             senderName: c.sender?.name || (c.senderId === userId ? currentUserName : undefined),
@@ -316,6 +398,12 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       socketInstance.on('initial_messages', (data: { messages?: Message[] }) => {
         if (isMounted && data?.messages && Array.isArray(data.messages)) {
           mergeMessages(data.messages);
+          // Mark received unread messages from counterparty as read
+          for (const msg of data.messages) {
+            if (msg.senderId !== userId && msg.id && !msg.id.startsWith('msg_')) {
+              socketInstance?.emit('mark_as_read', { messageId: msg.id });
+            }
+          }
         }
         if (isMounted) setLoading(false);
       });
@@ -323,6 +411,21 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       socketInstance.on('new_message', (data: { message: Message }) => {
         if (isMounted && data?.message) {
           mergeMessages([data.message]);
+          if (data.message.senderId !== userId && data.message.id && !data.message.id.startsWith('msg_')) {
+            socketInstance?.emit('mark_as_read', { messageId: data.message.id });
+          }
+        }
+      });
+
+      socketInstance.on('message_read', (data: { messageId: string; readBy?: string }) => {
+        if (isMounted && data?.messageId) {
+          setMessages((prev) =>
+            prev.map((m) =>
+              m.id === data.messageId || m.clientMessageId === data.messageId
+                ? { ...m, isRead: true }
+                : m
+            )
+          );
         }
       });
 
@@ -373,11 +476,16 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
     window.addEventListener('online', handleOnline);
 
+    const ackTimers = ackTimersRef.current;
+
     return () => {
       isMounted = false;
       window.removeEventListener('online', handleOnline);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+      ackTimers.forEach((t) => clearTimeout(t));
+      ackTimers.clear();
       if (socketInstance) {
+        socketInstance.removeAllListeners();
         socketInstance.disconnect();
       }
       socketRef.current = null;
@@ -404,61 +512,30 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     }
   };
 
-  // Reliable send message with typed acknowledgement and draft preservation
-  const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const text = inputValue.trim();
-    if (!text || sending) return;
-
-    if (text.length > 5000) {
-      showToast.error('Message exceeds maximum limit of 5000 characters');
-      return;
-    }
-
+  // Reusable send dispatcher preserving stable clientMessageId across retries and fallbacks
+  const dispatchSendMessage = async (text: string, clientMessageId: string) => {
     setSending(true);
-
-    const clientMessageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-
-    const optimisticMessage: Message = {
-      id: clientMessageId,
-      clientMessageId,
-      text,
-      senderId: userId,
-      senderName: currentUserName || 'Me',
-      senderRole: currentRole || undefined,
-      createdAt: new Date().toISOString(),
-      status: 'pending',
-    };
-
-    // Append optimistic message
-    setMessages((prev) => [...prev, optimisticMessage]);
-
-    // Keep draft copy in memory; do not wipe until acknowledged
-    const draftText = text;
+    let delivered = false;
 
     try {
       if (socketRef.current && socketRef.current.connected) {
         // Send via Socket with 5-second acknowledgement timeout
         await new Promise<void>((resolve, reject) => {
           const timer = setTimeout(() => {
+            ackTimersRef.current.delete(timer);
             reject(new Error('Acknowledgement timed out'));
           }, 5000);
+          ackTimersRef.current.add(timer);
 
           socketRef.current?.emit(
             'send_message',
-            { text: draftText, clientMessageId },
+            { text, clientMessageId },
             (ack: { success: boolean; message?: Message; error?: string }) => {
               clearTimeout(timer);
+              ackTimersRef.current.delete(timer);
               if (ack && ack.success && ack.message) {
-                // Succeeded: update message status to sent and clear input draft
-                setMessages((prev) =>
-                  prev.map((m) =>
-                    m.id === clientMessageId || m.clientMessageId === clientMessageId
-                      ? { ...ack.message!, status: 'sent' }
-                      : m
-                  )
-                );
-                setInputValue('');
+                mergeMessages([{ ...ack.message, status: 'sent' }]);
+                delivered = true;
                 resolve();
               } else {
                 reject(new Error(ack?.error || 'Server rejected message'));
@@ -467,12 +544,12 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
           );
         });
       } else {
-        // Fallback: Send directly via REST API with idempotency key
+        // Direct REST fallback
         const res = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text: draftText,
+            text,
             clientMessageId,
             senderId: userId,
           }),
@@ -483,7 +560,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
           if (data?.chat) {
             const canonical: Message = {
               id: data.chat.id,
-              clientMessageId,
+              clientMessageId: data.chat.clientMessageId || clientMessageId,
               text: data.chat.text,
               senderId: data.chat.senderId,
               senderName: data.chat.sender?.name || currentUserName || 'Me',
@@ -491,38 +568,102 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
               createdAt: data.chat.createdAt,
               status: 'sent',
             };
-            setMessages((prev) =>
-              prev.map((m) =>
-                m.id === clientMessageId || m.clientMessageId === clientMessageId ? canonical : m
-              )
-            );
-            setInputValue('');
+            mergeMessages([canonical]);
+            delivered = true;
           }
         } else {
           const errData = await res.json().catch(() => ({}));
           throw new Error(errData.error || 'Failed to send message via REST');
         }
       }
-    } catch (err: any) {
-      console.error('Send message error:', err);
-      // Failed: mark message as failed and preserve input draft
-      setMessages((prev) =>
-        prev.map((m) =>
-          m.id === clientMessageId || m.clientMessageId === clientMessageId
-            ? { ...m, status: 'failed' }
-            : m
-        )
-      );
-      setInputValue(draftText);
-      showToast.error(err?.message || 'Failed to send message. Draft preserved.');
+    } catch (primaryErr: any) {
+      console.warn('Primary send failed, attempting REST retry fallback:', primaryErr?.message);
+      // If primary send (socket) timed out or failed, attempt immediate REST fallback
+      try {
+        const fallbackRes = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            text,
+            clientMessageId,
+            senderId: userId,
+          }),
+        });
+
+        if (fallbackRes.ok) {
+          const data = await fallbackRes.json();
+          if (data?.chat) {
+            const canonical: Message = {
+              id: data.chat.id,
+              clientMessageId: data.chat.clientMessageId || clientMessageId,
+              text: data.chat.text,
+              senderId: data.chat.senderId,
+              senderName: data.chat.sender?.name || currentUserName || 'Me',
+              senderRole: data.chat.sender?.role || currentRole,
+              createdAt: data.chat.createdAt,
+              status: 'sent',
+            };
+            mergeMessages([canonical]);
+            delivered = true;
+          }
+        }
+      } catch {
+        // Fallback also failed
+      }
     } finally {
       setSending(false);
+      if (!delivered) {
+        // Mark message as failed; composer input is preserved intact
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.id === clientMessageId || m.clientMessageId === clientMessageId
+              ? { ...m, status: 'failed' }
+              : m
+          )
+        );
+        showToast.error('Message failed to send. You can click retry to resend.');
+      }
     }
   };
 
+  // Reliable send message: generates stable ID, optimistic insert, and clears composer immediately
+  const handleSendMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = inputValue.trim();
+    if (!text || sending) return;
+
+    if (text.length > 5000) {
+      showToast.error('Message exceeds maximum limit of 5000 characters');
+      return;
+    }
+
+    // Immediately clear input so user can type the next message without waiting
+    setInputValue('');
+
+    const optimisticMessage = createOptimisticMessage(
+      text,
+      userId,
+      currentUserName,
+      currentRole || undefined
+    );
+
+    // Append optimistic message
+    mergeMessages([optimisticMessage]);
+
+    await dispatchSendMessage(text, optimisticMessage.clientMessageId!);
+  };
+
+  // Retrying resends the original message payload and ID WITHOUT deleting an unrelated composer draft
   const handleRetry = (msg: Message) => {
-    setInputValue(msg.text);
-    setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+    const stableId = msg.clientMessageId || msg.id;
+    // Mark status back to pending
+    setMessages((prev) =>
+      prev.map((m) =>
+        m.id === msg.id || m.clientMessageId === stableId ? { ...m, status: 'pending' } : m
+      )
+    );
+    // Dispatch with the exact same clientMessageId and payload
+    dispatchSendMessage(msg.text, stableId);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -644,11 +785,18 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
                       </button>
                     )}
                     {(!message.status || message.status === 'sent') && (
-                      <span>
-                        {new Date(message.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
+                      <span className="flex items-center gap-1">
+                        <span>
+                          {new Date(message.createdAt).toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        {isMe && message.isRead && (
+                          <span className="text-[10px] text-primary-foreground/90 font-medium ml-0.5">
+                            ✓ Read
+                          </span>
+                        )}
                       </span>
                     )}
                   </div>

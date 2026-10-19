@@ -101,6 +101,7 @@ describe('Phase 33: Socket.IO Messaging & Realtime Events Test Suite', () => {
     expect(mockIo.emit).toHaveBeenCalledWith('new_message', {
       message: {
         id: 'msg_999',
+        clientMessageId: 'msg_999',
         text: 'Good morning Dr. Smith',
         senderId: 'patient_user_1',
         senderName: 'Patient Alice',
@@ -199,7 +200,13 @@ describe('Phase 33: Socket.IO Messaging & Realtime Events Test Suite', () => {
       'rel_100'
     );
 
-    registeredHandlers['mark_as_read']({ messageId: 'msg_1000' });
+    mockPrisma.chatMessages.findUnique = vi.fn().mockResolvedValue({
+      id: 'msg_1000',
+      doctorPatientRelationId: 'rel_100',
+      senderId: 'doc_user_1',
+    });
+
+    await registeredHandlers['mark_as_read']({ messageId: 'msg_1000' });
 
     expect(mockSocket.to).toHaveBeenCalledWith('relation_rel_100');
     expect(mockSocket.emit).toHaveBeenCalledWith('message_read', {
