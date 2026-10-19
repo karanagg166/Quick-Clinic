@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { persistChatMessage } from "@/lib/chat-service";
 
 export async function GET(
     req: NextRequest,
@@ -134,76 +135,27 @@ export async function POST(
         }
 
         const body = await req.json().catch(() => ({}));
-        const text = (body.text || body.message || "").trim();
-
-        if (!text) {
-            return NextResponse.json(
-                { error: "message and senderId are required" },
-                { status: 400 }
-            );
-        }
-
-        if (text.length > 5000) {
-            return NextResponse.json(
-                { error: "Message exceeds maximum length of 5000 characters" },
-                { status: 400 }
-            );
-        }
-
-        // Verify relation exists and authorized
-        const relation = await prisma.doctorPatientRelation.findUnique({
-            where: { id: doctorPatientRelationId },
-        });
-
-        if (!relation) {
-            return NextResponse.json({ error: "Relation not found" }, { status: 404 });
-        }
-
-        if (
-            authUser.role !== "ADMIN" &&
-            !((authUser.role === "DOCTOR" && relation.doctorsUserId === authUser.id) ||
-              (authUser.role === "PATIENT" && relation.patientsUserId === authUser.id))
-        ) {
-            return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-        }
-
+        const rawText = body.text !== undefined ? body.text : body.message;
         const clientMessageId =
-            typeof body.clientMessageId === "string" && body.clientMessageId.trim()
-                ? body.clientMessageId.trim()
-                : typeof body.idempotencyKey === "string" && body.idempotencyKey.trim()
-                ? body.idempotencyKey.trim()
-                : typeof body.id === "string" && body.id.trim()
-                ? body.id.trim()
-                : null;
+            body.clientMessageId !== undefined
+                ? body.clientMessageId
+                : body.idempotencyKey !== undefined
+                ? body.idempotencyKey
+                : body.id;
 
-        // Deduplication: check if message with this id already exists in this relation
-        if (clientMessageId) {
-            const existing = await prisma.chatMessages.findUnique({
-                where: { id: clientMessageId },
-                include: {
-                    sender: {
-                        select: { id: true, name: true, role: true },
-                    },
-                },
-            });
-
-            if (existing && existing.doctorPatientRelationId === doctorPatientRelationId) {
-                return NextResponse.json({ chat: existing }, { status: 200 });
-            }
-        }
-
-        const senderId = authUser.id;
-
-        const newChat = await prisma.chatMessages.create({
-            data: {
-                ...(clientMessageId ? { id: clientMessageId } : {}),
-                doctorPatientRelationId,
-                text,
-                senderId,
-            },
+        const result = await persistChatMessage({
+            doctorPatientRelationId,
+            senderId: authUser.id,
+            text: rawText,
+            clientMessageId,
+            isAdmin: authUser.role === "ADMIN",
         });
 
-        return NextResponse.json({ chat: newChat }, { status: 201 });
+        if (!result.success) {
+            return NextResponse.json({ error: result.error }, { status: result.statusCode });
+        }
+
+        return NextResponse.json({ chat: result.chat }, { status: result.statusCode });
     } catch (error) {
         console.error("Error posting chat message:", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });

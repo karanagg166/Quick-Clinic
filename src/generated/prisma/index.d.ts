@@ -12291,6 +12291,7 @@ export namespace Prisma {
     isRead: boolean | null
     status: string | null
     readAt: Date | null
+    eventId: string | null
     createdAt: Date | null
   }
 
@@ -12303,6 +12304,7 @@ export namespace Prisma {
     isRead: boolean | null
     status: string | null
     readAt: Date | null
+    eventId: string | null
     createdAt: Date | null
   }
 
@@ -12315,6 +12317,7 @@ export namespace Prisma {
     isRead: number
     status: number
     readAt: number
+    eventId: number
     createdAt: number
     _all: number
   }
@@ -12329,6 +12332,7 @@ export namespace Prisma {
     isRead?: true
     status?: true
     readAt?: true
+    eventId?: true
     createdAt?: true
   }
 
@@ -12341,6 +12345,7 @@ export namespace Prisma {
     isRead?: true
     status?: true
     readAt?: true
+    eventId?: true
     createdAt?: true
   }
 
@@ -12353,6 +12358,7 @@ export namespace Prisma {
     isRead?: true
     status?: true
     readAt?: true
+    eventId?: true
     createdAt?: true
     _all?: true
   }
@@ -12438,6 +12444,7 @@ export namespace Prisma {
     isRead: boolean
     status: string
     readAt: Date | null
+    eventId: string | null
     createdAt: Date
     _count: NotificationCountAggregateOutputType | null
     _min: NotificationMinAggregateOutputType | null
@@ -12467,6 +12474,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: boolean
     readAt?: boolean
+    eventId?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
@@ -12480,6 +12488,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: boolean
     readAt?: boolean
+    eventId?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
@@ -12493,6 +12502,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: boolean
     readAt?: boolean
+    eventId?: boolean
     createdAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["notification"]>
@@ -12506,10 +12516,11 @@ export namespace Prisma {
     isRead?: boolean
     status?: boolean
     readAt?: boolean
+    eventId?: boolean
     createdAt?: boolean
   }
 
-  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "message" | "actionHref" | "actionLabel" | "isRead" | "status" | "readAt" | "createdAt", ExtArgs["result"]["notification"]>
+  export type NotificationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "message" | "actionHref" | "actionLabel" | "isRead" | "status" | "readAt" | "eventId" | "createdAt", ExtArgs["result"]["notification"]>
   export type NotificationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
   }
@@ -12534,6 +12545,7 @@ export namespace Prisma {
       isRead: boolean
       status: string
       readAt: Date | null
+      eventId: string | null
       createdAt: Date
     }, ExtArgs["result"]["notification"]>
     composites: {}
@@ -12967,6 +12979,7 @@ export namespace Prisma {
     readonly isRead: FieldRef<"Notification", 'Boolean'>
     readonly status: FieldRef<"Notification", 'String'>
     readonly readAt: FieldRef<"Notification", 'DateTime'>
+    readonly eventId: FieldRef<"Notification", 'String'>
     readonly createdAt: FieldRef<"Notification", 'DateTime'>
   }
     
@@ -18972,6 +18985,7 @@ export namespace Prisma {
     doctorPatientRelationId: string | null
     text: string | null
     senderId: string | null
+    clientMessageId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18981,6 +18995,7 @@ export namespace Prisma {
     doctorPatientRelationId: string | null
     text: string | null
     senderId: string | null
+    clientMessageId: string | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -18990,6 +19005,7 @@ export namespace Prisma {
     doctorPatientRelationId: number
     text: number
     senderId: number
+    clientMessageId: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -19001,6 +19017,7 @@ export namespace Prisma {
     doctorPatientRelationId?: true
     text?: true
     senderId?: true
+    clientMessageId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -19010,6 +19027,7 @@ export namespace Prisma {
     doctorPatientRelationId?: true
     text?: true
     senderId?: true
+    clientMessageId?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -19019,6 +19037,7 @@ export namespace Prisma {
     doctorPatientRelationId?: true
     text?: true
     senderId?: true
+    clientMessageId?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -19101,6 +19120,7 @@ export namespace Prisma {
     doctorPatientRelationId: string
     text: string
     senderId: string
+    clientMessageId: string | null
     createdAt: Date
     updatedAt: Date
     _count: ChatMessagesCountAggregateOutputType | null
@@ -19127,6 +19147,7 @@ export namespace Prisma {
     doctorPatientRelationId?: boolean
     text?: boolean
     senderId?: boolean
+    clientMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
@@ -19138,6 +19159,7 @@ export namespace Prisma {
     doctorPatientRelationId?: boolean
     text?: boolean
     senderId?: boolean
+    clientMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
@@ -19149,6 +19171,7 @@ export namespace Prisma {
     doctorPatientRelationId?: boolean
     text?: boolean
     senderId?: boolean
+    clientMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
@@ -19160,11 +19183,12 @@ export namespace Prisma {
     doctorPatientRelationId?: boolean
     text?: boolean
     senderId?: boolean
+    clientMessageId?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type ChatMessagesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorPatientRelationId" | "text" | "senderId" | "createdAt" | "updatedAt", ExtArgs["result"]["chatMessages"]>
+  export type ChatMessagesOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorPatientRelationId" | "text" | "senderId" | "clientMessageId" | "createdAt" | "updatedAt", ExtArgs["result"]["chatMessages"]>
   export type ChatMessagesInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctorPatientRelation?: boolean | DoctorPatientRelationDefaultArgs<ExtArgs>
     sender?: boolean | UserDefaultArgs<ExtArgs>
@@ -19189,6 +19213,7 @@ export namespace Prisma {
       doctorPatientRelationId: string
       text: string
       senderId: string
+      clientMessageId: string | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["chatMessages"]>
@@ -19620,6 +19645,7 @@ export namespace Prisma {
     readonly doctorPatientRelationId: FieldRef<"ChatMessages", 'String'>
     readonly text: FieldRef<"ChatMessages", 'String'>
     readonly senderId: FieldRef<"ChatMessages", 'String'>
+    readonly clientMessageId: FieldRef<"ChatMessages", 'String'>
     readonly createdAt: FieldRef<"ChatMessages", 'DateTime'>
     readonly updatedAt: FieldRef<"ChatMessages", 'DateTime'>
   }
@@ -31242,6 +31268,7 @@ export namespace Prisma {
     isRead: 'isRead',
     status: 'status',
     readAt: 'readAt',
+    eventId: 'eventId',
     createdAt: 'createdAt'
   };
 
@@ -31322,6 +31349,7 @@ export namespace Prisma {
     doctorPatientRelationId: 'doctorPatientRelationId',
     text: 'text',
     senderId: 'senderId',
+    clientMessageId: 'clientMessageId',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -32375,6 +32403,7 @@ export namespace Prisma {
     isRead?: BoolFilter<"Notification"> | boolean
     status?: StringFilter<"Notification"> | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
   }
@@ -32388,12 +32417,14 @@ export namespace Prisma {
     isRead?: SortOrder
     status?: SortOrder
     readAt?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     user?: UserOrderByWithRelationInput
   }
 
   export type NotificationWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    userId_eventId?: NotificationUserIdEventIdCompoundUniqueInput
     AND?: NotificationWhereInput | NotificationWhereInput[]
     OR?: NotificationWhereInput[]
     NOT?: NotificationWhereInput | NotificationWhereInput[]
@@ -32404,9 +32435,10 @@ export namespace Prisma {
     isRead?: BoolFilter<"Notification"> | boolean
     status?: StringFilter<"Notification"> | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+  }, "id" | "userId_eventId">
 
   export type NotificationOrderByWithAggregationInput = {
     id?: SortOrder
@@ -32417,6 +32449,7 @@ export namespace Prisma {
     isRead?: SortOrder
     status?: SortOrder
     readAt?: SortOrderInput | SortOrder
+    eventId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     _count?: NotificationCountOrderByAggregateInput
     _max?: NotificationMaxOrderByAggregateInput
@@ -32435,6 +32468,7 @@ export namespace Prisma {
     isRead?: BoolWithAggregatesFilter<"Notification"> | boolean
     status?: StringWithAggregatesFilter<"Notification"> | string
     readAt?: DateTimeNullableWithAggregatesFilter<"Notification"> | Date | string | null
+    eventId?: StringNullableWithAggregatesFilter<"Notification"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Notification"> | Date | string
   }
 
@@ -32809,6 +32843,7 @@ export namespace Prisma {
     doctorPatientRelationId?: StringFilter<"ChatMessages"> | string
     text?: StringFilter<"ChatMessages"> | string
     senderId?: StringFilter<"ChatMessages"> | string
+    clientMessageId?: StringNullableFilter<"ChatMessages"> | string | null
     createdAt?: DateTimeFilter<"ChatMessages"> | Date | string
     updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
     doctorPatientRelation?: XOR<DoctorPatientRelationScalarRelationFilter, DoctorPatientRelationWhereInput>
@@ -32820,6 +32855,7 @@ export namespace Prisma {
     doctorPatientRelationId?: SortOrder
     text?: SortOrder
     senderId?: SortOrder
+    clientMessageId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     doctorPatientRelation?: DoctorPatientRelationOrderByWithRelationInput
@@ -32828,6 +32864,7 @@ export namespace Prisma {
 
   export type ChatMessagesWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    clientMessageId?: string
     AND?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
     OR?: ChatMessagesWhereInput[]
     NOT?: ChatMessagesWhereInput | ChatMessagesWhereInput[]
@@ -32838,13 +32875,14 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
     doctorPatientRelation?: XOR<DoctorPatientRelationScalarRelationFilter, DoctorPatientRelationWhereInput>
     sender?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id">
+  }, "id" | "clientMessageId">
 
   export type ChatMessagesOrderByWithAggregationInput = {
     id?: SortOrder
     doctorPatientRelationId?: SortOrder
     text?: SortOrder
     senderId?: SortOrder
+    clientMessageId?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: ChatMessagesCountOrderByAggregateInput
@@ -32860,6 +32898,7 @@ export namespace Prisma {
     doctorPatientRelationId?: StringWithAggregatesFilter<"ChatMessages"> | string
     text?: StringWithAggregatesFilter<"ChatMessages"> | string
     senderId?: StringWithAggregatesFilter<"ChatMessages"> | string
+    clientMessageId?: StringNullableWithAggregatesFilter<"ChatMessages"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"ChatMessages"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"ChatMessages"> | Date | string
   }
@@ -34213,6 +34252,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
     user: UserCreateNestedOneWithoutNotificationsInput
   }
@@ -34226,6 +34266,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
   }
 
@@ -34237,6 +34278,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutNotificationsNestedInput
   }
@@ -34250,6 +34292,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -34262,6 +34305,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
   }
 
@@ -34273,6 +34317,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -34285,6 +34330,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -34669,6 +34715,7 @@ export namespace Prisma {
   export type ChatMessagesCreateInput = {
     id?: string
     text: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     doctorPatientRelation: DoctorPatientRelationCreateNestedOneWithoutChatMessagesInput
@@ -34680,6 +34727,7 @@ export namespace Prisma {
     doctorPatientRelationId: string
     text: string
     senderId: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34687,6 +34735,7 @@ export namespace Prisma {
   export type ChatMessagesUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorPatientRelation?: DoctorPatientRelationUpdateOneRequiredWithoutChatMessagesNestedInput
@@ -34698,6 +34747,7 @@ export namespace Prisma {
     doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34707,6 +34757,7 @@ export namespace Prisma {
     doctorPatientRelationId: string
     text: string
     senderId: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -34714,6 +34765,7 @@ export namespace Prisma {
   export type ChatMessagesUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -34723,6 +34775,7 @@ export namespace Prisma {
     doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -36228,6 +36281,11 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NotificationUserIdEventIdCompoundUniqueInput = {
+    userId: string
+    eventId: string
+  }
+
   export type NotificationCountOrderByAggregateInput = {
     id?: SortOrder
     userId?: SortOrder
@@ -36237,6 +36295,7 @@ export namespace Prisma {
     isRead?: SortOrder
     status?: SortOrder
     readAt?: SortOrder
+    eventId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -36249,6 +36308,7 @@ export namespace Prisma {
     isRead?: SortOrder
     status?: SortOrder
     readAt?: SortOrder
+    eventId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -36261,6 +36321,7 @@ export namespace Prisma {
     isRead?: SortOrder
     status?: SortOrder
     readAt?: SortOrder
+    eventId?: SortOrder
     createdAt?: SortOrder
   }
 
@@ -36561,6 +36622,7 @@ export namespace Prisma {
     doctorPatientRelationId?: SortOrder
     text?: SortOrder
     senderId?: SortOrder
+    clientMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -36570,6 +36632,7 @@ export namespace Prisma {
     doctorPatientRelationId?: SortOrder
     text?: SortOrder
     senderId?: SortOrder
+    clientMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -36579,6 +36642,7 @@ export namespace Prisma {
     doctorPatientRelationId?: SortOrder
     text?: SortOrder
     senderId?: SortOrder
+    clientMessageId?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -39443,6 +39507,7 @@ export namespace Prisma {
   export type ChatMessagesCreateWithoutSenderInput = {
     id?: string
     text: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     doctorPatientRelation: DoctorPatientRelationCreateNestedOneWithoutChatMessagesInput
@@ -39452,6 +39517,7 @@ export namespace Prisma {
     id?: string
     doctorPatientRelationId: string
     text: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -39510,6 +39576,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
   }
 
@@ -39521,6 +39588,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
   }
 
@@ -39810,6 +39878,7 @@ export namespace Prisma {
     doctorPatientRelationId?: StringFilter<"ChatMessages"> | string
     text?: StringFilter<"ChatMessages"> | string
     senderId?: StringFilter<"ChatMessages"> | string
+    clientMessageId?: StringNullableFilter<"ChatMessages"> | string | null
     createdAt?: DateTimeFilter<"ChatMessages"> | Date | string
     updatedAt?: DateTimeFilter<"ChatMessages"> | Date | string
   }
@@ -39875,6 +39944,7 @@ export namespace Prisma {
     isRead?: BoolFilter<"Notification"> | boolean
     status?: StringFilter<"Notification"> | string
     readAt?: DateTimeNullableFilter<"Notification"> | Date | string | null
+    eventId?: StringNullableFilter<"Notification"> | string | null
     createdAt?: DateTimeFilter<"Notification"> | Date | string
   }
 
@@ -42341,6 +42411,7 @@ export namespace Prisma {
   export type ChatMessagesCreateWithoutDoctorPatientRelationInput = {
     id?: string
     text: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     sender: UserCreateNestedOneWithoutChatMessagesInput
@@ -42350,6 +42421,7 @@ export namespace Prisma {
     id?: string
     text: string
     senderId: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44153,6 +44225,7 @@ export namespace Prisma {
     id?: string
     doctorPatientRelationId: string
     text: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -44178,6 +44251,7 @@ export namespace Prisma {
     isRead?: boolean
     status?: string
     readAt?: Date | string | null
+    eventId?: string | null
     createdAt?: Date | string
   }
 
@@ -44264,6 +44338,7 @@ export namespace Prisma {
   export type ChatMessagesUpdateWithoutSenderInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     doctorPatientRelation?: DoctorPatientRelationUpdateOneRequiredWithoutChatMessagesNestedInput
@@ -44273,6 +44348,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44281,6 +44357,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     doctorPatientRelationId?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -44332,6 +44409,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44343,6 +44421,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -44354,6 +44433,7 @@ export namespace Prisma {
     isRead?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
     readAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    eventId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
@@ -45093,6 +45173,7 @@ export namespace Prisma {
     id?: string
     text: string
     senderId: string
+    clientMessageId?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -45100,6 +45181,7 @@ export namespace Prisma {
   export type ChatMessagesUpdateWithoutDoctorPatientRelationInput = {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     sender?: UserUpdateOneRequiredWithoutChatMessagesNestedInput
@@ -45109,6 +45191,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -45117,6 +45200,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     text?: StringFieldUpdateOperationsInput | string
     senderId?: StringFieldUpdateOperationsInput | string
+    clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }

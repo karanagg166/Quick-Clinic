@@ -88,6 +88,16 @@ export function verifySocketJWT(
       return { valid: false, error: 'Token expired' };
     }
 
+    // Enforce required audience (quick-clinic-socket)
+    if (payload.aud !== 'quick-clinic-socket') {
+      return { valid: false, error: 'Invalid token audience: quick-clinic-socket required' };
+    }
+
+    // Enforce short expiry: maximum 1 hour lifetime for socket tickets
+    if (payload.iat && typeof payload.iat === 'number' && payload.exp - payload.iat > 3600) {
+      return { valid: false, error: 'Token lifetime exceeds maximum allowed for socket connection' };
+    }
+
     // Enforce not-before (nbf) if provided
     if (payload.nbf !== undefined && payload.nbf !== null) {
       if (typeof payload.nbf !== 'number' || !Number.isFinite(payload.nbf)) {
@@ -191,10 +201,22 @@ export class SocketServer {
           return next(new Error('Account inactive'));
         }
 
+        // Enforce role consistency if claim is present in token
+        if (tokenPayload.role && typeof tokenPayload.role === 'string') {
+          if (tokenPayload.role.toUpperCase() !== user.role.toUpperCase()) {
+            return next(new Error('Conflicting identity claims'));
+          }
+        }
+
         const relationId = rawAuth.relationId || socket.handshake.query?.relationId;
 
-        // If relationId is present, authenticate chat connection and verify relation membership
+        // If relationId is requested, authenticate chat connection and verify relation membership
         if (relationId && typeof relationId === 'string') {
+          // If ticket specifies a relationId, ensure it matches the requested relation
+          if (tokenPayload.relationId && tokenPayload.relationId !== relationId) {
+            return next(new Error('Unauthorized'));
+          }
+
           const relation = await this.prisma.doctorPatientRelation.findUnique({
             where: { id: relationId },
             include: {
@@ -227,6 +249,7 @@ export class SocketServer {
           (socket as any).userRole = userRole;
         } else {
           // Notification connection - verified user in database
+          (socket as any).relationId = undefined;
           (socket as any).userId = verifiedUserId;
           (socket as any).userRole = user.role;
           (socket as any).userName = user.name;
@@ -440,13 +463,19 @@ export class SocketServer {
   private handleSendMessage(socket: Socket, relationId: string, userId: string, _userName: string): void {
     socket.on('send_message', async (data: any, callback?: (ack: any) => void) => {
       try {
+        if (!relationId) {
+          const errRes = { success: false, error: 'Unauthorized: not connected to a chat room' };
+          if (typeof callback === 'function') callback(errRes);
+          return socket.emit('error', { message: 'Unauthorized: not connected to a chat room' });
+        }
+
         if (!data || typeof data !== 'object') {
           const errRes = { success: false, error: 'Invalid message payload' };
           if (typeof callback === 'function') callback(errRes);
           return socket.emit('error', { message: 'Invalid message payload' });
         }
 
-        const rawText = data.text;
+        const rawText = data.text !== undefined ? data.text : data.message;
         if (typeof rawText !== 'string' || !rawText.trim()) {
           const errRes = { success: false, error: 'Message cannot be empty' };
           if (typeof callback === 'function') callback(errRes);
@@ -460,17 +489,28 @@ export class SocketServer {
           return socket.emit('error', { message: 'Message exceeds maximum length of 5000 characters' });
         }
 
-        const clientMessageId =
-          typeof data.clientMessageId === 'string' && data.clientMessageId.trim()
-            ? data.clientMessageId.trim()
-            : typeof data.idempotencyKey === 'string' && data.idempotencyKey.trim()
-            ? data.idempotencyKey.trim()
-            : null;
+        let clientMessageId: string | null = null;
+        const rawClientId = data.clientMessageId !== undefined ? data.clientMessageId : data.idempotencyKey;
+        if (rawClientId !== undefined && rawClientId !== null) {
+          if (typeof rawClientId !== 'string') {
+            const errRes = { success: false, error: 'clientMessageId must be a string' };
+            if (typeof callback === 'function') callback(errRes);
+            return socket.emit('error', { message: 'clientMessageId must be a string' });
+          }
+          if (rawClientId.trim()) {
+            clientMessageId = rawClientId.trim();
+          }
+        }
 
-        // Deduplication: check if message with this id already exists in database
+        // Deduplication pre-check
         if (clientMessageId) {
-          const existing = await this.prisma.chatMessages.findUnique({
-            where: { id: clientMessageId },
+          const existing = await this.prisma.chatMessages.findFirst({
+            where: {
+              OR: [
+                { clientMessageId },
+                { id: clientMessageId },
+              ],
+            },
             include: {
               sender: {
                 select: { id: true, name: true, role: true },
@@ -478,9 +518,26 @@ export class SocketServer {
             },
           });
 
-          if (existing && existing.doctorPatientRelationId === relationId) {
+          if (existing) {
+            if (existing.doctorPatientRelationId !== relationId) {
+              const errRes = { success: false, error: 'Idempotency key does not belong to this relation' };
+              if (typeof callback === 'function') callback(errRes);
+              return socket.emit('error', { message: 'Idempotency key does not belong to this relation' });
+            }
+            if (existing.senderId !== userId) {
+              const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different sender' };
+              if (typeof callback === 'function') callback(errRes);
+              return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different sender' });
+            }
+            if (existing.text !== text) {
+              const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different content' };
+              if (typeof callback === 'function') callback(errRes);
+              return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different content' });
+            }
+
             const formattedExisting = {
               id: existing.id,
+              clientMessageId: existing.clientMessageId || existing.id,
               text: existing.text,
               senderId: existing.senderId,
               senderName: existing.sender.name,
@@ -494,27 +551,74 @@ export class SocketServer {
           }
         }
 
-        // Save message to database using verified userId
-        const message = await this.prisma.chatMessages.create({
-          data: {
-            ...(clientMessageId ? { id: clientMessageId } : {}),
-            text,
-            senderId: userId,
-            doctorPatientRelationId: relationId,
-          },
-          include: {
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                role: true,
+        // Save message to database using verified userId with concurrency collision protection
+        let message: any;
+        try {
+          message = await this.prisma.chatMessages.create({
+            data: {
+              ...(clientMessageId ? { id: clientMessageId, clientMessageId } : {}),
+              text,
+              senderId: userId,
+              doctorPatientRelationId: relationId,
+            },
+            include: {
+              sender: {
+                select: {
+                  id: true,
+                  name: true,
+                  role: true,
+                },
               },
             },
-          },
-        });
+          });
+        } catch (createErr: any) {
+          // Catch concurrent collision on unique constraint (P2002)
+          if (createErr?.code === 'P2002' && clientMessageId) {
+            const existing = await this.prisma.chatMessages.findFirst({
+              where: {
+                OR: [{ clientMessageId }, { id: clientMessageId }],
+              },
+              include: {
+                sender: { select: { id: true, name: true, role: true } },
+              },
+            });
+            if (existing) {
+              if (existing.doctorPatientRelationId !== relationId) {
+                const errRes = { success: false, error: 'Idempotency key does not belong to this relation' };
+                if (typeof callback === 'function') callback(errRes);
+                return socket.emit('error', { message: 'Idempotency key does not belong to this relation' });
+              }
+              if (existing.senderId !== userId) {
+                const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different sender' };
+                if (typeof callback === 'function') callback(errRes);
+                return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different sender' });
+              }
+              if (existing.text !== text) {
+                const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different content' };
+                if (typeof callback === 'function') callback(errRes);
+                return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different content' });
+              }
+              const formattedExisting = {
+                id: existing.id,
+                clientMessageId: existing.clientMessageId || existing.id,
+                text: existing.text,
+                senderId: existing.senderId,
+                senderName: existing.sender.name,
+                senderRole: existing.sender.role,
+                createdAt: existing.createdAt.toISOString(),
+              };
+              if (typeof callback === 'function') {
+                callback({ success: true, message: formattedExisting });
+              }
+              return;
+            }
+          }
+          throw createErr;
+        }
 
         const formattedMessage = {
           id: message.id,
+          clientMessageId: message.clientMessageId || message.id,
           text: message.text,
           senderId: message.senderId,
           senderName: message.sender.name,
@@ -563,10 +667,28 @@ export class SocketServer {
    * Handle message read status
    */
   private handleMarkAsRead(socket: Socket, relationId: string, userId: string): void {
-    socket.on('mark_as_read', (data: { messageId: string }) => {
+    socket.on('mark_as_read', async (data: { messageId: string }) => {
       try {
-        if (!data || typeof data.messageId !== 'string') return;
-        const { messageId } = data;
+        if (!relationId) return;
+        if (!data || typeof data.messageId !== 'string' || !data.messageId.trim()) return;
+        const messageId = data.messageId.trim();
+
+        // Verify relation membership and message ownership before accepting a read receipt
+        const msg = await this.prisma.chatMessages.findUnique({
+          where: { id: messageId },
+          select: { id: true, doctorPatientRelationId: true, senderId: true },
+        });
+
+        if (!msg || msg.doctorPatientRelationId !== relationId) {
+          // Reject mark_as_read on unrelated message
+          return;
+        }
+
+        // Users do not mark their own messages as read
+        if (msg.senderId === userId) {
+          return;
+        }
+
         socket.to(`relation_${relationId}`).emit('message_read', {
           messageId,
           readBy: userId,

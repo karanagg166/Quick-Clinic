@@ -77,8 +77,23 @@ jobs:
   socket-server-checks:
     name: Socket.IO Server Package
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quickclinic_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
       JWT_SECRET: "ci_jwt_secret_must_be_at_least_32_characters_long_for_security"
       INTERNAL_API_SECRET: "ci_internal_secret_at_least_32_characters_long_for_security"
       NODE_ENV: "test"
@@ -101,6 +116,7 @@ jobs:
         run: |
           pnpm install --frozen-lockfile
           pnpm prisma generate
+          pnpm prisma db push --accept-data-loss
 
       - name: Install socket-server dependencies
         run: pnpm -C socket-server install --frozen-lockfile

@@ -157,7 +157,7 @@ You should see:
 | `initial_messages` | `{ messages: [], pagination: {} }` | Initial messages loaded |
 | `new_message` | `{ message: {} }` | New message received |
 | `user_typing` | `{ userId, userName }` | User is typing |
-| `message_read` | `{ messageId, readBy }` | Message read receipt |
+| `message_read` | `{ messageId, readBy }` | Transient live session read receipt (authorized per-relation; not persisted) |
 | `error` | `{ message: "error" }` | Error occurred |
 
 ## Features

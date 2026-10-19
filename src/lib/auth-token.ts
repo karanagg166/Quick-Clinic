@@ -1,5 +1,10 @@
 import { jwtVerify, SignJWT } from "jose";
 
+export const TOKEN_AUDIENCE = {
+  SESSION: "quick-clinic-session",
+  SOCKET: "quick-clinic-socket",
+} as const;
+
 export interface AuthenticatedUser {
   id: string;
   role: string;
@@ -14,21 +19,57 @@ export function getSecretKey() {
 }
 
 // CREATE TOKEN
-export async function createToken(payload: Record<string, unknown>, expiresIn = "7d") {
-  return new SignJWT(payload)
+export async function createToken(
+  payload: Record<string, unknown>,
+  expiresIn = "7d",
+  audience?: string
+) {
+  const aud = (audience || payload.aud || TOKEN_AUDIENCE.SESSION) as string;
+  const tokenPayload = { ...payload, aud };
+  return new SignJWT(tokenPayload)
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime(expiresIn)
     .sign(getSecretKey());
 }
 
+export interface VerifyTokenOptions {
+  expectedAudience?: string;
+  allowLegacyWithoutAud?: boolean;
+}
+
 // VERIFY TOKEN
-export async function verifyToken(token: string) {
+export async function verifyToken(
+  token: string,
+  options?: VerifyTokenOptions
+) {
   try {
     const { payload } = await jwtVerify(token, getSecretKey(), {
       algorithms: ["HS256"],
       requiredClaims: ["exp"],
     });
+
+    const expectedAud = options?.expectedAudience || TOKEN_AUDIENCE.SESSION;
+    const allowLegacy = options?.allowLegacyWithoutAud ?? (expectedAud === TOKEN_AUDIENCE.SESSION);
+
+    // If verifying for HTTP session, strictly reject socket tickets
+    if (expectedAud === TOKEN_AUDIENCE.SESSION) {
+      if (payload.aud === TOKEN_AUDIENCE.SOCKET) {
+        return { valid: false, error: "Invalid token audience: socket ticket not allowed for HTTP session" };
+      }
+      if (payload.aud && payload.aud !== TOKEN_AUDIENCE.SESSION) {
+        return { valid: false, error: "Invalid token audience" };
+      }
+      if (!payload.aud && !allowLegacy) {
+        return { valid: false, error: "Missing required token audience" };
+      }
+    } else {
+      // For any other expected audience (e.g. socket), audience must strictly match
+      if (payload.aud !== expectedAud) {
+        return { valid: false, error: `Invalid token audience: expected ${expectedAud}` };
+      }
+    }
+
     const id = payload.id ?? payload.userId;
     if (
       typeof id !== "string" ||

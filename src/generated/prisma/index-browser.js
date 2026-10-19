@@ -210,6 +210,7 @@ exports.Prisma.NotificationScalarFieldEnum = {
   isRead: 'isRead',
   status: 'status',
   readAt: 'readAt',
+  eventId: 'eventId',
   createdAt: 'createdAt'
 };
 
@@ -272,6 +273,7 @@ exports.Prisma.ChatMessagesScalarFieldEnum = {
   doctorPatientRelationId: 'doctorPatientRelationId',
   text: 'text',
   senderId: 'senderId',
+  clientMessageId: 'clientMessageId',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

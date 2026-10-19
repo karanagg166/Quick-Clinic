@@ -16,6 +16,7 @@ function generateTestToken(payload: Record<string, any>, secret = TEST_SECRET): 
   const tokenPayload: Record<string, any> = {
     iat: now,
     exp: now + 3600,
+    aud: 'quick-clinic-socket',
     ...payload,
   };
   if (payload.exp === undefined && 'exp' in payload) {
@@ -44,7 +45,16 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
       create: vi.fn(),
     },
     user: {
-      findUnique: vi.fn(),
+      findUnique: vi.fn().mockImplementation(async ({ where }: any) => {
+        const id = where.id;
+        const isDoc = String(id).startsWith('doc');
+        return {
+          id,
+          name: isDoc ? `Dr. ${id}` : `Patient ${id}`,
+          role: isDoc ? 'DOCTOR' : 'PATIENT',
+          isActive: true,
+        };
+      }),
     },
     notification: {
       create: vi.fn(),
@@ -462,6 +472,13 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
     });
 
     it('Attack Case 7: connects successfully for chat when valid token matches relation member', async () => {
+      mockPrisma.user.findUnique.mockResolvedValue({
+        id: 'doc_house',
+        name: 'Dr. House',
+        role: 'DOCTOR',
+        isActive: true,
+      });
+
       mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
         id: 'rel_legit',
         doctor: { user: { id: 'doc_house', name: 'Dr. House' } },
@@ -601,6 +618,12 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
     const patientToken = generateTestToken({ id: 'patient_chat', name: 'Patient Chat', role: 'PATIENT' });
 
     beforeEach(async () => {
+      mockPrisma.user.findUnique.mockImplementation(async ({ where }: any) => {
+        if (where.id === 'doc_chat') return { id: 'doc_chat', name: 'Dr. Chat', role: 'DOCTOR', isActive: true };
+        if (where.id === 'patient_chat') return { id: 'patient_chat', name: 'Patient Chat', role: 'PATIENT', isActive: true };
+        return { id: where.id, name: `User_${where.id}`, role: 'PATIENT', isActive: true };
+      });
+
       mockPrisma.doctorPatientRelation.findUnique.mockResolvedValue({
         id: 'rel_room_1',
         doctor: { user: { id: 'doc_chat', name: 'Dr. Chat' } },

@@ -15,6 +15,7 @@ function generateTestToken(payload: Record<string, any>, secret = TEST_SECRET): 
   const tokenPayload = {
     iat: now,
     exp: now + 3600,
+    aud: 'quick-clinic-socket',
     ...payload,
   };
   const header = { alg: 'HS256', typ: 'JWT' };
@@ -39,7 +40,16 @@ describe('Phase 5 — Socket.IO & Real-Time Deep Testing Suite', () => {
       findUnique: vi.fn(),
     },
     user: {
-      findUnique: vi.fn(),
+      findUnique: vi.fn().mockImplementation(async ({ where }: any) => {
+        const id = where.id;
+        const isDoc = String(id).startsWith('doc') || String(id).includes('doctor');
+        return {
+          id,
+          name: isDoc ? 'Dr. House' : 'John Patient',
+          role: isDoc ? 'DOCTOR' : 'PATIENT',
+          isActive: true,
+        };
+      }),
     },
     notification: {
       create: vi.fn(),
@@ -209,6 +219,12 @@ describe('Phase 5 — Socket.IO & Real-Time Deep Testing Suite', () => {
     });
 
     it('5.2.2 Doctor and Patient establish two-way real-time communication', async () => {
+      mockPrisma.user.findUnique.mockImplementation(async ({ where }: any) => {
+        if (where.id === doctorUserId) return { id: doctorUserId, name: 'Dr. House', role: 'DOCTOR', isActive: true };
+        if (where.id === patientUserId) return { id: patientUserId, name: 'John Patient', role: 'PATIENT', isActive: true };
+        return { id: where.id, name: `User_${where.id}`, role: 'PATIENT', isActive: true };
+      });
+
       const docToken = generateTestToken({ id: doctorUserId, role: 'DOCTOR' });
       const patToken = generateTestToken({ id: patientUserId, role: 'PATIENT' });
 
