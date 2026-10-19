@@ -4,6 +4,7 @@ import type { AppointmentDetail } from '@/types/common';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
 import { publishToSocketServer } from '@/lib/socket-publisher';
+import { claimAndExecuteRefund } from '@/lib/payment-booking-service';
 
 export async function GET(
 	req: Request,
@@ -189,47 +190,18 @@ export async function PATCH(
 
 		// Process refund if payment was online
 		let refundProcessed = false;
-		if (appointment.paymentMethod === 'ONLINE' && appointment.transactionId) {
+		if (appointment.paymentMethod === 'ONLINE' && (appointment.paymentId || appointment.transactionId)) {
 			try {
-				// Find the payment record using the patient's User ID
-				const patientUserId = appointment.patient.user.id;
-				const payment = await prisma.payment.findFirst({
-					where: {
-						razorpayPaymentId: appointment.transactionId,
-						userId: patientUserId,
-						status: 'SUCCESS',
-					},
+				const paymentLookup = appointment.paymentId || appointment.transactionId!;
+				const refundResult = await claimAndExecuteRefund({
+					paymentId: paymentLookup,
+					reason: 'Appointment cancelled by patient',
+					initiatedBy: 'PATIENT',
+					idempotencyKey: `cancel_patient_${appointmentId}`,
 				});
-
-				if (payment && payment.razorpayPaymentId) {
-					if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-						const RazorpayModule = await import('razorpay');
-						const Razorpay = RazorpayModule.default;
-						const razorpay = new Razorpay({
-							key_id: process.env.RAZORPAY_KEY_ID,
-							key_secret: process.env.RAZORPAY_KEY_SECRET,
-						});
-
-						const refund = await razorpay.payments.refund(payment.razorpayPaymentId, {
-							amount: payment.amount,
-							notes: {
-								reason: 'Appointment cancelled by patient',
-								appointmentId: appointmentId,
-							},
-						});
-
-						refundProcessed = true;
-
-						await prisma.payment.update({
-							where: { id: payment.id },
-							data: {
-								status: 'REFUNDED',
-							},
-						});
-					}
-				}
+				refundProcessed = refundResult.status === 'REFUNDED';
 			} catch (refundError: unknown) {
-				console.error('Refund error:', refundError);
+				console.error('Patient cancellation refund error:', refundError);
 			}
 		}
 

@@ -75,7 +75,23 @@ async function deleteIfOwner(slotId: string, patientId: string, token: string) {
   if (!client) return;
   try {
     const key = bookingSlotKey(slotId);
-    if (await ownsHold(slotId, patientId, token)) await client.del(key);
+    // Atomic compare-and-delete via Lua script so an expired owner cannot delete a newer owner's hold
+    const script = `
+      local val = redis.call('get', KEYS[1])
+      if not val then
+        return 0
+      end
+      if string.find(val, ARGV[1], 1, true) and string.find(val, ARGV[2], 1, true) then
+        return redis.call('del', KEYS[1])
+      else
+        return 0
+      end
+    `;
+    if (typeof (client as any).eval === "function") {
+      await (client as any).eval(script, [key], [patientId, token]);
+    } else if (await ownsHold(slotId, patientId, token)) {
+      await client.del(key);
+    }
   } catch (e) {
     console.warn("Redis deleteIfOwner error:", e);
   }
@@ -136,6 +152,15 @@ export async function expireDoctorHolds(doctorId: string) {
 export async function createSlotHold(slotId: string, doctorId: string, patientId: string) {
   await expireSlotHolds(slotId);
 
+  const now = new Date();
+  const slot = await prisma.slot.findUnique({
+    where: { id: slotId },
+    select: { startTime: true },
+  });
+  if (!slot || slot.startTime <= now) {
+    return { kind: "conflict" as const };
+  }
+
   // Verify slot has no active/completed appointment
   const existingActiveAppt = await prisma.appointment.findFirst({
     where: {
@@ -148,7 +173,6 @@ export async function createSlotHold(slotId: string, doctorId: string, patientId
   }
 
   const token = randomUUID();
-  const now = new Date();
   const expiresAt = new Date(now.getTime() + HOLD_TTL_MS);
   const client = getRedis();
 
@@ -197,59 +221,66 @@ export async function confirmSlotHold(input: {
   token: string;
   paymentMethod: "ONLINE" | "OFFLINE";
   transactionId?: string | null;
+  paymentId?: string | null;
 }) {
-  if (input.paymentMethod === "ONLINE" && input.transactionId) {
-    const existingAppointment = await prisma.appointment.findUnique({
-      where: { slotId: input.slotId },
-    });
+  const now = new Date();
+  const slot = await prisma.slot.findUnique({
+    where: { id: input.slotId },
+    select: { startTime: true, status: true },
+  });
+  if (!slot || slot.startTime <= now) {
+    return null;
+  }
+
+  // Idempotent duplicate check for active appointments on this slot
+  const existingActive = await prisma.appointment.findFirst({
+    where: {
+      slotId: input.slotId,
+      status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
+    },
+  });
+
+  if (existingActive) {
     if (
-      existingAppointment &&
-      existingAppointment.status !== "CANCELLED" &&
-      existingAppointment.doctorId === input.doctorId &&
-      existingAppointment.patientId === input.patientId &&
-      existingAppointment.transactionId === input.transactionId
+      input.paymentMethod === "ONLINE" &&
+      ((input.transactionId && existingActive.transactionId === input.transactionId) ||
+       (input.paymentId && existingActive.paymentId === input.paymentId))
     ) {
-      return existingAppointment;
+      return existingActive;
     }
+    return null;
   }
 
   await expireSlotHolds(input.slotId);
 
-  let isOwner = await ownsHold(input.slotId, input.patientId, input.token);
-  if (!isOwner && input.paymentMethod === "ONLINE" && input.transactionId) {
-    // Payment was captured — try to transition the slot from AVAILABLE back to HELD
-    // so the transaction below can transition it to BOOKED.
-    const now = new Date();
-    const expiresAt = new Date(now.getTime() + HOLD_TTL_MS);
-    const reacquired = await prisma.slot.updateMany({
-      where: {
-        id: input.slotId,
-        doctorId: input.doctorId,
-        status: "AVAILABLE",
-      },
-      data: {
-        status: "HELD",
-        heldByPatientId: input.patientId,
-        heldAt: now,
-        holdToken: input.token,
-        holdExpiresAt: expiresAt,
-      },
-    });
-    if (reacquired.count === 1) {
-      isOwner = true;
-    }
-  }
-  if (!isOwner) return null;
-
   try {
     const appointment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      // Decisive database transition: PostgreSQL is booking authority
       const transitioned = await tx.slot.updateMany({
         where: {
           id: input.slotId,
           doctorId: input.doctorId,
-          status: "HELD",
-          heldByPatientId: input.patientId,
-          holdToken: input.token,
+          startTime: { gt: now },
+          OR: [
+            // Valid unexpired hold owned by this patient
+            {
+              status: "HELD",
+              heldByPatientId: input.patientId,
+              holdToken: input.token,
+              OR: [
+                { holdExpiresAt: { gt: now } },
+                { holdExpiresAt: null, heldAt: { gt: new Date(now.getTime() - HOLD_TTL_MS) } },
+              ],
+            },
+            // Online captured payment re-acquiring available or expired slot
+            ...(input.paymentMethod === "ONLINE" && input.transactionId
+              ? [
+                  { status: "AVAILABLE" as const },
+                  { status: "HELD" as const, holdExpiresAt: { lte: now } },
+                  { status: "HELD" as const, holdExpiresAt: null, heldAt: { lte: new Date(now.getTime() - HOLD_TTL_MS) } },
+                ]
+              : []),
+          ],
         },
         data: {
           status: "BOOKED",
@@ -261,37 +292,24 @@ export async function confirmSlotHold(input: {
       });
       if (transitioned.count !== 1) throw new Error("SLOT_UNAVAILABLE");
 
-      // Check if an appointment was previously associated with this slot
-      const existingAppt = await tx.appointment.findUnique({
-        where: { slotId: input.slotId },
+      // Verify no concurrent active appointment was booked
+      const activeAppt = await tx.appointment.findFirst({
+        where: {
+          slotId: input.slotId,
+          status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
+        },
       });
-
-      if (existingAppt) {
-        // If an appointment exists and is not CANCELLED, prevent booking
-        if (existingAppt.status !== "CANCELLED") {
-          throw new Error("SLOT_UNAVAILABLE");
-        }
-
-        // If previously cancelled, re-assign the appointment to the new booking
-        return tx.appointment.update({
-          where: { id: existingAppt.id },
-          data: {
-            doctorId: input.doctorId,
-            patientId: input.patientId,
-            status: "CONFIRMED",
-            paymentMethod: input.paymentMethod,
-            transactionId: input.transactionId ?? null,
-            isAppointmentOffline: input.paymentMethod === "OFFLINE",
-            bookedAt: new Date(),
-          },
-        });
+      if (activeAppt) {
+        throw new Error("SLOT_UNAVAILABLE");
       }
 
+      // Always create a new, immutable appointment record preserving cancelled historical bookings
       return tx.appointment.create({
         data: {
           doctorId: input.doctorId,
           patientId: input.patientId,
           slotId: input.slotId,
+          paymentId: input.paymentId ?? null,
           status: "CONFIRMED",
           paymentMethod: input.paymentMethod,
           transactionId: input.transactionId ?? null,
@@ -299,6 +317,7 @@ export async function confirmSlotHold(input: {
         },
       });
     }, { maxWait: 15000, timeout: 20000 });
+
     await deleteIfOwner(input.slotId, input.patientId, input.token);
     return appointment;
   } catch (error) {

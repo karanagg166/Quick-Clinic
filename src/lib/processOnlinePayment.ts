@@ -1,22 +1,118 @@
-// 1. Helper function to load the script dynamically
+// src/lib/processOnlinePayment.ts
 
-const loadRazorpayScript = (src: string) => {
-  return new Promise((resolve) => {
-    if (typeof window !== 'undefined' && window.Razorpay) {
+export type CheckoutState =
+  | 'IDLE'
+  | 'LOADING_SDK'
+  | 'CREATING_ORDER'
+  | 'AWAITING_PAYMENT'
+  | 'CONFIRMING'
+  | 'BOOKED'
+  | 'PAYMENT_RECEIVED_BOOKING_PENDING'
+  | 'REFUND_PENDING'
+  | 'REFUNDED'
+  | 'FAILED';
+
+export interface ProcessPaymentResult {
+  success: boolean;
+  state: CheckoutState;
+  transactionId: string | null;
+  orderId?: string | null;
+  appointmentId?: string;
+  amount?: number;
+  currency?: string;
+  refundStatus?: 'REFUNDED' | 'REFUND_PENDING' | 'FAILED';
+  error?: string;
+  message?: string;
+  paymentCaptured?: boolean;
+}
+
+let sdkLoadPromise: Promise<boolean> | null = null;
+let isCheckoutActive = false;
+
+/**
+ * Loads Razorpay SDK script using a shared singleton promise.
+ * Avoids false positives from existing incomplete script tags.
+ */
+export function loadRazorpaySDK(): Promise<boolean> {
+  if (typeof window === 'undefined') return Promise.resolve(false);
+  if (window.Razorpay) return Promise.resolve(true);
+  if (sdkLoadPromise) return sdkLoadPromise;
+
+  sdkLoadPromise = new Promise<boolean>((resolve) => {
+    const src = 'https://checkout.razorpay.com/v1/checkout.js';
+    let script = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+
+    if (!script) {
+      script = document.createElement('script');
+      script.src = src;
+      script.async = true;
+      document.body.appendChild(script);
+    }
+
+    if (window.Razorpay) {
       resolve(true);
       return;
     }
-    if (document.querySelector(`script[src="${src}"]`)) {
-        resolve(true); // Script already loaded
-        return;
-    }
-    const script = document.createElement('script');
-    script.src = src;
-    script.onload = () => resolve(true);
-    script.onerror = () => resolve(false);
-    document.body.appendChild(script);
+
+    const handleLoad = () => {
+      resolve(Boolean(window.Razorpay));
+    };
+
+    const handleError = () => {
+      sdkLoadPromise = null; // Allow retry on failure
+      resolve(false);
+    };
+
+    script.addEventListener('load', handleLoad, { once: true });
+    script.addEventListener('error', handleError, { once: true });
   });
-};
+
+  return sdkLoadPromise;
+}
+
+/**
+ * Polls the authenticated payment status endpoint for server-side confirmation.
+ * Used when verification encounters a network timeout or uncertainty.
+ */
+export async function pollPaymentStatus(
+  userId: string,
+  orderId: string,
+  maxAttempts = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test' ? 1 : 5,
+  intervalMs = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test' ? 10 : 2000
+): Promise<any | null> {
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      const res = await fetch(`/api/user/${userId}/payments/${orderId}/status`, {
+        credentials: 'include',
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.ok) {
+          const appt = data.appointment || (typeof data.status === 'object' && data.status?.appointment);
+          const paymentStatusObj = data.paymentStatus || (typeof data.status === 'object' ? data.status : null);
+          const statusStr = typeof data.status === 'string' ? data.status : paymentStatusObj?.status;
+
+          if (appt) {
+            return { state: 'BOOKED', status: paymentStatusObj || { ...data, appointment: appt } };
+          }
+          if (statusStr === 'REFUNDED') {
+            return { state: 'REFUNDED', status: paymentStatusObj || data };
+          }
+          if (statusStr === 'REFUND_PENDING') {
+            return { state: 'REFUND_PENDING', status: paymentStatusObj || data };
+          }
+          if (statusStr === 'FAILED') {
+            return { state: 'FAILED', status: paymentStatusObj || data };
+          }
+        }
+      }
+    } catch {
+      // transient network error, retry
+    }
+    await new Promise((resolve) => setTimeout(resolve, intervalMs));
+  }
+  return null;
+}
 
 export async function processOnlinePayment({
   doctorId,
@@ -26,6 +122,7 @@ export async function processOnlinePayment({
   userEmail,
   userName,
   userPhone,
+  onStateChange,
 }: {
   doctorId: string;
   holdToken: string;
@@ -34,56 +131,106 @@ export async function processOnlinePayment({
   userEmail?: string;
   userName?: string;
   userPhone?: string;
-}) {
-  return new Promise<{
-    success: boolean;
-    transactionId: string | null;
-    appointmentId?: string;
-    paymentCaptured?: boolean;
-    error?: string;
-  }>(async (resolve) => {
-    try {
-      // 2. Load the Razorpay SDK Script explicitly
-      const isScriptLoaded = await loadRazorpayScript("https://checkout.razorpay.com/v1/checkout.js");
+  onStateChange?: (state: CheckoutState, details?: Partial<ProcessPaymentResult>) => void;
+}): Promise<ProcessPaymentResult> {
+  if (isCheckoutActive) {
+    return {
+      success: false,
+      state: 'FAILED',
+      transactionId: null,
+      error: 'A checkout process is already active. Please finish or close the payment window.',
+    };
+  }
 
-      if (!isScriptLoaded) {
-        throw new Error("Razorpay SDK failed to load. Are you online?");
+  isCheckoutActive = true;
+  const updateState = (state: CheckoutState, details?: Partial<ProcessPaymentResult>) => {
+    if (onStateChange) {
+      onStateChange(state, details);
+    }
+  };
+
+  return new Promise<ProcessPaymentResult>(async (resolve) => {
+    let currentOrderId: string | null = null;
+    let paymentCaptured = false;
+
+    const cleanupAndResolve = (result: ProcessPaymentResult) => {
+      isCheckoutActive = false;
+      updateState(result.state, result);
+      resolve(result);
+    };
+
+    try {
+      updateState('LOADING_SDK');
+      const isLoaded = await loadRazorpaySDK();
+      if (!isLoaded || !window.Razorpay) {
+        cleanupAndResolve({
+          success: false,
+          state: 'FAILED',
+          transactionId: null,
+          error: 'Unable to load payment gateway. Please verify your internet connection and try again.',
+        });
+        return;
       }
 
-      // 3. Create order on your server
+      updateState('CREATING_ORDER');
+      const idempotencyKey = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `ord_${userId.slice(-6)}_${slotId}_${Date.now()}`;
+
       const orderRes = await fetch(`/api/user/${userId}/payments/createOrder`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ doctorId, slotId, holdToken }),
+        body: JSON.stringify({ doctorId, slotId, holdToken, idempotencyKey }),
       });
-      
-      const data = await orderRes.json() as CreateOrderResponse;
-      if (!orderRes.ok) throw new Error(data.message || "Failed to create payment order");
-      if (!data.keyId || !data.order?.razorpayOrderId) {
-        throw new Error('Payment provider returned an invalid order. Please try again.');
+
+      const orderData = await orderRes.json();
+      if (!orderRes.ok || !orderData.keyId || !orderData.order?.razorpayOrderId) {
+        cleanupAndResolve({
+          success: false,
+          state: 'FAILED',
+          transactionId: null,
+          error: orderData.message || 'Failed to initialize payment order. Your appointment hold may have expired.',
+        });
+        return;
       }
 
-      // 4. Initialize Razorpay Options
+      currentOrderId = orderData.order.razorpayOrderId;
+      const orderAmount = orderData.order.amount;
+      const orderCurrency = orderData.order.currency || 'INR';
+
+      updateState('AWAITING_PAYMENT', {
+        orderId: currentOrderId,
+        amount: orderAmount,
+        currency: orderCurrency,
+      });
+
       const prefillData: Record<string, string> = {};
-      if (userName && userName.trim()) prefillData.name = userName.trim();
-      if (userEmail && userEmail.trim()) prefillData.email = userEmail.trim();
-      if (userPhone && userPhone.trim()) {
+      if (userName?.trim()) prefillData.name = userName.trim();
+      if (userEmail?.trim()) prefillData.email = userEmail.trim();
+      if (userPhone?.trim()) {
         const cleanPhone = userPhone.replace(/\D/g, '').slice(-10);
         if (cleanPhone.length === 10) prefillData.contact = cleanPhone;
       }
 
       const options = {
-        key: data.keyId,
-        amount: data.order?.amount,
-        currency: data.order?.currency || "INR",
-        name: "Quick Clinic",
-        description: "Medical Consultation Booking",
-        order_id: data.order?.razorpayOrderId,
+        key: orderData.keyId,
+        amount: orderAmount,
+        currency: orderCurrency,
+        name: 'Quick Clinic',
+        description: 'Medical Consultation Booking',
+        order_id: currentOrderId!,
         prefill: Object.keys(prefillData).length > 0 ? prefillData : undefined,
         handler: async function (response: RazorpaySuccessResponse) {
+          paymentCaptured = true;
+          updateState('CONFIRMING', {
+            transactionId: response.razorpay_payment_id,
+            orderId: response.razorpay_order_id,
+            amount: orderAmount,
+            currency: orderCurrency,
+          });
+
           try {
-            // 5. Verify Payment on Server
             const verifyRes = await fetch(`/api/user/${userId}/payments/verifyOrder`, {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -94,46 +241,137 @@ export async function processOnlinePayment({
                 signature: response.razorpay_signature,
               }),
             });
-            
-            const verifyData = await verifyRes.json() as VerifyOrderResponse;
-            if (!verifyRes.ok) throw new Error(verifyData.error || "Payment verification failed");
 
-            resolve({
-              success: true,
-              transactionId: response.razorpay_payment_id,
-              appointmentId: verifyData.appointment?.id,
-              paymentCaptured: true,
-            });
-          } catch (error: unknown) {
-            resolve({
+            const verifyData = await verifyRes.json();
+
+            if (verifyRes.ok && verifyData.appointment) {
+              cleanupAndResolve({
+                success: true,
+                state: 'BOOKED',
+                transactionId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                appointmentId: verifyData.appointment.id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+                message: verifyData.message || 'Appointment confirmed successfully',
+              });
+              return;
+            }
+
+            if (verifyRes.status === 409) {
+              const refundStatus = verifyData.refundStatus || 'REFUND_PENDING';
+              cleanupAndResolve({
+                success: false,
+                state: refundStatus === 'REFUNDED' ? 'REFUNDED' : 'REFUND_PENDING',
+                transactionId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+                refundStatus,
+                error: verifyData.message || 'Slot was no longer available. Your payment is being refunded.',
+              });
+              return;
+            }
+
+            // Server returned other error - poll status endpoint to confirm true status before failing
+            const polled = await pollPaymentStatus(userId, response.razorpay_order_id);
+            if (polled?.state === 'BOOKED') {
+              cleanupAndResolve({
+                success: true,
+                state: 'BOOKED',
+                transactionId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                appointmentId: polled.status.appointment.id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+              });
+              return;
+            }
+
+            cleanupAndResolve({
               success: false,
-              error: "Payment was captured but booking confirmation failed: " + getErrorMessage(error),
+              state: 'PAYMENT_RECEIVED_BOOKING_PENDING',
               transactionId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              amount: orderAmount,
+              currency: orderCurrency,
               paymentCaptured: true,
+              error: 'Payment was captured but booking confirmation failed: ' + (verifyData.error || 'Booking confirmation pending'),
+            });
+          } catch (networkError) {
+            // Network drop during verification callback: poll status endpoint
+            console.warn('[processOnlinePayment] Network error verifying order, polling status...', networkError);
+            const polled = await pollPaymentStatus(userId, response.razorpay_order_id);
+            if (polled?.state === 'BOOKED') {
+              cleanupAndResolve({
+                success: true,
+                state: 'BOOKED',
+                transactionId: response.razorpay_payment_id,
+                orderId: response.razorpay_order_id,
+                appointmentId: polled.status.appointment.id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+              });
+              return;
+            }
+
+            cleanupAndResolve({
+              success: false,
+              state: 'PAYMENT_RECEIVED_BOOKING_PENDING',
+              transactionId: response.razorpay_payment_id,
+              orderId: response.razorpay_order_id,
+              amount: orderAmount,
+              currency: orderCurrency,
+              paymentCaptured: true,
+              error: 'Payment was captured but booking confirmation failed: Network error occurred',
             });
           }
         },
         modal: {
           ondismiss: function () {
-            resolve({ success: false, error: "Payment was cancelled.", transactionId: null });
+            if (!paymentCaptured) {
+              cleanupAndResolve({
+                success: false,
+                state: 'FAILED',
+                transactionId: null,
+                orderId: currentOrderId,
+                amount: orderAmount,
+                currency: orderCurrency,
+                error: 'Payment was cancelled.',
+              });
+            }
           },
         },
-        theme: { color: "#0d9488" },
+        theme: { color: '#0d9488' },
       };
 
-      // 6. Open the Payment Window
-      if (!window.Razorpay) throw new Error('Razorpay SDK is unavailable. Please reload and try again.');
-      const rzp1 = new window.Razorpay(options);
-      
-      rzp1.on('payment.failed', function (response: RazorpayFailureResponse) {
-        resolve({ success: false, error: response?.error?.description || "Payment failed", transactionId: null });
+      const rzpInstance = new window.Razorpay(options);
+      rzpInstance.on('payment.failed', function (errResp: RazorpayFailureResponse) {
+        cleanupAndResolve({
+          success: false,
+          state: 'FAILED',
+          transactionId: null,
+          orderId: currentOrderId,
+          amount: orderAmount,
+          currency: orderCurrency,
+          error: errResp?.error?.description || 'Payment was declined or failed.',
+        });
       });
 
-      rzp1.open();
-
-    } catch (error: unknown) {
-      console.error("Payment Error:", error);
-      resolve({ success: false, error: getErrorMessage(error), transactionId: null });
+      rzpInstance.open();
+    } catch (err: unknown) {
+      console.error('[processOnlinePayment] Unexpected error:', err);
+      cleanupAndResolve({
+        success: false,
+        state: 'FAILED',
+        transactionId: null,
+        orderId: currentOrderId,
+        error: err instanceof Error ? err.message : 'Unexpected payment error occurred',
+      });
     }
   });
 }
@@ -147,17 +385,17 @@ declare global {
   }
 }
 
-type RazorpaySuccessResponse = {
+interface RazorpaySuccessResponse {
   razorpay_order_id: string;
   razorpay_payment_id: string;
   razorpay_signature: string;
-};
+}
 
-type RazorpayFailureResponse = {
+interface RazorpayFailureResponse {
   error?: { description?: string };
-};
+}
 
-type RazorpayOptions = {
+interface RazorpayOptions {
   key: string;
   amount?: number;
   currency: string;
@@ -168,19 +406,4 @@ type RazorpayOptions = {
   handler: (response: RazorpaySuccessResponse) => Promise<void>;
   modal: { ondismiss: () => void };
   theme: { color: string };
-};
-
-type CreateOrderResponse = {
-  message?: string;
-  keyId: string;
-  order?: { amount?: number; currency?: string; razorpayOrderId?: string };
-};
-
-type VerifyOrderResponse = {
-  error?: string;
-  appointment?: { id?: string };
-};
-
-function getErrorMessage(error: unknown) {
-  return error instanceof Error ? error.message : 'Unexpected payment error';
 }

@@ -11,6 +11,7 @@ type ConfirmationInput = {
   holdToken: string;
   paymentMethod: 'ONLINE' | 'OFFLINE';
   transactionId?: string | null;
+  paymentId?: string | null;
 };
 
 export async function finalizeAppointmentBooking(input: ConfirmationInput) {
@@ -21,6 +22,7 @@ export async function finalizeAppointmentBooking(input: ConfirmationInput) {
     token: input.holdToken,
     paymentMethod: input.paymentMethod,
     transactionId: input.transactionId,
+    paymentId: input.paymentId,
   });
   if (!appointment) return null;
 
@@ -82,26 +84,49 @@ async function sendAppointmentConfirmation({
       });
     }
 
-    await prisma.chatMessages.create({
-      data: {
-        doctorPatientRelationId: relation.id,
-        text: `✅ Appointment Confirmed!\n\n📅 Date: ${formattedDate}\n⏰ Time: ${formattedTime}\n👨‍⚕️ Doctor: Dr. ${doctorName}\n👤 Patient: ${patientName}\n💳 Payment: ${appointment.paymentMethod === 'ONLINE' ? 'Paid Online' : 'Pay at Clinic'}\n\n👉 If you need to cancel this appointment:\n[🔴 Cancel Appointment](/patient/appointments/${appointment.id})`,
-        senderId: patientUser.id,
+    // Idempotent system chat message with stable clientMessageId
+    const confirmClientMessageId = `chat:appt_confirm:${appointment.id}`;
+    const existingChat = await prisma.chatMessages.findFirst({
+      where: {
+        OR: [
+          { clientMessageId: confirmClientMessageId },
+          { id: confirmClientMessageId },
+        ],
       },
     });
+    if (!existingChat) {
+      await prisma.chatMessages.create({
+        data: {
+          id: confirmClientMessageId,
+          clientMessageId: confirmClientMessageId,
+          doctorPatientRelationId: relation.id,
+          text: `✅ Appointment Confirmed!\n\n📅 Date: ${formattedDate}\n⏰ Time: ${formattedTime}\n👨‍⚕️ Doctor: Dr. ${doctorName}\n👤 Patient: ${patientName}\n💳 Payment: ${appointment.paymentMethod === 'ONLINE' ? 'Paid Online' : 'Pay at Clinic'}\n\n👉 If you need to cancel this appointment:\n[🔴 Cancel Appointment](/patient/appointments/${appointment.id})`,
+          senderId: patientUser.id,
+        },
+      }).catch(() => undefined);
+    }
+
+    const doctorEventId = `apt:${appointment.id}:CONFIRMED:doctor`;
+    const patientEventId = `apt:${appointment.id}:CONFIRMED:patient`;
 
     const [doctorNotification, patientNotification] = await Promise.all([
-      prisma.notification.create({
-        data: {
+      prisma.notification.upsert({
+        where: { userId_eventId: { userId: doctor.user.id, eventId: doctorEventId } },
+        update: {},
+        create: {
           userId: doctor.user.id,
+          eventId: doctorEventId,
           message: `New appointment confirmed with ${patientName} on ${formattedDate} at ${formattedTime}.`,
           actionHref: `/doctor/appointments/${appointment.id}`,
           actionLabel: 'View appointment',
         },
       }),
-      prisma.notification.create({
-        data: {
+      prisma.notification.upsert({
+        where: { userId_eventId: { userId: patientUser.id, eventId: patientEventId } },
+        update: {},
+        create: {
           userId: patientUser.id,
+          eventId: patientEventId,
           message: `Your appointment with Dr. ${doctorName} is confirmed for ${formattedDate} at ${formattedTime}.`,
           actionHref: `/patient/appointments/${appointment.id}`,
           actionLabel: 'View appointment',
@@ -109,27 +134,66 @@ async function sendAppointmentConfirmation({
       }),
     ]);
 
-    const doctorBroadcast = publishToSocketServer('/api/notifications/new-appointment', {
+    const appointmentPayload = {
+      id: appointment.id,
+      patientName,
+      patientString: patientUser.email || '',
+      gender: patientUser.gender || '',
+      city: patientUser.location?.city || 'N/A',
+      age: patientUser.age || 0,
+      appointmentDate: slot?.date?.toISOString() || '',
+      appointmentTime: slot?.startTime?.toISOString() || '',
+      status: 'CONFIRMED',
+      paymentMethod: appointment.paymentMethod,
+    };
+
+    const doctorBroadcastPromise = publishToSocketServer('/api/notifications/new-appointment', {
       doctorUserId: doctor.user.id,
       notification: serializeNotification(doctorNotification),
-      appointment: {
-        id: appointment.id,
-        patientName,
-        patientString: patientUser.email || '',
-        gender: patientUser.gender || '',
-        city: patientUser.location?.city || 'N/A',
-        age: patientUser.age || 0,
-        appointmentDate: slot?.date?.toISOString() || '',
-        appointmentTime: slot?.startTime?.toISOString() || '',
-        status: 'CONFIRMED',
-        paymentMethod: appointment.paymentMethod,
-      },
+      appointment: appointmentPayload,
     });
-    const patientBroadcast = publishToSocketServer('/api/notifications/broadcast', {
+    const patientBroadcastPromise = publishToSocketServer('/api/notifications/broadcast', {
       userId: patientUser.id,
       notification: serializeNotification(patientNotification),
     });
-    await Promise.allSettled([doctorBroadcast, patientBroadcast]);
+
+    const [doctorRes, patientRes] = await Promise.allSettled([doctorBroadcastPromise, patientBroadcastPromise]);
+
+    // Durable outbox fallback: queue if socket server is unreachable
+    if (doctorRes.status === 'rejected' || (doctorRes.status === 'fulfilled' && !doctorRes.value)) {
+      await prisma.notificationOutbox.upsert({
+        where: { eventId: doctorEventId },
+        update: { attempts: { increment: 1 }, lastAttemptAt: new Date() },
+        create: {
+          eventId: doctorEventId,
+          channel: 'SOCKET_APPOINTMENT_REQUEST',
+          targetUserId: doctor.user.id,
+          payload: {
+            doctorUserId: doctor.user.id,
+            notification: serializeNotification(doctorNotification),
+            appointment: appointmentPayload,
+          },
+          status: 'PENDING',
+        },
+      }).catch(() => undefined);
+    }
+
+    if (patientRes.status === 'rejected' || (patientRes.status === 'fulfilled' && !patientRes.value)) {
+      await prisma.notificationOutbox.upsert({
+        where: { eventId: patientEventId },
+        update: { attempts: { increment: 1 }, lastAttemptAt: new Date() },
+        create: {
+          eventId: patientEventId,
+          channel: 'SOCKET_NOTIFICATION',
+          targetUserId: patientUser.id,
+          payload: {
+            userId: patientUser.id,
+            notification: serializeNotification(patientNotification),
+          },
+          status: 'PENDING',
+        },
+      }).catch(() => undefined);
+    }
   } catch (error) {
     console.warn('Non-critical chat/notification delivery warning:', error);
   }

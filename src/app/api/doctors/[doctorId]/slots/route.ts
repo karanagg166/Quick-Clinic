@@ -31,8 +31,12 @@ function formatSlotsWithAvailability(slots: any[]) {
   return slots.map((slot) => {
     let status = slot.status;
 
-    if (slot.appointment) {
-      const apptStatus = slot.appointment.status;
+    const activeAppt = Array.isArray(slot.appointments)
+      ? slot.appointments.find((a: any) => a.status !== "CANCELLED")
+      : slot.appointment;
+
+    if (activeAppt) {
+      const apptStatus = activeAppt.status;
       if (apptStatus === "COMPLETED" || apptStatus === "NO_SHOW" || apptStatus === "EXPIRED") {
         status = "UNAVAILABLE";
       } else if (apptStatus === "CONFIRMED" || apptStatus === "PENDING") {
@@ -104,7 +108,7 @@ export async function GET(
         date,
       },
       include: {
-        appointment: {
+        appointments: {
           select: { id: true, status: true },
         },
       },
@@ -206,7 +210,7 @@ export async function GET(
         date,
       },
       include: {
-        appointment: {
+        appointments: {
           select: { id: true, status: true },
         },
       },
