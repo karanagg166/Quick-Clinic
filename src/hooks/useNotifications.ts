@@ -52,6 +52,39 @@ export function useNotifications() {
 
     let isMounted = true;
 
+    const fetchPersistedNotifications = async () => {
+      try {
+        const res = await fetch(`/api/user/${userId}/notification`);
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && isMounted) {
+            setNotifications((prev) => {
+              const prevMap = new Map(prev.map((n) => [n.id, n]));
+              for (const item of list) {
+                if (!prevMap.has(item.id)) {
+                  prevMap.set(item.id, {
+                    id: item.id,
+                    message: item.message,
+                    actionHref: item.actionHref ?? null,
+                    actionLabel: item.actionLabel ?? null,
+                    createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString(),
+                    isRead: Boolean(item.isRead),
+                  });
+                }
+              }
+              return Array.from(prevMap.values()).sort(
+                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              );
+            });
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to load persisted notifications:', err);
+      }
+    };
+
+    fetchPersistedNotifications();
+
     const connectSocket = async () => {
       const ticket = await fetchSocketToken();
       if (!isMounted || !ticket) {
@@ -85,11 +118,17 @@ export function useNotifications() {
       socketRef.current = socket;
 
       socket.on('connect', () => {
-        if (isMounted) setIsConnected(true);
+        if (isMounted) {
+          setIsConnected(true);
+          fetchPersistedNotifications();
+        }
       });
 
       socket.on('notification_connected', () => {
-        if (isMounted) setIsConnected(true);
+        if (isMounted) {
+          setIsConnected(true);
+          fetchPersistedNotifications();
+        }
       });
 
       socket.on('new_notification', (data: { notification: Notification }) => {

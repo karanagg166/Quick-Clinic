@@ -251,6 +251,7 @@ exports.Prisma.AppointmentScalarFieldEnum = {
   doctorId: 'doctorId',
   patientId: 'patientId',
   slotId: 'slotId',
+  paymentId: 'paymentId',
   status: 'status',
   paymentMethod: 'paymentMethod',
   transactionId: 'transactionId',
@@ -280,6 +281,7 @@ exports.Prisma.ChatMessagesScalarFieldEnum = {
 
 exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
+  idempotencyKey: 'idempotencyKey',
   amount: 'amount',
   currency: 'currency',
   userId: 'userId',
@@ -289,7 +291,52 @@ exports.Prisma.PaymentScalarFieldEnum = {
   status: 'status',
   razorpayOrderId: 'razorpayOrderId',
   razorpayPaymentId: 'razorpayPaymentId',
-  createdAt: 'createdAt'
+  capturedAt: 'capturedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.RefundScalarFieldEnum = {
+  id: 'id',
+  paymentId: 'paymentId',
+  amount: 'amount',
+  currency: 'currency',
+  reason: 'reason',
+  status: 'status',
+  idempotencyKey: 'idempotencyKey',
+  razorpayRefundId: 'razorpayRefundId',
+  failureReason: 'failureReason',
+  attempts: 'attempts',
+  lastAttemptAt: 'lastAttemptAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  processedAt: 'processedAt'
+};
+
+exports.Prisma.WebhookEventScalarFieldEnum = {
+  id: 'id',
+  providerEventId: 'providerEventId',
+  eventType: 'eventType',
+  paymentId: 'paymentId',
+  status: 'status',
+  payload: 'payload',
+  processingError: 'processingError',
+  receivedAt: 'receivedAt',
+  processedAt: 'processedAt'
+};
+
+exports.Prisma.NotificationOutboxScalarFieldEnum = {
+  id: 'id',
+  eventId: 'eventId',
+  channel: 'channel',
+  targetUserId: 'targetUserId',
+  payload: 'payload',
+  status: 'status',
+  attempts: 'attempts',
+  lastError: 'lastError',
+  lastAttemptAt: 'lastAttemptAt',
+  createdAt: 'createdAt',
+  deliveredAt: 'deliveredAt'
 };
 
 exports.Prisma.WithdrawalScalarFieldEnum = {
@@ -521,6 +568,28 @@ exports.PaymentMethod = exports.$Enums.PaymentMethod = {
   ONLINE: 'ONLINE'
 };
 
+exports.RefundStatus = exports.$Enums.RefundStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
+};
+
+exports.WebhookEventStatus = exports.$Enums.WebhookEventStatus = {
+  RECEIVED: 'RECEIVED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  IGNORED: 'IGNORED'
+};
+
+exports.OutboxStatus = exports.$Enums.OutboxStatus = {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
+};
+
 exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -555,6 +624,9 @@ exports.Prisma.ModelName = {
   DoctorPatientRelation: 'DoctorPatientRelation',
   ChatMessages: 'ChatMessages',
   Payment: 'Payment',
+  Refund: 'Refund',
+  WebhookEvent: 'WebhookEvent',
+  NotificationOutbox: 'NotificationOutbox',
   Withdrawal: 'Withdrawal',
   BankAccount: 'BankAccount',
   Otp: 'Otp',

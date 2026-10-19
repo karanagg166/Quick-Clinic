@@ -5,6 +5,7 @@ import type { AppointmentDetail } from '@/types/common';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
 import { publishToSocketServer } from '@/lib/socket-publisher';
+import { claimAndExecuteRefund } from '@/lib/payment-booking-service';
 
 export async function GET(
   req: Request,
@@ -232,18 +233,45 @@ export async function PATCH(
           data: { status: 'UNAVAILABLE', heldByPatientId: null, heldAt: null },
         });
 
-        if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
-          const doctorFees = appointmentBefore.doctor.fees;
-          const feesInPaise = doctorFees * 100;
-
-          await tx.doctor.update({
-            where: { id: doctorId },
-            data: {
-              balance: {
-                increment: feesInPaise,
+        if (appointmentBefore.paymentMethod === 'ONLINE') {
+          let isPaymentRefundedOrFailed = false;
+          if (
+            (appointmentBefore.paymentId || appointmentBefore.transactionId) &&
+            typeof (tx as any).payment?.findFirst === 'function'
+          ) {
+            const paymentRecord = await (tx as any).payment.findFirst({
+              where: {
+                OR: [
+                  { id: appointmentBefore.paymentId || undefined },
+                  { razorpayPaymentId: appointmentBefore.transactionId || undefined },
+                ],
               },
-            },
-          });
+              select: { status: true },
+            }).catch(() => null);
+
+            if (
+              paymentRecord &&
+              (paymentRecord.status === 'REFUNDED' ||
+                paymentRecord.status === 'FAILED' ||
+                paymentRecord.status === 'REFUND_PENDING')
+            ) {
+              isPaymentRefundedOrFailed = true;
+            }
+          }
+
+          if (!isPaymentRefundedOrFailed) {
+            const doctorFees = appointmentBefore.doctor.fees;
+            const feesInPaise = Math.round(doctorFees * 100);
+
+            await tx.doctor.update({
+              where: { id: doctorId },
+              data: {
+                balance: {
+                  increment: feesInPaise,
+                },
+              },
+            });
+          }
         }
 
         return await tx.appointment.findUnique({ where: { id: appointmentId } });
@@ -273,40 +301,15 @@ export async function PATCH(
           });
 
           // Process refund if payment was online
-          if (appointmentBefore.paymentMethod === 'ONLINE' && appointmentBefore.transactionId) {
+          if (appointmentBefore.paymentMethod === 'ONLINE' && (appointmentBefore.paymentId || appointmentBefore.transactionId)) {
             try {
-              const patientUserId = appointmentBefore.patient.user.id;
-              const payment = await prisma.payment.findFirst({
-                where: {
-                  razorpayPaymentId: appointmentBefore.transactionId,
-                  userId: patientUserId,
-                  status: 'SUCCESS',
-                },
+              const paymentLookup = appointmentBefore.paymentId || appointmentBefore.transactionId!;
+              await claimAndExecuteRefund({
+                paymentId: paymentLookup,
+                reason: 'Appointment cancelled by doctor',
+                initiatedBy: 'DOCTOR',
+                idempotencyKey: `cancel_doctor_${appointmentId}`,
               });
-
-              if (payment && payment.razorpayPaymentId) {
-                if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-                  const RazorpayModule = await import('razorpay');
-                  const Razorpay = RazorpayModule.default;
-                  const razorpay = new Razorpay({
-                    key_id: process.env.RAZORPAY_KEY_ID,
-                    key_secret: process.env.RAZORPAY_KEY_SECRET,
-                  });
-
-                  await razorpay.payments.refund(payment.razorpayPaymentId, {
-                    amount: payment.amount,
-                    notes: {
-                      reason: 'Appointment cancelled by doctor',
-                      appointmentId: appointmentId,
-                    },
-                  });
-
-                  await prisma.payment.update({
-                    where: { id: payment.id },
-                    data: { status: 'REFUNDED' },
-                  });
-                }
-              }
             } catch (refundError) {
               console.error('Doctor cancellation refund error:', refundError);
             }

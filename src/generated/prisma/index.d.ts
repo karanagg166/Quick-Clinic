@@ -89,6 +89,21 @@ export type ChatMessages = $Result.DefaultSelection<Prisma.$ChatMessagesPayload>
  */
 export type Payment = $Result.DefaultSelection<Prisma.$PaymentPayload>
 /**
+ * Model Refund
+ * 
+ */
+export type Refund = $Result.DefaultSelection<Prisma.$RefundPayload>
+/**
+ * Model WebhookEvent
+ * 
+ */
+export type WebhookEvent = $Result.DefaultSelection<Prisma.$WebhookEventPayload>
+/**
+ * Model NotificationOutbox
+ * 
+ */
+export type NotificationOutbox = $Result.DefaultSelection<Prisma.$NotificationOutboxPayload>
+/**
  * Model Withdrawal
  * 
  */
@@ -279,6 +294,37 @@ export const MedicalDocumentProcessingStatus: {
 export type MedicalDocumentProcessingStatus = (typeof MedicalDocumentProcessingStatus)[keyof typeof MedicalDocumentProcessingStatus]
 
 
+export const RefundStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
+};
+
+export type RefundStatus = (typeof RefundStatus)[keyof typeof RefundStatus]
+
+
+export const WebhookEventStatus: {
+  RECEIVED: 'RECEIVED',
+  PROCESSING: 'PROCESSING',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED',
+  IGNORED: 'IGNORED'
+};
+
+export type WebhookEventStatus = (typeof WebhookEventStatus)[keyof typeof WebhookEventStatus]
+
+
+export const OutboxStatus: {
+  PENDING: 'PENDING',
+  PROCESSING: 'PROCESSING',
+  DELIVERED: 'DELIVERED',
+  FAILED: 'FAILED'
+};
+
+export type OutboxStatus = (typeof OutboxStatus)[keyof typeof OutboxStatus]
+
+
 export const WithdrawalStatus: {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -342,6 +388,18 @@ export const MedicalDocumentType: typeof $Enums.MedicalDocumentType
 export type MedicalDocumentProcessingStatus = $Enums.MedicalDocumentProcessingStatus
 
 export const MedicalDocumentProcessingStatus: typeof $Enums.MedicalDocumentProcessingStatus
+
+export type RefundStatus = $Enums.RefundStatus
+
+export const RefundStatus: typeof $Enums.RefundStatus
+
+export type WebhookEventStatus = $Enums.WebhookEventStatus
+
+export const WebhookEventStatus: typeof $Enums.WebhookEventStatus
+
+export type OutboxStatus = $Enums.OutboxStatus
+
+export const OutboxStatus: typeof $Enums.OutboxStatus
 
 export type WithdrawalStatus = $Enums.WithdrawalStatus
 
@@ -625,6 +683,36 @@ export class PrismaClient<
     * ```
     */
   get payment(): Prisma.PaymentDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.refund`: Exposes CRUD operations for the **Refund** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Refunds
+    * const refunds = await prisma.refund.findMany()
+    * ```
+    */
+  get refund(): Prisma.RefundDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.webhookEvent`: Exposes CRUD operations for the **WebhookEvent** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more WebhookEvents
+    * const webhookEvents = await prisma.webhookEvent.findMany()
+    * ```
+    */
+  get webhookEvent(): Prisma.WebhookEventDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.notificationOutbox`: Exposes CRUD operations for the **NotificationOutbox** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more NotificationOutboxes
+    * const notificationOutboxes = await prisma.notificationOutbox.findMany()
+    * ```
+    */
+  get notificationOutbox(): Prisma.NotificationOutboxDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.withdrawal`: Exposes CRUD operations for the **Withdrawal** model.
@@ -1164,6 +1252,9 @@ export namespace Prisma {
     DoctorPatientRelation: 'DoctorPatientRelation',
     ChatMessages: 'ChatMessages',
     Payment: 'Payment',
+    Refund: 'Refund',
+    WebhookEvent: 'WebhookEvent',
+    NotificationOutbox: 'NotificationOutbox',
     Withdrawal: 'Withdrawal',
     BankAccount: 'BankAccount',
     Otp: 'Otp',
@@ -1188,7 +1279,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "medicalDocument" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment" | "medicalAiConversation" | "medicalAiMessage"
+      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "medicalDocument" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "refund" | "webhookEvent" | "notificationOutbox" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment" | "medicalAiConversation" | "medicalAiMessage"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -2302,6 +2393,228 @@ export namespace Prisma {
           }
         }
       }
+      Refund: {
+        payload: Prisma.$RefundPayload<ExtArgs>
+        fields: Prisma.RefundFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RefundFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RefundFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          findFirst: {
+            args: Prisma.RefundFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RefundFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          findMany: {
+            args: Prisma.RefundFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>[]
+          }
+          create: {
+            args: Prisma.RefundCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          createMany: {
+            args: Prisma.RefundCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RefundCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>[]
+          }
+          delete: {
+            args: Prisma.RefundDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          update: {
+            args: Prisma.RefundUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          deleteMany: {
+            args: Prisma.RefundDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RefundUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RefundUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>[]
+          }
+          upsert: {
+            args: Prisma.RefundUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RefundPayload>
+          }
+          aggregate: {
+            args: Prisma.RefundAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRefund>
+          }
+          groupBy: {
+            args: Prisma.RefundGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RefundGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RefundCountArgs<ExtArgs>
+            result: $Utils.Optional<RefundCountAggregateOutputType> | number
+          }
+        }
+      }
+      WebhookEvent: {
+        payload: Prisma.$WebhookEventPayload<ExtArgs>
+        fields: Prisma.WebhookEventFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.WebhookEventFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.WebhookEventFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          findFirst: {
+            args: Prisma.WebhookEventFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.WebhookEventFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          findMany: {
+            args: Prisma.WebhookEventFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>[]
+          }
+          create: {
+            args: Prisma.WebhookEventCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          createMany: {
+            args: Prisma.WebhookEventCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.WebhookEventCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>[]
+          }
+          delete: {
+            args: Prisma.WebhookEventDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          update: {
+            args: Prisma.WebhookEventUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          deleteMany: {
+            args: Prisma.WebhookEventDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.WebhookEventUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.WebhookEventUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>[]
+          }
+          upsert: {
+            args: Prisma.WebhookEventUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$WebhookEventPayload>
+          }
+          aggregate: {
+            args: Prisma.WebhookEventAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateWebhookEvent>
+          }
+          groupBy: {
+            args: Prisma.WebhookEventGroupByArgs<ExtArgs>
+            result: $Utils.Optional<WebhookEventGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.WebhookEventCountArgs<ExtArgs>
+            result: $Utils.Optional<WebhookEventCountAggregateOutputType> | number
+          }
+        }
+      }
+      NotificationOutbox: {
+        payload: Prisma.$NotificationOutboxPayload<ExtArgs>
+        fields: Prisma.NotificationOutboxFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.NotificationOutboxFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.NotificationOutboxFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          findFirst: {
+            args: Prisma.NotificationOutboxFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.NotificationOutboxFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          findMany: {
+            args: Prisma.NotificationOutboxFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>[]
+          }
+          create: {
+            args: Prisma.NotificationOutboxCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          createMany: {
+            args: Prisma.NotificationOutboxCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.NotificationOutboxCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>[]
+          }
+          delete: {
+            args: Prisma.NotificationOutboxDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          update: {
+            args: Prisma.NotificationOutboxUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          deleteMany: {
+            args: Prisma.NotificationOutboxDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.NotificationOutboxUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.NotificationOutboxUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>[]
+          }
+          upsert: {
+            args: Prisma.NotificationOutboxUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$NotificationOutboxPayload>
+          }
+          aggregate: {
+            args: Prisma.NotificationOutboxAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateNotificationOutbox>
+          }
+          groupBy: {
+            args: Prisma.NotificationOutboxGroupByArgs<ExtArgs>
+            result: $Utils.Optional<NotificationOutboxGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.NotificationOutboxCountArgs<ExtArgs>
+            result: $Utils.Optional<NotificationOutboxCountAggregateOutputType> | number
+          }
+        }
+      }
       Withdrawal: {
         payload: Prisma.$WithdrawalPayload<ExtArgs>
         fields: Prisma.WithdrawalFieldRefs
@@ -3091,6 +3404,9 @@ export namespace Prisma {
     doctorPatientRelation?: DoctorPatientRelationOmit
     chatMessages?: ChatMessagesOmit
     payment?: PaymentOmit
+    refund?: RefundOmit
+    webhookEvent?: WebhookEventOmit
+    notificationOutbox?: NotificationOutboxOmit
     withdrawal?: WithdrawalOmit
     bankAccount?: BankAccountOmit
     otp?: OtpOmit
@@ -3502,6 +3818,37 @@ export namespace Prisma {
 
 
   /**
+   * Count Type SlotCountOutputType
+   */
+
+  export type SlotCountOutputType = {
+    appointments: number
+  }
+
+  export type SlotCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    appointments?: boolean | SlotCountOutputTypeCountAppointmentsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * SlotCountOutputType without action
+   */
+  export type SlotCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the SlotCountOutputType
+     */
+    select?: SlotCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * SlotCountOutputType without action
+   */
+  export type SlotCountOutputTypeCountAppointmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: AppointmentWhereInput
+  }
+
+
+  /**
    * Count Type DoctorPatientRelationCountOutputType
    */
 
@@ -3529,6 +3876,46 @@ export namespace Prisma {
    */
   export type DoctorPatientRelationCountOutputTypeCountChatMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: ChatMessagesWhereInput
+  }
+
+
+  /**
+   * Count Type PaymentCountOutputType
+   */
+
+  export type PaymentCountOutputType = {
+    refunds: number
+    webhookEvents: number
+  }
+
+  export type PaymentCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    refunds?: boolean | PaymentCountOutputTypeCountRefundsArgs
+    webhookEvents?: boolean | PaymentCountOutputTypeCountWebhookEventsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PaymentCountOutputType without action
+   */
+  export type PaymentCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PaymentCountOutputType
+     */
+    select?: PaymentCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PaymentCountOutputType without action
+   */
+  export type PaymentCountOutputTypeCountRefundsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RefundWhereInput
+  }
+
+  /**
+   * PaymentCountOutputType without action
+   */
+  export type PaymentCountOutputTypeCountWebhookEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookEventWhereInput
   }
 
 
@@ -15755,8 +16142,9 @@ export namespace Prisma {
     holdExpiresAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
-    appointment?: boolean | Slot$appointmentArgs<ExtArgs>
+    appointments?: boolean | Slot$appointmentsArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+    _count?: boolean | SlotCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["slot"]>
 
   export type SlotSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -15808,8 +16196,9 @@ export namespace Prisma {
 
   export type SlotOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "date" | "startTime" | "endTime" | "status" | "heldByPatientId" | "heldAt" | "holdToken" | "holdExpiresAt" | "createdAt" | "updatedAt", ExtArgs["result"]["slot"]>
   export type SlotInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    appointment?: boolean | Slot$appointmentArgs<ExtArgs>
+    appointments?: boolean | Slot$appointmentsArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
+    _count?: boolean | SlotCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type SlotIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
@@ -15821,7 +16210,7 @@ export namespace Prisma {
   export type $SlotPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "Slot"
     objects: {
-      appointment: Prisma.$AppointmentPayload<ExtArgs> | null
+      appointments: Prisma.$AppointmentPayload<ExtArgs>[]
       doctor: Prisma.$DoctorPayload<ExtArgs>
     }
     scalars: $Extensions.GetPayloadResult<{
@@ -16231,7 +16620,7 @@ export namespace Prisma {
    */
   export interface Prisma__SlotClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
-    appointment<T extends Slot$appointmentArgs<ExtArgs> = {}>(args?: Subset<T, Slot$appointmentArgs<ExtArgs>>): Prisma__AppointmentClient<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    appointments<T extends Slot$appointmentsArgs<ExtArgs> = {}>(args?: Subset<T, Slot$appointmentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -16675,9 +17064,9 @@ export namespace Prisma {
   }
 
   /**
-   * Slot.appointment
+   * Slot.appointments
    */
-  export type Slot$appointmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type Slot$appointmentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the Appointment
      */
@@ -16691,6 +17080,11 @@ export namespace Prisma {
      */
     include?: AppointmentInclude<ExtArgs> | null
     where?: AppointmentWhereInput
+    orderBy?: AppointmentOrderByWithRelationInput | AppointmentOrderByWithRelationInput[]
+    cursor?: AppointmentWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: AppointmentScalarFieldEnum | AppointmentScalarFieldEnum[]
   }
 
   /**
@@ -16727,6 +17121,7 @@ export namespace Prisma {
     doctorId: string | null
     patientId: string | null
     slotId: string | null
+    paymentId: string | null
     status: $Enums.AppointmentStatus | null
     paymentMethod: $Enums.PaymentMethod | null
     transactionId: string | null
@@ -16741,6 +17136,7 @@ export namespace Prisma {
     doctorId: string | null
     patientId: string | null
     slotId: string | null
+    paymentId: string | null
     status: $Enums.AppointmentStatus | null
     paymentMethod: $Enums.PaymentMethod | null
     transactionId: string | null
@@ -16755,6 +17151,7 @@ export namespace Prisma {
     doctorId: number
     patientId: number
     slotId: number
+    paymentId: number
     status: number
     paymentMethod: number
     transactionId: number
@@ -16771,6 +17168,7 @@ export namespace Prisma {
     doctorId?: true
     patientId?: true
     slotId?: true
+    paymentId?: true
     status?: true
     paymentMethod?: true
     transactionId?: true
@@ -16785,6 +17183,7 @@ export namespace Prisma {
     doctorId?: true
     patientId?: true
     slotId?: true
+    paymentId?: true
     status?: true
     paymentMethod?: true
     transactionId?: true
@@ -16799,6 +17198,7 @@ export namespace Prisma {
     doctorId?: true
     patientId?: true
     slotId?: true
+    paymentId?: true
     status?: true
     paymentMethod?: true
     transactionId?: true
@@ -16886,6 +17286,7 @@ export namespace Prisma {
     doctorId: string
     patientId: string
     slotId: string
+    paymentId: string | null
     status: $Enums.AppointmentStatus
     paymentMethod: $Enums.PaymentMethod
     transactionId: string | null
@@ -16917,6 +17318,7 @@ export namespace Prisma {
     doctorId?: boolean
     patientId?: boolean
     slotId?: boolean
+    paymentId?: boolean
     status?: boolean
     paymentMethod?: boolean
     transactionId?: boolean
@@ -16925,6 +17327,7 @@ export namespace Prisma {
     updatedAt?: boolean
     isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["appointment"]>
@@ -16934,6 +17337,7 @@ export namespace Prisma {
     doctorId?: boolean
     patientId?: boolean
     slotId?: boolean
+    paymentId?: boolean
     status?: boolean
     paymentMethod?: boolean
     transactionId?: boolean
@@ -16942,6 +17346,7 @@ export namespace Prisma {
     updatedAt?: boolean
     isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["appointment"]>
@@ -16951,6 +17356,7 @@ export namespace Prisma {
     doctorId?: boolean
     patientId?: boolean
     slotId?: boolean
+    paymentId?: boolean
     status?: boolean
     paymentMethod?: boolean
     transactionId?: boolean
@@ -16959,6 +17365,7 @@ export namespace Prisma {
     updatedAt?: boolean
     isAppointmentOffline?: boolean
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["appointment"]>
@@ -16968,6 +17375,7 @@ export namespace Prisma {
     doctorId?: boolean
     patientId?: boolean
     slotId?: boolean
+    paymentId?: boolean
     status?: boolean
     paymentMethod?: boolean
     transactionId?: boolean
@@ -16977,19 +17385,22 @@ export namespace Prisma {
     isAppointmentOffline?: boolean
   }
 
-  export type AppointmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "slotId" | "status" | "paymentMethod" | "transactionId" | "notes" | "bookedAt" | "updatedAt" | "isAppointmentOffline", ExtArgs["result"]["appointment"]>
+  export type AppointmentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "slotId" | "paymentId" | "status" | "paymentMethod" | "transactionId" | "notes" | "bookedAt" | "updatedAt" | "isAppointmentOffline", ExtArgs["result"]["appointment"]>
   export type AppointmentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type AppointmentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
   export type AppointmentIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     slot?: boolean | SlotDefaultArgs<ExtArgs>
+    payment?: boolean | Appointment$paymentArgs<ExtArgs>
     doctor?: boolean | DoctorDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
   }
@@ -16998,6 +17409,7 @@ export namespace Prisma {
     name: "Appointment"
     objects: {
       slot: Prisma.$SlotPayload<ExtArgs>
+      payment: Prisma.$PaymentPayload<ExtArgs> | null
       doctor: Prisma.$DoctorPayload<ExtArgs>
       patient: Prisma.$PatientPayload<ExtArgs>
     }
@@ -17006,6 +17418,7 @@ export namespace Prisma {
       doctorId: string
       patientId: string
       slotId: string
+      paymentId: string | null
       status: $Enums.AppointmentStatus
       paymentMethod: $Enums.PaymentMethod
       transactionId: string | null
@@ -17408,6 +17821,7 @@ export namespace Prisma {
   export interface Prisma__AppointmentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     slot<T extends SlotDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SlotDefaultArgs<ExtArgs>>): Prisma__SlotClient<$Result.GetResult<Prisma.$SlotPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    payment<T extends Appointment$paymentArgs<ExtArgs> = {}>(args?: Subset<T, Appointment$paymentArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
     doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
@@ -17443,6 +17857,7 @@ export namespace Prisma {
     readonly doctorId: FieldRef<"Appointment", 'String'>
     readonly patientId: FieldRef<"Appointment", 'String'>
     readonly slotId: FieldRef<"Appointment", 'String'>
+    readonly paymentId: FieldRef<"Appointment", 'String'>
     readonly status: FieldRef<"Appointment", 'AppointmentStatus'>
     readonly paymentMethod: FieldRef<"Appointment", 'PaymentMethod'>
     readonly transactionId: FieldRef<"Appointment", 'String'>
@@ -17848,6 +18263,25 @@ export namespace Prisma {
      * Limit how many Appointments to delete.
      */
     limit?: number
+  }
+
+  /**
+   * Appointment.payment
+   */
+  export type Appointment$paymentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
   }
 
   /**
@@ -20089,6 +20523,7 @@ export namespace Prisma {
 
   export type PaymentMinAggregateOutputType = {
     id: string | null
+    idempotencyKey: string | null
     amount: number | null
     currency: string | null
     userId: string | null
@@ -20098,11 +20533,14 @@ export namespace Prisma {
     status: string | null
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
+    capturedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type PaymentMaxAggregateOutputType = {
     id: string | null
+    idempotencyKey: string | null
     amount: number | null
     currency: string | null
     userId: string | null
@@ -20112,11 +20550,14 @@ export namespace Prisma {
     status: string | null
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
+    capturedAt: Date | null
     createdAt: Date | null
+    updatedAt: Date | null
   }
 
   export type PaymentCountAggregateOutputType = {
     id: number
+    idempotencyKey: number
     amount: number
     currency: number
     userId: number
@@ -20126,7 +20567,9 @@ export namespace Prisma {
     status: number
     razorpayOrderId: number
     razorpayPaymentId: number
+    capturedAt: number
     createdAt: number
+    updatedAt: number
     _all: number
   }
 
@@ -20141,6 +20584,7 @@ export namespace Prisma {
 
   export type PaymentMinAggregateInputType = {
     id?: true
+    idempotencyKey?: true
     amount?: true
     currency?: true
     userId?: true
@@ -20150,11 +20594,14 @@ export namespace Prisma {
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
+    capturedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type PaymentMaxAggregateInputType = {
     id?: true
+    idempotencyKey?: true
     amount?: true
     currency?: true
     userId?: true
@@ -20164,11 +20611,14 @@ export namespace Prisma {
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
+    capturedAt?: true
     createdAt?: true
+    updatedAt?: true
   }
 
   export type PaymentCountAggregateInputType = {
     id?: true
+    idempotencyKey?: true
     amount?: true
     currency?: true
     userId?: true
@@ -20178,7 +20628,9 @@ export namespace Prisma {
     status?: true
     razorpayOrderId?: true
     razorpayPaymentId?: true
+    capturedAt?: true
     createdAt?: true
+    updatedAt?: true
     _all?: true
   }
 
@@ -20270,6 +20722,7 @@ export namespace Prisma {
 
   export type PaymentGroupByOutputType = {
     id: string
+    idempotencyKey: string | null
     amount: number
     currency: string
     userId: string
@@ -20279,7 +20732,9 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId: string | null
+    capturedAt: Date | null
     createdAt: Date
+    updatedAt: Date
     _count: PaymentCountAggregateOutputType | null
     _avg: PaymentAvgAggregateOutputType | null
     _sum: PaymentSumAggregateOutputType | null
@@ -20303,6 +20758,7 @@ export namespace Prisma {
 
   export type PaymentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    idempotencyKey?: boolean
     amount?: boolean
     currency?: boolean
     userId?: boolean
@@ -20312,12 +20768,19 @@ export namespace Prisma {
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
+    capturedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
+    appointment?: boolean | Payment$appointmentArgs<ExtArgs>
+    refunds?: boolean | Payment$refundsArgs<ExtArgs>
+    webhookEvents?: boolean | Payment$webhookEventsArgs<ExtArgs>
+    _count?: boolean | PaymentCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["payment"]>
 
   export type PaymentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    idempotencyKey?: boolean
     amount?: boolean
     currency?: boolean
     userId?: boolean
@@ -20327,12 +20790,15 @@ export namespace Prisma {
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
+    capturedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["payment"]>
 
   export type PaymentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
+    idempotencyKey?: boolean
     amount?: boolean
     currency?: boolean
     userId?: boolean
@@ -20342,12 +20808,15 @@ export namespace Prisma {
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
+    capturedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["payment"]>
 
   export type PaymentSelectScalar = {
     id?: boolean
+    idempotencyKey?: boolean
     amount?: boolean
     currency?: boolean
     userId?: boolean
@@ -20357,12 +20826,18 @@ export namespace Prisma {
     status?: boolean
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
+    capturedAt?: boolean
     createdAt?: boolean
+    updatedAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "amount" | "currency" | "userId" | "doctorId" | "slotId" | "holdToken" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "createdAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "amount" | "currency" | "userId" | "doctorId" | "slotId" | "holdToken" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "capturedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
+    appointment?: boolean | Payment$appointmentArgs<ExtArgs>
+    refunds?: boolean | Payment$refundsArgs<ExtArgs>
+    webhookEvents?: boolean | Payment$webhookEventsArgs<ExtArgs>
+    _count?: boolean | PaymentCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PaymentIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -20375,9 +20850,13 @@ export namespace Prisma {
     name: "Payment"
     objects: {
       user: Prisma.$UserPayload<ExtArgs>
+      appointment: Prisma.$AppointmentPayload<ExtArgs> | null
+      refunds: Prisma.$RefundPayload<ExtArgs>[]
+      webhookEvents: Prisma.$WebhookEventPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
+      idempotencyKey: string | null
       amount: number
       currency: string
       userId: string
@@ -20387,7 +20866,9 @@ export namespace Prisma {
       status: string
       razorpayOrderId: string
       razorpayPaymentId: string | null
+      capturedAt: Date | null
       createdAt: Date
+      updatedAt: Date
     }, ExtArgs["result"]["payment"]>
     composites: {}
   }
@@ -20783,6 +21264,9 @@ export namespace Prisma {
   export interface Prisma__PaymentClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
     user<T extends UserDefaultArgs<ExtArgs> = {}>(args?: Subset<T, UserDefaultArgs<ExtArgs>>): Prisma__UserClient<$Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    appointment<T extends Payment$appointmentArgs<ExtArgs> = {}>(args?: Subset<T, Payment$appointmentArgs<ExtArgs>>): Prisma__AppointmentClient<$Result.GetResult<Prisma.$AppointmentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    refunds<T extends Payment$refundsArgs<ExtArgs> = {}>(args?: Subset<T, Payment$refundsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    webhookEvents<T extends Payment$webhookEventsArgs<ExtArgs> = {}>(args?: Subset<T, Payment$webhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -20813,6 +21297,7 @@ export namespace Prisma {
    */
   interface PaymentFieldRefs {
     readonly id: FieldRef<"Payment", 'String'>
+    readonly idempotencyKey: FieldRef<"Payment", 'String'>
     readonly amount: FieldRef<"Payment", 'Int'>
     readonly currency: FieldRef<"Payment", 'String'>
     readonly userId: FieldRef<"Payment", 'String'>
@@ -20822,7 +21307,9 @@ export namespace Prisma {
     readonly status: FieldRef<"Payment", 'String'>
     readonly razorpayOrderId: FieldRef<"Payment", 'String'>
     readonly razorpayPaymentId: FieldRef<"Payment", 'String'>
+    readonly capturedAt: FieldRef<"Payment", 'DateTime'>
     readonly createdAt: FieldRef<"Payment", 'DateTime'>
+    readonly updatedAt: FieldRef<"Payment", 'DateTime'>
   }
     
 
@@ -21224,6 +21711,73 @@ export namespace Prisma {
   }
 
   /**
+   * Payment.appointment
+   */
+  export type Payment$appointmentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Appointment
+     */
+    select?: AppointmentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Appointment
+     */
+    omit?: AppointmentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: AppointmentInclude<ExtArgs> | null
+    where?: AppointmentWhereInput
+  }
+
+  /**
+   * Payment.refunds
+   */
+  export type Payment$refundsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    where?: RefundWhereInput
+    orderBy?: RefundOrderByWithRelationInput | RefundOrderByWithRelationInput[]
+    cursor?: RefundWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RefundScalarFieldEnum | RefundScalarFieldEnum[]
+  }
+
+  /**
+   * Payment.webhookEvents
+   */
+  export type Payment$webhookEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    where?: WebhookEventWhereInput
+    orderBy?: WebhookEventOrderByWithRelationInput | WebhookEventOrderByWithRelationInput[]
+    cursor?: WebhookEventWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: WebhookEventScalarFieldEnum | WebhookEventScalarFieldEnum[]
+  }
+
+  /**
    * Payment without action
    */
   export type PaymentDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -21239,6 +21793,3462 @@ export namespace Prisma {
      * Choose, which related nodes to fetch as well
      */
     include?: PaymentInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Refund
+   */
+
+  export type AggregateRefund = {
+    _count: RefundCountAggregateOutputType | null
+    _avg: RefundAvgAggregateOutputType | null
+    _sum: RefundSumAggregateOutputType | null
+    _min: RefundMinAggregateOutputType | null
+    _max: RefundMaxAggregateOutputType | null
+  }
+
+  export type RefundAvgAggregateOutputType = {
+    amount: number | null
+    attempts: number | null
+  }
+
+  export type RefundSumAggregateOutputType = {
+    amount: number | null
+    attempts: number | null
+  }
+
+  export type RefundMinAggregateOutputType = {
+    id: string | null
+    paymentId: string | null
+    amount: number | null
+    currency: string | null
+    reason: string | null
+    status: $Enums.RefundStatus | null
+    idempotencyKey: string | null
+    razorpayRefundId: string | null
+    failureReason: string | null
+    attempts: number | null
+    lastAttemptAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type RefundMaxAggregateOutputType = {
+    id: string | null
+    paymentId: string | null
+    amount: number | null
+    currency: string | null
+    reason: string | null
+    status: $Enums.RefundStatus | null
+    idempotencyKey: string | null
+    razorpayRefundId: string | null
+    failureReason: string | null
+    attempts: number | null
+    lastAttemptAt: Date | null
+    createdAt: Date | null
+    updatedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type RefundCountAggregateOutputType = {
+    id: number
+    paymentId: number
+    amount: number
+    currency: number
+    reason: number
+    status: number
+    idempotencyKey: number
+    razorpayRefundId: number
+    failureReason: number
+    attempts: number
+    lastAttemptAt: number
+    createdAt: number
+    updatedAt: number
+    processedAt: number
+    _all: number
+  }
+
+
+  export type RefundAvgAggregateInputType = {
+    amount?: true
+    attempts?: true
+  }
+
+  export type RefundSumAggregateInputType = {
+    amount?: true
+    attempts?: true
+  }
+
+  export type RefundMinAggregateInputType = {
+    id?: true
+    paymentId?: true
+    amount?: true
+    currency?: true
+    reason?: true
+    status?: true
+    idempotencyKey?: true
+    razorpayRefundId?: true
+    failureReason?: true
+    attempts?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+  }
+
+  export type RefundMaxAggregateInputType = {
+    id?: true
+    paymentId?: true
+    amount?: true
+    currency?: true
+    reason?: true
+    status?: true
+    idempotencyKey?: true
+    razorpayRefundId?: true
+    failureReason?: true
+    attempts?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+  }
+
+  export type RefundCountAggregateInputType = {
+    id?: true
+    paymentId?: true
+    amount?: true
+    currency?: true
+    reason?: true
+    status?: true
+    idempotencyKey?: true
+    razorpayRefundId?: true
+    failureReason?: true
+    attempts?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    updatedAt?: true
+    processedAt?: true
+    _all?: true
+  }
+
+  export type RefundAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Refund to aggregate.
+     */
+    where?: RefundWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Refunds to fetch.
+     */
+    orderBy?: RefundOrderByWithRelationInput | RefundOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RefundWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Refunds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Refunds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Refunds
+    **/
+    _count?: true | RefundCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RefundAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RefundSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RefundMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RefundMaxAggregateInputType
+  }
+
+  export type GetRefundAggregateType<T extends RefundAggregateArgs> = {
+        [P in keyof T & keyof AggregateRefund]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRefund[P]>
+      : GetScalarType<T[P], AggregateRefund[P]>
+  }
+
+
+
+
+  export type RefundGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RefundWhereInput
+    orderBy?: RefundOrderByWithAggregationInput | RefundOrderByWithAggregationInput[]
+    by: RefundScalarFieldEnum[] | RefundScalarFieldEnum
+    having?: RefundScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RefundCountAggregateInputType | true
+    _avg?: RefundAvgAggregateInputType
+    _sum?: RefundSumAggregateInputType
+    _min?: RefundMinAggregateInputType
+    _max?: RefundMaxAggregateInputType
+  }
+
+  export type RefundGroupByOutputType = {
+    id: string
+    paymentId: string
+    amount: number
+    currency: string
+    reason: string
+    status: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId: string | null
+    failureReason: string | null
+    attempts: number
+    lastAttemptAt: Date | null
+    createdAt: Date
+    updatedAt: Date
+    processedAt: Date | null
+    _count: RefundCountAggregateOutputType | null
+    _avg: RefundAvgAggregateOutputType | null
+    _sum: RefundSumAggregateOutputType | null
+    _min: RefundMinAggregateOutputType | null
+    _max: RefundMaxAggregateOutputType | null
+  }
+
+  type GetRefundGroupByPayload<T extends RefundGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RefundGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RefundGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RefundGroupByOutputType[P]>
+            : GetScalarType<T[P], RefundGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RefundSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    paymentId?: boolean
+    amount?: boolean
+    currency?: boolean
+    reason?: boolean
+    status?: boolean
+    idempotencyKey?: boolean
+    razorpayRefundId?: boolean
+    failureReason?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["refund"]>
+
+  export type RefundSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    paymentId?: boolean
+    amount?: boolean
+    currency?: boolean
+    reason?: boolean
+    status?: boolean
+    idempotencyKey?: boolean
+    razorpayRefundId?: boolean
+    failureReason?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["refund"]>
+
+  export type RefundSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    paymentId?: boolean
+    amount?: boolean
+    currency?: boolean
+    reason?: boolean
+    status?: boolean
+    idempotencyKey?: boolean
+    razorpayRefundId?: boolean
+    failureReason?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["refund"]>
+
+  export type RefundSelectScalar = {
+    id?: boolean
+    paymentId?: boolean
+    amount?: boolean
+    currency?: boolean
+    reason?: boolean
+    status?: boolean
+    idempotencyKey?: boolean
+    razorpayRefundId?: boolean
+    failureReason?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    updatedAt?: boolean
+    processedAt?: boolean
+  }
+
+  export type RefundOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "paymentId" | "amount" | "currency" | "reason" | "status" | "idempotencyKey" | "razorpayRefundId" | "failureReason" | "attempts" | "lastAttemptAt" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["refund"]>
+  export type RefundInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }
+  export type RefundIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }
+  export type RefundIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | PaymentDefaultArgs<ExtArgs>
+  }
+
+  export type $RefundPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Refund"
+    objects: {
+      payment: Prisma.$PaymentPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      paymentId: string
+      amount: number
+      currency: string
+      reason: string
+      status: $Enums.RefundStatus
+      idempotencyKey: string
+      razorpayRefundId: string | null
+      failureReason: string | null
+      attempts: number
+      lastAttemptAt: Date | null
+      createdAt: Date
+      updatedAt: Date
+      processedAt: Date | null
+    }, ExtArgs["result"]["refund"]>
+    composites: {}
+  }
+
+  type RefundGetPayload<S extends boolean | null | undefined | RefundDefaultArgs> = $Result.GetResult<Prisma.$RefundPayload, S>
+
+  type RefundCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RefundFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RefundCountAggregateInputType | true
+    }
+
+  export interface RefundDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Refund'], meta: { name: 'Refund' } }
+    /**
+     * Find zero or one Refund that matches the filter.
+     * @param {RefundFindUniqueArgs} args - Arguments to find a Refund
+     * @example
+     * // Get one Refund
+     * const refund = await prisma.refund.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RefundFindUniqueArgs>(args: SelectSubset<T, RefundFindUniqueArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Refund that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RefundFindUniqueOrThrowArgs} args - Arguments to find a Refund
+     * @example
+     * // Get one Refund
+     * const refund = await prisma.refund.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RefundFindUniqueOrThrowArgs>(args: SelectSubset<T, RefundFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Refund that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundFindFirstArgs} args - Arguments to find a Refund
+     * @example
+     * // Get one Refund
+     * const refund = await prisma.refund.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RefundFindFirstArgs>(args?: SelectSubset<T, RefundFindFirstArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Refund that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundFindFirstOrThrowArgs} args - Arguments to find a Refund
+     * @example
+     * // Get one Refund
+     * const refund = await prisma.refund.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RefundFindFirstOrThrowArgs>(args?: SelectSubset<T, RefundFindFirstOrThrowArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Refunds that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Refunds
+     * const refunds = await prisma.refund.findMany()
+     * 
+     * // Get first 10 Refunds
+     * const refunds = await prisma.refund.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const refundWithIdOnly = await prisma.refund.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RefundFindManyArgs>(args?: SelectSubset<T, RefundFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Refund.
+     * @param {RefundCreateArgs} args - Arguments to create a Refund.
+     * @example
+     * // Create one Refund
+     * const Refund = await prisma.refund.create({
+     *   data: {
+     *     // ... data to create a Refund
+     *   }
+     * })
+     * 
+     */
+    create<T extends RefundCreateArgs>(args: SelectSubset<T, RefundCreateArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Refunds.
+     * @param {RefundCreateManyArgs} args - Arguments to create many Refunds.
+     * @example
+     * // Create many Refunds
+     * const refund = await prisma.refund.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RefundCreateManyArgs>(args?: SelectSubset<T, RefundCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Refunds and returns the data saved in the database.
+     * @param {RefundCreateManyAndReturnArgs} args - Arguments to create many Refunds.
+     * @example
+     * // Create many Refunds
+     * const refund = await prisma.refund.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Refunds and only return the `id`
+     * const refundWithIdOnly = await prisma.refund.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RefundCreateManyAndReturnArgs>(args?: SelectSubset<T, RefundCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Refund.
+     * @param {RefundDeleteArgs} args - Arguments to delete one Refund.
+     * @example
+     * // Delete one Refund
+     * const Refund = await prisma.refund.delete({
+     *   where: {
+     *     // ... filter to delete one Refund
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RefundDeleteArgs>(args: SelectSubset<T, RefundDeleteArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Refund.
+     * @param {RefundUpdateArgs} args - Arguments to update one Refund.
+     * @example
+     * // Update one Refund
+     * const refund = await prisma.refund.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RefundUpdateArgs>(args: SelectSubset<T, RefundUpdateArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Refunds.
+     * @param {RefundDeleteManyArgs} args - Arguments to filter Refunds to delete.
+     * @example
+     * // Delete a few Refunds
+     * const { count } = await prisma.refund.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RefundDeleteManyArgs>(args?: SelectSubset<T, RefundDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Refunds.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Refunds
+     * const refund = await prisma.refund.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RefundUpdateManyArgs>(args: SelectSubset<T, RefundUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Refunds and returns the data updated in the database.
+     * @param {RefundUpdateManyAndReturnArgs} args - Arguments to update many Refunds.
+     * @example
+     * // Update many Refunds
+     * const refund = await prisma.refund.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Refunds and only return the `id`
+     * const refundWithIdOnly = await prisma.refund.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RefundUpdateManyAndReturnArgs>(args: SelectSubset<T, RefundUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Refund.
+     * @param {RefundUpsertArgs} args - Arguments to update or create a Refund.
+     * @example
+     * // Update or create a Refund
+     * const refund = await prisma.refund.upsert({
+     *   create: {
+     *     // ... data to create a Refund
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Refund we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RefundUpsertArgs>(args: SelectSubset<T, RefundUpsertArgs<ExtArgs>>): Prisma__RefundClient<$Result.GetResult<Prisma.$RefundPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Refunds.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundCountArgs} args - Arguments to filter Refunds to count.
+     * @example
+     * // Count the number of Refunds
+     * const count = await prisma.refund.count({
+     *   where: {
+     *     // ... the filter for the Refunds we want to count
+     *   }
+     * })
+    **/
+    count<T extends RefundCountArgs>(
+      args?: Subset<T, RefundCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RefundCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Refund.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RefundAggregateArgs>(args: Subset<T, RefundAggregateArgs>): Prisma.PrismaPromise<GetRefundAggregateType<T>>
+
+    /**
+     * Group by Refund.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RefundGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RefundGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RefundGroupByArgs['orderBy'] }
+        : { orderBy?: RefundGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RefundGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRefundGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Refund model
+   */
+  readonly fields: RefundFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Refund.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RefundClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    payment<T extends PaymentDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PaymentDefaultArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Refund model
+   */
+  interface RefundFieldRefs {
+    readonly id: FieldRef<"Refund", 'String'>
+    readonly paymentId: FieldRef<"Refund", 'String'>
+    readonly amount: FieldRef<"Refund", 'Int'>
+    readonly currency: FieldRef<"Refund", 'String'>
+    readonly reason: FieldRef<"Refund", 'String'>
+    readonly status: FieldRef<"Refund", 'RefundStatus'>
+    readonly idempotencyKey: FieldRef<"Refund", 'String'>
+    readonly razorpayRefundId: FieldRef<"Refund", 'String'>
+    readonly failureReason: FieldRef<"Refund", 'String'>
+    readonly attempts: FieldRef<"Refund", 'Int'>
+    readonly lastAttemptAt: FieldRef<"Refund", 'DateTime'>
+    readonly createdAt: FieldRef<"Refund", 'DateTime'>
+    readonly updatedAt: FieldRef<"Refund", 'DateTime'>
+    readonly processedAt: FieldRef<"Refund", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Refund findUnique
+   */
+  export type RefundFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter, which Refund to fetch.
+     */
+    where: RefundWhereUniqueInput
+  }
+
+  /**
+   * Refund findUniqueOrThrow
+   */
+  export type RefundFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter, which Refund to fetch.
+     */
+    where: RefundWhereUniqueInput
+  }
+
+  /**
+   * Refund findFirst
+   */
+  export type RefundFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter, which Refund to fetch.
+     */
+    where?: RefundWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Refunds to fetch.
+     */
+    orderBy?: RefundOrderByWithRelationInput | RefundOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Refunds.
+     */
+    cursor?: RefundWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Refunds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Refunds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Refunds.
+     */
+    distinct?: RefundScalarFieldEnum | RefundScalarFieldEnum[]
+  }
+
+  /**
+   * Refund findFirstOrThrow
+   */
+  export type RefundFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter, which Refund to fetch.
+     */
+    where?: RefundWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Refunds to fetch.
+     */
+    orderBy?: RefundOrderByWithRelationInput | RefundOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Refunds.
+     */
+    cursor?: RefundWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Refunds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Refunds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Refunds.
+     */
+    distinct?: RefundScalarFieldEnum | RefundScalarFieldEnum[]
+  }
+
+  /**
+   * Refund findMany
+   */
+  export type RefundFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter, which Refunds to fetch.
+     */
+    where?: RefundWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Refunds to fetch.
+     */
+    orderBy?: RefundOrderByWithRelationInput | RefundOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Refunds.
+     */
+    cursor?: RefundWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Refunds from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Refunds.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Refunds.
+     */
+    distinct?: RefundScalarFieldEnum | RefundScalarFieldEnum[]
+  }
+
+  /**
+   * Refund create
+   */
+  export type RefundCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Refund.
+     */
+    data: XOR<RefundCreateInput, RefundUncheckedCreateInput>
+  }
+
+  /**
+   * Refund createMany
+   */
+  export type RefundCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Refunds.
+     */
+    data: RefundCreateManyInput | RefundCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Refund createManyAndReturn
+   */
+  export type RefundCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * The data used to create many Refunds.
+     */
+    data: RefundCreateManyInput | RefundCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Refund update
+   */
+  export type RefundUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Refund.
+     */
+    data: XOR<RefundUpdateInput, RefundUncheckedUpdateInput>
+    /**
+     * Choose, which Refund to update.
+     */
+    where: RefundWhereUniqueInput
+  }
+
+  /**
+   * Refund updateMany
+   */
+  export type RefundUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Refunds.
+     */
+    data: XOR<RefundUpdateManyMutationInput, RefundUncheckedUpdateManyInput>
+    /**
+     * Filter which Refunds to update
+     */
+    where?: RefundWhereInput
+    /**
+     * Limit how many Refunds to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Refund updateManyAndReturn
+   */
+  export type RefundUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * The data used to update Refunds.
+     */
+    data: XOR<RefundUpdateManyMutationInput, RefundUncheckedUpdateManyInput>
+    /**
+     * Filter which Refunds to update
+     */
+    where?: RefundWhereInput
+    /**
+     * Limit how many Refunds to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Refund upsert
+   */
+  export type RefundUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Refund to update in case it exists.
+     */
+    where: RefundWhereUniqueInput
+    /**
+     * In case the Refund found by the `where` argument doesn't exist, create a new Refund with this data.
+     */
+    create: XOR<RefundCreateInput, RefundUncheckedCreateInput>
+    /**
+     * In case the Refund was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RefundUpdateInput, RefundUncheckedUpdateInput>
+  }
+
+  /**
+   * Refund delete
+   */
+  export type RefundDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+    /**
+     * Filter which Refund to delete.
+     */
+    where: RefundWhereUniqueInput
+  }
+
+  /**
+   * Refund deleteMany
+   */
+  export type RefundDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Refunds to delete
+     */
+    where?: RefundWhereInput
+    /**
+     * Limit how many Refunds to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Refund without action
+   */
+  export type RefundDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Refund
+     */
+    select?: RefundSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Refund
+     */
+    omit?: RefundOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RefundInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model WebhookEvent
+   */
+
+  export type AggregateWebhookEvent = {
+    _count: WebhookEventCountAggregateOutputType | null
+    _min: WebhookEventMinAggregateOutputType | null
+    _max: WebhookEventMaxAggregateOutputType | null
+  }
+
+  export type WebhookEventMinAggregateOutputType = {
+    id: string | null
+    providerEventId: string | null
+    eventType: string | null
+    paymentId: string | null
+    status: $Enums.WebhookEventStatus | null
+    processingError: string | null
+    receivedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type WebhookEventMaxAggregateOutputType = {
+    id: string | null
+    providerEventId: string | null
+    eventType: string | null
+    paymentId: string | null
+    status: $Enums.WebhookEventStatus | null
+    processingError: string | null
+    receivedAt: Date | null
+    processedAt: Date | null
+  }
+
+  export type WebhookEventCountAggregateOutputType = {
+    id: number
+    providerEventId: number
+    eventType: number
+    paymentId: number
+    status: number
+    payload: number
+    processingError: number
+    receivedAt: number
+    processedAt: number
+    _all: number
+  }
+
+
+  export type WebhookEventMinAggregateInputType = {
+    id?: true
+    providerEventId?: true
+    eventType?: true
+    paymentId?: true
+    status?: true
+    processingError?: true
+    receivedAt?: true
+    processedAt?: true
+  }
+
+  export type WebhookEventMaxAggregateInputType = {
+    id?: true
+    providerEventId?: true
+    eventType?: true
+    paymentId?: true
+    status?: true
+    processingError?: true
+    receivedAt?: true
+    processedAt?: true
+  }
+
+  export type WebhookEventCountAggregateInputType = {
+    id?: true
+    providerEventId?: true
+    eventType?: true
+    paymentId?: true
+    status?: true
+    payload?: true
+    processingError?: true
+    receivedAt?: true
+    processedAt?: true
+    _all?: true
+  }
+
+  export type WebhookEventAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WebhookEvent to aggregate.
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebhookEvents to fetch.
+     */
+    orderBy?: WebhookEventOrderByWithRelationInput | WebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: WebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned WebhookEvents
+    **/
+    _count?: true | WebhookEventCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: WebhookEventMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: WebhookEventMaxAggregateInputType
+  }
+
+  export type GetWebhookEventAggregateType<T extends WebhookEventAggregateArgs> = {
+        [P in keyof T & keyof AggregateWebhookEvent]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateWebhookEvent[P]>
+      : GetScalarType<T[P], AggregateWebhookEvent[P]>
+  }
+
+
+
+
+  export type WebhookEventGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: WebhookEventWhereInput
+    orderBy?: WebhookEventOrderByWithAggregationInput | WebhookEventOrderByWithAggregationInput[]
+    by: WebhookEventScalarFieldEnum[] | WebhookEventScalarFieldEnum
+    having?: WebhookEventScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: WebhookEventCountAggregateInputType | true
+    _min?: WebhookEventMinAggregateInputType
+    _max?: WebhookEventMaxAggregateInputType
+  }
+
+  export type WebhookEventGroupByOutputType = {
+    id: string
+    providerEventId: string
+    eventType: string
+    paymentId: string | null
+    status: $Enums.WebhookEventStatus
+    payload: JsonValue
+    processingError: string | null
+    receivedAt: Date
+    processedAt: Date | null
+    _count: WebhookEventCountAggregateOutputType | null
+    _min: WebhookEventMinAggregateOutputType | null
+    _max: WebhookEventMaxAggregateOutputType | null
+  }
+
+  type GetWebhookEventGroupByPayload<T extends WebhookEventGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<WebhookEventGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof WebhookEventGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], WebhookEventGroupByOutputType[P]>
+            : GetScalarType<T[P], WebhookEventGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type WebhookEventSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    providerEventId?: boolean
+    eventType?: boolean
+    paymentId?: boolean
+    status?: boolean
+    payload?: boolean
+    processingError?: boolean
+    receivedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["webhookEvent"]>
+
+  export type WebhookEventSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    providerEventId?: boolean
+    eventType?: boolean
+    paymentId?: boolean
+    status?: boolean
+    payload?: boolean
+    processingError?: boolean
+    receivedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["webhookEvent"]>
+
+  export type WebhookEventSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    providerEventId?: boolean
+    eventType?: boolean
+    paymentId?: boolean
+    status?: boolean
+    payload?: boolean
+    processingError?: boolean
+    receivedAt?: boolean
+    processedAt?: boolean
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }, ExtArgs["result"]["webhookEvent"]>
+
+  export type WebhookEventSelectScalar = {
+    id?: boolean
+    providerEventId?: boolean
+    eventType?: boolean
+    paymentId?: boolean
+    status?: boolean
+    payload?: boolean
+    processingError?: boolean
+    receivedAt?: boolean
+    processedAt?: boolean
+  }
+
+  export type WebhookEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerEventId" | "eventType" | "paymentId" | "status" | "payload" | "processingError" | "receivedAt" | "processedAt", ExtArgs["result"]["webhookEvent"]>
+  export type WebhookEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }
+  export type WebhookEventIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }
+  export type WebhookEventIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
+  }
+
+  export type $WebhookEventPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "WebhookEvent"
+    objects: {
+      payment: Prisma.$PaymentPayload<ExtArgs> | null
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      providerEventId: string
+      eventType: string
+      paymentId: string | null
+      status: $Enums.WebhookEventStatus
+      payload: Prisma.JsonValue
+      processingError: string | null
+      receivedAt: Date
+      processedAt: Date | null
+    }, ExtArgs["result"]["webhookEvent"]>
+    composites: {}
+  }
+
+  type WebhookEventGetPayload<S extends boolean | null | undefined | WebhookEventDefaultArgs> = $Result.GetResult<Prisma.$WebhookEventPayload, S>
+
+  type WebhookEventCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<WebhookEventFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: WebhookEventCountAggregateInputType | true
+    }
+
+  export interface WebhookEventDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['WebhookEvent'], meta: { name: 'WebhookEvent' } }
+    /**
+     * Find zero or one WebhookEvent that matches the filter.
+     * @param {WebhookEventFindUniqueArgs} args - Arguments to find a WebhookEvent
+     * @example
+     * // Get one WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends WebhookEventFindUniqueArgs>(args: SelectSubset<T, WebhookEventFindUniqueArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one WebhookEvent that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {WebhookEventFindUniqueOrThrowArgs} args - Arguments to find a WebhookEvent
+     * @example
+     * // Get one WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends WebhookEventFindUniqueOrThrowArgs>(args: SelectSubset<T, WebhookEventFindUniqueOrThrowArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WebhookEvent that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventFindFirstArgs} args - Arguments to find a WebhookEvent
+     * @example
+     * // Get one WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends WebhookEventFindFirstArgs>(args?: SelectSubset<T, WebhookEventFindFirstArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first WebhookEvent that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventFindFirstOrThrowArgs} args - Arguments to find a WebhookEvent
+     * @example
+     * // Get one WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends WebhookEventFindFirstOrThrowArgs>(args?: SelectSubset<T, WebhookEventFindFirstOrThrowArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more WebhookEvents that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all WebhookEvents
+     * const webhookEvents = await prisma.webhookEvent.findMany()
+     * 
+     * // Get first 10 WebhookEvents
+     * const webhookEvents = await prisma.webhookEvent.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const webhookEventWithIdOnly = await prisma.webhookEvent.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends WebhookEventFindManyArgs>(args?: SelectSubset<T, WebhookEventFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a WebhookEvent.
+     * @param {WebhookEventCreateArgs} args - Arguments to create a WebhookEvent.
+     * @example
+     * // Create one WebhookEvent
+     * const WebhookEvent = await prisma.webhookEvent.create({
+     *   data: {
+     *     // ... data to create a WebhookEvent
+     *   }
+     * })
+     * 
+     */
+    create<T extends WebhookEventCreateArgs>(args: SelectSubset<T, WebhookEventCreateArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many WebhookEvents.
+     * @param {WebhookEventCreateManyArgs} args - Arguments to create many WebhookEvents.
+     * @example
+     * // Create many WebhookEvents
+     * const webhookEvent = await prisma.webhookEvent.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends WebhookEventCreateManyArgs>(args?: SelectSubset<T, WebhookEventCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many WebhookEvents and returns the data saved in the database.
+     * @param {WebhookEventCreateManyAndReturnArgs} args - Arguments to create many WebhookEvents.
+     * @example
+     * // Create many WebhookEvents
+     * const webhookEvent = await prisma.webhookEvent.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many WebhookEvents and only return the `id`
+     * const webhookEventWithIdOnly = await prisma.webhookEvent.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends WebhookEventCreateManyAndReturnArgs>(args?: SelectSubset<T, WebhookEventCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a WebhookEvent.
+     * @param {WebhookEventDeleteArgs} args - Arguments to delete one WebhookEvent.
+     * @example
+     * // Delete one WebhookEvent
+     * const WebhookEvent = await prisma.webhookEvent.delete({
+     *   where: {
+     *     // ... filter to delete one WebhookEvent
+     *   }
+     * })
+     * 
+     */
+    delete<T extends WebhookEventDeleteArgs>(args: SelectSubset<T, WebhookEventDeleteArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one WebhookEvent.
+     * @param {WebhookEventUpdateArgs} args - Arguments to update one WebhookEvent.
+     * @example
+     * // Update one WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends WebhookEventUpdateArgs>(args: SelectSubset<T, WebhookEventUpdateArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more WebhookEvents.
+     * @param {WebhookEventDeleteManyArgs} args - Arguments to filter WebhookEvents to delete.
+     * @example
+     * // Delete a few WebhookEvents
+     * const { count } = await prisma.webhookEvent.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends WebhookEventDeleteManyArgs>(args?: SelectSubset<T, WebhookEventDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WebhookEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many WebhookEvents
+     * const webhookEvent = await prisma.webhookEvent.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends WebhookEventUpdateManyArgs>(args: SelectSubset<T, WebhookEventUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more WebhookEvents and returns the data updated in the database.
+     * @param {WebhookEventUpdateManyAndReturnArgs} args - Arguments to update many WebhookEvents.
+     * @example
+     * // Update many WebhookEvents
+     * const webhookEvent = await prisma.webhookEvent.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more WebhookEvents and only return the `id`
+     * const webhookEventWithIdOnly = await prisma.webhookEvent.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends WebhookEventUpdateManyAndReturnArgs>(args: SelectSubset<T, WebhookEventUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one WebhookEvent.
+     * @param {WebhookEventUpsertArgs} args - Arguments to update or create a WebhookEvent.
+     * @example
+     * // Update or create a WebhookEvent
+     * const webhookEvent = await prisma.webhookEvent.upsert({
+     *   create: {
+     *     // ... data to create a WebhookEvent
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the WebhookEvent we want to update
+     *   }
+     * })
+     */
+    upsert<T extends WebhookEventUpsertArgs>(args: SelectSubset<T, WebhookEventUpsertArgs<ExtArgs>>): Prisma__WebhookEventClient<$Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of WebhookEvents.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventCountArgs} args - Arguments to filter WebhookEvents to count.
+     * @example
+     * // Count the number of WebhookEvents
+     * const count = await prisma.webhookEvent.count({
+     *   where: {
+     *     // ... the filter for the WebhookEvents we want to count
+     *   }
+     * })
+    **/
+    count<T extends WebhookEventCountArgs>(
+      args?: Subset<T, WebhookEventCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], WebhookEventCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a WebhookEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends WebhookEventAggregateArgs>(args: Subset<T, WebhookEventAggregateArgs>): Prisma.PrismaPromise<GetWebhookEventAggregateType<T>>
+
+    /**
+     * Group by WebhookEvent.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {WebhookEventGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends WebhookEventGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: WebhookEventGroupByArgs['orderBy'] }
+        : { orderBy?: WebhookEventGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, WebhookEventGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetWebhookEventGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the WebhookEvent model
+   */
+  readonly fields: WebhookEventFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for WebhookEvent.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__WebhookEventClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    payment<T extends WebhookEvent$paymentArgs<ExtArgs> = {}>(args?: Subset<T, WebhookEvent$paymentArgs<ExtArgs>>): Prisma__PaymentClient<$Result.GetResult<Prisma.$PaymentPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the WebhookEvent model
+   */
+  interface WebhookEventFieldRefs {
+    readonly id: FieldRef<"WebhookEvent", 'String'>
+    readonly providerEventId: FieldRef<"WebhookEvent", 'String'>
+    readonly eventType: FieldRef<"WebhookEvent", 'String'>
+    readonly paymentId: FieldRef<"WebhookEvent", 'String'>
+    readonly status: FieldRef<"WebhookEvent", 'WebhookEventStatus'>
+    readonly payload: FieldRef<"WebhookEvent", 'Json'>
+    readonly processingError: FieldRef<"WebhookEvent", 'String'>
+    readonly receivedAt: FieldRef<"WebhookEvent", 'DateTime'>
+    readonly processedAt: FieldRef<"WebhookEvent", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * WebhookEvent findUnique
+   */
+  export type WebhookEventFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter, which WebhookEvent to fetch.
+     */
+    where: WebhookEventWhereUniqueInput
+  }
+
+  /**
+   * WebhookEvent findUniqueOrThrow
+   */
+  export type WebhookEventFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter, which WebhookEvent to fetch.
+     */
+    where: WebhookEventWhereUniqueInput
+  }
+
+  /**
+   * WebhookEvent findFirst
+   */
+  export type WebhookEventFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter, which WebhookEvent to fetch.
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebhookEvents to fetch.
+     */
+    orderBy?: WebhookEventOrderByWithRelationInput | WebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WebhookEvents.
+     */
+    cursor?: WebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WebhookEvents.
+     */
+    distinct?: WebhookEventScalarFieldEnum | WebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * WebhookEvent findFirstOrThrow
+   */
+  export type WebhookEventFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter, which WebhookEvent to fetch.
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebhookEvents to fetch.
+     */
+    orderBy?: WebhookEventOrderByWithRelationInput | WebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for WebhookEvents.
+     */
+    cursor?: WebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WebhookEvents.
+     */
+    distinct?: WebhookEventScalarFieldEnum | WebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * WebhookEvent findMany
+   */
+  export type WebhookEventFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter, which WebhookEvents to fetch.
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of WebhookEvents to fetch.
+     */
+    orderBy?: WebhookEventOrderByWithRelationInput | WebhookEventOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing WebhookEvents.
+     */
+    cursor?: WebhookEventWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` WebhookEvents from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` WebhookEvents.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of WebhookEvents.
+     */
+    distinct?: WebhookEventScalarFieldEnum | WebhookEventScalarFieldEnum[]
+  }
+
+  /**
+   * WebhookEvent create
+   */
+  export type WebhookEventCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * The data needed to create a WebhookEvent.
+     */
+    data: XOR<WebhookEventCreateInput, WebhookEventUncheckedCreateInput>
+  }
+
+  /**
+   * WebhookEvent createMany
+   */
+  export type WebhookEventCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many WebhookEvents.
+     */
+    data: WebhookEventCreateManyInput | WebhookEventCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * WebhookEvent createManyAndReturn
+   */
+  export type WebhookEventCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * The data used to create many WebhookEvents.
+     */
+    data: WebhookEventCreateManyInput | WebhookEventCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WebhookEvent update
+   */
+  export type WebhookEventUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * The data needed to update a WebhookEvent.
+     */
+    data: XOR<WebhookEventUpdateInput, WebhookEventUncheckedUpdateInput>
+    /**
+     * Choose, which WebhookEvent to update.
+     */
+    where: WebhookEventWhereUniqueInput
+  }
+
+  /**
+   * WebhookEvent updateMany
+   */
+  export type WebhookEventUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update WebhookEvents.
+     */
+    data: XOR<WebhookEventUpdateManyMutationInput, WebhookEventUncheckedUpdateManyInput>
+    /**
+     * Filter which WebhookEvents to update
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * Limit how many WebhookEvents to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * WebhookEvent updateManyAndReturn
+   */
+  export type WebhookEventUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * The data used to update WebhookEvents.
+     */
+    data: XOR<WebhookEventUpdateManyMutationInput, WebhookEventUncheckedUpdateManyInput>
+    /**
+     * Filter which WebhookEvents to update
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * Limit how many WebhookEvents to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * WebhookEvent upsert
+   */
+  export type WebhookEventUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * The filter to search for the WebhookEvent to update in case it exists.
+     */
+    where: WebhookEventWhereUniqueInput
+    /**
+     * In case the WebhookEvent found by the `where` argument doesn't exist, create a new WebhookEvent with this data.
+     */
+    create: XOR<WebhookEventCreateInput, WebhookEventUncheckedCreateInput>
+    /**
+     * In case the WebhookEvent was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<WebhookEventUpdateInput, WebhookEventUncheckedUpdateInput>
+  }
+
+  /**
+   * WebhookEvent delete
+   */
+  export type WebhookEventDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+    /**
+     * Filter which WebhookEvent to delete.
+     */
+    where: WebhookEventWhereUniqueInput
+  }
+
+  /**
+   * WebhookEvent deleteMany
+   */
+  export type WebhookEventDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which WebhookEvents to delete
+     */
+    where?: WebhookEventWhereInput
+    /**
+     * Limit how many WebhookEvents to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * WebhookEvent.payment
+   */
+  export type WebhookEvent$paymentArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Payment
+     */
+    select?: PaymentSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Payment
+     */
+    omit?: PaymentOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PaymentInclude<ExtArgs> | null
+    where?: PaymentWhereInput
+  }
+
+  /**
+   * WebhookEvent without action
+   */
+  export type WebhookEventDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the WebhookEvent
+     */
+    select?: WebhookEventSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the WebhookEvent
+     */
+    omit?: WebhookEventOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: WebhookEventInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model NotificationOutbox
+   */
+
+  export type AggregateNotificationOutbox = {
+    _count: NotificationOutboxCountAggregateOutputType | null
+    _avg: NotificationOutboxAvgAggregateOutputType | null
+    _sum: NotificationOutboxSumAggregateOutputType | null
+    _min: NotificationOutboxMinAggregateOutputType | null
+    _max: NotificationOutboxMaxAggregateOutputType | null
+  }
+
+  export type NotificationOutboxAvgAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type NotificationOutboxSumAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type NotificationOutboxMinAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    channel: string | null
+    targetUserId: string | null
+    status: $Enums.OutboxStatus | null
+    attempts: number | null
+    lastError: string | null
+    lastAttemptAt: Date | null
+    createdAt: Date | null
+    deliveredAt: Date | null
+  }
+
+  export type NotificationOutboxMaxAggregateOutputType = {
+    id: string | null
+    eventId: string | null
+    channel: string | null
+    targetUserId: string | null
+    status: $Enums.OutboxStatus | null
+    attempts: number | null
+    lastError: string | null
+    lastAttemptAt: Date | null
+    createdAt: Date | null
+    deliveredAt: Date | null
+  }
+
+  export type NotificationOutboxCountAggregateOutputType = {
+    id: number
+    eventId: number
+    channel: number
+    targetUserId: number
+    payload: number
+    status: number
+    attempts: number
+    lastError: number
+    lastAttemptAt: number
+    createdAt: number
+    deliveredAt: number
+    _all: number
+  }
+
+
+  export type NotificationOutboxAvgAggregateInputType = {
+    attempts?: true
+  }
+
+  export type NotificationOutboxSumAggregateInputType = {
+    attempts?: true
+  }
+
+  export type NotificationOutboxMinAggregateInputType = {
+    id?: true
+    eventId?: true
+    channel?: true
+    targetUserId?: true
+    status?: true
+    attempts?: true
+    lastError?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    deliveredAt?: true
+  }
+
+  export type NotificationOutboxMaxAggregateInputType = {
+    id?: true
+    eventId?: true
+    channel?: true
+    targetUserId?: true
+    status?: true
+    attempts?: true
+    lastError?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    deliveredAt?: true
+  }
+
+  export type NotificationOutboxCountAggregateInputType = {
+    id?: true
+    eventId?: true
+    channel?: true
+    targetUserId?: true
+    payload?: true
+    status?: true
+    attempts?: true
+    lastError?: true
+    lastAttemptAt?: true
+    createdAt?: true
+    deliveredAt?: true
+    _all?: true
+  }
+
+  export type NotificationOutboxAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NotificationOutbox to aggregate.
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NotificationOutboxes to fetch.
+     */
+    orderBy?: NotificationOutboxOrderByWithRelationInput | NotificationOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: NotificationOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NotificationOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NotificationOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned NotificationOutboxes
+    **/
+    _count?: true | NotificationOutboxCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: NotificationOutboxAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: NotificationOutboxSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: NotificationOutboxMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: NotificationOutboxMaxAggregateInputType
+  }
+
+  export type GetNotificationOutboxAggregateType<T extends NotificationOutboxAggregateArgs> = {
+        [P in keyof T & keyof AggregateNotificationOutbox]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateNotificationOutbox[P]>
+      : GetScalarType<T[P], AggregateNotificationOutbox[P]>
+  }
+
+
+
+
+  export type NotificationOutboxGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: NotificationOutboxWhereInput
+    orderBy?: NotificationOutboxOrderByWithAggregationInput | NotificationOutboxOrderByWithAggregationInput[]
+    by: NotificationOutboxScalarFieldEnum[] | NotificationOutboxScalarFieldEnum
+    having?: NotificationOutboxScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: NotificationOutboxCountAggregateInputType | true
+    _avg?: NotificationOutboxAvgAggregateInputType
+    _sum?: NotificationOutboxSumAggregateInputType
+    _min?: NotificationOutboxMinAggregateInputType
+    _max?: NotificationOutboxMaxAggregateInputType
+  }
+
+  export type NotificationOutboxGroupByOutputType = {
+    id: string
+    eventId: string
+    channel: string
+    targetUserId: string
+    payload: JsonValue
+    status: $Enums.OutboxStatus
+    attempts: number
+    lastError: string | null
+    lastAttemptAt: Date | null
+    createdAt: Date
+    deliveredAt: Date | null
+    _count: NotificationOutboxCountAggregateOutputType | null
+    _avg: NotificationOutboxAvgAggregateOutputType | null
+    _sum: NotificationOutboxSumAggregateOutputType | null
+    _min: NotificationOutboxMinAggregateOutputType | null
+    _max: NotificationOutboxMaxAggregateOutputType | null
+  }
+
+  type GetNotificationOutboxGroupByPayload<T extends NotificationOutboxGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<NotificationOutboxGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof NotificationOutboxGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], NotificationOutboxGroupByOutputType[P]>
+            : GetScalarType<T[P], NotificationOutboxGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type NotificationOutboxSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    channel?: boolean
+    targetUserId?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    lastError?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    deliveredAt?: boolean
+  }, ExtArgs["result"]["notificationOutbox"]>
+
+  export type NotificationOutboxSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    channel?: boolean
+    targetUserId?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    lastError?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    deliveredAt?: boolean
+  }, ExtArgs["result"]["notificationOutbox"]>
+
+  export type NotificationOutboxSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    eventId?: boolean
+    channel?: boolean
+    targetUserId?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    lastError?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    deliveredAt?: boolean
+  }, ExtArgs["result"]["notificationOutbox"]>
+
+  export type NotificationOutboxSelectScalar = {
+    id?: boolean
+    eventId?: boolean
+    channel?: boolean
+    targetUserId?: boolean
+    payload?: boolean
+    status?: boolean
+    attempts?: boolean
+    lastError?: boolean
+    lastAttemptAt?: boolean
+    createdAt?: boolean
+    deliveredAt?: boolean
+  }
+
+  export type NotificationOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "channel" | "targetUserId" | "payload" | "status" | "attempts" | "lastError" | "lastAttemptAt" | "createdAt" | "deliveredAt", ExtArgs["result"]["notificationOutbox"]>
+
+  export type $NotificationOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "NotificationOutbox"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      eventId: string
+      channel: string
+      targetUserId: string
+      payload: Prisma.JsonValue
+      status: $Enums.OutboxStatus
+      attempts: number
+      lastError: string | null
+      lastAttemptAt: Date | null
+      createdAt: Date
+      deliveredAt: Date | null
+    }, ExtArgs["result"]["notificationOutbox"]>
+    composites: {}
+  }
+
+  type NotificationOutboxGetPayload<S extends boolean | null | undefined | NotificationOutboxDefaultArgs> = $Result.GetResult<Prisma.$NotificationOutboxPayload, S>
+
+  type NotificationOutboxCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<NotificationOutboxFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: NotificationOutboxCountAggregateInputType | true
+    }
+
+  export interface NotificationOutboxDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['NotificationOutbox'], meta: { name: 'NotificationOutbox' } }
+    /**
+     * Find zero or one NotificationOutbox that matches the filter.
+     * @param {NotificationOutboxFindUniqueArgs} args - Arguments to find a NotificationOutbox
+     * @example
+     * // Get one NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends NotificationOutboxFindUniqueArgs>(args: SelectSubset<T, NotificationOutboxFindUniqueArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one NotificationOutbox that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {NotificationOutboxFindUniqueOrThrowArgs} args - Arguments to find a NotificationOutbox
+     * @example
+     * // Get one NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends NotificationOutboxFindUniqueOrThrowArgs>(args: SelectSubset<T, NotificationOutboxFindUniqueOrThrowArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NotificationOutbox that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxFindFirstArgs} args - Arguments to find a NotificationOutbox
+     * @example
+     * // Get one NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends NotificationOutboxFindFirstArgs>(args?: SelectSubset<T, NotificationOutboxFindFirstArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first NotificationOutbox that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxFindFirstOrThrowArgs} args - Arguments to find a NotificationOutbox
+     * @example
+     * // Get one NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends NotificationOutboxFindFirstOrThrowArgs>(args?: SelectSubset<T, NotificationOutboxFindFirstOrThrowArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more NotificationOutboxes that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all NotificationOutboxes
+     * const notificationOutboxes = await prisma.notificationOutbox.findMany()
+     * 
+     * // Get first 10 NotificationOutboxes
+     * const notificationOutboxes = await prisma.notificationOutbox.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const notificationOutboxWithIdOnly = await prisma.notificationOutbox.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends NotificationOutboxFindManyArgs>(args?: SelectSubset<T, NotificationOutboxFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a NotificationOutbox.
+     * @param {NotificationOutboxCreateArgs} args - Arguments to create a NotificationOutbox.
+     * @example
+     * // Create one NotificationOutbox
+     * const NotificationOutbox = await prisma.notificationOutbox.create({
+     *   data: {
+     *     // ... data to create a NotificationOutbox
+     *   }
+     * })
+     * 
+     */
+    create<T extends NotificationOutboxCreateArgs>(args: SelectSubset<T, NotificationOutboxCreateArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many NotificationOutboxes.
+     * @param {NotificationOutboxCreateManyArgs} args - Arguments to create many NotificationOutboxes.
+     * @example
+     * // Create many NotificationOutboxes
+     * const notificationOutbox = await prisma.notificationOutbox.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends NotificationOutboxCreateManyArgs>(args?: SelectSubset<T, NotificationOutboxCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many NotificationOutboxes and returns the data saved in the database.
+     * @param {NotificationOutboxCreateManyAndReturnArgs} args - Arguments to create many NotificationOutboxes.
+     * @example
+     * // Create many NotificationOutboxes
+     * const notificationOutbox = await prisma.notificationOutbox.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many NotificationOutboxes and only return the `id`
+     * const notificationOutboxWithIdOnly = await prisma.notificationOutbox.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends NotificationOutboxCreateManyAndReturnArgs>(args?: SelectSubset<T, NotificationOutboxCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a NotificationOutbox.
+     * @param {NotificationOutboxDeleteArgs} args - Arguments to delete one NotificationOutbox.
+     * @example
+     * // Delete one NotificationOutbox
+     * const NotificationOutbox = await prisma.notificationOutbox.delete({
+     *   where: {
+     *     // ... filter to delete one NotificationOutbox
+     *   }
+     * })
+     * 
+     */
+    delete<T extends NotificationOutboxDeleteArgs>(args: SelectSubset<T, NotificationOutboxDeleteArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one NotificationOutbox.
+     * @param {NotificationOutboxUpdateArgs} args - Arguments to update one NotificationOutbox.
+     * @example
+     * // Update one NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends NotificationOutboxUpdateArgs>(args: SelectSubset<T, NotificationOutboxUpdateArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more NotificationOutboxes.
+     * @param {NotificationOutboxDeleteManyArgs} args - Arguments to filter NotificationOutboxes to delete.
+     * @example
+     * // Delete a few NotificationOutboxes
+     * const { count } = await prisma.notificationOutbox.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends NotificationOutboxDeleteManyArgs>(args?: SelectSubset<T, NotificationOutboxDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NotificationOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many NotificationOutboxes
+     * const notificationOutbox = await prisma.notificationOutbox.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends NotificationOutboxUpdateManyArgs>(args: SelectSubset<T, NotificationOutboxUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more NotificationOutboxes and returns the data updated in the database.
+     * @param {NotificationOutboxUpdateManyAndReturnArgs} args - Arguments to update many NotificationOutboxes.
+     * @example
+     * // Update many NotificationOutboxes
+     * const notificationOutbox = await prisma.notificationOutbox.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more NotificationOutboxes and only return the `id`
+     * const notificationOutboxWithIdOnly = await prisma.notificationOutbox.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends NotificationOutboxUpdateManyAndReturnArgs>(args: SelectSubset<T, NotificationOutboxUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one NotificationOutbox.
+     * @param {NotificationOutboxUpsertArgs} args - Arguments to update or create a NotificationOutbox.
+     * @example
+     * // Update or create a NotificationOutbox
+     * const notificationOutbox = await prisma.notificationOutbox.upsert({
+     *   create: {
+     *     // ... data to create a NotificationOutbox
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the NotificationOutbox we want to update
+     *   }
+     * })
+     */
+    upsert<T extends NotificationOutboxUpsertArgs>(args: SelectSubset<T, NotificationOutboxUpsertArgs<ExtArgs>>): Prisma__NotificationOutboxClient<$Result.GetResult<Prisma.$NotificationOutboxPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of NotificationOutboxes.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxCountArgs} args - Arguments to filter NotificationOutboxes to count.
+     * @example
+     * // Count the number of NotificationOutboxes
+     * const count = await prisma.notificationOutbox.count({
+     *   where: {
+     *     // ... the filter for the NotificationOutboxes we want to count
+     *   }
+     * })
+    **/
+    count<T extends NotificationOutboxCountArgs>(
+      args?: Subset<T, NotificationOutboxCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], NotificationOutboxCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a NotificationOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends NotificationOutboxAggregateArgs>(args: Subset<T, NotificationOutboxAggregateArgs>): Prisma.PrismaPromise<GetNotificationOutboxAggregateType<T>>
+
+    /**
+     * Group by NotificationOutbox.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {NotificationOutboxGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends NotificationOutboxGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: NotificationOutboxGroupByArgs['orderBy'] }
+        : { orderBy?: NotificationOutboxGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, NotificationOutboxGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetNotificationOutboxGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the NotificationOutbox model
+   */
+  readonly fields: NotificationOutboxFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for NotificationOutbox.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__NotificationOutboxClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the NotificationOutbox model
+   */
+  interface NotificationOutboxFieldRefs {
+    readonly id: FieldRef<"NotificationOutbox", 'String'>
+    readonly eventId: FieldRef<"NotificationOutbox", 'String'>
+    readonly channel: FieldRef<"NotificationOutbox", 'String'>
+    readonly targetUserId: FieldRef<"NotificationOutbox", 'String'>
+    readonly payload: FieldRef<"NotificationOutbox", 'Json'>
+    readonly status: FieldRef<"NotificationOutbox", 'OutboxStatus'>
+    readonly attempts: FieldRef<"NotificationOutbox", 'Int'>
+    readonly lastError: FieldRef<"NotificationOutbox", 'String'>
+    readonly lastAttemptAt: FieldRef<"NotificationOutbox", 'DateTime'>
+    readonly createdAt: FieldRef<"NotificationOutbox", 'DateTime'>
+    readonly deliveredAt: FieldRef<"NotificationOutbox", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * NotificationOutbox findUnique
+   */
+  export type NotificationOutboxFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which NotificationOutbox to fetch.
+     */
+    where: NotificationOutboxWhereUniqueInput
+  }
+
+  /**
+   * NotificationOutbox findUniqueOrThrow
+   */
+  export type NotificationOutboxFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which NotificationOutbox to fetch.
+     */
+    where: NotificationOutboxWhereUniqueInput
+  }
+
+  /**
+   * NotificationOutbox findFirst
+   */
+  export type NotificationOutboxFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which NotificationOutbox to fetch.
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NotificationOutboxes to fetch.
+     */
+    orderBy?: NotificationOutboxOrderByWithRelationInput | NotificationOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NotificationOutboxes.
+     */
+    cursor?: NotificationOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NotificationOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NotificationOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NotificationOutboxes.
+     */
+    distinct?: NotificationOutboxScalarFieldEnum | NotificationOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationOutbox findFirstOrThrow
+   */
+  export type NotificationOutboxFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which NotificationOutbox to fetch.
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NotificationOutboxes to fetch.
+     */
+    orderBy?: NotificationOutboxOrderByWithRelationInput | NotificationOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for NotificationOutboxes.
+     */
+    cursor?: NotificationOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NotificationOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NotificationOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NotificationOutboxes.
+     */
+    distinct?: NotificationOutboxScalarFieldEnum | NotificationOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationOutbox findMany
+   */
+  export type NotificationOutboxFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter, which NotificationOutboxes to fetch.
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of NotificationOutboxes to fetch.
+     */
+    orderBy?: NotificationOutboxOrderByWithRelationInput | NotificationOutboxOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing NotificationOutboxes.
+     */
+    cursor?: NotificationOutboxWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` NotificationOutboxes from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` NotificationOutboxes.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of NotificationOutboxes.
+     */
+    distinct?: NotificationOutboxScalarFieldEnum | NotificationOutboxScalarFieldEnum[]
+  }
+
+  /**
+   * NotificationOutbox create
+   */
+  export type NotificationOutboxCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to create a NotificationOutbox.
+     */
+    data: XOR<NotificationOutboxCreateInput, NotificationOutboxUncheckedCreateInput>
+  }
+
+  /**
+   * NotificationOutbox createMany
+   */
+  export type NotificationOutboxCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many NotificationOutboxes.
+     */
+    data: NotificationOutboxCreateManyInput | NotificationOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NotificationOutbox createManyAndReturn
+   */
+  export type NotificationOutboxCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to create many NotificationOutboxes.
+     */
+    data: NotificationOutboxCreateManyInput | NotificationOutboxCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * NotificationOutbox update
+   */
+  export type NotificationOutboxUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * The data needed to update a NotificationOutbox.
+     */
+    data: XOR<NotificationOutboxUpdateInput, NotificationOutboxUncheckedUpdateInput>
+    /**
+     * Choose, which NotificationOutbox to update.
+     */
+    where: NotificationOutboxWhereUniqueInput
+  }
+
+  /**
+   * NotificationOutbox updateMany
+   */
+  export type NotificationOutboxUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update NotificationOutboxes.
+     */
+    data: XOR<NotificationOutboxUpdateManyMutationInput, NotificationOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which NotificationOutboxes to update
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * Limit how many NotificationOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NotificationOutbox updateManyAndReturn
+   */
+  export type NotificationOutboxUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * The data used to update NotificationOutboxes.
+     */
+    data: XOR<NotificationOutboxUpdateManyMutationInput, NotificationOutboxUncheckedUpdateManyInput>
+    /**
+     * Filter which NotificationOutboxes to update
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * Limit how many NotificationOutboxes to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * NotificationOutbox upsert
+   */
+  export type NotificationOutboxUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * The filter to search for the NotificationOutbox to update in case it exists.
+     */
+    where: NotificationOutboxWhereUniqueInput
+    /**
+     * In case the NotificationOutbox found by the `where` argument doesn't exist, create a new NotificationOutbox with this data.
+     */
+    create: XOR<NotificationOutboxCreateInput, NotificationOutboxUncheckedCreateInput>
+    /**
+     * In case the NotificationOutbox was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<NotificationOutboxUpdateInput, NotificationOutboxUncheckedUpdateInput>
+  }
+
+  /**
+   * NotificationOutbox delete
+   */
+  export type NotificationOutboxDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
+    /**
+     * Filter which NotificationOutbox to delete.
+     */
+    where: NotificationOutboxWhereUniqueInput
+  }
+
+  /**
+   * NotificationOutbox deleteMany
+   */
+  export type NotificationOutboxDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which NotificationOutboxes to delete
+     */
+    where?: NotificationOutboxWhereInput
+    /**
+     * Limit how many NotificationOutboxes to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * NotificationOutbox without action
+   */
+  export type NotificationOutboxDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the NotificationOutbox
+     */
+    select?: NotificationOutboxSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the NotificationOutbox
+     */
+    omit?: NotificationOutboxOmit<ExtArgs> | null
   }
 
 
@@ -31321,6 +35331,7 @@ export namespace Prisma {
     doctorId: 'doctorId',
     patientId: 'patientId',
     slotId: 'slotId',
+    paymentId: 'paymentId',
     status: 'status',
     paymentMethod: 'paymentMethod',
     transactionId: 'transactionId',
@@ -31359,6 +35370,7 @@ export namespace Prisma {
 
   export const PaymentScalarFieldEnum: {
     id: 'id',
+    idempotencyKey: 'idempotencyKey',
     amount: 'amount',
     currency: 'currency',
     userId: 'userId',
@@ -31368,10 +35380,64 @@ export namespace Prisma {
     status: 'status',
     razorpayOrderId: 'razorpayOrderId',
     razorpayPaymentId: 'razorpayPaymentId',
-    createdAt: 'createdAt'
+    capturedAt: 'capturedAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt'
   };
 
   export type PaymentScalarFieldEnum = (typeof PaymentScalarFieldEnum)[keyof typeof PaymentScalarFieldEnum]
+
+
+  export const RefundScalarFieldEnum: {
+    id: 'id',
+    paymentId: 'paymentId',
+    amount: 'amount',
+    currency: 'currency',
+    reason: 'reason',
+    status: 'status',
+    idempotencyKey: 'idempotencyKey',
+    razorpayRefundId: 'razorpayRefundId',
+    failureReason: 'failureReason',
+    attempts: 'attempts',
+    lastAttemptAt: 'lastAttemptAt',
+    createdAt: 'createdAt',
+    updatedAt: 'updatedAt',
+    processedAt: 'processedAt'
+  };
+
+  export type RefundScalarFieldEnum = (typeof RefundScalarFieldEnum)[keyof typeof RefundScalarFieldEnum]
+
+
+  export const WebhookEventScalarFieldEnum: {
+    id: 'id',
+    providerEventId: 'providerEventId',
+    eventType: 'eventType',
+    paymentId: 'paymentId',
+    status: 'status',
+    payload: 'payload',
+    processingError: 'processingError',
+    receivedAt: 'receivedAt',
+    processedAt: 'processedAt'
+  };
+
+  export type WebhookEventScalarFieldEnum = (typeof WebhookEventScalarFieldEnum)[keyof typeof WebhookEventScalarFieldEnum]
+
+
+  export const NotificationOutboxScalarFieldEnum: {
+    id: 'id',
+    eventId: 'eventId',
+    channel: 'channel',
+    targetUserId: 'targetUserId',
+    payload: 'payload',
+    status: 'status',
+    attempts: 'attempts',
+    lastError: 'lastError',
+    lastAttemptAt: 'lastAttemptAt',
+    createdAt: 'createdAt',
+    deliveredAt: 'deliveredAt'
+  };
+
+  export type NotificationOutboxScalarFieldEnum = (typeof NotificationOutboxScalarFieldEnum)[keyof typeof NotificationOutboxScalarFieldEnum]
 
 
   export const WithdrawalScalarFieldEnum: {
@@ -31740,6 +35806,48 @@ export namespace Prisma {
    * Reference to a field of type 'PaymentMethod[]'
    */
   export type ListEnumPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PaymentMethod[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'RefundStatus'
+   */
+  export type EnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'RefundStatus[]'
+   */
+  export type ListEnumRefundStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'RefundStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'WebhookEventStatus'
+   */
+  export type EnumWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WebhookEventStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'WebhookEventStatus[]'
+   */
+  export type ListEnumWebhookEventStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WebhookEventStatus[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'OutboxStatus'
+   */
+  export type EnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus'>
+    
+
+
+  /**
+   * Reference to a field of type 'OutboxStatus[]'
+   */
+  export type ListEnumOutboxStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'OutboxStatus[]'>
     
 
 
@@ -32604,7 +36712,7 @@ export namespace Prisma {
     holdExpiresAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeFilter<"Slot"> | Date | string
     updatedAt?: DateTimeFilter<"Slot"> | Date | string
-    appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
+    appointments?: AppointmentListRelationFilter
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
   }
 
@@ -32621,7 +36729,7 @@ export namespace Prisma {
     holdExpiresAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    appointment?: AppointmentOrderByWithRelationInput
+    appointments?: AppointmentOrderByRelationAggregateInput
     doctor?: DoctorOrderByWithRelationInput
   }
 
@@ -32642,7 +36750,7 @@ export namespace Prisma {
     holdExpiresAt?: DateTimeNullableFilter<"Slot"> | Date | string | null
     createdAt?: DateTimeFilter<"Slot"> | Date | string
     updatedAt?: DateTimeFilter<"Slot"> | Date | string
-    appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
+    appointments?: AppointmentListRelationFilter
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
   }, "id" | "doctorId_date_startTime">
 
@@ -32690,6 +36798,7 @@ export namespace Prisma {
     doctorId?: StringFilter<"Appointment"> | string
     patientId?: StringFilter<"Appointment"> | string
     slotId?: StringFilter<"Appointment"> | string
+    paymentId?: StringNullableFilter<"Appointment"> | string | null
     status?: EnumAppointmentStatusFilter<"Appointment"> | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFilter<"Appointment"> | $Enums.PaymentMethod
     transactionId?: StringNullableFilter<"Appointment"> | string | null
@@ -32698,6 +36807,7 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Appointment"> | Date | string
     isAppointmentOffline?: BoolFilter<"Appointment"> | boolean
     slot?: XOR<SlotScalarRelationFilter, SlotWhereInput>
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
   }
@@ -32707,6 +36817,7 @@ export namespace Prisma {
     doctorId?: SortOrder
     patientId?: SortOrder
     slotId?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
     status?: SortOrder
     paymentMethod?: SortOrder
     transactionId?: SortOrderInput | SortOrder
@@ -32715,18 +36826,20 @@ export namespace Prisma {
     updatedAt?: SortOrder
     isAppointmentOffline?: SortOrder
     slot?: SlotOrderByWithRelationInput
+    payment?: PaymentOrderByWithRelationInput
     doctor?: DoctorOrderByWithRelationInput
     patient?: PatientOrderByWithRelationInput
   }
 
   export type AppointmentWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    slotId?: string
+    paymentId?: string
     AND?: AppointmentWhereInput | AppointmentWhereInput[]
     OR?: AppointmentWhereInput[]
     NOT?: AppointmentWhereInput | AppointmentWhereInput[]
     doctorId?: StringFilter<"Appointment"> | string
     patientId?: StringFilter<"Appointment"> | string
+    slotId?: StringFilter<"Appointment"> | string
     status?: EnumAppointmentStatusFilter<"Appointment"> | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFilter<"Appointment"> | $Enums.PaymentMethod
     transactionId?: StringNullableFilter<"Appointment"> | string | null
@@ -32735,15 +36848,17 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"Appointment"> | Date | string
     isAppointmentOffline?: BoolFilter<"Appointment"> | boolean
     slot?: XOR<SlotScalarRelationFilter, SlotWhereInput>
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
     doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
     patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
-  }, "id" | "slotId">
+  }, "id" | "paymentId">
 
   export type AppointmentOrderByWithAggregationInput = {
     id?: SortOrder
     doctorId?: SortOrder
     patientId?: SortOrder
     slotId?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
     status?: SortOrder
     paymentMethod?: SortOrder
     transactionId?: SortOrderInput | SortOrder
@@ -32764,6 +36879,7 @@ export namespace Prisma {
     doctorId?: StringWithAggregatesFilter<"Appointment"> | string
     patientId?: StringWithAggregatesFilter<"Appointment"> | string
     slotId?: StringWithAggregatesFilter<"Appointment"> | string
+    paymentId?: StringNullableWithAggregatesFilter<"Appointment"> | string | null
     status?: EnumAppointmentStatusWithAggregatesFilter<"Appointment"> | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodWithAggregatesFilter<"Appointment"> | $Enums.PaymentMethod
     transactionId?: StringNullableWithAggregatesFilter<"Appointment"> | string | null
@@ -32908,6 +37024,7 @@ export namespace Prisma {
     OR?: PaymentWhereInput[]
     NOT?: PaymentWhereInput | PaymentWhereInput[]
     id?: StringFilter<"Payment"> | string
+    idempotencyKey?: StringNullableFilter<"Payment"> | string | null
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     userId?: StringFilter<"Payment"> | string
@@ -32917,12 +37034,18 @@ export namespace Prisma {
     status?: StringFilter<"Payment"> | string
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
+    capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
+    updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
+    appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
+    refunds?: RefundListRelationFilter
+    webhookEvents?: WebhookEventListRelationFilter
   }
 
   export type PaymentOrderByWithRelationInput = {
     id?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
@@ -32932,13 +37055,20 @@ export namespace Prisma {
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
+    capturedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
+    appointment?: AppointmentOrderByWithRelationInput
+    refunds?: RefundOrderByRelationAggregateInput
+    webhookEvents?: WebhookEventOrderByRelationAggregateInput
   }
 
   export type PaymentWhereUniqueInput = Prisma.AtLeast<{
     id?: string
+    idempotencyKey?: string
     razorpayOrderId?: string
+    razorpayPaymentId?: string
     AND?: PaymentWhereInput | PaymentWhereInput[]
     OR?: PaymentWhereInput[]
     NOT?: PaymentWhereInput | PaymentWhereInput[]
@@ -32949,13 +37079,18 @@ export namespace Prisma {
     slotId?: StringNullableFilter<"Payment"> | string | null
     holdToken?: StringNullableFilter<"Payment"> | string | null
     status?: StringFilter<"Payment"> | string
-    razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
+    capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
+    updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
-  }, "id" | "razorpayOrderId">
+    appointment?: XOR<AppointmentNullableScalarRelationFilter, AppointmentWhereInput> | null
+    refunds?: RefundListRelationFilter
+    webhookEvents?: WebhookEventListRelationFilter
+  }, "id" | "idempotencyKey" | "razorpayOrderId" | "razorpayPaymentId">
 
   export type PaymentOrderByWithAggregationInput = {
     id?: SortOrder
+    idempotencyKey?: SortOrderInput | SortOrder
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
@@ -32965,7 +37100,9 @@ export namespace Prisma {
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
+    capturedAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
     _count?: PaymentCountOrderByAggregateInput
     _avg?: PaymentAvgOrderByAggregateInput
     _max?: PaymentMaxOrderByAggregateInput
@@ -32978,6 +37115,7 @@ export namespace Prisma {
     OR?: PaymentScalarWhereWithAggregatesInput[]
     NOT?: PaymentScalarWhereWithAggregatesInput | PaymentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Payment"> | string
+    idempotencyKey?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     amount?: IntWithAggregatesFilter<"Payment"> | number
     currency?: StringWithAggregatesFilter<"Payment"> | string
     userId?: StringWithAggregatesFilter<"Payment"> | string
@@ -32987,7 +37125,270 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"Payment"> | string
     razorpayOrderId?: StringWithAggregatesFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    capturedAt?: DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
+  }
+
+  export type RefundWhereInput = {
+    AND?: RefundWhereInput | RefundWhereInput[]
+    OR?: RefundWhereInput[]
+    NOT?: RefundWhereInput | RefundWhereInput[]
+    id?: StringFilter<"Refund"> | string
+    paymentId?: StringFilter<"Refund"> | string
+    amount?: IntFilter<"Refund"> | number
+    currency?: StringFilter<"Refund"> | string
+    reason?: StringFilter<"Refund"> | string
+    status?: EnumRefundStatusFilter<"Refund"> | $Enums.RefundStatus
+    idempotencyKey?: StringFilter<"Refund"> | string
+    razorpayRefundId?: StringNullableFilter<"Refund"> | string | null
+    failureReason?: StringNullableFilter<"Refund"> | string | null
+    attempts?: IntFilter<"Refund"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    createdAt?: DateTimeFilter<"Refund"> | Date | string
+    updatedAt?: DateTimeFilter<"Refund"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    payment?: XOR<PaymentScalarRelationFilter, PaymentWhereInput>
+  }
+
+  export type RefundOrderByWithRelationInput = {
+    id?: SortOrder
+    paymentId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    idempotencyKey?: SortOrder
+    razorpayRefundId?: SortOrderInput | SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    payment?: PaymentOrderByWithRelationInput
+  }
+
+  export type RefundWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    idempotencyKey?: string
+    razorpayRefundId?: string
+    AND?: RefundWhereInput | RefundWhereInput[]
+    OR?: RefundWhereInput[]
+    NOT?: RefundWhereInput | RefundWhereInput[]
+    paymentId?: StringFilter<"Refund"> | string
+    amount?: IntFilter<"Refund"> | number
+    currency?: StringFilter<"Refund"> | string
+    reason?: StringFilter<"Refund"> | string
+    status?: EnumRefundStatusFilter<"Refund"> | $Enums.RefundStatus
+    failureReason?: StringNullableFilter<"Refund"> | string | null
+    attempts?: IntFilter<"Refund"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    createdAt?: DateTimeFilter<"Refund"> | Date | string
+    updatedAt?: DateTimeFilter<"Refund"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    payment?: XOR<PaymentScalarRelationFilter, PaymentWhereInput>
+  }, "id" | "idempotencyKey" | "razorpayRefundId">
+
+  export type RefundOrderByWithAggregationInput = {
+    id?: SortOrder
+    paymentId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    idempotencyKey?: SortOrder
+    razorpayRefundId?: SortOrderInput | SortOrder
+    failureReason?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    _count?: RefundCountOrderByAggregateInput
+    _avg?: RefundAvgOrderByAggregateInput
+    _max?: RefundMaxOrderByAggregateInput
+    _min?: RefundMinOrderByAggregateInput
+    _sum?: RefundSumOrderByAggregateInput
+  }
+
+  export type RefundScalarWhereWithAggregatesInput = {
+    AND?: RefundScalarWhereWithAggregatesInput | RefundScalarWhereWithAggregatesInput[]
+    OR?: RefundScalarWhereWithAggregatesInput[]
+    NOT?: RefundScalarWhereWithAggregatesInput | RefundScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"Refund"> | string
+    paymentId?: StringWithAggregatesFilter<"Refund"> | string
+    amount?: IntWithAggregatesFilter<"Refund"> | number
+    currency?: StringWithAggregatesFilter<"Refund"> | string
+    reason?: StringWithAggregatesFilter<"Refund"> | string
+    status?: EnumRefundStatusWithAggregatesFilter<"Refund"> | $Enums.RefundStatus
+    idempotencyKey?: StringWithAggregatesFilter<"Refund"> | string
+    razorpayRefundId?: StringNullableWithAggregatesFilter<"Refund"> | string | null
+    failureReason?: StringNullableWithAggregatesFilter<"Refund"> | string | null
+    attempts?: IntWithAggregatesFilter<"Refund"> | number
+    lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"Refund"> | Date | string
+    updatedAt?: DateTimeWithAggregatesFilter<"Refund"> | Date | string
+    processedAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
+  }
+
+  export type WebhookEventWhereInput = {
+    AND?: WebhookEventWhereInput | WebhookEventWhereInput[]
+    OR?: WebhookEventWhereInput[]
+    NOT?: WebhookEventWhereInput | WebhookEventWhereInput[]
+    id?: StringFilter<"WebhookEvent"> | string
+    providerEventId?: StringFilter<"WebhookEvent"> | string
+    eventType?: StringFilter<"WebhookEvent"> | string
+    paymentId?: StringNullableFilter<"WebhookEvent"> | string | null
+    status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
+    payload?: JsonFilter<"WebhookEvent">
+    processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
+    processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+  }
+
+  export type WebhookEventOrderByWithRelationInput = {
+    id?: SortOrder
+    providerEventId?: SortOrder
+    eventType?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    payload?: SortOrder
+    processingError?: SortOrderInput | SortOrder
+    receivedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    payment?: PaymentOrderByWithRelationInput
+  }
+
+  export type WebhookEventWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    providerEventId?: string
+    AND?: WebhookEventWhereInput | WebhookEventWhereInput[]
+    OR?: WebhookEventWhereInput[]
+    NOT?: WebhookEventWhereInput | WebhookEventWhereInput[]
+    eventType?: StringFilter<"WebhookEvent"> | string
+    paymentId?: StringNullableFilter<"WebhookEvent"> | string | null
+    status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
+    payload?: JsonFilter<"WebhookEvent">
+    processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
+    processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
+  }, "id" | "providerEventId">
+
+  export type WebhookEventOrderByWithAggregationInput = {
+    id?: SortOrder
+    providerEventId?: SortOrder
+    eventType?: SortOrder
+    paymentId?: SortOrderInput | SortOrder
+    status?: SortOrder
+    payload?: SortOrder
+    processingError?: SortOrderInput | SortOrder
+    receivedAt?: SortOrder
+    processedAt?: SortOrderInput | SortOrder
+    _count?: WebhookEventCountOrderByAggregateInput
+    _max?: WebhookEventMaxOrderByAggregateInput
+    _min?: WebhookEventMinOrderByAggregateInput
+  }
+
+  export type WebhookEventScalarWhereWithAggregatesInput = {
+    AND?: WebhookEventScalarWhereWithAggregatesInput | WebhookEventScalarWhereWithAggregatesInput[]
+    OR?: WebhookEventScalarWhereWithAggregatesInput[]
+    NOT?: WebhookEventScalarWhereWithAggregatesInput | WebhookEventScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"WebhookEvent"> | string
+    providerEventId?: StringWithAggregatesFilter<"WebhookEvent"> | string
+    eventType?: StringWithAggregatesFilter<"WebhookEvent"> | string
+    paymentId?: StringNullableWithAggregatesFilter<"WebhookEvent"> | string | null
+    status?: EnumWebhookEventStatusWithAggregatesFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
+    payload?: JsonWithAggregatesFilter<"WebhookEvent">
+    processingError?: StringNullableWithAggregatesFilter<"WebhookEvent"> | string | null
+    receivedAt?: DateTimeWithAggregatesFilter<"WebhookEvent"> | Date | string
+    processedAt?: DateTimeNullableWithAggregatesFilter<"WebhookEvent"> | Date | string | null
+  }
+
+  export type NotificationOutboxWhereInput = {
+    AND?: NotificationOutboxWhereInput | NotificationOutboxWhereInput[]
+    OR?: NotificationOutboxWhereInput[]
+    NOT?: NotificationOutboxWhereInput | NotificationOutboxWhereInput[]
+    id?: StringFilter<"NotificationOutbox"> | string
+    eventId?: StringFilter<"NotificationOutbox"> | string
+    channel?: StringFilter<"NotificationOutbox"> | string
+    targetUserId?: StringFilter<"NotificationOutbox"> | string
+    payload?: JsonFilter<"NotificationOutbox">
+    status?: EnumOutboxStatusFilter<"NotificationOutbox"> | $Enums.OutboxStatus
+    attempts?: IntFilter<"NotificationOutbox"> | number
+    lastError?: StringNullableFilter<"NotificationOutbox"> | string | null
+    lastAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"NotificationOutbox"> | Date | string
+    deliveredAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+  }
+
+  export type NotificationOutboxOrderByWithRelationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    channel?: SortOrder
+    targetUserId?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    lastError?: SortOrderInput | SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+  }
+
+  export type NotificationOutboxWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    eventId?: string
+    AND?: NotificationOutboxWhereInput | NotificationOutboxWhereInput[]
+    OR?: NotificationOutboxWhereInput[]
+    NOT?: NotificationOutboxWhereInput | NotificationOutboxWhereInput[]
+    channel?: StringFilter<"NotificationOutbox"> | string
+    targetUserId?: StringFilter<"NotificationOutbox"> | string
+    payload?: JsonFilter<"NotificationOutbox">
+    status?: EnumOutboxStatusFilter<"NotificationOutbox"> | $Enums.OutboxStatus
+    attempts?: IntFilter<"NotificationOutbox"> | number
+    lastError?: StringNullableFilter<"NotificationOutbox"> | string | null
+    lastAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    createdAt?: DateTimeFilter<"NotificationOutbox"> | Date | string
+    deliveredAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+  }, "id" | "eventId">
+
+  export type NotificationOutboxOrderByWithAggregationInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    channel?: SortOrder
+    targetUserId?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    lastError?: SortOrderInput | SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    deliveredAt?: SortOrderInput | SortOrder
+    _count?: NotificationOutboxCountOrderByAggregateInput
+    _avg?: NotificationOutboxAvgOrderByAggregateInput
+    _max?: NotificationOutboxMaxOrderByAggregateInput
+    _min?: NotificationOutboxMinOrderByAggregateInput
+    _sum?: NotificationOutboxSumOrderByAggregateInput
+  }
+
+  export type NotificationOutboxScalarWhereWithAggregatesInput = {
+    AND?: NotificationOutboxScalarWhereWithAggregatesInput | NotificationOutboxScalarWhereWithAggregatesInput[]
+    OR?: NotificationOutboxScalarWhereWithAggregatesInput[]
+    NOT?: NotificationOutboxScalarWhereWithAggregatesInput | NotificationOutboxScalarWhereWithAggregatesInput[]
+    id?: StringWithAggregatesFilter<"NotificationOutbox"> | string
+    eventId?: StringWithAggregatesFilter<"NotificationOutbox"> | string
+    channel?: StringWithAggregatesFilter<"NotificationOutbox"> | string
+    targetUserId?: StringWithAggregatesFilter<"NotificationOutbox"> | string
+    payload?: JsonWithAggregatesFilter<"NotificationOutbox">
+    status?: EnumOutboxStatusWithAggregatesFilter<"NotificationOutbox"> | $Enums.OutboxStatus
+    attempts?: IntWithAggregatesFilter<"NotificationOutbox"> | number
+    lastError?: StringNullableWithAggregatesFilter<"NotificationOutbox"> | string | null
+    lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"NotificationOutbox"> | Date | string
+    deliveredAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
   }
 
   export type WithdrawalWhereInput = {
@@ -34463,7 +38864,7 @@ export namespace Prisma {
     holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    appointment?: AppointmentCreateNestedOneWithoutSlotInput
+    appointments?: AppointmentCreateNestedManyWithoutSlotInput
     doctor: DoctorCreateNestedOneWithoutSlotsInput
   }
 
@@ -34480,7 +38881,7 @@ export namespace Prisma {
     holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    appointment?: AppointmentUncheckedCreateNestedOneWithoutSlotInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutSlotInput
   }
 
   export type SlotUpdateInput = {
@@ -34495,7 +38896,7 @@ export namespace Prisma {
     holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    appointment?: AppointmentUpdateOneWithoutSlotNestedInput
+    appointments?: AppointmentUpdateManyWithoutSlotNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutSlotsNestedInput
   }
 
@@ -34512,7 +38913,7 @@ export namespace Prisma {
     holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    appointment?: AppointmentUncheckedUpdateOneWithoutSlotNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutSlotNestedInput
   }
 
   export type SlotCreateManyInput = {
@@ -34568,7 +38969,8 @@ export namespace Prisma {
     bookedAt?: Date | string
     updatedAt?: Date | string
     isAppointmentOffline?: boolean
-    slot: SlotCreateNestedOneWithoutAppointmentInput
+    slot: SlotCreateNestedOneWithoutAppointmentsInput
+    payment?: PaymentCreateNestedOneWithoutAppointmentInput
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
   }
@@ -34578,6 +38980,7 @@ export namespace Prisma {
     doctorId: string
     patientId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -34596,7 +38999,8 @@ export namespace Prisma {
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
-    slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
+    slot?: SlotUpdateOneRequiredWithoutAppointmentsNestedInput
+    payment?: PaymentUpdateOneWithoutAppointmentNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
     patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
   }
@@ -34606,6 +39010,7 @@ export namespace Prisma {
     doctorId?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34620,6 +39025,7 @@ export namespace Prisma {
     doctorId: string
     patientId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -34645,6 +39051,7 @@ export namespace Prisma {
     doctorId?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34782,6 +39189,7 @@ export namespace Prisma {
 
   export type PaymentCreateInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     doctorId?: string | null
@@ -34790,12 +39198,18 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
+    appointment?: AppointmentCreateNestedOneWithoutPaymentInput
+    refunds?: RefundCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUncheckedCreateInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     userId: string
@@ -34805,11 +39219,17 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
+    appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventUncheckedCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     doctorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34818,12 +39238,18 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+    appointment?: AppointmentUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -34833,11 +39259,17 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentCreateManyInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     userId: string
@@ -34847,11 +39279,14 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type PaymentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     doctorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -34860,11 +39295,14 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type PaymentUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
@@ -34874,7 +39312,308 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RefundCreateInput = {
+    id?: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+    payment: PaymentCreateNestedOneWithoutRefundsInput
+  }
+
+  export type RefundUncheckedCreateInput = {
+    id?: string
+    paymentId: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type RefundUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    payment?: PaymentUpdateOneRequiredWithoutRefundsNestedInput
+  }
+
+  export type RefundUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RefundCreateManyInput = {
+    id?: string
+    paymentId: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type RefundUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RefundUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    paymentId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventCreateInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+    payment?: PaymentCreateNestedOneWithoutWebhookEventsInput
+  }
+
+  export type WebhookEventUncheckedCreateInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    paymentId?: string | null
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WebhookEventUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    payment?: PaymentUpdateOneWithoutWebhookEventsNestedInput
+  }
+
+  export type WebhookEventUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventCreateManyInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    paymentId?: string | null
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WebhookEventUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type NotificationOutboxCreateInput = {
+    id?: string
+    eventId: string
+    channel: string
+    targetUserId: string
+    payload: JsonNullValueInput | InputJsonValue
+    status?: $Enums.OutboxStatus
+    attempts?: number
+    lastError?: string | null
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    deliveredAt?: Date | string | null
+  }
+
+  export type NotificationOutboxUncheckedCreateInput = {
+    id?: string
+    eventId: string
+    channel: string
+    targetUserId: string
+    payload: JsonNullValueInput | InputJsonValue
+    status?: $Enums.OutboxStatus
+    attempts?: number
+    lastError?: string | null
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    deliveredAt?: Date | string | null
+  }
+
+  export type NotificationOutboxUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    targetUserId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    status?: EnumOutboxStatusFieldUpdateOperationsInput | $Enums.OutboxStatus
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type NotificationOutboxUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    targetUserId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    status?: EnumOutboxStatusFieldUpdateOperationsInput | $Enums.OutboxStatus
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type NotificationOutboxCreateManyInput = {
+    id?: string
+    eventId: string
+    channel: string
+    targetUserId: string
+    payload: JsonNullValueInput | InputJsonValue
+    status?: $Enums.OutboxStatus
+    attempts?: number
+    lastError?: string | null
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    deliveredAt?: Date | string | null
+  }
+
+  export type NotificationOutboxUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    targetUserId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    status?: EnumOutboxStatusFieldUpdateOperationsInput | $Enums.OutboxStatus
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type NotificationOutboxUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    eventId?: StringFieldUpdateOperationsInput | string
+    channel?: StringFieldUpdateOperationsInput | string
+    targetUserId?: StringFieldUpdateOperationsInput | string
+    payload?: JsonNullValueInput | InputJsonValue
+    status?: EnumOutboxStatusFieldUpdateOperationsInput | $Enums.OutboxStatus
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type WithdrawalCreateInput = {
@@ -36436,11 +41175,6 @@ export namespace Prisma {
     not?: NestedEnumSlotStatusFilter<$PrismaModel> | $Enums.SlotStatus
   }
 
-  export type AppointmentNullableScalarRelationFilter = {
-    is?: AppointmentWhereInput | null
-    isNot?: AppointmentWhereInput | null
-  }
-
   export type SlotDoctorIdDateStartTimeCompoundUniqueInput = {
     doctorId: string
     date: Date | string
@@ -36521,11 +41255,17 @@ export namespace Prisma {
     isNot?: SlotWhereInput
   }
 
+  export type PaymentNullableScalarRelationFilter = {
+    is?: PaymentWhereInput | null
+    isNot?: PaymentWhereInput | null
+  }
+
   export type AppointmentCountOrderByAggregateInput = {
     id?: SortOrder
     doctorId?: SortOrder
     patientId?: SortOrder
     slotId?: SortOrder
+    paymentId?: SortOrder
     status?: SortOrder
     paymentMethod?: SortOrder
     transactionId?: SortOrder
@@ -36540,6 +41280,7 @@ export namespace Prisma {
     doctorId?: SortOrder
     patientId?: SortOrder
     slotId?: SortOrder
+    paymentId?: SortOrder
     status?: SortOrder
     paymentMethod?: SortOrder
     transactionId?: SortOrder
@@ -36554,6 +41295,7 @@ export namespace Prisma {
     doctorId?: SortOrder
     patientId?: SortOrder
     slotId?: SortOrder
+    paymentId?: SortOrder
     status?: SortOrder
     paymentMethod?: SortOrder
     transactionId?: SortOrder
@@ -36647,8 +41389,34 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
+  export type AppointmentNullableScalarRelationFilter = {
+    is?: AppointmentWhereInput | null
+    isNot?: AppointmentWhereInput | null
+  }
+
+  export type RefundListRelationFilter = {
+    every?: RefundWhereInput
+    some?: RefundWhereInput
+    none?: RefundWhereInput
+  }
+
+  export type WebhookEventListRelationFilter = {
+    every?: WebhookEventWhereInput
+    some?: WebhookEventWhereInput
+    none?: WebhookEventWhereInput
+  }
+
+  export type RefundOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type WebhookEventOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
   export type PaymentCountOrderByAggregateInput = {
     id?: SortOrder
+    idempotencyKey?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
@@ -36658,7 +41426,9 @@ export namespace Prisma {
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
+    capturedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type PaymentAvgOrderByAggregateInput = {
@@ -36667,6 +41437,7 @@ export namespace Prisma {
 
   export type PaymentMaxOrderByAggregateInput = {
     id?: SortOrder
+    idempotencyKey?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
@@ -36676,11 +41447,14 @@ export namespace Prisma {
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
+    capturedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type PaymentMinOrderByAggregateInput = {
     id?: SortOrder
+    idempotencyKey?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     userId?: SortOrder
@@ -36690,11 +41464,212 @@ export namespace Prisma {
     status?: SortOrder
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
+    capturedAt?: SortOrder
     createdAt?: SortOrder
+    updatedAt?: SortOrder
   }
 
   export type PaymentSumOrderByAggregateInput = {
     amount?: SortOrder
+  }
+
+  export type EnumRefundStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusFilter<$PrismaModel> | $Enums.RefundStatus
+  }
+
+  export type PaymentScalarRelationFilter = {
+    is?: PaymentWhereInput
+    isNot?: PaymentWhereInput
+  }
+
+  export type RefundCountOrderByAggregateInput = {
+    id?: SortOrder
+    paymentId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    idempotencyKey?: SortOrder
+    razorpayRefundId?: SortOrder
+    failureReason?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type RefundAvgOrderByAggregateInput = {
+    amount?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type RefundMaxOrderByAggregateInput = {
+    id?: SortOrder
+    paymentId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    idempotencyKey?: SortOrder
+    razorpayRefundId?: SortOrder
+    failureReason?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type RefundMinOrderByAggregateInput = {
+    id?: SortOrder
+    paymentId?: SortOrder
+    amount?: SortOrder
+    currency?: SortOrder
+    reason?: SortOrder
+    status?: SortOrder
+    idempotencyKey?: SortOrder
+    razorpayRefundId?: SortOrder
+    failureReason?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    updatedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type RefundSumOrderByAggregateInput = {
+    amount?: SortOrder
+    attempts?: SortOrder
+  }
+
+  export type EnumRefundStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel> | $Enums.RefundStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRefundStatusFilter<$PrismaModel>
+    _max?: NestedEnumRefundStatusFilter<$PrismaModel>
+  }
+
+  export type EnumWebhookEventStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WebhookEventStatus | EnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWebhookEventStatusFilter<$PrismaModel> | $Enums.WebhookEventStatus
+  }
+
+  export type WebhookEventCountOrderByAggregateInput = {
+    id?: SortOrder
+    providerEventId?: SortOrder
+    eventType?: SortOrder
+    paymentId?: SortOrder
+    status?: SortOrder
+    payload?: SortOrder
+    processingError?: SortOrder
+    receivedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type WebhookEventMaxOrderByAggregateInput = {
+    id?: SortOrder
+    providerEventId?: SortOrder
+    eventType?: SortOrder
+    paymentId?: SortOrder
+    status?: SortOrder
+    processingError?: SortOrder
+    receivedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type WebhookEventMinOrderByAggregateInput = {
+    id?: SortOrder
+    providerEventId?: SortOrder
+    eventType?: SortOrder
+    paymentId?: SortOrder
+    status?: SortOrder
+    processingError?: SortOrder
+    receivedAt?: SortOrder
+    processedAt?: SortOrder
+  }
+
+  export type EnumWebhookEventStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WebhookEventStatus | EnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWebhookEventStatusWithAggregatesFilter<$PrismaModel> | $Enums.WebhookEventStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
+    _max?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
+  }
+
+  export type EnumOutboxStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.OutboxStatus | EnumOutboxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumOutboxStatusFilter<$PrismaModel> | $Enums.OutboxStatus
+  }
+
+  export type NotificationOutboxCountOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    channel?: SortOrder
+    targetUserId?: SortOrder
+    payload?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    lastError?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    deliveredAt?: SortOrder
+  }
+
+  export type NotificationOutboxAvgOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type NotificationOutboxMaxOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    channel?: SortOrder
+    targetUserId?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    lastError?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    deliveredAt?: SortOrder
+  }
+
+  export type NotificationOutboxMinOrderByAggregateInput = {
+    id?: SortOrder
+    eventId?: SortOrder
+    channel?: SortOrder
+    targetUserId?: SortOrder
+    status?: SortOrder
+    attempts?: SortOrder
+    lastError?: SortOrder
+    lastAttemptAt?: SortOrder
+    createdAt?: SortOrder
+    deliveredAt?: SortOrder
+  }
+
+  export type NotificationOutboxSumOrderByAggregateInput = {
+    attempts?: SortOrder
+  }
+
+  export type EnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.OutboxStatus | EnumOutboxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumOutboxStatusWithAggregatesFilter<$PrismaModel> | $Enums.OutboxStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumOutboxStatusFilter<$PrismaModel>
+    _max?: NestedEnumOutboxStatusFilter<$PrismaModel>
   }
 
   export type EnumWithdrawalStatusFilter<$PrismaModel = never> = {
@@ -38430,10 +43405,11 @@ export namespace Prisma {
     update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutScheduleInput, DoctorUpdateWithoutScheduleInput>, DoctorUncheckedUpdateWithoutScheduleInput>
   }
 
-  export type AppointmentCreateNestedOneWithoutSlotInput = {
-    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
-    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput
-    connect?: AppointmentWhereUniqueInput
+  export type AppointmentCreateNestedManyWithoutSlotInput = {
+    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput> | AppointmentCreateWithoutSlotInput[] | AppointmentUncheckedCreateWithoutSlotInput[]
+    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput | AppointmentCreateOrConnectWithoutSlotInput[]
+    createMany?: AppointmentCreateManySlotInputEnvelope
+    connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
   }
 
   export type DoctorCreateNestedOneWithoutSlotsInput = {
@@ -38442,24 +43418,29 @@ export namespace Prisma {
     connect?: DoctorWhereUniqueInput
   }
 
-  export type AppointmentUncheckedCreateNestedOneWithoutSlotInput = {
-    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
-    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput
-    connect?: AppointmentWhereUniqueInput
+  export type AppointmentUncheckedCreateNestedManyWithoutSlotInput = {
+    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput> | AppointmentCreateWithoutSlotInput[] | AppointmentUncheckedCreateWithoutSlotInput[]
+    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput | AppointmentCreateOrConnectWithoutSlotInput[]
+    createMany?: AppointmentCreateManySlotInputEnvelope
+    connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
   }
 
   export type EnumSlotStatusFieldUpdateOperationsInput = {
     set?: $Enums.SlotStatus
   }
 
-  export type AppointmentUpdateOneWithoutSlotNestedInput = {
-    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
-    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput
-    upsert?: AppointmentUpsertWithoutSlotInput
-    disconnect?: AppointmentWhereInput | boolean
-    delete?: AppointmentWhereInput | boolean
-    connect?: AppointmentWhereUniqueInput
-    update?: XOR<XOR<AppointmentUpdateToOneWithWhereWithoutSlotInput, AppointmentUpdateWithoutSlotInput>, AppointmentUncheckedUpdateWithoutSlotInput>
+  export type AppointmentUpdateManyWithoutSlotNestedInput = {
+    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput> | AppointmentCreateWithoutSlotInput[] | AppointmentUncheckedCreateWithoutSlotInput[]
+    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput | AppointmentCreateOrConnectWithoutSlotInput[]
+    upsert?: AppointmentUpsertWithWhereUniqueWithoutSlotInput | AppointmentUpsertWithWhereUniqueWithoutSlotInput[]
+    createMany?: AppointmentCreateManySlotInputEnvelope
+    set?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    disconnect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    delete?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    update?: AppointmentUpdateWithWhereUniqueWithoutSlotInput | AppointmentUpdateWithWhereUniqueWithoutSlotInput[]
+    updateMany?: AppointmentUpdateManyWithWhereWithoutSlotInput | AppointmentUpdateManyWithWhereWithoutSlotInput[]
+    deleteMany?: AppointmentScalarWhereInput | AppointmentScalarWhereInput[]
   }
 
   export type DoctorUpdateOneRequiredWithoutSlotsNestedInput = {
@@ -38470,20 +43451,30 @@ export namespace Prisma {
     update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutSlotsInput, DoctorUpdateWithoutSlotsInput>, DoctorUncheckedUpdateWithoutSlotsInput>
   }
 
-  export type AppointmentUncheckedUpdateOneWithoutSlotNestedInput = {
-    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
-    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput
-    upsert?: AppointmentUpsertWithoutSlotInput
-    disconnect?: AppointmentWhereInput | boolean
-    delete?: AppointmentWhereInput | boolean
-    connect?: AppointmentWhereUniqueInput
-    update?: XOR<XOR<AppointmentUpdateToOneWithWhereWithoutSlotInput, AppointmentUpdateWithoutSlotInput>, AppointmentUncheckedUpdateWithoutSlotInput>
+  export type AppointmentUncheckedUpdateManyWithoutSlotNestedInput = {
+    create?: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput> | AppointmentCreateWithoutSlotInput[] | AppointmentUncheckedCreateWithoutSlotInput[]
+    connectOrCreate?: AppointmentCreateOrConnectWithoutSlotInput | AppointmentCreateOrConnectWithoutSlotInput[]
+    upsert?: AppointmentUpsertWithWhereUniqueWithoutSlotInput | AppointmentUpsertWithWhereUniqueWithoutSlotInput[]
+    createMany?: AppointmentCreateManySlotInputEnvelope
+    set?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    disconnect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    delete?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    connect?: AppointmentWhereUniqueInput | AppointmentWhereUniqueInput[]
+    update?: AppointmentUpdateWithWhereUniqueWithoutSlotInput | AppointmentUpdateWithWhereUniqueWithoutSlotInput[]
+    updateMany?: AppointmentUpdateManyWithWhereWithoutSlotInput | AppointmentUpdateManyWithWhereWithoutSlotInput[]
+    deleteMany?: AppointmentScalarWhereInput | AppointmentScalarWhereInput[]
   }
 
-  export type SlotCreateNestedOneWithoutAppointmentInput = {
-    create?: XOR<SlotCreateWithoutAppointmentInput, SlotUncheckedCreateWithoutAppointmentInput>
-    connectOrCreate?: SlotCreateOrConnectWithoutAppointmentInput
+  export type SlotCreateNestedOneWithoutAppointmentsInput = {
+    create?: XOR<SlotCreateWithoutAppointmentsInput, SlotUncheckedCreateWithoutAppointmentsInput>
+    connectOrCreate?: SlotCreateOrConnectWithoutAppointmentsInput
     connect?: SlotWhereUniqueInput
+  }
+
+  export type PaymentCreateNestedOneWithoutAppointmentInput = {
+    create?: XOR<PaymentCreateWithoutAppointmentInput, PaymentUncheckedCreateWithoutAppointmentInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutAppointmentInput
+    connect?: PaymentWhereUniqueInput
   }
 
   export type DoctorCreateNestedOneWithoutAppointmentsInput = {
@@ -38506,12 +43497,22 @@ export namespace Prisma {
     set?: $Enums.PaymentMethod
   }
 
-  export type SlotUpdateOneRequiredWithoutAppointmentNestedInput = {
-    create?: XOR<SlotCreateWithoutAppointmentInput, SlotUncheckedCreateWithoutAppointmentInput>
-    connectOrCreate?: SlotCreateOrConnectWithoutAppointmentInput
-    upsert?: SlotUpsertWithoutAppointmentInput
+  export type SlotUpdateOneRequiredWithoutAppointmentsNestedInput = {
+    create?: XOR<SlotCreateWithoutAppointmentsInput, SlotUncheckedCreateWithoutAppointmentsInput>
+    connectOrCreate?: SlotCreateOrConnectWithoutAppointmentsInput
+    upsert?: SlotUpsertWithoutAppointmentsInput
     connect?: SlotWhereUniqueInput
-    update?: XOR<XOR<SlotUpdateToOneWithWhereWithoutAppointmentInput, SlotUpdateWithoutAppointmentInput>, SlotUncheckedUpdateWithoutAppointmentInput>
+    update?: XOR<XOR<SlotUpdateToOneWithWhereWithoutAppointmentsInput, SlotUpdateWithoutAppointmentsInput>, SlotUncheckedUpdateWithoutAppointmentsInput>
+  }
+
+  export type PaymentUpdateOneWithoutAppointmentNestedInput = {
+    create?: XOR<PaymentCreateWithoutAppointmentInput, PaymentUncheckedCreateWithoutAppointmentInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutAppointmentInput
+    upsert?: PaymentUpsertWithoutAppointmentInput
+    disconnect?: PaymentWhereInput | boolean
+    delete?: PaymentWhereInput | boolean
+    connect?: PaymentWhereUniqueInput
+    update?: XOR<XOR<PaymentUpdateToOneWithWhereWithoutAppointmentInput, PaymentUpdateWithoutAppointmentInput>, PaymentUncheckedUpdateWithoutAppointmentInput>
   }
 
   export type DoctorUpdateOneRequiredWithoutAppointmentsNestedInput = {
@@ -38634,12 +43635,170 @@ export namespace Prisma {
     connect?: UserWhereUniqueInput
   }
 
+  export type AppointmentCreateNestedOneWithoutPaymentInput = {
+    create?: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+    connectOrCreate?: AppointmentCreateOrConnectWithoutPaymentInput
+    connect?: AppointmentWhereUniqueInput
+  }
+
+  export type RefundCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput> | RefundCreateWithoutPaymentInput[] | RefundUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: RefundCreateOrConnectWithoutPaymentInput | RefundCreateOrConnectWithoutPaymentInput[]
+    createMany?: RefundCreateManyPaymentInputEnvelope
+    connect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+  }
+
+  export type WebhookEventCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput> | WebhookEventCreateWithoutPaymentInput[] | WebhookEventUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: WebhookEventCreateOrConnectWithoutPaymentInput | WebhookEventCreateOrConnectWithoutPaymentInput[]
+    createMany?: WebhookEventCreateManyPaymentInputEnvelope
+    connect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+  }
+
+  export type AppointmentUncheckedCreateNestedOneWithoutPaymentInput = {
+    create?: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+    connectOrCreate?: AppointmentCreateOrConnectWithoutPaymentInput
+    connect?: AppointmentWhereUniqueInput
+  }
+
+  export type RefundUncheckedCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput> | RefundCreateWithoutPaymentInput[] | RefundUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: RefundCreateOrConnectWithoutPaymentInput | RefundCreateOrConnectWithoutPaymentInput[]
+    createMany?: RefundCreateManyPaymentInputEnvelope
+    connect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+  }
+
+  export type WebhookEventUncheckedCreateNestedManyWithoutPaymentInput = {
+    create?: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput> | WebhookEventCreateWithoutPaymentInput[] | WebhookEventUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: WebhookEventCreateOrConnectWithoutPaymentInput | WebhookEventCreateOrConnectWithoutPaymentInput[]
+    createMany?: WebhookEventCreateManyPaymentInputEnvelope
+    connect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+  }
+
   export type UserUpdateOneRequiredWithoutPaymentsNestedInput = {
     create?: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
     connectOrCreate?: UserCreateOrConnectWithoutPaymentsInput
     upsert?: UserUpsertWithoutPaymentsInput
     connect?: UserWhereUniqueInput
     update?: XOR<XOR<UserUpdateToOneWithWhereWithoutPaymentsInput, UserUpdateWithoutPaymentsInput>, UserUncheckedUpdateWithoutPaymentsInput>
+  }
+
+  export type AppointmentUpdateOneWithoutPaymentNestedInput = {
+    create?: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+    connectOrCreate?: AppointmentCreateOrConnectWithoutPaymentInput
+    upsert?: AppointmentUpsertWithoutPaymentInput
+    disconnect?: AppointmentWhereInput | boolean
+    delete?: AppointmentWhereInput | boolean
+    connect?: AppointmentWhereUniqueInput
+    update?: XOR<XOR<AppointmentUpdateToOneWithWhereWithoutPaymentInput, AppointmentUpdateWithoutPaymentInput>, AppointmentUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type RefundUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput> | RefundCreateWithoutPaymentInput[] | RefundUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: RefundCreateOrConnectWithoutPaymentInput | RefundCreateOrConnectWithoutPaymentInput[]
+    upsert?: RefundUpsertWithWhereUniqueWithoutPaymentInput | RefundUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: RefundCreateManyPaymentInputEnvelope
+    set?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    disconnect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    delete?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    connect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    update?: RefundUpdateWithWhereUniqueWithoutPaymentInput | RefundUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: RefundUpdateManyWithWhereWithoutPaymentInput | RefundUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: RefundScalarWhereInput | RefundScalarWhereInput[]
+  }
+
+  export type WebhookEventUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput> | WebhookEventCreateWithoutPaymentInput[] | WebhookEventUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: WebhookEventCreateOrConnectWithoutPaymentInput | WebhookEventCreateOrConnectWithoutPaymentInput[]
+    upsert?: WebhookEventUpsertWithWhereUniqueWithoutPaymentInput | WebhookEventUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: WebhookEventCreateManyPaymentInputEnvelope
+    set?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    disconnect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    delete?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    connect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    update?: WebhookEventUpdateWithWhereUniqueWithoutPaymentInput | WebhookEventUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: WebhookEventUpdateManyWithWhereWithoutPaymentInput | WebhookEventUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: WebhookEventScalarWhereInput | WebhookEventScalarWhereInput[]
+  }
+
+  export type AppointmentUncheckedUpdateOneWithoutPaymentNestedInput = {
+    create?: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+    connectOrCreate?: AppointmentCreateOrConnectWithoutPaymentInput
+    upsert?: AppointmentUpsertWithoutPaymentInput
+    disconnect?: AppointmentWhereInput | boolean
+    delete?: AppointmentWhereInput | boolean
+    connect?: AppointmentWhereUniqueInput
+    update?: XOR<XOR<AppointmentUpdateToOneWithWhereWithoutPaymentInput, AppointmentUpdateWithoutPaymentInput>, AppointmentUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type RefundUncheckedUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput> | RefundCreateWithoutPaymentInput[] | RefundUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: RefundCreateOrConnectWithoutPaymentInput | RefundCreateOrConnectWithoutPaymentInput[]
+    upsert?: RefundUpsertWithWhereUniqueWithoutPaymentInput | RefundUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: RefundCreateManyPaymentInputEnvelope
+    set?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    disconnect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    delete?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    connect?: RefundWhereUniqueInput | RefundWhereUniqueInput[]
+    update?: RefundUpdateWithWhereUniqueWithoutPaymentInput | RefundUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: RefundUpdateManyWithWhereWithoutPaymentInput | RefundUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: RefundScalarWhereInput | RefundScalarWhereInput[]
+  }
+
+  export type WebhookEventUncheckedUpdateManyWithoutPaymentNestedInput = {
+    create?: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput> | WebhookEventCreateWithoutPaymentInput[] | WebhookEventUncheckedCreateWithoutPaymentInput[]
+    connectOrCreate?: WebhookEventCreateOrConnectWithoutPaymentInput | WebhookEventCreateOrConnectWithoutPaymentInput[]
+    upsert?: WebhookEventUpsertWithWhereUniqueWithoutPaymentInput | WebhookEventUpsertWithWhereUniqueWithoutPaymentInput[]
+    createMany?: WebhookEventCreateManyPaymentInputEnvelope
+    set?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    disconnect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    delete?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    connect?: WebhookEventWhereUniqueInput | WebhookEventWhereUniqueInput[]
+    update?: WebhookEventUpdateWithWhereUniqueWithoutPaymentInput | WebhookEventUpdateWithWhereUniqueWithoutPaymentInput[]
+    updateMany?: WebhookEventUpdateManyWithWhereWithoutPaymentInput | WebhookEventUpdateManyWithWhereWithoutPaymentInput[]
+    deleteMany?: WebhookEventScalarWhereInput | WebhookEventScalarWhereInput[]
+  }
+
+  export type PaymentCreateNestedOneWithoutRefundsInput = {
+    create?: XOR<PaymentCreateWithoutRefundsInput, PaymentUncheckedCreateWithoutRefundsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutRefundsInput
+    connect?: PaymentWhereUniqueInput
+  }
+
+  export type EnumRefundStatusFieldUpdateOperationsInput = {
+    set?: $Enums.RefundStatus
+  }
+
+  export type PaymentUpdateOneRequiredWithoutRefundsNestedInput = {
+    create?: XOR<PaymentCreateWithoutRefundsInput, PaymentUncheckedCreateWithoutRefundsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutRefundsInput
+    upsert?: PaymentUpsertWithoutRefundsInput
+    connect?: PaymentWhereUniqueInput
+    update?: XOR<XOR<PaymentUpdateToOneWithWhereWithoutRefundsInput, PaymentUpdateWithoutRefundsInput>, PaymentUncheckedUpdateWithoutRefundsInput>
+  }
+
+  export type PaymentCreateNestedOneWithoutWebhookEventsInput = {
+    create?: XOR<PaymentCreateWithoutWebhookEventsInput, PaymentUncheckedCreateWithoutWebhookEventsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutWebhookEventsInput
+    connect?: PaymentWhereUniqueInput
+  }
+
+  export type EnumWebhookEventStatusFieldUpdateOperationsInput = {
+    set?: $Enums.WebhookEventStatus
+  }
+
+  export type PaymentUpdateOneWithoutWebhookEventsNestedInput = {
+    create?: XOR<PaymentCreateWithoutWebhookEventsInput, PaymentUncheckedCreateWithoutWebhookEventsInput>
+    connectOrCreate?: PaymentCreateOrConnectWithoutWebhookEventsInput
+    upsert?: PaymentUpsertWithoutWebhookEventsInput
+    disconnect?: PaymentWhereInput | boolean
+    delete?: PaymentWhereInput | boolean
+    connect?: PaymentWhereUniqueInput
+    update?: XOR<XOR<PaymentUpdateToOneWithWhereWithoutWebhookEventsInput, PaymentUpdateWithoutWebhookEventsInput>, PaymentUncheckedUpdateWithoutWebhookEventsInput>
+  }
+
+  export type EnumOutboxStatusFieldUpdateOperationsInput = {
+    set?: $Enums.OutboxStatus
   }
 
   export type DoctorCreateNestedOneWithoutWithdrawalsInput = {
@@ -39245,6 +44404,57 @@ export namespace Prisma {
     _max?: NestedEnumPaymentMethodFilter<$PrismaModel>
   }
 
+  export type NestedEnumRefundStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusFilter<$PrismaModel> | $Enums.RefundStatus
+  }
+
+  export type NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.RefundStatus | EnumRefundStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.RefundStatus[] | ListEnumRefundStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumRefundStatusWithAggregatesFilter<$PrismaModel> | $Enums.RefundStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumRefundStatusFilter<$PrismaModel>
+    _max?: NestedEnumRefundStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumWebhookEventStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.WebhookEventStatus | EnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWebhookEventStatusFilter<$PrismaModel> | $Enums.WebhookEventStatus
+  }
+
+  export type NestedEnumWebhookEventStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.WebhookEventStatus | EnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.WebhookEventStatus[] | ListEnumWebhookEventStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumWebhookEventStatusWithAggregatesFilter<$PrismaModel> | $Enums.WebhookEventStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
+    _max?: NestedEnumWebhookEventStatusFilter<$PrismaModel>
+  }
+
+  export type NestedEnumOutboxStatusFilter<$PrismaModel = never> = {
+    equals?: $Enums.OutboxStatus | EnumOutboxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumOutboxStatusFilter<$PrismaModel> | $Enums.OutboxStatus
+  }
+
+  export type NestedEnumOutboxStatusWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: $Enums.OutboxStatus | EnumOutboxStatusFieldRefInput<$PrismaModel>
+    in?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    notIn?: $Enums.OutboxStatus[] | ListEnumOutboxStatusFieldRefInput<$PrismaModel>
+    not?: NestedEnumOutboxStatusWithAggregatesFilter<$PrismaModel> | $Enums.OutboxStatus
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedEnumOutboxStatusFilter<$PrismaModel>
+    _max?: NestedEnumOutboxStatusFilter<$PrismaModel>
+  }
+
   export type NestedEnumWithdrawalStatusFilter<$PrismaModel = never> = {
     equals?: $Enums.WithdrawalStatus | EnumWithdrawalStatusFieldRefInput<$PrismaModel>
     in?: $Enums.WithdrawalStatus[] | ListEnumWithdrawalStatusFieldRefInput<$PrismaModel>
@@ -39534,6 +44744,7 @@ export namespace Prisma {
 
   export type PaymentCreateWithoutUserInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     doctorId?: string | null
@@ -39542,11 +44753,17 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
+    appointment?: AppointmentCreateNestedOneWithoutPaymentInput
+    refunds?: RefundCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentUncheckedCreateWithoutUserInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     doctorId?: string | null
@@ -39555,7 +44772,12 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
+    appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventUncheckedCreateNestedManyWithoutPaymentInput
   }
 
   export type PaymentCreateOrConnectWithoutUserInput = {
@@ -39904,6 +45126,7 @@ export namespace Prisma {
     OR?: PaymentScalarWhereInput[]
     NOT?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
     id?: StringFilter<"Payment"> | string
+    idempotencyKey?: StringNullableFilter<"Payment"> | string | null
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     userId?: StringFilter<"Payment"> | string
@@ -39913,7 +45136,9 @@ export namespace Prisma {
     status?: StringFilter<"Payment"> | string
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
+    capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
+    updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
 
   export type NotificationUpsertWithWhereUniqueWithoutUserInput = {
@@ -40464,7 +45689,8 @@ export namespace Prisma {
     bookedAt?: Date | string
     updatedAt?: Date | string
     isAppointmentOffline?: boolean
-    slot: SlotCreateNestedOneWithoutAppointmentInput
+    slot: SlotCreateNestedOneWithoutAppointmentsInput
+    payment?: PaymentCreateNestedOneWithoutAppointmentInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
   }
 
@@ -40472,6 +45698,7 @@ export namespace Prisma {
     id?: string
     patientId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -40503,7 +45730,7 @@ export namespace Prisma {
     holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    appointment?: AppointmentCreateNestedOneWithoutSlotInput
+    appointments?: AppointmentCreateNestedManyWithoutSlotInput
   }
 
   export type SlotUncheckedCreateWithoutDoctorInput = {
@@ -40518,7 +45745,7 @@ export namespace Prisma {
     holdExpiresAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    appointment?: AppointmentUncheckedCreateNestedOneWithoutSlotInput
+    appointments?: AppointmentUncheckedCreateNestedManyWithoutSlotInput
   }
 
   export type SlotCreateOrConnectWithoutDoctorInput = {
@@ -40834,6 +46061,7 @@ export namespace Prisma {
     doctorId?: StringFilter<"Appointment"> | string
     patientId?: StringFilter<"Appointment"> | string
     slotId?: StringFilter<"Appointment"> | string
+    paymentId?: StringNullableFilter<"Appointment"> | string | null
     status?: EnumAppointmentStatusFilter<"Appointment"> | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFilter<"Appointment"> | $Enums.PaymentMethod
     transactionId?: StringNullableFilter<"Appointment"> | string | null
@@ -41220,7 +46448,8 @@ export namespace Prisma {
     bookedAt?: Date | string
     updatedAt?: Date | string
     isAppointmentOffline?: boolean
-    slot: SlotCreateNestedOneWithoutAppointmentInput
+    slot: SlotCreateNestedOneWithoutAppointmentsInput
+    payment?: PaymentCreateNestedOneWithoutAppointmentInput
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
   }
 
@@ -41228,6 +46457,7 @@ export namespace Prisma {
     id?: string
     doctorId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -41981,6 +47211,7 @@ export namespace Prisma {
     bookedAt?: Date | string
     updatedAt?: Date | string
     isAppointmentOffline?: boolean
+    payment?: PaymentCreateNestedOneWithoutAppointmentInput
     doctor: DoctorCreateNestedOneWithoutAppointmentsInput
     patient: PatientCreateNestedOneWithoutAppointmentsInput
   }
@@ -41989,6 +47220,7 @@ export namespace Prisma {
     id?: string
     doctorId: string
     patientId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -42001,6 +47233,11 @@ export namespace Prisma {
   export type AppointmentCreateOrConnectWithoutSlotInput = {
     where: AppointmentWhereUniqueInput
     create: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
+  }
+
+  export type AppointmentCreateManySlotInputEnvelope = {
+    data: AppointmentCreateManySlotInput | AppointmentCreateManySlotInput[]
+    skipDuplicates?: boolean
   }
 
   export type DoctorCreateWithoutSlotsInput = {
@@ -42054,41 +47291,20 @@ export namespace Prisma {
     create: XOR<DoctorCreateWithoutSlotsInput, DoctorUncheckedCreateWithoutSlotsInput>
   }
 
-  export type AppointmentUpsertWithoutSlotInput = {
+  export type AppointmentUpsertWithWhereUniqueWithoutSlotInput = {
+    where: AppointmentWhereUniqueInput
     update: XOR<AppointmentUpdateWithoutSlotInput, AppointmentUncheckedUpdateWithoutSlotInput>
     create: XOR<AppointmentCreateWithoutSlotInput, AppointmentUncheckedCreateWithoutSlotInput>
-    where?: AppointmentWhereInput
   }
 
-  export type AppointmentUpdateToOneWithWhereWithoutSlotInput = {
-    where?: AppointmentWhereInput
+  export type AppointmentUpdateWithWhereUniqueWithoutSlotInput = {
+    where: AppointmentWhereUniqueInput
     data: XOR<AppointmentUpdateWithoutSlotInput, AppointmentUncheckedUpdateWithoutSlotInput>
   }
 
-  export type AppointmentUpdateWithoutSlotInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
-    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
-    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
-    doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
-    patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
-  }
-
-  export type AppointmentUncheckedUpdateWithoutSlotInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
-    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
-    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
-    notes?: NullableStringFieldUpdateOperationsInput | string | null
-    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+  export type AppointmentUpdateManyWithWhereWithoutSlotInput = {
+    where: AppointmentScalarWhereInput
+    data: XOR<AppointmentUpdateManyMutationInput, AppointmentUncheckedUpdateManyWithoutSlotInput>
   }
 
   export type DoctorUpsertWithoutSlotsInput = {
@@ -42148,7 +47364,7 @@ export namespace Prisma {
     medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
-  export type SlotCreateWithoutAppointmentInput = {
+  export type SlotCreateWithoutAppointmentsInput = {
     id?: string
     date: Date | string
     startTime: Date | string
@@ -42163,7 +47379,7 @@ export namespace Prisma {
     doctor: DoctorCreateNestedOneWithoutSlotsInput
   }
 
-  export type SlotUncheckedCreateWithoutAppointmentInput = {
+  export type SlotUncheckedCreateWithoutAppointmentsInput = {
     id?: string
     doctorId: string
     date: Date | string
@@ -42178,9 +47394,52 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type SlotCreateOrConnectWithoutAppointmentInput = {
+  export type SlotCreateOrConnectWithoutAppointmentsInput = {
     where: SlotWhereUniqueInput
-    create: XOR<SlotCreateWithoutAppointmentInput, SlotUncheckedCreateWithoutAppointmentInput>
+    create: XOR<SlotCreateWithoutAppointmentsInput, SlotUncheckedCreateWithoutAppointmentsInput>
+  }
+
+  export type PaymentCreateWithoutAppointmentInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPaymentsInput
+    refunds?: RefundCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentUncheckedCreateWithoutAppointmentInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    userId: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    refunds?: RefundUncheckedCreateNestedManyWithoutPaymentInput
+    webhookEvents?: WebhookEventUncheckedCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentCreateOrConnectWithoutAppointmentInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutAppointmentInput, PaymentUncheckedCreateWithoutAppointmentInput>
   }
 
   export type DoctorCreateWithoutAppointmentsInput = {
@@ -42269,18 +47528,18 @@ export namespace Prisma {
     create: XOR<PatientCreateWithoutAppointmentsInput, PatientUncheckedCreateWithoutAppointmentsInput>
   }
 
-  export type SlotUpsertWithoutAppointmentInput = {
-    update: XOR<SlotUpdateWithoutAppointmentInput, SlotUncheckedUpdateWithoutAppointmentInput>
-    create: XOR<SlotCreateWithoutAppointmentInput, SlotUncheckedCreateWithoutAppointmentInput>
+  export type SlotUpsertWithoutAppointmentsInput = {
+    update: XOR<SlotUpdateWithoutAppointmentsInput, SlotUncheckedUpdateWithoutAppointmentsInput>
+    create: XOR<SlotCreateWithoutAppointmentsInput, SlotUncheckedCreateWithoutAppointmentsInput>
     where?: SlotWhereInput
   }
 
-  export type SlotUpdateToOneWithWhereWithoutAppointmentInput = {
+  export type SlotUpdateToOneWithWhereWithoutAppointmentsInput = {
     where?: SlotWhereInput
-    data: XOR<SlotUpdateWithoutAppointmentInput, SlotUncheckedUpdateWithoutAppointmentInput>
+    data: XOR<SlotUpdateWithoutAppointmentsInput, SlotUncheckedUpdateWithoutAppointmentsInput>
   }
 
-  export type SlotUpdateWithoutAppointmentInput = {
+  export type SlotUpdateWithoutAppointmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
     startTime?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42295,7 +47554,7 @@ export namespace Prisma {
     doctor?: DoctorUpdateOneRequiredWithoutSlotsNestedInput
   }
 
-  export type SlotUncheckedUpdateWithoutAppointmentInput = {
+  export type SlotUncheckedUpdateWithoutAppointmentsInput = {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -42308,6 +47567,55 @@ export namespace Prisma {
     holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PaymentUpsertWithoutAppointmentInput = {
+    update: XOR<PaymentUpdateWithoutAppointmentInput, PaymentUncheckedUpdateWithoutAppointmentInput>
+    create: XOR<PaymentCreateWithoutAppointmentInput, PaymentUncheckedCreateWithoutAppointmentInput>
+    where?: PaymentWhereInput
+  }
+
+  export type PaymentUpdateToOneWithWhereWithoutAppointmentInput = {
+    where?: PaymentWhereInput
+    data: XOR<PaymentUpdateWithoutAppointmentInput, PaymentUncheckedUpdateWithoutAppointmentInput>
+  }
+
+  export type PaymentUpdateWithoutAppointmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+    refunds?: RefundUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUpdateManyWithoutPaymentNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutAppointmentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    refunds?: RefundUncheckedUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type DoctorUpsertWithoutAppointmentsInput = {
@@ -42867,6 +48175,113 @@ export namespace Prisma {
     create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
   }
 
+  export type AppointmentCreateWithoutPaymentInput = {
+    id?: string
+    status?: $Enums.AppointmentStatus
+    paymentMethod?: $Enums.PaymentMethod
+    transactionId?: string | null
+    notes?: string | null
+    bookedAt?: Date | string
+    updatedAt?: Date | string
+    isAppointmentOffline?: boolean
+    slot: SlotCreateNestedOneWithoutAppointmentsInput
+    doctor: DoctorCreateNestedOneWithoutAppointmentsInput
+    patient: PatientCreateNestedOneWithoutAppointmentsInput
+  }
+
+  export type AppointmentUncheckedCreateWithoutPaymentInput = {
+    id?: string
+    doctorId: string
+    patientId: string
+    slotId: string
+    status?: $Enums.AppointmentStatus
+    paymentMethod?: $Enums.PaymentMethod
+    transactionId?: string | null
+    notes?: string | null
+    bookedAt?: Date | string
+    updatedAt?: Date | string
+    isAppointmentOffline?: boolean
+  }
+
+  export type AppointmentCreateOrConnectWithoutPaymentInput = {
+    where: AppointmentWhereUniqueInput
+    create: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type RefundCreateWithoutPaymentInput = {
+    id?: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type RefundUncheckedCreateWithoutPaymentInput = {
+    id?: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type RefundCreateOrConnectWithoutPaymentInput = {
+    where: RefundWhereUniqueInput
+    create: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type RefundCreateManyPaymentInputEnvelope = {
+    data: RefundCreateManyPaymentInput | RefundCreateManyPaymentInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type WebhookEventCreateWithoutPaymentInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WebhookEventUncheckedCreateWithoutPaymentInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WebhookEventCreateOrConnectWithoutPaymentInput = {
+    where: WebhookEventWhereUniqueInput
+    create: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type WebhookEventCreateManyPaymentInputEnvelope = {
+    data: WebhookEventCreateManyPaymentInput | WebhookEventCreateManyPaymentInput[]
+    skipDuplicates?: boolean
+  }
+
   export type UserUpsertWithoutPaymentsInput = {
     update: XOR<UserUpdateWithoutPaymentsInput, UserUncheckedUpdateWithoutPaymentsInput>
     create: XOR<UserCreateWithoutPaymentsInput, UserUncheckedCreateWithoutPaymentsInput>
@@ -42930,6 +48345,296 @@ export namespace Prisma {
     chatMessages?: ChatMessagesUncheckedUpdateManyWithoutSenderNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutUserNestedInput
     bankAccounts?: BankAccountUncheckedUpdateManyWithoutUserNestedInput
+  }
+
+  export type AppointmentUpsertWithoutPaymentInput = {
+    update: XOR<AppointmentUpdateWithoutPaymentInput, AppointmentUncheckedUpdateWithoutPaymentInput>
+    create: XOR<AppointmentCreateWithoutPaymentInput, AppointmentUncheckedCreateWithoutPaymentInput>
+    where?: AppointmentWhereInput
+  }
+
+  export type AppointmentUpdateToOneWithWhereWithoutPaymentInput = {
+    where?: AppointmentWhereInput
+    data: XOR<AppointmentUpdateWithoutPaymentInput, AppointmentUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type AppointmentUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+    slot?: SlotUpdateOneRequiredWithoutAppointmentsNestedInput
+    doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
+  }
+
+  export type AppointmentUncheckedUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    slotId?: StringFieldUpdateOperationsInput | string
+    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type RefundUpsertWithWhereUniqueWithoutPaymentInput = {
+    where: RefundWhereUniqueInput
+    update: XOR<RefundUpdateWithoutPaymentInput, RefundUncheckedUpdateWithoutPaymentInput>
+    create: XOR<RefundCreateWithoutPaymentInput, RefundUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type RefundUpdateWithWhereUniqueWithoutPaymentInput = {
+    where: RefundWhereUniqueInput
+    data: XOR<RefundUpdateWithoutPaymentInput, RefundUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type RefundUpdateManyWithWhereWithoutPaymentInput = {
+    where: RefundScalarWhereInput
+    data: XOR<RefundUpdateManyMutationInput, RefundUncheckedUpdateManyWithoutPaymentInput>
+  }
+
+  export type RefundScalarWhereInput = {
+    AND?: RefundScalarWhereInput | RefundScalarWhereInput[]
+    OR?: RefundScalarWhereInput[]
+    NOT?: RefundScalarWhereInput | RefundScalarWhereInput[]
+    id?: StringFilter<"Refund"> | string
+    paymentId?: StringFilter<"Refund"> | string
+    amount?: IntFilter<"Refund"> | number
+    currency?: StringFilter<"Refund"> | string
+    reason?: StringFilter<"Refund"> | string
+    status?: EnumRefundStatusFilter<"Refund"> | $Enums.RefundStatus
+    idempotencyKey?: StringFilter<"Refund"> | string
+    razorpayRefundId?: StringNullableFilter<"Refund"> | string | null
+    failureReason?: StringNullableFilter<"Refund"> | string | null
+    attempts?: IntFilter<"Refund"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    createdAt?: DateTimeFilter<"Refund"> | Date | string
+    updatedAt?: DateTimeFilter<"Refund"> | Date | string
+    processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+  }
+
+  export type WebhookEventUpsertWithWhereUniqueWithoutPaymentInput = {
+    where: WebhookEventWhereUniqueInput
+    update: XOR<WebhookEventUpdateWithoutPaymentInput, WebhookEventUncheckedUpdateWithoutPaymentInput>
+    create: XOR<WebhookEventCreateWithoutPaymentInput, WebhookEventUncheckedCreateWithoutPaymentInput>
+  }
+
+  export type WebhookEventUpdateWithWhereUniqueWithoutPaymentInput = {
+    where: WebhookEventWhereUniqueInput
+    data: XOR<WebhookEventUpdateWithoutPaymentInput, WebhookEventUncheckedUpdateWithoutPaymentInput>
+  }
+
+  export type WebhookEventUpdateManyWithWhereWithoutPaymentInput = {
+    where: WebhookEventScalarWhereInput
+    data: XOR<WebhookEventUpdateManyMutationInput, WebhookEventUncheckedUpdateManyWithoutPaymentInput>
+  }
+
+  export type WebhookEventScalarWhereInput = {
+    AND?: WebhookEventScalarWhereInput | WebhookEventScalarWhereInput[]
+    OR?: WebhookEventScalarWhereInput[]
+    NOT?: WebhookEventScalarWhereInput | WebhookEventScalarWhereInput[]
+    id?: StringFilter<"WebhookEvent"> | string
+    providerEventId?: StringFilter<"WebhookEvent"> | string
+    eventType?: StringFilter<"WebhookEvent"> | string
+    paymentId?: StringNullableFilter<"WebhookEvent"> | string | null
+    status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
+    payload?: JsonFilter<"WebhookEvent">
+    processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
+    processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+  }
+
+  export type PaymentCreateWithoutRefundsInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPaymentsInput
+    appointment?: AppointmentCreateNestedOneWithoutPaymentInput
+    webhookEvents?: WebhookEventCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentUncheckedCreateWithoutRefundsInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    userId: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
+    webhookEvents?: WebhookEventUncheckedCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentCreateOrConnectWithoutRefundsInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutRefundsInput, PaymentUncheckedCreateWithoutRefundsInput>
+  }
+
+  export type PaymentUpsertWithoutRefundsInput = {
+    update: XOR<PaymentUpdateWithoutRefundsInput, PaymentUncheckedUpdateWithoutRefundsInput>
+    create: XOR<PaymentCreateWithoutRefundsInput, PaymentUncheckedCreateWithoutRefundsInput>
+    where?: PaymentWhereInput
+  }
+
+  export type PaymentUpdateToOneWithWhereWithoutRefundsInput = {
+    where?: PaymentWhereInput
+    data: XOR<PaymentUpdateWithoutRefundsInput, PaymentUncheckedUpdateWithoutRefundsInput>
+  }
+
+  export type PaymentUpdateWithoutRefundsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+    appointment?: AppointmentUpdateOneWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUpdateManyWithoutPaymentNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutRefundsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUncheckedUpdateManyWithoutPaymentNestedInput
+  }
+
+  export type PaymentCreateWithoutWebhookEventsInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    user: UserCreateNestedOneWithoutPaymentsInput
+    appointment?: AppointmentCreateNestedOneWithoutPaymentInput
+    refunds?: RefundCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentUncheckedCreateWithoutWebhookEventsInput = {
+    id?: string
+    idempotencyKey?: string | null
+    amount: number
+    currency?: string
+    userId: string
+    doctorId?: string | null
+    slotId?: string | null
+    holdToken?: string | null
+    status: string
+    razorpayOrderId: string
+    razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
+    refunds?: RefundUncheckedCreateNestedManyWithoutPaymentInput
+  }
+
+  export type PaymentCreateOrConnectWithoutWebhookEventsInput = {
+    where: PaymentWhereUniqueInput
+    create: XOR<PaymentCreateWithoutWebhookEventsInput, PaymentUncheckedCreateWithoutWebhookEventsInput>
+  }
+
+  export type PaymentUpsertWithoutWebhookEventsInput = {
+    update: XOR<PaymentUpdateWithoutWebhookEventsInput, PaymentUncheckedUpdateWithoutWebhookEventsInput>
+    create: XOR<PaymentCreateWithoutWebhookEventsInput, PaymentUncheckedCreateWithoutWebhookEventsInput>
+    where?: PaymentWhereInput
+  }
+
+  export type PaymentUpdateToOneWithWhereWithoutWebhookEventsInput = {
+    where?: PaymentWhereInput
+    data: XOR<PaymentUpdateWithoutWebhookEventsInput, PaymentUncheckedUpdateWithoutWebhookEventsInput>
+  }
+
+  export type PaymentUpdateWithoutWebhookEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
+    appointment?: AppointmentUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUpdateManyWithoutPaymentNestedInput
+  }
+
+  export type PaymentUncheckedUpdateWithoutWebhookEventsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    userId?: StringFieldUpdateOperationsInput | string
+    doctorId?: NullableStringFieldUpdateOperationsInput | string | null
+    slotId?: NullableStringFieldUpdateOperationsInput | string | null
+    holdToken?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    razorpayOrderId?: StringFieldUpdateOperationsInput | string
+    razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type DoctorCreateWithoutWithdrawalsInput = {
@@ -44232,6 +49937,7 @@ export namespace Prisma {
 
   export type PaymentCreateManyUserInput = {
     id?: string
+    idempotencyKey?: string | null
     amount: number
     currency?: string
     doctorId?: string | null
@@ -44240,7 +49946,9 @@ export namespace Prisma {
     status: string
     razorpayOrderId: string
     razorpayPaymentId?: string | null
+    capturedAt?: Date | string | null
     createdAt?: Date | string
+    updatedAt?: Date | string
   }
 
   export type NotificationCreateManyUserInput = {
@@ -44364,6 +50072,7 @@ export namespace Prisma {
 
   export type PaymentUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     doctorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44372,11 +50081,17 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appointment?: AppointmentUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     doctorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44385,11 +50100,17 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
+    refunds?: RefundUncheckedUpdateManyWithoutPaymentNestedInput
+    webhookEvents?: WebhookEventUncheckedUpdateManyWithoutPaymentNestedInput
   }
 
   export type PaymentUncheckedUpdateManyWithoutUserInput = {
     id?: StringFieldUpdateOperationsInput | string
+    idempotencyKey?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     doctorId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44398,7 +50119,9 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type NotificationUpdateWithoutUserInput = {
@@ -44598,6 +50321,7 @@ export namespace Prisma {
     id?: string
     patientId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -44718,7 +50442,8 @@ export namespace Prisma {
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
-    slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
+    slot?: SlotUpdateOneRequiredWithoutAppointmentsNestedInput
+    payment?: PaymentUpdateOneWithoutAppointmentNestedInput
     patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
   }
 
@@ -44726,6 +50451,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44739,6 +50465,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     patientId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -44760,7 +50487,7 @@ export namespace Prisma {
     holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    appointment?: AppointmentUpdateOneWithoutSlotNestedInput
+    appointments?: AppointmentUpdateManyWithoutSlotNestedInput
   }
 
   export type SlotUncheckedUpdateWithoutDoctorInput = {
@@ -44775,7 +50502,7 @@ export namespace Prisma {
     holdExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    appointment?: AppointmentUncheckedUpdateOneWithoutSlotNestedInput
+    appointments?: AppointmentUncheckedUpdateManyWithoutSlotNestedInput
   }
 
   export type SlotUncheckedUpdateManyWithoutDoctorInput = {
@@ -44928,6 +50655,7 @@ export namespace Prisma {
     id?: string
     doctorId: string
     slotId: string
+    paymentId?: string | null
     status?: $Enums.AppointmentStatus
     paymentMethod?: $Enums.PaymentMethod
     transactionId?: string | null
@@ -45011,7 +50739,8 @@ export namespace Prisma {
     bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
-    slot?: SlotUpdateOneRequiredWithoutAppointmentNestedInput
+    slot?: SlotUpdateOneRequiredWithoutAppointmentsNestedInput
+    payment?: PaymentUpdateOneWithoutAppointmentNestedInput
     doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
   }
 
@@ -45019,6 +50748,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45032,6 +50762,7 @@ export namespace Prisma {
     id?: StringFieldUpdateOperationsInput | string
     doctorId?: StringFieldUpdateOperationsInput | string
     slotId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
     paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
     transactionId?: NullableStringFieldUpdateOperationsInput | string | null
@@ -45169,6 +50900,62 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
+  export type AppointmentCreateManySlotInput = {
+    id?: string
+    doctorId: string
+    patientId: string
+    paymentId?: string | null
+    status?: $Enums.AppointmentStatus
+    paymentMethod?: $Enums.PaymentMethod
+    transactionId?: string | null
+    notes?: string | null
+    bookedAt?: Date | string
+    updatedAt?: Date | string
+    isAppointmentOffline?: boolean
+  }
+
+  export type AppointmentUpdateWithoutSlotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+    payment?: PaymentUpdateOneWithoutAppointmentNestedInput
+    doctor?: DoctorUpdateOneRequiredWithoutAppointmentsNestedInput
+    patient?: PatientUpdateOneRequiredWithoutAppointmentsNestedInput
+  }
+
+  export type AppointmentUncheckedUpdateWithoutSlotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type AppointmentUncheckedUpdateManyWithoutSlotInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    doctorId?: StringFieldUpdateOperationsInput | string
+    patientId?: StringFieldUpdateOperationsInput | string
+    paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: EnumAppointmentStatusFieldUpdateOperationsInput | $Enums.AppointmentStatus
+    paymentMethod?: EnumPaymentMethodFieldUpdateOperationsInput | $Enums.PaymentMethod
+    transactionId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    bookedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    isAppointmentOffline?: BoolFieldUpdateOperationsInput | boolean
+  }
+
   export type ChatMessagesCreateManyDoctorPatientRelationInput = {
     id?: string
     text: string
@@ -45203,6 +50990,114 @@ export namespace Prisma {
     clientMessageId?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RefundCreateManyPaymentInput = {
+    id?: string
+    amount: number
+    currency?: string
+    reason: string
+    status?: $Enums.RefundStatus
+    idempotencyKey: string
+    razorpayRefundId?: string | null
+    failureReason?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    createdAt?: Date | string
+    updatedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type WebhookEventCreateManyPaymentInput = {
+    id?: string
+    providerEventId: string
+    eventType: string
+    status?: $Enums.WebhookEventStatus
+    payload: JsonNullValueInput | InputJsonValue
+    processingError?: string | null
+    receivedAt?: Date | string
+    processedAt?: Date | string | null
+  }
+
+  export type RefundUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RefundUncheckedUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type RefundUncheckedUpdateManyWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    currency?: StringFieldUpdateOperationsInput | string
+    reason?: StringFieldUpdateOperationsInput | string
+    status?: EnumRefundStatusFieldUpdateOperationsInput | $Enums.RefundStatus
+    idempotencyKey?: StringFieldUpdateOperationsInput | string
+    razorpayRefundId?: NullableStringFieldUpdateOperationsInput | string | null
+    failureReason?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventUncheckedUpdateWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type WebhookEventUncheckedUpdateManyWithoutPaymentInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    providerEventId?: StringFieldUpdateOperationsInput | string
+    eventType?: StringFieldUpdateOperationsInput | string
+    status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
+    payload?: JsonNullValueInput | InputJsonValue
+    processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
 
   export type MedicalAiMessageCreateManyConversationInput = {

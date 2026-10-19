@@ -48,7 +48,7 @@ export async function GET(
           date: startOfDay,
         },
         include: {
-          appointment: {
+          appointments: {
             include: {
               patient: {
                 include: {
@@ -143,7 +143,7 @@ export async function GET(
             slots = await prisma.slot.findMany({
               where: { doctorId, date: startOfDay },
               include: {
-                appointment: {
+                appointments: {
                   include: {
                     patient: {
                       include: {
@@ -168,27 +168,33 @@ export async function GET(
         }
       }
 
-      const rawSlots: RawSlot[] = slots.map((s: any) => ({
-        id: s.id,
-        startTime: s.startTime,
-        endTime: s.endTime,
-        status: s.status as any,
-        appointment: s.appointment
-          ? {
-              id: s.appointment.id,
-              status: s.appointment.status,
-              patient: {
-                user: s.appointment.patient?.user
-                  ? {
-                      name: s.appointment.patient.user.name,
-                      email: s.appointment.patient.user.email,
-                      phoneNo: s.appointment.patient.user.phoneNo,
-                    }
-                  : undefined,
-              },
-            }
-          : null,
-      }));
+      const rawSlots: RawSlot[] = slots.map((s: any) => {
+        const activeAppt = Array.isArray(s.appointments)
+          ? s.appointments.find((a: any) => a.status !== "CANCELLED") || s.appointments[0]
+          : s.appointment;
+
+        return {
+          id: s.id,
+          startTime: s.startTime,
+          endTime: s.endTime,
+          status: s.status as any,
+          appointment: activeAppt
+            ? {
+                id: activeAppt.id,
+                status: activeAppt.status,
+                patient: {
+                  user: activeAppt.patient?.user
+                    ? {
+                        name: activeAppt.patient.user.name,
+                        email: activeAppt.patient.user.email,
+                        phoneNo: activeAppt.patient.user.phoneNo,
+                      }
+                    : undefined,
+                },
+              }
+            : null,
+        };
+      });
 
       const timelineBlocks = calculateTimelineBlocks(rawSlots);
       const metrics = calculateDayMetrics(rawSlots);
@@ -233,7 +239,7 @@ export async function GET(
           },
         },
         include: {
-          appointment: {
+          appointments: {
             include: {
               patient: {
                 include: {
@@ -266,26 +272,32 @@ export async function GET(
           return slotDateStr === curDateStr;
         });
 
-        const rawSlots: RawSlot[] = daySlots.map((s: any) => ({
-          id: s.id,
-          startTime: s.startTime,
-          endTime: s.endTime,
-          status: s.status as any,
-          appointment: s.appointment
-            ? {
-                id: s.appointment.id,
-                status: s.appointment.status,
-                patient: {
-                  user: s.appointment.patient?.user
-                    ? {
-                        name: s.appointment.patient.user.name,
-                        email: s.appointment.patient.user.email,
-                      }
-                    : undefined,
-                },
-              }
-            : null,
-        }));
+        const rawSlots: RawSlot[] = daySlots.map((s: any) => {
+          const activeAppt = Array.isArray(s.appointments)
+            ? s.appointments.find((a: any) => a.status !== "CANCELLED") || s.appointments[0]
+            : s.appointment;
+
+          return {
+            id: s.id,
+            startTime: s.startTime,
+            endTime: s.endTime,
+            status: s.status as any,
+            appointment: activeAppt
+              ? {
+                  id: activeAppt.id,
+                  status: activeAppt.status,
+                  patient: {
+                    user: activeAppt.patient?.user
+                      ? {
+                          name: activeAppt.patient.user.name,
+                          email: activeAppt.patient.user.email,
+                        }
+                      : undefined,
+                  },
+                }
+              : null,
+          };
+        });
 
         const dayMetrics = calculateDayMetrics(rawSlots);
         const timelineBlocks = calculateTimelineBlocks(rawSlots);

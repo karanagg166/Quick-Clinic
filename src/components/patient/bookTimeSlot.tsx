@@ -152,15 +152,35 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
         userPhone: user?.phoneNo || undefined,
       });
       paymentCaptured = Boolean(payment.paymentCaptured);
-      if (!payment?.success || !payment.transactionId) throw new Error(payment?.error || 'Payment failed or was cancelled');
-      setActiveHold(null);
-      setSlots((previous) => previous.map((slot) => slot.id === hold?.slotId ? { ...slot, status: 'BOOKED' } : slot));
-      setSelectedSlot(null);
-      setShowPaymentOptions(false);
-      showToast.success('Payment successful and appointment confirmed! Redirecting to dashboard...');
-      setTimeout(() => {
-        router.push('/patient');
-      }, 1000);
+
+      if (payment.state === 'BOOKED' && payment.success) {
+        setActiveHold(null);
+        setSlots((previous) => previous.map((slot) => slot.id === hold?.slotId ? { ...slot, status: 'BOOKED' } : slot));
+        setSelectedSlot(null);
+        setShowPaymentOptions(false);
+        showToast.success('Payment successful and appointment confirmed! Redirecting to dashboard...');
+        setTimeout(() => {
+          router.push('/patient');
+        }, 1000);
+        return;
+      }
+
+      if (payment.state === 'REFUND_PENDING' || payment.state === 'REFUNDED') {
+        setActiveHold(null);
+        showToast.error(payment.error || 'The slot was no longer available. Your payment has been refunded.');
+        return;
+      }
+
+      if (payment.state === 'PAYMENT_RECEIVED_BOOKING_PENDING') {
+        setActiveHold(null);
+        showToast.warning('Payment was received! Your booking confirmation is finalizing. Redirecting to dashboard...');
+        setTimeout(() => {
+          router.push('/patient');
+        }, 2000);
+        return;
+      }
+
+      throw new Error(payment.error || 'Payment failed or was cancelled');
     } catch (cause) {
       if (!paymentCaptured) {
         await releaseHold(hold);

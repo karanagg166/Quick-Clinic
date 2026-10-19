@@ -93,6 +93,7 @@ describe('Part 1C: Payment Verification & Refund State Machine Idempotency Suite
 
     // 3. Create test slots
     const today = new Date();
+    today.setDate(today.getDate() + 1);
     today.setHours(0, 0, 0, 0);
 
     const slot1 = await prisma.slot.create({
