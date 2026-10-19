@@ -1,12 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
+  slotFindUnique: vi.fn(),
+  appointmentFindFirst: vi.fn(),
   appointmentFindUnique: vi.fn(),
 }));
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    appointment: { findUnique: mocks.appointmentFindUnique },
+    slot: { findUnique: mocks.slotFindUnique },
+    appointment: {
+      findFirst: mocks.appointmentFindFirst,
+      findUnique: mocks.appointmentFindUnique,
+    },
   },
 }));
 
@@ -16,6 +22,12 @@ describe('confirmSlotHold', () => {
   beforeEach(() => vi.clearAllMocks());
 
   it('returns the existing paid appointment when Razorpay verification is retried', async () => {
+    mocks.slotFindUnique.mockResolvedValue({
+      id: 'slot_1',
+      startTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      status: 'AVAILABLE',
+    });
+
     const appointment = {
       id: 'appointment_1',
       slotId: 'slot_1',
@@ -25,6 +37,7 @@ describe('confirmSlotHold', () => {
       paymentMethod: 'ONLINE',
       transactionId: 'pay_1',
     };
+    mocks.appointmentFindFirst.mockResolvedValue(appointment);
     mocks.appointmentFindUnique.mockResolvedValue(appointment);
 
     const result = await confirmSlotHold({
@@ -37,6 +50,11 @@ describe('confirmSlotHold', () => {
     });
 
     expect(result).toEqual(appointment);
-    expect(mocks.appointmentFindUnique).toHaveBeenCalledWith({ where: { slotId: 'slot_1' } });
+    expect(mocks.appointmentFindFirst).toHaveBeenCalledWith({
+      where: {
+        slotId: 'slot_1',
+        status: { in: ['PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW'] },
+      },
+    });
   });
 });
