@@ -20,6 +20,15 @@ vi.mock('@/lib/prisma', () => ({
         }),
       },
     })),
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: 'DOCTOR',
+        isActive: true,
+        email: 'doc@quickclinic.test',
+        name: 'Dr. Test',
+      })),
+    },
     doctor: {
       findUnique: vi.fn(),
       update: vi.fn(),

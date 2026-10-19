@@ -9,12 +9,15 @@ import {
   PATCH as userBankPATCH,
 } from '@/app/api/user/[userId]/bank-details/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () => {
   let docUserId: string;
   let docId: string;
+  let docToken: string;
   let patientUserId: string;
+  let patientToken: string;
 
   beforeAll(async () => {
     // 1. Create Doctor
@@ -78,24 +81,36 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
       },
     });
     patientUserId = patUser.id;
+
+    docToken = await createToken({ id: docUserId, role: 'DOCTOR' });
+    patientToken = await createToken({ id: patientUserId, role: 'PATIENT' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.bankAccount.deleteMany({
-        where: { userId: { in: [docUserId, patientUserId] } },
-      });
-      await prisma.doctor.deleteMany({ where: { id: docId } });
-      await prisma.user.deleteMany({
-        where: { id: { in: [docUserId, patientUserId] } },
-      });
+      const userIds = [docUserId, patientUserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.bankAccount.deleteMany({
+          where: { userId: { in: userIds } },
+        });
+      }
+      if (docId) {
+        await prisma.doctor.deleteMany({ where: { id: docId } });
+      }
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({
+          where: { id: { in: userIds } },
+        });
+      }
     } catch (e) {
       console.warn('Phase 40 cleanup warning:', e);
     }
   });
 
   it('40.1 GET doctor bank details returns null fields when no account is configured', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await doctorBankGET(req, { params: Promise.resolve({ doctorId: docId }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -108,6 +123,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   it('40.2 PATCH doctor bank details rejects missing required fields with 400', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({
         bankAccountNumber: '1234567890',
         bankIFSC: 'HDFC0001234',
@@ -125,6 +144,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
     for (const ifsc of invalidIFSCs) {
       const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
         method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${docToken}`,
+        },
         body: JSON.stringify({
           bankAccountNumber: '987654321012',
           bankIFSC: ifsc,
@@ -144,6 +167,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
     for (const acc of invalidAccs) {
       const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
         method: 'PATCH',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${docToken}`,
+        },
         body: JSON.stringify({
           bankAccountNumber: acc,
           bankIFSC: 'HDFC0001234',
@@ -161,6 +188,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   it('40.5 PATCH creates new bank details successfully (200 OK)', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({
         bankAccountNumber: '98765432101234',
         bankIFSC: 'HDFC0001234',
@@ -182,6 +213,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   it('40.6 Idempotency: PATCH updates existing bank account without creating duplicate records', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({
         bankAccountNumber: '98765432109999',
         bankIFSC: 'SBIN0004567',
@@ -203,7 +238,9 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   });
 
   it('40.7 GET retrieves the updated bank details', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/bank-details`, {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await doctorBankGET(req, { params: Promise.resolve({ doctorId: docId }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -217,6 +254,10 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   it('40.8 User-level bank-details API works consistently for any user', async () => {
     const patchReq = new NextRequest(`http://localhost:3000/api/user/${patientUserId}/bank-details`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${patientToken}`,
+      },
       body: JSON.stringify({
         bankAccountNumber: '112233445566',
         bankIFSC: 'ICIC0001234',
@@ -227,7 +268,9 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
     const patchRes = await userBankPATCH(patchReq, { params: Promise.resolve({ userId: patientUserId }) });
     expect(patchRes.status).toBe(200);
 
-    const getReq = new NextRequest(`http://localhost:3000/api/user/${patientUserId}/bank-details`);
+    const getReq = new NextRequest(`http://localhost:3000/api/user/${patientUserId}/bank-details`, {
+      headers: { authorization: `Bearer ${patientToken}` },
+    });
     const getRes = await userBankGET(getReq, { params: Promise.resolve({ userId: patientUserId }) });
     expect(getRes.status).toBe(200);
     const getData = await getRes.json();
@@ -236,7 +279,9 @@ describe('Phase 40: Bank Accounts Management & IFSC Validation Test Suite', () =
   });
 
   it('40.9 Rejects operations for non-existent doctor with 404', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/bank-details');
+    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/bank-details', {
+      headers: { authorization: `Bearer ${docToken}` },
+    });
     const res = await doctorBankGET(req, { params: Promise.resolve({ doctorId: 'non_existent_doc' }) });
     expect(res.status).toBe(404);
   });

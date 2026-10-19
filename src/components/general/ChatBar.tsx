@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Send, Loader, Wifi, WifiOff } from 'lucide-react';
+import { Send, Loader, Wifi, WifiOff, AlertCircle, RefreshCw } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,13 +11,15 @@ import Link from 'next/link';
 
 import { useUserStore } from '@/store/userStore';
 
-interface Message {
+export interface Message {
   id: string;
   text: string;
   senderId: string;
   senderName?: string;
   senderRole?: string;
   createdAt: string;
+  status?: 'pending' | 'sent' | 'failed';
+  clientMessageId?: string;
 }
 
 interface ChatBarProps {
@@ -26,7 +28,6 @@ interface ChatBarProps {
 }
 
 function renderFormattedMessage(text: string, isMe: boolean, currentRole?: string) {
-  // Regex to match URLs, internal routes (/patient/..., /doctor/...), or markdown links [label](url)
   const pattern = /\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s]+)|(\/(?:patient|doctor)\/[a-zA-Z0-9\-_/]+)/g;
 
   const elements: React.ReactNode[] = [];
@@ -42,8 +43,7 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
       const label = match[1];
       let url = match[2];
       const isInternal = url.startsWith('/');
-      
-      // Auto-adapt route if logged-in user is doctor vs patient
+
       if (currentRole === 'DOCTOR' && url.startsWith('/patient/appointments/')) {
         url = url.replace('/patient/appointments/', '/doctor/appointments/');
       } else if (currentRole === 'PATIENT' && url.startsWith('/doctor/appointments/')) {
@@ -56,11 +56,11 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
       const isManageAction = /manage|view|appointment/i.test(label);
 
       if (isInternal && (isCancelAction || isReviewAction || isFindOrBookAction || isManageAction)) {
-        let buttonVariant: "default" | "destructive" | "outline" | "secondary" = "default";
+        let buttonVariant: 'default' | 'destructive' | 'outline' | 'secondary' = 'default';
         let buttonClass = 'bg-primary text-primary-foreground hover:bg-primary/90';
 
         if (isCancelAction) {
-          buttonVariant = "destructive";
+          buttonVariant = 'destructive';
           buttonClass = 'bg-red-600 hover:bg-red-700 text-white';
         } else if (isReviewAction) {
           buttonClass = 'bg-amber-600 hover:bg-amber-700 text-white';
@@ -76,7 +76,7 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
               <Button
                 variant={buttonVariant}
                 size="sm"
-                className={`text-xs font-semibold px-3 py-1.5 shadow-sm transition active:scale-95 ${buttonClass}`}
+                className={`text-xs font-semibold px-3 py-1.5 shadow-xs transition active:scale-95 ${buttonClass}`}
               >
                 {label}
               </Button>
@@ -139,9 +139,9 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
           <span key={match.index} className="block my-1.5">
             <Link href={route}>
               <Button
-                variant={isMe ? "secondary" : "default"}
+                variant={isMe ? 'secondary' : 'default'}
                 size="sm"
-                className="text-xs font-semibold px-3 py-1 shadow-sm"
+                className="text-xs font-semibold px-3 py-1 shadow-xs"
               >
                 📋 View Appointments
               </Button>
@@ -177,142 +177,212 @@ function renderFormattedMessage(text: string, isMe: boolean, currentRole?: strin
 
 export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProps) {
   const currentRole = useUserStore((s) => s.user?.role);
+  const currentUserName = useUserStore((s) => s.user?.name);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'offline'>('connecting');
   const [typingUser, setTypingUser] = useState<string | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // 1. Fetch initial messages via REST API for guaranteed reliability
+  // Helper: merge messages without creating duplicates or discarding newer ones
+  const mergeMessages = useCallback((incoming: Message[]) => {
+    setMessages((prev) => {
+      const map = new Map<string, Message>();
+      // Keep existing messages
+      for (const msg of prev) {
+        map.set(msg.id, msg);
+        if (msg.clientMessageId) map.set(msg.clientMessageId, msg);
+      }
+      // Upsert incoming messages
+      for (const msg of incoming) {
+        const existing = map.get(msg.id) || (msg.clientMessageId ? map.get(msg.clientMessageId) : undefined);
+        if (existing) {
+          map.set(msg.id, { ...existing, ...msg, status: 'sent' });
+        } else {
+          map.set(msg.id, { ...msg, status: msg.status || 'sent' });
+        }
+      }
+      // Return sorted by createdAt ascending
+      return Array.from(map.values()).sort(
+        (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+    });
+  }, []);
+
+  // 1. Fetch initial/recent messages via REST API
   const fetchMessagesFromAPI = useCallback(async () => {
     try {
       const res = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats?limit=50`);
       if (res.ok) {
         const data = await res.json();
         if (data?.chats && Array.isArray(data.chats)) {
-          setMessages(data.chats);
+          const formatted: Message[] = data.chats.map((c: any) => ({
+            id: c.id,
+            text: c.text,
+            senderId: c.senderId,
+            senderName: c.sender?.name || (c.senderId === userId ? currentUserName : undefined),
+            senderRole: c.sender?.role,
+            createdAt: c.createdAt,
+            status: 'sent',
+          }));
+          mergeMessages(formatted);
         }
       }
-    } catch {
-      // Ignore network errors on chat history fetch
+    } catch (err) {
+      console.warn('Error fetching chats via REST:', err);
     } finally {
       setLoading(false);
     }
-  }, [doctorPatientRelationId]);
+  }, [doctorPatientRelationId, userId, currentUserName, mergeMessages]);
 
   useEffect(() => {
     fetchMessagesFromAPI();
   }, [fetchMessagesFromAPI]);
 
-  // 2. Initialize Socket.io connection with pre-flight check to prevent unhandled WebSocket errors
+  // Request short-lived audience-bound socket ticket
+  const fetchTicket = useCallback(async () => {
+    try {
+      const res = await fetch('/api/socket/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ relationId: doctorPatientRelationId }),
+        credentials: 'same-origin',
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.success && data?.token) {
+        return { token: data.token, socketUrl: data.socketUrl };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, [doctorPatientRelationId]);
+
+  // 2. Initialize authenticated Socket.IO connection
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
     let isMounted = true;
     let socketInstance: Socket | null = null;
 
     const setupSocket = async () => {
-      try {
-        // Pre-flight health check to verify socket server is running
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200);
+      setConnectionStatus('connecting');
 
-        const healthRes = await fetch(`${socketUrl}/health`, {
-          method: 'GET',
-          signal: controller.signal,
-        }).catch(() => null);
+      const ticket = await fetchTicket();
+      if (!isMounted) return;
 
-        clearTimeout(timeoutId);
+      if (!ticket) {
+        setConnectionStatus('offline');
+        setLoading(false);
+        return;
+      }
 
-        if (!healthRes || !healthRes.ok || !isMounted) {
-          // Socket server is offline - stay in standard REST mode
-          if (isMounted) {
-            setIsConnected(false);
-            setLoading(false);
-          }
-          return;
+      const socketUrl = ticket.socketUrl || process.env.NEXT_PUBLIC_SOCKET_URL;
+      if (!socketUrl) {
+        setConnectionStatus('offline');
+        setLoading(false);
+        return;
+      }
+
+      socketInstance = io(socketUrl, {
+        auth: {
+          token: ticket.token,
+          relationId: doctorPatientRelationId,
+        },
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        timeout: 10000,
+      });
+
+      socketInstance.on('connect', () => {
+        if (!isMounted) return;
+        setConnectionStatus('connected');
+        // Request latest messages upon connect / reconnect
+        socketInstance?.emit('get_initial_messages', { page: 1, limit: 50 });
+      });
+
+      socketInstance.on('connected', () => {
+        if (isMounted) setConnectionStatus('connected');
+      });
+
+      socketInstance.on('initial_messages', (data: { messages?: Message[] }) => {
+        if (isMounted && data?.messages && Array.isArray(data.messages)) {
+          mergeMessages(data.messages);
         }
+        if (isMounted) setLoading(false);
+      });
 
-        // Server is reachable, initiate socket connection
-        socketInstance = io(socketUrl, {
-          auth: {
-            relationId: doctorPatientRelationId,
-            userId,
-          },
-          transports: ['websocket', 'polling'],
-          reconnection: true,
-          reconnectionDelay: 2000,
-          reconnectionDelayMax: 10000,
-          reconnectionAttempts: 3,
-          timeout: 4000,
-        });
-
-        socketInstance.on('connect', () => {
-          if (isMounted) {
-            setIsConnected(true);
-            socketInstance?.emit('get_initial_messages', { page: 1, limit: 50 });
-          }
-        });
-
-        socketInstance.on('initial_messages', (data: { messages?: Message[] }) => {
-          if (isMounted && data?.messages && Array.isArray(data.messages)) {
-            setMessages(data.messages);
-          }
-          if (isMounted) setLoading(false);
-        });
-
-        socketInstance.on('new_message', (data: { message: Message }) => {
-          if (isMounted && data?.message) {
-            setMessages((prev) => {
-              const isDuplicate = prev.some((msg) => msg.id === data.message.id);
-              return isDuplicate ? prev : [...prev, data.message];
-            });
-          }
-        });
-
-        socketInstance.on('user_typing', (data: { userId: string; userName?: string }) => {
-          if (isMounted && data.userId !== userId) {
-            setTypingUser(data.userName || 'Someone');
-            if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-            typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
-          }
-        });
-
-        socketInstance.on('disconnect', () => {
-          if (isMounted) setIsConnected(false);
-        });
-
-        socketInstance.on('connect_error', () => {
-          if (isMounted) {
-            setIsConnected(false);
-            setLoading(false);
-          }
-        });
-
-        if (isMounted) {
-          socketRef.current = socketInstance;
+      socketInstance.on('new_message', (data: { message: Message }) => {
+        if (isMounted && data?.message) {
+          mergeMessages([data.message]);
         }
-      } catch {
-        if (isMounted) {
-          setIsConnected(false);
-          setLoading(false);
+      });
+
+      socketInstance.on('user_typing', (data: { userId: string; userName?: string }) => {
+        if (isMounted && data.userId !== userId) {
+          setTypingUser(data.userName || 'Someone');
+          if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+          typingTimeoutRef.current = setTimeout(() => setTypingUser(null), 3000);
         }
+      });
+
+      socketInstance.on('disconnect', () => {
+        if (isMounted) setConnectionStatus('offline');
+      });
+
+      socketInstance.on('connect_error', async (err: Error) => {
+        if (!isMounted) return;
+        setConnectionStatus('offline');
+        setLoading(false);
+
+        // If token error or ticket expired, obtain fresh ticket and reconnect
+        if (err.message && /token|auth|expired/i.test(err.message)) {
+          const fresh = await fetchTicket();
+          if (fresh && socketInstance) {
+            socketInstance.auth = {
+              token: fresh.token,
+              relationId: doctorPatientRelationId,
+            };
+            socketInstance.connect();
+          }
+        }
+      });
+
+      if (isMounted) {
+        socketRef.current = socketInstance;
       }
     };
 
     setupSocket();
 
+    const handleOnline = () => {
+      if (socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      } else if (!socketRef.current) {
+        setupSocket();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
+
     return () => {
       isMounted = false;
+      window.removeEventListener('online', handleOnline);
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       if (socketInstance) {
         socketInstance.disconnect();
       }
+      socketRef.current = null;
     };
-  }, [doctorPatientRelationId, userId]);
+  }, [doctorPatientRelationId, userId, fetchTicket, mergeMessages]);
 
   // Auto-scroll to bottom on message update
   useEffect(() => {
@@ -334,25 +404,76 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     }
   };
 
+  // Reliable send message with typed acknowledgement and draft preservation
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     const text = inputValue.trim();
     if (!text || sending) return;
 
+    if (text.length > 5000) {
+      showToast.error('Message exceeds maximum limit of 5000 characters');
+      return;
+    }
+
     setSending(true);
 
+    const clientMessageId = `msg_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+
+    const optimisticMessage: Message = {
+      id: clientMessageId,
+      clientMessageId,
+      text,
+      senderId: userId,
+      senderName: currentUserName || 'Me',
+      senderRole: currentRole || undefined,
+      createdAt: new Date().toISOString(),
+      status: 'pending',
+    };
+
+    // Append optimistic message
+    setMessages((prev) => [...prev, optimisticMessage]);
+
+    // Keep draft copy in memory; do not wipe until acknowledged
+    const draftText = text;
+
     try {
-      // If socket is active, send via Socket
       if (socketRef.current && socketRef.current.connected) {
-        socketRef.current.emit('send_message', { text });
-        setInputValue('');
+        // Send via Socket with 5-second acknowledgement timeout
+        await new Promise<void>((resolve, reject) => {
+          const timer = setTimeout(() => {
+            reject(new Error('Acknowledgement timed out'));
+          }, 5000);
+
+          socketRef.current?.emit(
+            'send_message',
+            { text: draftText, clientMessageId },
+            (ack: { success: boolean; message?: Message; error?: string }) => {
+              clearTimeout(timer);
+              if (ack && ack.success && ack.message) {
+                // Succeeded: update message status to sent and clear input draft
+                setMessages((prev) =>
+                  prev.map((m) =>
+                    m.id === clientMessageId || m.clientMessageId === clientMessageId
+                      ? { ...ack.message!, status: 'sent' }
+                      : m
+                  )
+                );
+                setInputValue('');
+                resolve();
+              } else {
+                reject(new Error(ack?.error || 'Server rejected message'));
+              }
+            }
+          );
+        });
       } else {
-        // Fallback: Send directly via REST API
+        // Fallback: Send directly via REST API with idempotency key
         const res = await fetch(`/api/doctorpatientrelations/${doctorPatientRelationId}/chats`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            text,
+            text: draftText,
+            clientMessageId,
             senderId: userId,
           }),
         });
@@ -360,26 +481,54 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
         if (res.ok) {
           const data = await res.json();
           if (data?.chat) {
-            setMessages((prev) => [...prev, data.chat]);
+            const canonical: Message = {
+              id: data.chat.id,
+              clientMessageId,
+              text: data.chat.text,
+              senderId: data.chat.senderId,
+              senderName: data.chat.sender?.name || currentUserName || 'Me',
+              senderRole: data.chat.sender?.role || currentRole,
+              createdAt: data.chat.createdAt,
+              status: 'sent',
+            };
+            setMessages((prev) =>
+              prev.map((m) =>
+                m.id === clientMessageId || m.clientMessageId === clientMessageId ? canonical : m
+              )
+            );
+            setInputValue('');
           }
-          setInputValue('');
         } else {
-          const errorData = await res.json();
-          showToast.error(errorData.error || 'Failed to send message');
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || 'Failed to send message via REST');
         }
       }
-    } catch (err) {
-      console.error('Error sending message:', err);
-      showToast.error('Failed to send message. Please try again.');
+    } catch (err: any) {
+      console.error('Send message error:', err);
+      // Failed: mark message as failed and preserve input draft
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === clientMessageId || m.clientMessageId === clientMessageId
+            ? { ...m, status: 'failed' }
+            : m
+        )
+      );
+      setInputValue(draftText);
+      showToast.error(err?.message || 'Failed to send message. Draft preserved.');
     } finally {
       setSending(false);
     }
   };
 
+  const handleRetry = (msg: Message) => {
+    setInputValue(msg.text);
+    setMessages((prev) => prev.filter((m) => m.id !== msg.id));
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSendMessage({ preventDefault: () => {} } as unknown as React.FormEvent);
+      handleSendMessage({ preventDefault: () => {} } as React.FormEvent);
     }
   };
 
@@ -393,14 +542,20 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
           </div>
           <Badge
-            variant={isConnected ? "default" : "secondary"}
+            variant={connectionStatus === 'connected' ? 'default' : 'secondary'}
             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-xs shrink-0"
           >
-            {isConnected ? (
+            {connectionStatus === 'connected' ? (
               <>
                 <Wifi className="w-3.5 h-3.5 text-green-500" />
-                <span className="hidden sm:inline">Live Socket</span>
+                <span className="hidden sm:inline">Live (Socket)</span>
                 <span className="sm:hidden">Live</span>
+              </>
+            ) : connectionStatus === 'connecting' ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                <span className="hidden sm:inline">Connecting...</span>
+                <span className="sm:hidden">Connecting</span>
               </>
             ) : (
               <>
@@ -441,30 +596,62 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
                 className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[75%] px-4 py-2.5 rounded-2xl shadow-xs ${
-                    isMe
+                  className={`max-w-[75%] px-4 py-2.5 rounded-2xl shadow-xs transition-opacity ${
+                    message.status === 'pending' ? 'opacity-70' : ''
+                  } ${
+                    message.status === 'failed' ? 'border-2 border-red-500 bg-red-50 dark:bg-red-950/20' : ''
+                  } ${
+                    isMe && message.status !== 'failed'
                       ? 'bg-primary text-primary-foreground rounded-br-xs'
-                      : 'bg-muted text-foreground rounded-bl-xs'
+                      : !isMe
+                      ? 'bg-muted text-foreground rounded-bl-xs'
+                      : 'text-foreground rounded-br-xs'
                   }`}
                 >
                   {message.senderName && (
-                    <p className={`text-[11px] font-semibold mb-0.5 ${
-                      isMe ? 'text-primary-foreground/80' : 'text-muted-foreground'
-                    }`}>
+                    <p
+                      className={`text-[11px] font-semibold mb-0.5 ${
+                        isMe && message.status !== 'failed'
+                          ? 'text-primary-foreground/80'
+                          : 'text-muted-foreground'
+                      }`}
+                    >
                       {message.senderName}
                     </p>
                   )}
                   <div className="text-sm whitespace-pre-wrap break-words leading-relaxed">
                     {renderFormattedMessage(message.text, isMe, currentRole)}
                   </div>
-                  <p className={`text-[10px] mt-1 text-right ${
-                    isMe ? 'text-primary-foreground/70' : 'text-muted-foreground'
-                  }`}>
-                    {new Date(message.createdAt).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </p>
+                  <div
+                    className={`flex items-center justify-end gap-1.5 mt-1 text-[10px] ${
+                      isMe && message.status !== 'failed'
+                        ? 'text-primary-foreground/70'
+                        : 'text-muted-foreground'
+                    }`}
+                  >
+                    {message.status === 'pending' && (
+                      <span className="flex items-center gap-1 text-amber-500">
+                        <Loader className="w-3 h-3 animate-spin" /> Sending...
+                      </span>
+                    )}
+                    {message.status === 'failed' && (
+                      <button
+                        type="button"
+                        onClick={() => handleRetry(message)}
+                        className="flex items-center gap-1 text-red-600 font-semibold hover:underline cursor-pointer"
+                      >
+                        <AlertCircle className="w-3 h-3" /> Failed to send (Click to retry)
+                      </button>
+                    )}
+                    {(!message.status || message.status === 'sent') && (
+                      <span>
+                        {new Date(message.createdAt).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -510,11 +697,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             size="icon"
             className="rounded-xl shrink-0"
           >
-            {sending ? (
-              <Loader className="w-4 h-4 animate-spin" />
-            ) : (
-              <Send className="w-4 h-4" />
-            )}
+            {sending ? <Loader className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
           </Button>
         </form>
       </div>

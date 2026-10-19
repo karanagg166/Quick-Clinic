@@ -1,64 +1,121 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { io, Socket } from "socket.io-client";
+import { useUserStore } from "@/store/userStore";
 
 export const useSocket = () => {
+  const user = useUserStore((state) => state.user);
+  const userId = user?.id;
   const [socket, setSocket] = useState<Socket | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  const fetchToken = useCallback(async (): Promise<{ token: string; socketUrl: string } | null> => {
+    try {
+      const res = await fetch("/api/socket/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "same-origin",
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.success && data?.token) {
+        return { token: data.token, socketUrl: data.socketUrl };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:4000";
+    if (!userId) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      queueMicrotask(() => {
+        setSocket(null);
+      });
+      return;
+    }
+
     let isMounted = true;
-    let socketInstance: Socket | null = null;
 
     const initSocket = async () => {
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 1200);
+      const ticket = await fetchToken();
+      if (!isMounted || !ticket) return;
 
-        const healthRes = await fetch(`${socketUrl}/health`, {
-          method: "GET",
-          signal: controller.signal,
-        }).catch(() => null);
+      const socketUrl = ticket.socketUrl || process.env.NEXT_PUBLIC_SOCKET_URL;
+      if (!socketUrl) return;
 
-        clearTimeout(timeoutId);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
 
-        if (!healthRes || !healthRes.ok || !isMounted) {
-          return;
+      const instance = io(socketUrl, {
+        path: "/socket.io",
+        auth: {
+          token: ticket.token,
+        },
+        transports: ["websocket", "polling"],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        timeout: 10000,
+      });
+
+      socketRef.current = instance;
+
+      instance.on("connect", () => {
+        if (isMounted) setSocket(instance);
+      });
+
+      instance.on("connect_error", async (err: Error) => {
+        if (!isMounted) return;
+        // Refresh token if expired
+        if (err.message && /token|auth|expired/i.test(err.message)) {
+          const fresh = await fetchToken();
+          if (fresh && socketRef.current) {
+            socketRef.current.auth = { token: fresh.token };
+            socketRef.current.connect();
+          }
         }
+      });
 
-        socketInstance = io(socketUrl, {
-          path: "/socket.io",
-          transports: ["websocket", "polling"],
-          reconnectionAttempts: 3,
-          timeout: 3000,
-        });
+      instance.on("disconnect", () => {
+        // Keep instance reference for reconnecting
+      });
 
-        socketInstance.on("connect", () => {
-          console.log("Socket connected:", socketInstance?.id);
-        });
-
-        socketInstance.on("connect_error", () => {
-          // Graceful handling
-        });
-
-        if (isMounted) {
-          setSocket(socketInstance);
-        }
-      } catch {
-        // Silently catch offline socket error
+      if (isMounted) {
+        setSocket(instance);
       }
     };
 
     initSocket();
 
-    return () => {
-      isMounted = false;
-      if (socketInstance) {
-        socketInstance.disconnect();
+    const handleOnline = () => {
+      if (socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      } else if (!socketRef.current) {
+        initSocket();
       }
     };
-  }, []);
+
+    window.addEventListener("online", handleOnline);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("online", handleOnline);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setSocket(null);
+    };
+  }, [userId, fetchToken]);
 
   return socket;
 };

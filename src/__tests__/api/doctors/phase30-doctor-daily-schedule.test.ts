@@ -2,11 +2,13 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET as scheduleOverviewGET } from '@/app/api/doctors/[doctorId]/schedule/overview/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', () => {
   let docUserId: string;
   let docId: string;
+  let docToken: string;
 
   let patientUserId: string;
   let patientId: string;
@@ -108,17 +110,26 @@ describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', ()
         reason: 'Family event',
       },
     });
+
+    docToken = await createToken({ id: docUserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.appointment.deleteMany({ where: { doctorId: docId } });
-      await prisma.slot.deleteMany({ where: { doctorId: docId } });
-      await prisma.leave.deleteMany({ where: { doctorId: docId } });
-      await prisma.schedule.deleteMany({ where: { doctorId: docId } });
-      await prisma.doctor.deleteMany({ where: { id: docId } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [docUserId, patientUserId] } } });
+      if (docId) {
+        await prisma.appointment.deleteMany({ where: { doctorId: docId } });
+        await prisma.slot.deleteMany({ where: { doctorId: docId } });
+        await prisma.leave.deleteMany({ where: { doctorId: docId } });
+        await prisma.schedule.deleteMany({ where: { doctorId: docId } });
+        await prisma.doctor.deleteMany({ where: { id: docId } });
+      }
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      const userIds = [docUserId, patientUserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 30 cleanup warning:', e);
     }
@@ -126,7 +137,10 @@ describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', ()
 
   it('30.1 Day view triggers auto-generation of slots from weekly schedule when day is unpopulated', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=day&date=${fixedDateStr}`
+      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=day&date=${fixedDateStr}`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const res = await scheduleOverviewGET(req, { params: Promise.resolve({ doctorId: docId }) });
 
@@ -142,7 +156,10 @@ describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', ()
 
   it('30.2 Week view aggregates 7-day schedule metrics and occupancy rate', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=week&startDate=${fixedDateStr}`
+      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=week&startDate=${fixedDateStr}`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const res = await scheduleOverviewGET(req, { params: Promise.resolve({ doctorId: docId }) });
 
@@ -156,7 +173,10 @@ describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', ()
 
   it('30.3 Month view returns full month day calendar with leave indicator', async () => {
     const req = new NextRequest(
-      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=month&year=2029&month=11`
+      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=month&year=2029&month=11`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const res = await scheduleOverviewGET(req, { params: Promise.resolve({ doctorId: docId }) });
 
@@ -177,14 +197,20 @@ describe('Phase 30: Doctor Schedule Overview & Multi-View Engine Test Suite', ()
   it('30.4 Rejects invalid view parameter or invalid date format with 400', async () => {
     // Invalid view
     const reqBadView = new NextRequest(
-      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=invalid_view`
+      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=invalid_view`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const resBadView = await scheduleOverviewGET(reqBadView, { params: Promise.resolve({ doctorId: docId }) });
     expect(resBadView.status).toBe(400);
 
     // Invalid date
     const reqBadDate = new NextRequest(
-      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=day&date=not-a-valid-date`
+      `http://localhost:3000/api/doctors/${docId}/schedule/overview?view=day&date=not-a-valid-date`,
+      {
+        headers: { authorization: `Bearer ${docToken}` },
+      }
     );
     const resBadDate = await scheduleOverviewGET(reqBadDate, { params: Promise.resolve({ doctorId: docId }) });
     expect(resBadDate.status).toBe(400);

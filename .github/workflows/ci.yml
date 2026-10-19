@@ -1,0 +1,112 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  root-checks:
+    name: Next.js & Root Package
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quickclinic_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      JWT_SECRET: "ci_jwt_secret_must_be_at_least_32_characters_long_for_security"
+      INTERNAL_API_SECRET: "ci_internal_secret_at_least_32_characters_long_for_security"
+      NEXT_PUBLIC_SOCKET_URL: "http://localhost:4000"
+      CRON_SECRET: "ci_cron_secret_1234567890"
+      RAZORPAY_KEY_ID: "rzp_test_dummy_key_id"
+      RAZORPAY_KEY_SECRET: "rzp_test_dummy_key_secret"
+      SUPER_ADMIN_CODE: "QUICK_CLINIC_SUPER_ADMIN"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm prisma generate
+
+      - name: Push Database Schema
+        run: pnpm prisma db push --accept-data-loss
+
+      - name: Type check
+        run: pnpm type-check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Run root tests
+        run: pnpm test
+
+      - name: Build Next.js application
+        run: pnpm build
+
+  socket-server-checks:
+    name: Socket.IO Server Package
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      JWT_SECRET: "ci_jwt_secret_must_be_at_least_32_characters_long_for_security"
+      INTERNAL_API_SECRET: "ci_internal_secret_at_least_32_characters_long_for_security"
+      NODE_ENV: "test"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install root dependencies & generate Prisma
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm prisma generate
+
+      - name: Install socket-server dependencies
+        run: pnpm -C socket-server install --frozen-lockfile
+
+      - name: Build socket-server
+        run: pnpm -C socket-server build
+
+      - name: Run socket-server tests
+        run: pnpm -C socket-server test

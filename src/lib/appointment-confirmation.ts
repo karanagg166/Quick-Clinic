@@ -1,6 +1,7 @@
 import { confirmSlotHold } from '@/lib/booking';
 import { logAudit } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
+import { publishToSocketServer } from '@/lib/socket-publisher';
 
 type ConfirmationInput = {
   slotId: string;
@@ -108,34 +109,25 @@ async function sendAppointmentConfirmation({
       }),
     ]);
 
-    const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-    const doctorBroadcast = fetch(`${socketServerUrl}/api/notifications/new-appointment`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        doctorUserId: doctor.user.id,
-        notification: serializeNotification(doctorNotification),
-        appointment: {
-          id: appointment.id,
-          patientName,
-          patientString: patientUser.email || '',
-          gender: patientUser.gender || '',
-          city: patientUser.location?.city || 'N/A',
-          age: patientUser.age || 0,
-          appointmentDate: slot?.date?.toISOString() || '',
-          appointmentTime: slot?.startTime?.toISOString() || '',
-          status: 'CONFIRMED',
-          paymentMethod: appointment.paymentMethod,
-        },
-      }),
+    const doctorBroadcast = publishToSocketServer('/api/notifications/new-appointment', {
+      doctorUserId: doctor.user.id,
+      notification: serializeNotification(doctorNotification),
+      appointment: {
+        id: appointment.id,
+        patientName,
+        patientString: patientUser.email || '',
+        gender: patientUser.gender || '',
+        city: patientUser.location?.city || 'N/A',
+        age: patientUser.age || 0,
+        appointmentDate: slot?.date?.toISOString() || '',
+        appointmentTime: slot?.startTime?.toISOString() || '',
+        status: 'CONFIRMED',
+        paymentMethod: appointment.paymentMethod,
+      },
     });
-    const patientBroadcast = fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        userId: patientUser.id,
-        notification: serializeNotification(patientNotification),
-      }),
+    const patientBroadcast = publishToSocketServer('/api/notifications/broadcast', {
+      userId: patientUser.id,
+      notification: serializeNotification(patientNotification),
     });
     await Promise.allSettled([doctorBroadcast, patientBroadcast]);
   } catch (error) {

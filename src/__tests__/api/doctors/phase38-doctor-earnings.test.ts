@@ -3,14 +3,17 @@ import { NextRequest } from 'next/server';
 import { GET as earningsGET } from '@/app/api/doctors/[doctorId]/earnings/route';
 import { GET as balanceGET } from '@/app/api/doctors/[doctorId]/balance/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite', () => {
   let doc1UserId: string;
   let doc1Id: string;
+  let doc1Token: string;
 
   let doc2UserId: string;
   let doc2Id: string;
+  let doc2Token: string;
 
   let patientUserId: string;
   let patientId: string;
@@ -173,22 +176,39 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
 
     // Appointment for Doctor 2 (Doctor 2 completed appointment)
     await createTestAppt('2026-08-01', '09:00:00', '09:30:00', 'COMPLETED', false, doc2Id);
+
+    doc1Token = await createToken({ id: doc1UserId, role: 'DOCTOR' });
+    doc2Token = await createToken({ id: doc2UserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.appointment.deleteMany({ where: { id: { in: apptIds } } });
-      await prisma.slot.deleteMany({ where: { id: { in: slotIds } } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.doctor.deleteMany({ where: { id: { in: [doc1Id, doc2Id] } } });
-      await prisma.user.deleteMany({ where: { id: { in: [doc1UserId, doc2UserId, patientUserId] } } });
+      if (apptIds.length > 0) {
+        await prisma.appointment.deleteMany({ where: { id: { in: apptIds } } });
+      }
+      if (slotIds.length > 0) {
+        await prisma.slot.deleteMany({ where: { id: { in: slotIds } } });
+      }
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      const docIds = [doc1Id, doc2Id].filter(Boolean) as string[];
+      if (docIds.length > 0) {
+        await prisma.doctor.deleteMany({ where: { id: { in: docIds } } });
+      }
+      const userIds = [doc1UserId, doc2UserId, patientUserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 38 cleanup warning:', e);
     }
   });
 
   it('38.1 GET earnings returns 404 for non-existent doctorId', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/earnings');
+    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/earnings', {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await earningsGET(req, { params: Promise.resolve({ doctorId: 'non_existent_doc' }) });
     expect(res.status).toBe(404);
     const data = await res.json();
@@ -196,7 +216,9 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
   });
 
   it('38.2 Calculates total earnings strictly from COMPLETED appointments (excluding CANCELLED, NO_SHOW, CONFIRMED)', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/earnings`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/earnings`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await earningsGET(req, { params: Promise.resolve({ doctorId: doc1Id }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -212,7 +234,10 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
   it('38.3 Filters earnings accurately using startDate and endDate query parameters', async () => {
     // Filter only 2026-08-01
     const req = new NextRequest(
-      `http://localhost:3000/api/doctors/${doc1Id}/earnings?startDate=2026-08-01&endDate=2026-08-02`
+      `http://localhost:3000/api/doctors/${doc1Id}/earnings?startDate=2026-08-01&endDate=2026-08-02`,
+      {
+        headers: { authorization: `Bearer ${doc1Token}` },
+      }
     );
     const res = await earningsGET(req, { params: Promise.resolve({ doctorId: doc1Id }) });
     expect(res.status).toBe(200);
@@ -224,7 +249,9 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
   });
 
   it('38.4 GET balance returns raw balance in paise and calculated balanceInRupees', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/balance`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/balance`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await balanceGET(req, { params: Promise.resolve({ doctorId: doc1Id }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -235,7 +262,9 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
   });
 
   it('38.5 GET balance returns 0 gracefully for non-existent doctor', async () => {
-    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/balance');
+    const req = new NextRequest('http://localhost:3000/api/doctors/non_existent_doc/balance', {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await balanceGET(req, { params: Promise.resolve({ doctorId: 'non_existent_doc' }) });
     expect(res.status).toBe(200);
     const data = await res.json();
@@ -246,11 +275,15 @@ describe('Phase 38: Doctor Earnings Calculation & Balance Inquiries Test Suite',
   });
 
   it('38.6 Isolation: Doctor 1 earnings query does not leak Doctor 2 appointments', async () => {
-    const req1 = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/earnings`);
+    const req1 = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/earnings`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res1 = await earningsGET(req1, { params: Promise.resolve({ doctorId: doc1Id }) });
     const data1 = await res1.json();
 
-    const req2 = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/earnings`);
+    const req2 = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/earnings`, {
+      headers: { authorization: `Bearer ${doc2Token}` },
+    });
     const res2 = await earningsGET(req2, { params: Promise.resolve({ doctorId: doc2Id }) });
     const data2 = await res2.json();
 

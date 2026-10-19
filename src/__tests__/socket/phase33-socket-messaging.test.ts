@@ -236,7 +236,7 @@ describe('Phase 33: Socket.IO Messaging & Realtime Events Test Suite', () => {
           select: { id: true, name: true, role: true },
         },
       },
-      orderBy: { createdAt: 'asc' },
+      orderBy: { createdAt: 'desc' },
       skip: 0,
       take: 10,
     });

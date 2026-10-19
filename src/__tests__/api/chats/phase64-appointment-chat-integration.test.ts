@@ -3,9 +3,19 @@ import { NextRequest } from 'next/server';
 import { GET as getRelationsGET, POST as postRelationPOST } from '@/app/api/doctorpatientrelations/route';
 import { GET as getChatsGET, POST as postChatPOST } from '@/app/api/doctorpatientrelations/[relationId]/chats/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
+    user: {
+      findUnique: vi.fn().mockImplementation(({ where }) => Promise.resolve({
+        id: where.id,
+        role: where.id?.includes('doc') ? 'DOCTOR' : 'PATIENT',
+        isActive: true,
+        email: 'test@quickclinic.test',
+        name: 'Test User',
+      })),
+    },
     doctor: {
       findUnique: vi.fn(),
     },
@@ -26,8 +36,13 @@ vi.mock('@/lib/prisma', () => ({
 }));
 
 describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () => {
-  beforeEach(() => {
+  let docToken: string;
+  let patToken: string;
+
+  beforeEach(async () => {
     vi.clearAllMocks();
+    docToken = await createToken({ id: 'doc_u_1', role: 'DOCTOR' });
+    patToken = await createToken({ id: 'pat_u_1', role: 'PATIENT' });
   });
 
   it('64.1 Rejects relation creation when doctor or patient does not exist (404 Not Found)', async () => {
@@ -35,6 +50,7 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ doctorsUserId: 'doc_u_1', patientsUserId: 'pat_u_1' }),
     });
 
@@ -56,6 +72,7 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ doctorsUserId: 'doc_u_1', patientsUserId: 'pat_u_1' }),
     });
 
@@ -78,6 +95,7 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations', {
       method: 'POST',
+      headers: { authorization: `Bearer ${docToken}` },
       body: JSON.stringify({ doctorsUserId: 'doc_u_1', patientsUserId: 'pat_u_1' }),
     });
 
@@ -94,6 +112,7 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
     const req = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_invalid/chats', {
       method: 'POST',
+      headers: { authorization: `Bearer ${patToken}` },
       body: JSON.stringify({ senderId: 'pat_u_1', text: 'Hello Doctor' }),
     });
 
@@ -103,7 +122,11 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
   it('64.5 Posts and retrieves chat messages in chronological order with pagination metadata', async () => {
     // 1. Post chat message
-    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
+    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({
+      id: 'rel_1',
+      doctorsUserId: 'doc_u_1',
+      patientsUserId: 'pat_u_1',
+    } as any);
     vi.mocked(prisma.chatMessages.create).mockResolvedValueOnce({
       id: 'msg_1',
       doctorPatientRelationId: 'rel_1',
@@ -114,6 +137,7 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
 
     const postReq = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats', {
       method: 'POST',
+      headers: { authorization: `Bearer ${patToken}` },
       body: JSON.stringify({ senderId: 'pat_u_1', text: 'Prescription query' }),
     });
 
@@ -121,7 +145,11 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
     expect(postRes.status).toBe(201);
 
     // 2. Query chat messages
-    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({ id: 'rel_1' } as any);
+    vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValueOnce({
+      id: 'rel_1',
+      doctorsUserId: 'doc_u_1',
+      patientsUserId: 'pat_u_1',
+    } as any);
     vi.mocked(prisma.chatMessages.count).mockResolvedValueOnce(1);
     vi.mocked(prisma.chatMessages.findMany).mockResolvedValueOnce([
       {
@@ -133,7 +161,9 @@ describe('Phase 64: Appointment & Chat Relationship Integration Test Suite', () 
       },
     ] as any);
 
-    const getReq = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=20');
+    const getReq = new NextRequest('http://localhost:3000/api/doctorpatientrelations/rel_1/chats?page=1&limit=20', {
+      headers: { authorization: `Bearer ${patToken}` },
+    });
     const getRes = await getChatsGET(getReq, { params: Promise.resolve({ relationId: 'rel_1' }) });
     expect(getRes.status).toBe(200);
 

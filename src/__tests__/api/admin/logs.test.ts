@@ -1,7 +1,24 @@
-import { test, expect } from "vitest";
+import { test, expect, beforeAll, afterAll } from "vitest";
 import { NextRequest } from "next/server";
 import { GET as logsGET } from "@/app/api/admin/logs/route";
 import { createToken } from "@/lib/auth";
+import { createTestUser, cleanupTestUsers } from "@/__tests__/helpers/user-fixtures";
+
+let adminUser: Awaited<ReturnType<typeof createTestUser>>;
+let adminToken: string;
+
+beforeAll(async () => {
+  adminUser = await createTestUser({ role: "ADMIN" });
+  adminToken = await createToken({
+    id: adminUser.id,
+    email: adminUser.email,
+    role: "ADMIN",
+  });
+});
+
+afterAll(async () => {
+  if (adminUser) await cleanupTestUsers([adminUser.id]);
+});
 
 test("GET /api/admin/logs - returns 401 Unauthorized when no admin token is present", async () => {
   const req = new NextRequest("http://localhost:3000/api/admin/logs");
@@ -29,12 +46,6 @@ test("GET /api/admin/logs - returns 401 if user role is not ADMIN", async () => 
 });
 
 test("GET /api/admin/logs - returns audit logs when requested by admin", async () => {
-  const adminToken = await createToken({
-    id: "admin_test_id",
-    email: "admin@quickclinic.com",
-    role: "ADMIN",
-  });
-
   const req = new NextRequest("http://localhost:3000/api/admin/logs?type=audit", {
     headers: {
       cookie: `token=${adminToken}; role=ADMIN`,
@@ -49,12 +60,6 @@ test("GET /api/admin/logs - returns audit logs when requested by admin", async (
 });
 
 test("GET /api/admin/logs - returns access logs when requested by admin", async () => {
-  const adminToken = await createToken({
-    id: "admin_test_id",
-    email: "admin@quickclinic.com",
-    role: "ADMIN",
-  });
-
   const req = new NextRequest("http://localhost:3000/api/admin/logs?type=access", {
     headers: {
       cookie: `token=${adminToken}; role=ADMIN`,

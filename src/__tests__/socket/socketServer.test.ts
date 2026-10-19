@@ -1,5 +1,19 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
+import crypto from "crypto";
 import { SocketServer } from "../../../socket-server/server";
+
+const TEST_SECRET = "test_jwt_secret_must_be_long_enough_for_hs256";
+
+function createTestToken(payload: Record<string, any>, secret = TEST_SECRET) {
+  const header = Buffer.from(JSON.stringify({ alg: "HS256", typ: "JWT" })).toString("base64url");
+  const fullPayload = {
+    exp: Math.floor(Date.now() / 1000) + 3600,
+    ...payload,
+  };
+  const body = Buffer.from(JSON.stringify(fullPayload)).toString("base64url");
+  const signature = crypto.createHmac("sha256", secret).update(`${header}.${body}`).digest("base64url");
+  return `${header}.${body}.${signature}`;
+}
 
 describe("SocketServer Unit Tests", () => {
   let mockIo: any;
@@ -7,6 +21,8 @@ describe("SocketServer Unit Tests", () => {
   let socketServer: SocketServer;
 
   beforeEach(() => {
+    process.env.JWT_SECRET = TEST_SECRET;
+
     mockIo = {
       use: vi.fn(),
       on: vi.fn(),
@@ -28,7 +44,7 @@ describe("SocketServer Unit Tests", () => {
       },
     };
 
-    socketServer = new SocketServer(mockIo, mockPrisma);
+    socketServer = new SocketServer(mockIo, mockPrisma, TEST_SECRET);
   });
 
   it("should initialize and register middleware and event handlers", () => {
@@ -113,11 +129,27 @@ describe("SocketServer Unit Tests", () => {
       expect(mockNext.mock.calls[0][0].message).toMatch(/missing token/i);
     });
 
-    it("authenticates notification connection when valid userId is provided", async () => {
+    it("rejects connection when only raw userId is provided without a signed token (bypass blocked)", async () => {
       const authMiddleware = mockIo.use.mock.calls[0][0];
       const mockSocket: any = {
         handshake: {
-          auth: { userId: "user_valid_1" },
+          auth: { userId: "victim_user_1" },
+        },
+      };
+      const mockNext = vi.fn();
+
+      await authMiddleware(mockSocket, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockNext.mock.calls[0][0].message).toMatch(/missing token/i);
+    });
+
+    it("authenticates notification connection when valid signed token is provided", async () => {
+      const authMiddleware = mockIo.use.mock.calls[0][0];
+      const token = createTestToken({ id: "user_valid_1", role: "PATIENT" });
+      const mockSocket: any = {
+        handshake: {
+          auth: { token },
         },
       };
       const mockNext = vi.fn();
@@ -126,6 +158,7 @@ describe("SocketServer Unit Tests", () => {
         id: "user_valid_1",
         name: "Test User",
         role: "PATIENT",
+        isActive: true,
       });
 
       await authMiddleware(mockSocket, mockNext);
@@ -136,15 +169,61 @@ describe("SocketServer Unit Tests", () => {
       expect(mockNext).toHaveBeenCalledWith();
     });
 
-    it("rejects chat connection when relation is not found", async () => {
+    it("rejects token with mismatched/conflicting userId in auth payload", async () => {
       const authMiddleware = mockIo.use.mock.calls[0][0];
+      const token = createTestToken({ id: "user_valid_1", role: "PATIENT" });
       const mockSocket: any = {
         handshake: {
-          auth: { userId: "user_1", relationId: "rel_invalid" },
+          auth: { token, userId: "different_claimed_user" },
         },
       };
       const mockNext = vi.fn();
 
+      await authMiddleware(mockSocket, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockNext.mock.calls[0][0].message).toBe("Conflicting identity claims");
+    });
+
+    it("rejects connection when user is inactive in database", async () => {
+      const authMiddleware = mockIo.use.mock.calls[0][0];
+      const token = createTestToken({ id: "user_inactive_1", role: "PATIENT" });
+      const mockSocket: any = {
+        handshake: {
+          auth: { token },
+        },
+      };
+      const mockNext = vi.fn();
+
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        id: "user_inactive_1",
+        name: "Inactive User",
+        role: "PATIENT",
+        isActive: false,
+      });
+
+      await authMiddleware(mockSocket, mockNext);
+
+      expect(mockNext).toHaveBeenCalledWith(expect.any(Error));
+      expect(mockNext.mock.calls[0][0].message).toBe("Account inactive");
+    });
+
+    it("rejects chat connection when relation is not found", async () => {
+      const authMiddleware = mockIo.use.mock.calls[0][0];
+      const token = createTestToken({ id: "user_1", role: "PATIENT" });
+      const mockSocket: any = {
+        handshake: {
+          auth: { token, relationId: "rel_invalid" },
+        },
+      };
+      const mockNext = vi.fn();
+
+      mockPrisma.user.findUnique.mockResolvedValueOnce({
+        id: "user_1",
+        name: "Test Patient",
+        role: "PATIENT",
+        isActive: true,
+      });
       mockPrisma.doctorPatientRelation.findUnique.mockResolvedValueOnce(null);
 
       await authMiddleware(mockSocket, mockNext);

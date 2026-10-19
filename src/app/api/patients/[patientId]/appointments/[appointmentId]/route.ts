@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma';
 import type { AppointmentDetail } from '@/types/common';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
+import { publishToSocketServer } from '@/lib/socket-publisher';
 
 export async function GET(
 	req: Request,
@@ -296,22 +297,17 @@ export async function PATCH(
 					actionLabel: 'View appointment',
 				},
 			});
-			const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-			await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					userId: doctorUserId,
-					notification: {
-						id: notification.id,
-						message: notification.message,
-						actionHref: notification.actionHref,
-						actionLabel: notification.actionLabel,
-						createdAt: notification.createdAt.toISOString(),
-						isRead: notification.isRead,
-					},
-				}),
-			}).catch(() => {});
+			await publishToSocketServer('/api/notifications/broadcast', {
+				userId: doctorUserId,
+				notification: {
+					id: notification.id,
+					message: notification.message,
+					actionHref: notification.actionHref,
+					actionLabel: notification.actionLabel,
+					createdAt: notification.createdAt.toISOString(),
+					isRead: notification.isRead,
+				},
+			});
 		} catch {}
 
 		return NextResponse.json(

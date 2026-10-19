@@ -11,9 +11,15 @@ import { SocketServer, verifySocketJWT } from '../server';
 const TEST_SECRET = 'socket_deep_test_jwt_secret_key_32_characters_min';
 
 function generateTestToken(payload: Record<string, any>, secret = TEST_SECRET): string {
+  const now = Math.floor(Date.now() / 1000);
+  const tokenPayload = {
+    iat: now,
+    exp: now + 3600,
+    ...payload,
+  };
   const header = { alg: 'HS256', typ: 'JWT' };
   const headerB64 = Buffer.from(JSON.stringify(header)).toString('base64url');
-  const payloadB64 = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const payloadB64 = Buffer.from(JSON.stringify(tokenPayload)).toString('base64url');
   const signatureB64 = crypto
     .createHmac('sha256', secret)
     .update(`${headerB64}.${payloadB64}`)
@@ -93,6 +99,12 @@ describe('Phase 5 — Socket.IO & Real-Time Deep Testing Suite', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockPrisma.user.findUnique.mockImplementation(async ({ where }: any) => ({
+      id: where.id,
+      name: `User_${where.id}`,
+      role: 'PATIENT',
+      isActive: true,
+    }));
   });
 
   // --------------------------------------------------------------------------

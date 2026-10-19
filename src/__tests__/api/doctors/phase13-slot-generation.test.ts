@@ -2,11 +2,13 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { GET as slotsGET, POST as slotsPOST } from '@/app/api/doctors/[doctorId]/slots/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
   let doctorUserId: string;
   let doctorId: string;
+  let doctorToken: string;
   const testMondayDate = '2028-06-05'; // A guaranteed future Monday
   const testSundayDate = '2028-06-11'; // A guaranteed future Sunday
 
@@ -46,6 +48,7 @@ describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
       },
     });
     doctorId = doc.id;
+    doctorToken = await createToken({ id: doctorUserId, role: 'DOCTOR' });
 
     // Configure Monday schedule: 09:00 - 10:00 (yields 6 10-minute slots: 09:00, 09:10, 09:20, 09:30, 09:40, 09:50)
     await prisma.schedule.create({
@@ -63,10 +66,14 @@ describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
 
   afterAll(async () => {
     try {
-      await prisma.slot.deleteMany({ where: { doctorId } });
-      await prisma.schedule.deleteMany({ where: { doctorId } });
-      await prisma.doctor.deleteMany({ where: { id: doctorId } });
-      await prisma.user.deleteMany({ where: { id: doctorUserId } });
+      if (doctorId) {
+        await prisma.slot.deleteMany({ where: { doctorId } });
+        await prisma.schedule.deleteMany({ where: { doctorId } });
+        await prisma.doctor.deleteMany({ where: { id: doctorId } });
+      }
+      if (doctorUserId) {
+        await prisma.user.deleteMany({ where: { id: doctorUserId } });
+      }
     } catch (e) {
       console.warn('Phase 13 cleanup warning:', e);
     }
@@ -117,6 +124,10 @@ describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
   it('13.4 creates a custom ad-hoc slot via POST endpoint', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/slots`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         date: testSundayDate,
         startTime: '15:00',
@@ -134,6 +145,10 @@ describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
   it('13.5 rejects ad-hoc slot that overlaps with an existing slot', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/slots`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         date: testSundayDate,
         startTime: '15:15',

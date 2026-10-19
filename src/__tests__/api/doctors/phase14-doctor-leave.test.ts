@@ -7,6 +7,7 @@ import {
   DELETE as leaveDELETE,
 } from '@/app/api/doctors/[doctorId]/leave/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', () => {
@@ -15,6 +16,7 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   let patientUserId: string;
   let patientId: string;
   let createdLeaveId: string;
+  let doctorToken: string;
 
   const testLeaveStartDate = '2028-09-10T00:00:00.000Z';
   const testLeaveEndDate = '2028-09-12T23:59:59.999Z';
@@ -124,17 +126,28 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
         isAppointmentOffline: true,
       },
     });
+
+    doctorToken = await createToken({ id: doctorUserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.notification.deleteMany({ where: { userId: { in: [doctorUserId, patientUserId] } } });
-      await prisma.appointment.deleteMany({ where: { doctorId } });
-      await prisma.slot.deleteMany({ where: { doctorId } });
-      await prisma.leave.deleteMany({ where: { doctorId } });
-      await prisma.doctor.deleteMany({ where: { id: doctorId } });
-      await prisma.patient.deleteMany({ where: { id: patientId } });
-      await prisma.user.deleteMany({ where: { id: { in: [doctorUserId, patientUserId] } } });
+      const userIds = [doctorUserId, patientUserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.notification.deleteMany({ where: { userId: { in: userIds } } });
+      }
+      if (doctorId) {
+        await prisma.appointment.deleteMany({ where: { doctorId } });
+        await prisma.slot.deleteMany({ where: { doctorId } });
+        await prisma.leave.deleteMany({ where: { doctorId } });
+        await prisma.doctor.deleteMany({ where: { id: doctorId } });
+      }
+      if (patientId) {
+        await prisma.patient.deleteMany({ where: { id: patientId } });
+      }
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 14 cleanup warning:', e);
     }
@@ -143,6 +156,10 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   it('14.1 creates doctor leave, marks slots ON_LEAVE, and auto-cancels overlapping appointments', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         startDate: testLeaveStartDate,
         endDate: testLeaveEndDate,
@@ -178,6 +195,10 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   it('14.2 rejects overlapping leave creation with 409 Conflict', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         startDate: '2028-09-11T00:00:00.000Z',
         endDate: '2028-09-15T00:00:00.000Z',
@@ -194,6 +215,10 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   it('14.3 rejects invalid date range where end date is before start date', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         startDate: '2028-10-15T00:00:00.000Z',
         endDate: '2028-10-10T00:00:00.000Z',
@@ -208,7 +233,9 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   });
 
   it('14.4 queries leaves with filters via GET endpoint', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave?reason=Psychiatric`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave?reason=Psychiatric`, {
+      headers: { authorization: `Bearer ${doctorToken}` },
+    });
     const res = await leaveGET(req, { params: Promise.resolve({ doctorId }) });
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -220,6 +247,10 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   it('14.5 modifies leave date range via PATCH', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave`, {
       method: 'PATCH',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${doctorToken}`,
+      },
       body: JSON.stringify({
         leaveId: createdLeaveId,
         newStartDate: '2028-09-10T00:00:00.000Z',
@@ -237,6 +268,7 @@ describe('Phase 14: Doctor Leave & Slot/Appointment Side Effects Test Suite', ()
   it('14.6 cancels leave and restores ON_LEAVE slots back to AVAILABLE via DELETE', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${doctorId}/leave?leaveId=${createdLeaveId}`, {
       method: 'DELETE',
+      headers: { authorization: `Bearer ${doctorToken}` },
     });
 
     const res = await leaveDELETE(req, { params: Promise.resolve({ doctorId }) });

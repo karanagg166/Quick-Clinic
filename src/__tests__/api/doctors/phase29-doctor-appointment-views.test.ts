@@ -3,14 +3,17 @@ import { NextRequest } from 'next/server';
 import { GET as doctorAppointmentsGET } from '@/app/api/doctors/[doctorId]/appointments/route';
 import { GET as doctorAppointmentDetailGET } from '@/app/api/doctors/[doctorId]/appointments/[appointmentId]/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Test Suite', () => {
   let doc1UserId: string;
   let doc1Id: string;
+  let doc1Token: string;
 
   let doc2UserId: string;
   let doc2Id: string;
+  let doc2Token: string;
 
   let patient1UserId: string;
   let patient1Id: string;
@@ -259,22 +262,36 @@ describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Tes
       },
     });
     doc2ApptId = a4.id;
+
+    doc1Token = await createToken({ id: doc1UserId, role: 'DOCTOR' });
+    doc2Token = await createToken({ id: doc2UserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
     try {
-      await prisma.appointment.deleteMany({ where: { doctorId: { in: [doc1Id, doc2Id] } } });
-      await prisma.slot.deleteMany({ where: { doctorId: { in: [doc1Id, doc2Id] } } });
-      await prisma.doctor.deleteMany({ where: { id: { in: [doc1Id, doc2Id] } } });
-      await prisma.patient.deleteMany({ where: { id: { in: [patient1Id, patient2Id] } } });
-      await prisma.user.deleteMany({ where: { id: { in: [doc1UserId, doc2UserId, patient1UserId, patient2UserId] } } });
+      const docIds = [doc1Id, doc2Id].filter(Boolean) as string[];
+      if (docIds.length > 0) {
+        await prisma.appointment.deleteMany({ where: { doctorId: { in: docIds } } });
+        await prisma.slot.deleteMany({ where: { doctorId: { in: docIds } } });
+        await prisma.doctor.deleteMany({ where: { id: { in: docIds } } });
+      }
+      const patientIds = [patient1Id, patient2Id].filter(Boolean) as string[];
+      if (patientIds.length > 0) {
+        await prisma.patient.deleteMany({ where: { id: { in: patientIds } } });
+      }
+      const userIds = [doc1UserId, doc2UserId, patient1UserId, patient2UserId].filter(Boolean) as string[];
+      if (userIds.length > 0) {
+        await prisma.user.deleteMany({ where: { id: { in: userIds } } });
+      }
     } catch (e) {
       console.warn('Phase 29 cleanup warning:', e);
     }
   });
 
   it('29.1 Doctor 1 retrieves own appointment list with patient details', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await doctorAppointmentsGET(req, { params: Promise.resolve({ doctorId: doc1Id }) });
 
     expect(res.status).toBe(200);
@@ -287,14 +304,18 @@ describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Tes
 
   it('29.2 Filters doctor appointments by status and paymentMethod', async () => {
     // Filter status=CONFIRMED
-    const reqStatus = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?status=CONFIRMED`);
+    const reqStatus = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?status=CONFIRMED`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const resStatus = await doctorAppointmentsGET(reqStatus, { params: Promise.resolve({ doctorId: doc1Id }) });
     const statusList = await resStatus.json();
     expect(statusList.length).toBe(1);
     expect(statusList[0].id).toBe(appt1Id);
 
     // Filter paymentMethod=ONLINE
-    const reqPayment = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?paymentMethod=ONLINE`);
+    const reqPayment = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?paymentMethod=ONLINE`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const resPayment = await doctorAppointmentsGET(reqPayment, { params: Promise.resolve({ doctorId: doc1Id }) });
     const pmtList = await resPayment.json();
     expect(pmtList.length).toBe(1);
@@ -303,20 +324,26 @@ describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Tes
 
   it('29.3 Filters doctor appointments by patientName, gender, city, and age', async () => {
     // Search by patientName
-    const reqName = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?patientName=Rohan`);
+    const reqName = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?patientName=Rohan`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const resName = await doctorAppointmentsGET(reqName, { params: Promise.resolve({ doctorId: doc1Id }) });
     const nameList = await resName.json();
     expect(nameList.length).toBe(2);
 
     // Search by gender=FEMALE
-    const reqGender = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?gender=FEMALE`);
+    const reqGender = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?gender=FEMALE`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const resGender = await doctorAppointmentsGET(reqGender, { params: Promise.resolve({ doctorId: doc1Id }) });
     const genderList = await resGender.json();
     expect(genderList.length).toBe(1);
     expect(genderList[0].patientName).toBe('Sneha Patel');
 
     // Search by city=Delhi
-    const reqCity = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?city=Delhi`);
+    const reqCity = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments?city=Delhi`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const resCity = await doctorAppointmentsGET(reqCity, { params: Promise.resolve({ doctorId: doc1Id }) });
     const cityList = await resCity.json();
     expect(cityList.length).toBe(1);
@@ -324,7 +351,9 @@ describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Tes
   });
 
   it('29.4 Doctor appointment detail endpoint returns clinical notes, medical history, allergies, and medications', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appt1Id}`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc1Id}/appointments/${appt1Id}`, {
+      headers: { authorization: `Bearer ${doc1Token}` },
+    });
     const res = await doctorAppointmentDetailGET(req, {
       params: Promise.resolve({ doctorId: doc1Id, appointmentId: appt1Id }),
     });
@@ -339,7 +368,9 @@ describe('Phase 29: Doctor Appointment Views, Multi-Filter & Clinical Detail Tes
   });
 
   it('29.5 Doctor 2 cannot view Doctor 1 appointment detail (404 isolation)', async () => {
-    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/appointments/${appt1Id}`);
+    const req = new NextRequest(`http://localhost:3000/api/doctors/${doc2Id}/appointments/${appt1Id}`, {
+      headers: { authorization: `Bearer ${doc2Token}` },
+    });
     const res = await doctorAppointmentDetailGET(req, {
       params: Promise.resolve({ doctorId: doc2Id, appointmentId: appt1Id }),
     });

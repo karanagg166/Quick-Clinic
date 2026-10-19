@@ -4,6 +4,7 @@ import { logAudit } from "@/lib/logger";
 import type { AppointmentDetail } from '@/types/common';
 import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
+import { publishToSocketServer } from '@/lib/socket-publisher';
 
 export async function GET(
   req: Request,
@@ -414,22 +415,17 @@ export async function PATCH(
             actionLabel: patientActionLabel,
           },
         });
-        const socketServerUrl = process.env.NEXT_PUBLIC_SOCKET_URL || process.env.SOCKET_SERVER_URL || 'http://localhost:4000';
-        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            userId: patientUserId,
-            notification: {
-              id: patientNotification.id,
-              message: patientNotification.message,
-              actionHref: patientNotification.actionHref,
-              actionLabel: patientNotification.actionLabel,
-              createdAt: patientNotification.createdAt.toISOString(),
-              isRead: patientNotification.isRead,
-            },
-          }),
-        }).catch(() => {});
+        await publishToSocketServer('/api/notifications/broadcast', {
+          userId: patientUserId,
+          notification: {
+            id: patientNotification.id,
+            message: patientNotification.message,
+            actionHref: patientNotification.actionHref,
+            actionLabel: patientNotification.actionLabel,
+            createdAt: patientNotification.createdAt.toISOString(),
+            isRead: patientNotification.isRead,
+          },
+        });
       } catch {}
 
       try {

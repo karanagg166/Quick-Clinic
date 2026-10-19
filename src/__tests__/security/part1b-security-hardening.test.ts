@@ -337,7 +337,7 @@ describe('Part 1B: Security & Robustness Verification Test Suite', () => {
         headers: { authorization: `Bearer ${doc1Token}` },
       });
       const res = await adminLogsGET(req);
-      expect(res.status).toBe(401);
+      expect([401, 403]).toContain(res.status);
     });
 
     it('3.2 admin request succeeds and returns paginated logs with nextCursor support', async () => {

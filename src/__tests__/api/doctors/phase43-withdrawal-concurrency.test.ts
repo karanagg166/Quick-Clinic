@@ -2,11 +2,13 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import { NextRequest } from 'next/server';
 import { POST as withdrawalsPOST } from '@/app/api/doctors/[doctorId]/withdrawals/route';
 import { prisma } from '@/lib/prisma';
+import { createToken } from '@/lib/auth';
 import { buildUserPayload, buildBankAccountPayload } from '@/__tests__/helpers/factories';
 
 describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test Suite', () => {
   let docUserId: string;
   let docId: string;
+  let docToken: string;
   const createdWithdrawalIds: string[] = [];
 
   beforeAll(async () => {
@@ -57,6 +59,8 @@ describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test
         bankName: bankPayload.bankName,
       },
     });
+
+    docToken = await createToken({ id: docUserId, role: 'DOCTOR' });
   });
 
   afterAll(async () => {
@@ -64,9 +68,15 @@ describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test
       if (createdWithdrawalIds.length > 0) {
         await prisma.withdrawal.deleteMany({ where: { id: { in: createdWithdrawalIds } } });
       }
-      await prisma.bankAccount.deleteMany({ where: { userId: docUserId } });
-      await prisma.doctor.deleteMany({ where: { id: docId } });
-      await prisma.user.deleteMany({ where: { id: docUserId } });
+      if (docUserId) {
+        await prisma.bankAccount.deleteMany({ where: { userId: docUserId } });
+      }
+      if (docId) {
+        await prisma.doctor.deleteMany({ where: { id: docId } });
+      }
+      if (docUserId) {
+        await prisma.user.deleteMany({ where: { id: docUserId } });
+      }
     } catch (e) {
       console.warn('Phase 43 cleanup warning:', e);
     }
@@ -76,10 +86,18 @@ describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test
     // Both requests request ₹200 (20,000 paise), total requested = ₹400 > ₹300 balance
     const req1 = new NextRequest(`http://localhost:3000/api/doctors/${docId}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 200 }),
     });
     const req2 = new NextRequest(`http://localhost:3000/api/doctors/${docId}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 200 }),
     });
 
@@ -111,6 +129,10 @@ describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test
   it('43.2 Subsequent withdrawal request for remaining balance succeeds', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 100 }), // Remaining ₹100
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: docId }) });
@@ -125,6 +147,10 @@ describe('Phase 43: Doctor Withdrawal Concurrency & Double-Spend Protection Test
   it('43.3 Additional withdrawal request after zero balance is strictly rejected with 400', async () => {
     const req = new NextRequest(`http://localhost:3000/api/doctors/${docId}/withdrawals`, {
       method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        authorization: `Bearer ${docToken}`,
+      },
       body: JSON.stringify({ amount: 100 }),
     });
     const res = await withdrawalsPOST(req, { params: Promise.resolve({ doctorId: docId }) });

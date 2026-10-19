@@ -5,6 +5,7 @@ import { PATCH as patientCancelAppointmentPATCH } from '@/app/api/patients/[pati
 import { prisma } from '@/lib/prisma';
 import { autoExpirePastAppointments } from '@/lib/appointment-expiry';
 import { buildUserPayload } from '@/__tests__/helpers/factories';
+import { createToken } from '@/lib/auth';
 
 // Mock Razorpay SDK refund
 const mockRazorpayRefund = vi.fn().mockResolvedValue({ id: 'rfnd_lifecycle_123', status: 'processed' });
@@ -17,8 +18,10 @@ vi.mock('razorpay', () => ({
 describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite', () => {
   let doctorUserId: string;
   let doctorId: string;
+  let docToken: string;
   let patientUserId: string;
   let patientId: string;
+  let patientToken: string;
 
   let completedAppointmentId: string;
   let completedSlotId: string;
@@ -97,6 +100,9 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
     patientUserId = patUser.id;
     const pat = await prisma.patient.create({ data: { userId: patUser.id } });
     patientId = pat.id;
+
+    docToken = await createToken({ id: doctorUserId, role: 'DOCTOR' });
+    patientToken = await createToken({ id: patientUserId, role: 'PATIENT' });
 
     // 3. Create Appointment 1 for COMPLETED test (Online payment)
     const slot1 = await prisma.slot.create({
@@ -213,6 +219,7 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
       `http://localhost:3000/api/doctors/${doctorId}/appointments/${completedAppointmentId}`,
       {
         method: 'PATCH',
+        headers: { authorization: `Bearer ${docToken}`, 'content-type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -239,6 +246,7 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
       `http://localhost:3000/api/doctors/${doctorId}/appointments/${completedAppointmentId}`,
       {
         method: 'PATCH',
+        headers: { authorization: `Bearer ${docToken}`, 'content-type': 'application/json' },
         body: JSON.stringify({ status: 'COMPLETED' }),
       }
     );
@@ -258,6 +266,7 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
       `http://localhost:3000/api/doctors/${doctorId}/appointments/${noShowAppointmentId}`,
       {
         method: 'PATCH',
+        headers: { authorization: `Bearer ${docToken}`, 'content-type': 'application/json' },
         body: JSON.stringify({ status: 'NO_SHOW' }),
       }
     );
@@ -279,6 +288,7 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
       `http://localhost:3000/api/patients/${patientId}/appointments/${cancelAppointmentId}`,
       {
         method: 'PATCH',
+        headers: { authorization: `Bearer ${patientToken}` },
       }
     );
 
@@ -299,6 +309,7 @@ describe('Phase 19: Appointment Status Lifecycle & Transition Rules Test Suite',
       `http://localhost:3000/api/patients/${patientId}/appointments/${completedAppointmentId}`,
       {
         method: 'PATCH',
+        headers: { authorization: `Bearer ${patientToken}` },
       }
     );
 
