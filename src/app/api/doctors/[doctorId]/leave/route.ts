@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isValidStatusTransition } from "@/lib/appointment-state-machine";
+import { publishToSocketServer } from "@/lib/socket-publisher";
 
 /**
  * Helper: get all dates between two DateTimes (inclusive, UTC midnight dates)
@@ -267,35 +268,33 @@ async function cancelAppointmentsForLeave(
           },
         });
 
-        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: patientUserId,
+        await publishToSocketServer("/api/notifications/broadcast", {
+          userId: patientUserId,
+          notification: {
+            id: patientNotification.id,
+            message: patientNotification.message,
+            actionHref: patientNotification.actionHref,
+            actionLabel: patientNotification.actionLabel,
+            createdAt: patientNotification.createdAt.toISOString(),
+            isRead: patientNotification.isRead,
+          },
+        });
+
+        if (appt.slot?.date && appt.slot?.startTime) {
+          await publishToSocketServer("/api/notifications/appointment-status", {
+            patientUserId,
+            appointmentId: appt.id,
+            status: "CANCELLED",
+            appointmentDate: appt.slot.date.toISOString(),
+            appointmentTime: appt.slot.startTime.toISOString(),
+            doctorName: docName,
             notification: {
               id: patientNotification.id,
               message: patientNotification.message,
-              actionHref: patientNotification.actionHref,
-              actionLabel: patientNotification.actionLabel,
               createdAt: patientNotification.createdAt.toISOString(),
               isRead: patientNotification.isRead,
             },
-          }),
-        }).catch(() => {});
-
-        if (appt.slot?.date && appt.slot?.startTime) {
-          await fetch(`${socketServerUrl}/api/notifications/appointment-status`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              patientUserId,
-              appointmentId: appt.id,
-              status: "CANCELLED",
-              appointmentDate: appt.slot.date.toISOString(),
-              appointmentTime: appt.slot.startTime.toISOString(),
-              doctorName: docName,
-            }),
-          }).catch(() => {});
+          });
         }
       } catch {}
     }
@@ -314,21 +313,17 @@ async function cancelAppointmentsForLeave(
           },
         });
 
-        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: doctorUserId,
-            notification: {
-              id: doctorNotification.id,
-              message: doctorNotification.message,
-              actionHref: doctorNotification.actionHref,
-              actionLabel: doctorNotification.actionLabel,
-              createdAt: doctorNotification.createdAt.toISOString(),
-              isRead: doctorNotification.isRead,
-            },
-          }),
-        }).catch(() => {});
+        await publishToSocketServer("/api/notifications/broadcast", {
+          userId: doctorUserId,
+          notification: {
+            id: doctorNotification.id,
+            message: doctorNotification.message,
+            actionHref: doctorNotification.actionHref,
+            actionLabel: doctorNotification.actionLabel,
+            createdAt: doctorNotification.createdAt.toISOString(),
+            isRead: doctorNotification.isRead,
+          },
+        });
       } catch {}
     }
   }
@@ -442,26 +437,17 @@ export async function POST(
           },
         });
 
-        const socketServerUrl =
-          process.env.NEXT_PUBLIC_SOCKET_URL ||
-          process.env.SOCKET_SERVER_URL ||
-          "http://localhost:4000";
-
-        await fetch(`${socketServerUrl}/api/notifications/broadcast`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: summaryUserId,
-            notification: {
-              id: summaryNotif.id,
-              message: summaryNotif.message,
-              actionHref: summaryNotif.actionHref,
-              actionLabel: summaryNotif.actionLabel,
-              createdAt: summaryNotif.createdAt.toISOString(),
-              isRead: summaryNotif.isRead,
-            },
-          }),
-        }).catch(() => {});
+        await publishToSocketServer("/api/notifications/broadcast", {
+          userId: summaryUserId,
+          notification: {
+            id: summaryNotif.id,
+            message: summaryNotif.message,
+            actionHref: summaryNotif.actionHref,
+            actionLabel: summaryNotif.actionLabel,
+            createdAt: summaryNotif.createdAt.toISOString(),
+            isRead: summaryNotif.isRead,
+          },
+        });
       } catch {}
     }
 

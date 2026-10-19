@@ -21,7 +21,8 @@ export async function GET(
         // Get pagination parameters from query string
         const { searchParams } = new URL(req.url);
         const page = parseInt(searchParams.get("page") || "1", 10);
-        const limit = parseInt(searchParams.get("limit") || "20", 10);
+        const limit = parseInt(searchParams.get("limit") || "50", 10);
+        const orderParam = searchParams.get("order")?.toLowerCase();
 
         // Validate pagination parameters
         if (isNaN(page) || isNaN(limit) || page < 1 || limit < 1) {
@@ -59,24 +60,39 @@ export async function GET(
         // Calculate skip for pagination
         const skip = (page - 1) * limit;
 
-        // Fetch total count and paginated messages concurrently
-        const [totalMessages, chats] = await Promise.all([
-            prisma.chatMessages.count({
-                where: {
-                    doctorPatientRelationId,
+        const totalMessages = await prisma.chatMessages.count({
+            where: { doctorPatientRelationId },
+        });
+
+        // If explicitly requested chronological asc without recent window, order asc
+        // Otherwise (default for chat UIs), fetch latest messages desc and reverse to chronological
+        let chats: any[];
+        if (orderParam === "asc") {
+            chats = await prisma.chatMessages.findMany({
+                where: { doctorPatientRelationId },
+                include: {
+                    sender: {
+                        select: { id: true, name: true, role: true },
+                    },
                 },
-            }),
-            prisma.chatMessages.findMany({
-                where: {
-                    doctorPatientRelationId,
-                },
-                orderBy: {
-                    createdAt: "asc",
-                },
+                orderBy: { createdAt: "asc" },
                 skip,
                 take: limit,
-            }),
-        ]);
+            });
+        } else {
+            const rawDesc = await prisma.chatMessages.findMany({
+                where: { doctorPatientRelationId },
+                include: {
+                    sender: {
+                        select: { id: true, name: true, role: true },
+                    },
+                },
+                orderBy: { createdAt: "desc" },
+                skip,
+                take: limit,
+            });
+            chats = rawDesc.reverse();
+        }
 
         // Calculate total pages
         const totalPages = Math.ceil(totalMessages / limit) || 1;
@@ -127,7 +143,14 @@ export async function POST(
             );
         }
 
-        // Verify relation exists
+        if (text.length > 5000) {
+            return NextResponse.json(
+                { error: "Message exceeds maximum length of 5000 characters" },
+                { status: 400 }
+            );
+        }
+
+        // Verify relation exists and authorized
         const relation = await prisma.doctorPatientRelation.findUnique({
             where: { id: doctorPatientRelationId },
         });
@@ -144,13 +167,44 @@ export async function POST(
             return NextResponse.json({ error: "Forbidden" }, { status: 403 });
         }
 
+        const clientMessageId =
+            typeof body.clientMessageId === "string" && body.clientMessageId.trim()
+                ? body.clientMessageId.trim()
+                : typeof body.idempotencyKey === "string" && body.idempotencyKey.trim()
+                ? body.idempotencyKey.trim()
+                : typeof body.id === "string" && body.id.trim()
+                ? body.id.trim()
+                : null;
+
+        // Deduplication: check if message with this id already exists in this relation
+        if (clientMessageId) {
+            const existing = await prisma.chatMessages.findUnique({
+                where: { id: clientMessageId },
+                include: {
+                    sender: {
+                        select: { id: true, name: true, role: true },
+                    },
+                },
+            });
+
+            if (existing && existing.doctorPatientRelationId === doctorPatientRelationId) {
+                return NextResponse.json({ chat: existing }, { status: 200 });
+            }
+        }
+
         const senderId = authUser.id;
 
         const newChat = await prisma.chatMessages.create({
             data: {
+                ...(clientMessageId ? { id: clientMessageId } : {}),
                 doctorPatientRelationId,
                 text,
                 senderId,
+            },
+            include: {
+                sender: {
+                    select: { id: true, name: true, role: true },
+                },
             },
         });
 

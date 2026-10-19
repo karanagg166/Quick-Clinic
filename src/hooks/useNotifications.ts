@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useUserStore } from '@/store/userStore';
 
@@ -14,74 +14,134 @@ interface Notification {
 }
 
 export function useNotifications() {
-  const userId = useUserStore((state) => state.user?.id);
+  const user = useUserStore((state) => state.user);
+  const userId = user?.id;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
+  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const fetchSocketToken = useCallback(async (): Promise<{ token: string; socketUrl: string } | null> => {
+    try {
+      const res = await fetch('/api/socket/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.success && data?.token) {
+        return { token: data.token, socketUrl: data.socketUrl };
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
-    if (!userId) return;
-
-    // Clean up existing connection if any
-    if (socketRef.current) {
-      console.log('Cleaning up existing notification socket');
-      socketRef.current.disconnect();
-      socketRef.current = null;
+    if (!userId) {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      setIsConnected(false);
+      setNotifications([]);
+      return;
     }
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+    let isMounted = true;
 
-    // console.log('Connecting to Socket.IO for notifications:', socketUrl);
+    const connectSocket = async () => {
+      const ticket = await fetchSocketToken();
+      if (!isMounted || !ticket) {
+        return;
+      }
 
-    const socket = io(socketUrl, {
-      auth: {
-        userId, // Only userId, no relationId for notifications
-      },
-      transports: ['websocket', 'polling'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-      timeout: 20000,
-      forceNew: true,
-    });
+      const socketUrl = ticket.socketUrl || process.env.NEXT_PUBLIC_SOCKET_URL;
+      if (!socketUrl) {
+        // In production without socket URL, do not fallback to visitor's localhost
+        return;
+      }
 
-    socketRef.current = socket;
+      // Disconnect any existing socket before opening a new authenticated one
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
 
-    socket.on('connect', () => {
-      console.log('Notifications socket connected');
-      setIsConnected(true);
-    });
+      const socket = io(socketUrl, {
+        auth: {
+          token: ticket.token,
+        },
+        transports: ['websocket', 'polling'],
+        reconnection: true,
+        reconnectionDelay: 1000,
+        reconnectionDelayMax: 5000,
+        reconnectionAttempts: 10,
+        timeout: 10000,
+      });
 
-    socket.on('notification_connected', (data: { message: string; userId: string; userRole: string; userName: string }) => {
-      console.log('Notification connection confirmed:', data);
-    });
+      socketRef.current = socket;
 
-    socket.on('new_notification', (data: { notification: Notification }) => {
-      // console.log('Received new notification:', data.notification);
-      setNotifications((prev) => [data.notification, ...prev]);
-    });
+      socket.on('connect', () => {
+        if (isMounted) setIsConnected(true);
+      });
 
-    socket.on('disconnect', () => {
-      console.log('Notifications socket disconnected');
-      setIsConnected(false);
-    });
+      socket.on('notification_connected', () => {
+        if (isMounted) setIsConnected(true);
+      });
 
-    socket.on('connect_error', (error: Error) => {
-      console.error('Notification socket connection error:', error.message);
-      setIsConnected(false);
-    });
+      socket.on('new_notification', (data: { notification: Notification }) => {
+        if (isMounted && data?.notification) {
+          setNotifications((prev) => {
+            const exists = prev.some((n) => n.id === data.notification.id);
+            return exists ? prev : [data.notification, ...prev];
+          });
+        }
+      });
 
-    socket.on('error', (error: Error) => {
-      console.error('Notification socket error:', error);
-    });
+      socket.on('disconnect', () => {
+        if (isMounted) setIsConnected(false);
+      });
+
+      socket.on('connect_error', async (err: Error) => {
+        if (!isMounted) return;
+        setIsConnected(false);
+
+        // If authentication failed (e.g. ticket expired), re-fetch ticket and retry
+        if (err.message && /token|auth|expired/i.test(err.message)) {
+          const freshTicket = await fetchSocketToken();
+          if (freshTicket && socketRef.current) {
+            socketRef.current.auth = { token: freshTicket.token };
+            socketRef.current.connect();
+          }
+        }
+      });
+    };
+
+    connectSocket();
+
+    const handleOnline = () => {
+      if (socketRef.current && !socketRef.current.connected) {
+        socketRef.current.connect();
+      } else if (!socketRef.current) {
+        connectSocket();
+      }
+    };
+
+    window.addEventListener('online', handleOnline);
 
     return () => {
-      console.log('Cleaning up notification socket');
-      socket.disconnect();
-      socketRef.current = null;
+      isMounted = false;
+      window.removeEventListener('online', handleOnline);
+      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
-  }, [userId]);
+  }, [userId, fetchSocketToken]);
 
   return {
     notifications,
