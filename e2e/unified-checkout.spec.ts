@@ -352,7 +352,7 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
 
     // Populate active checkout in sessionStorage before navigation
     await context.addInitScript(
-      (arg: { userId: string; doctorId: string; checkoutId: string; slotId: string }) => {
+      (arg: { userId: string; doctorId: string; checkoutId: string; slotId: string; date: string }) => {
         sessionStorage.setItem(
           `checkout_active_${arg.userId}_${arg.doctorId}`,
           JSON.stringify({
@@ -360,6 +360,7 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
             slotId: arg.slotId,
             doctorId: arg.doctorId,
             paymentMethod: 'ONLINE',
+            date: arg.date,
           })
         );
       },
@@ -368,10 +369,17 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
         doctorId: doctorRecord.id,
         checkoutId: checkout.id,
         slotId: slot3.id,
+        date: tomorrowDateStr,
       }
     );
 
     await page.goto(`/patient/doctor/${doctorRecord.id}`);
+    await page.waitForLoadState('networkidle');
+
+    // Ensure date picker is set to tomorrowDateStr to load slot details
+    const dateInput = page.locator('#date-picker');
+    await dateInput.fill(tomorrowDateStr);
+    await dateInput.dispatchEvent('change');
     await page.waitForLoadState('networkidle');
 
     // On mount, component detects active checkout, queries /api/checkout/[id]/status,

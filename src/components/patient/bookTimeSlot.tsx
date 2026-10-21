@@ -89,6 +89,9 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
             }
             if (data.status === 'READY_FOR_PAYMENT') {
               // Restore active slot reservation state on refresh
+              if (activeData.date) {
+                setDate(activeData.date);
+              }
               setSelectedSlot(activeData.slotId);
               setShowPaymentOptions(true);
               return;
@@ -262,7 +265,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
         if (payment.checkoutId) {
           sessionStorage.setItem(
             `checkout_active_${userId}_${doctorId}`,
-            JSON.stringify({ checkoutId: payment.checkoutId, slotId, doctorId, paymentMethod: 'ONLINE' })
+            JSON.stringify({ checkoutId: payment.checkoutId, slotId, doctorId, paymentMethod: 'ONLINE', date })
           );
         }
         showToast.warning('Payment was received! Your booking confirmation is finalizing. Redirecting to dashboard...');
