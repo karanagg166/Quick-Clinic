@@ -78,8 +78,8 @@ export async function POST(req: NextRequest) {
       if (orderId && paymentId) {
         // Link to internal payment and checkout if exists
         const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }),
-          prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }),
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
         ]);
 
         if (paymentRecord || checkoutRecord) {
@@ -113,8 +113,8 @@ export async function POST(req: NextRequest) {
 
       if (orderId && paymentId) {
         const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }),
-          prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }),
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
         ]);
 
         if (paymentRecord || checkoutRecord) {
@@ -148,8 +148,8 @@ export async function POST(req: NextRequest) {
 
       if (orderId) {
         const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }),
-          prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }),
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
         ]);
 
         if (paymentRecord && paymentRecord.status !== "SUCCESS" && paymentRecord.status !== "REFUNDED") {

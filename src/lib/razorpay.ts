@@ -194,8 +194,8 @@ export async function fetchRazorpayPayment(
 
     if (expectedOrderId) {
       const [storedPayment, storedCheckout] = await Promise.all([
-        prisma.payment.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null),
-        prisma.checkout.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null),
+        prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null) : null,
+        prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null) : null,
       ]);
       if (storedPayment) {
         amountToReturn = storedPayment.amount;

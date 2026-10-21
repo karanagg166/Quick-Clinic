@@ -74,6 +74,8 @@ describe("Unified Checkout & Reservation Architecture Integration Tests", () => 
   }
 
   beforeAll(async () => {
+    process.env.UPSTASH_REDIS_REST_URL = "https://mock-redis.upstash.io";
+    process.env.UPSTASH_REDIS_REST_TOKEN = "mock_token";
     process.env.RAZORPAY_KEY_ID = "rzp_test_mock_key_id";
     process.env.RAZORPAY_KEY_SECRET = secretKey;
     process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;

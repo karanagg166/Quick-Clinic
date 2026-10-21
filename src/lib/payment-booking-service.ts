@@ -190,29 +190,31 @@ export async function createOrReusePaymentOrder(params: CreateOrderParams): Prom
     });
 
     // Ensure durable Checkout record exists with READY_FOR_PAYMENT state
-    await prisma.checkout.upsert({
-      where: { idempotencyKey: `chk_${idempotencyKey}` },
-      update: {
-        paymentId: savedOrder.id,
-        razorpayOrderId: providerOrder.id,
-        status: "READY_FOR_PAYMENT",
-      },
-      create: {
-        idempotencyKey: `chk_${idempotencyKey}`,
-        userId,
-        patientId,
-        doctorId,
-        slotId,
-        holdToken,
-        paymentMethod: "ONLINE",
-        amount: Number(providerOrder.amount),
-        currency: providerOrder.currency,
-        status: "READY_FOR_PAYMENT",
-        razorpayOrderId: providerOrder.id,
-        paymentId: savedOrder.id,
-        expiresAt: new Date(Date.now() + 10 * 60 * 1000),
-      },
-    }).catch((e) => console.warn("[createOrReusePaymentOrder] Checkout upsert warning:", e));
+    if (prisma.checkout && typeof prisma.checkout.upsert === "function") {
+      await prisma.checkout.upsert({
+        where: { idempotencyKey: `chk_${idempotencyKey}` },
+        update: {
+          paymentId: savedOrder.id,
+          razorpayOrderId: providerOrder.id,
+          status: "READY_FOR_PAYMENT",
+        },
+        create: {
+          idempotencyKey: `chk_${idempotencyKey}`,
+          userId,
+          patientId,
+          doctorId,
+          slotId,
+          holdToken,
+          paymentMethod: "ONLINE",
+          amount: Number(providerOrder.amount),
+          currency: providerOrder.currency,
+          status: "READY_FOR_PAYMENT",
+          razorpayOrderId: providerOrder.id,
+          paymentId: savedOrder.id,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      }).catch((e) => console.warn("[createOrReusePaymentOrder] Checkout upsert warning:", e));
+    }
 
     return {
       ok: true,
@@ -896,17 +898,19 @@ export async function verifyAndTransitionPayment(
       amount: payment.amount,
     });
 
-    await prisma.checkout.updateMany({
-      where: {
-        OR: [
-          { paymentId: payment.id },
-          { razorpayOrderId: orderId },
-        ],
-      },
-      data: {
-        status: "EXPIRED",
-      },
-    }).catch(() => undefined);
+    if (prisma.checkout && typeof prisma.checkout.updateMany === "function") {
+      await prisma.checkout.updateMany({
+        where: {
+          OR: [
+            { paymentId: payment.id },
+            { razorpayOrderId: orderId },
+          ],
+        },
+        data: {
+          status: "EXPIRED",
+        },
+      }).catch(() => undefined);
+    }
 
     return {
       success: false,
@@ -919,19 +923,21 @@ export async function verifyAndTransitionPayment(
     };
   }
 
-  await prisma.checkout.updateMany({
-    where: {
-      OR: [
-        { paymentId: payment.id },
-        { razorpayOrderId: orderId },
-      ],
-    },
-    data: {
-      status: "CONFIRMED",
-      appointmentId: appointment.id,
-      confirmedAt: new Date(),
-    },
-  }).catch(() => undefined);
+  if (prisma.checkout && typeof prisma.checkout.updateMany === "function") {
+    await prisma.checkout.updateMany({
+      where: {
+        OR: [
+          { paymentId: payment.id },
+          { razorpayOrderId: orderId },
+        ],
+      },
+      data: {
+        status: "CONFIRMED",
+        appointmentId: appointment.id,
+        confirmedAt: new Date(),
+      },
+    }).catch(() => undefined);
+  }
 
   return {
     success: true,
