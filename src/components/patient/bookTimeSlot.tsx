@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
-import { processOnlinePayment } from '@/lib/processOnlinePayment';
+import { processOnlinePayment, type CheckoutState } from '@/lib/processOnlinePayment';
 import type { Slot } from '@/types/common';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,6 @@ interface BookTimeSlotProps {
   doctorId: string;
 }
 
-type Hold = { slotId: string; token: string };
-
 export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
@@ -27,14 +25,12 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
   const [loading, setLoading] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null);
   const [booking, setBooking] = useState(false);
+  const [checkoutProgressText, setCheckoutProgressText] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
-  const [activeHold, setActiveHold] = useState<Hold | null>(null);
 
   const isSlotBookable = (slot: Slot) => {
-    if (activeHold && slot.id === activeHold.slotId) return true;
     if (slot.status !== 'AVAILABLE') return false;
-    // For today, filter out slots whose start time has passed
     const today = getTodayInUserTimezone();
     if (date === today) {
       const slotStart = new Date(slot.startTime);
@@ -71,64 +67,70 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
   });
 
-  const acquireHold = async (slotId: string): Promise<Hold> => {
-    // Prevent booking a slot whose time has already passed
-    const selectedSlotData = slots.find(s => s.id === slotId);
-    if (selectedSlotData) {
-      const slotStart = new Date(selectedSlotData.startTime);
-      if (slotStart <= new Date()) {
-        throw new Error('This time slot has already passed. Please select a future slot.');
-      }
+  const getOrGenerateIdempotencyKey = useCallback((slotId: string) => {
+    if (typeof window === 'undefined') return `ord_${userId || 'anon'}_${slotId}_${Date.now()}`;
+    const storageKey = `checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}`;
+    let key = sessionStorage.getItem(storageKey);
+    if (!key) {
+      key = typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `ord_${userId?.slice(-6) || 'usr'}_${slotId}_${Date.now()}`;
+      sessionStorage.setItem(storageKey, key);
     }
+    return key;
+  }, [doctorId, userId]);
 
-    const response = await fetch('/api/appointments/hold', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ slotId, doctorId }),
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok || !payload.holdToken) throw new Error(payload.error || 'This slot is no longer available');
-    const hold = { slotId, token: payload.holdToken as string };
-    setActiveHold(hold);
-    return hold;
-  };
-
-  const releaseHold = async (hold: Hold | null) => {
-    if (!hold) return;
-    await fetch('/api/appointments/cancel-hold', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ slotId: hold.slotId, holdToken: hold.token }),
-    }).catch(() => undefined);
-    setActiveHold(null);
-  };
-
-  const confirmHold = async (hold: Hold, paymentMethod: 'ONLINE' | 'OFFLINE', transactionId?: string) => {
-    const response = await fetch('/api/appointments/confirm', {
-      method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ slotId: hold.slotId, doctorId, holdToken: hold.token, paymentMethod, transactionId: transactionId ?? null }),
-    });
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(payload.error || 'Unable to confirm this booking');
-    setActiveHold(null);
-    setSlots((previous) => previous.map((slot) => slot.id === hold.slotId ? { ...slot, status: 'BOOKED' } : slot));
-    setSelectedSlot(null);
-    setShowPaymentOptions(false);
-    showToast.success('Appointment confirmed! Redirecting to dashboard...');
-    setTimeout(() => {
-      router.push('/patient');
-    }, 1000);
-  };
+  const clearIdempotencyKey = useCallback((slotId: string) => {
+    if (typeof window === 'undefined') return;
+    const storageKey = `checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}`;
+    sessionStorage.removeItem(storageKey);
+  }, [doctorId, userId]);
 
   const handleOfflineBooking = async (slotId: string) => {
-    let hold: Hold | null = null;
+    if (!userId) {
+      showToast.warning('Please login to book an appointment');
+      return;
+    }
+
     try {
       setBooking(true);
-      hold = await acquireHold(slotId);
-      await confirmHold(hold, 'OFFLINE');
+      setCheckoutProgressText('Confirming clinic booking...');
+      const idempotencyKey = getOrGenerateIdempotencyKey(slotId);
+
+      const res = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          action: 'INITIATE',
+          doctorId,
+          slotId,
+          paymentMethod: 'OFFLINE',
+          idempotencyKey,
+        }),
+      });
+
+      const payload = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        if (res.status === 409) {
+          clearIdempotencyKey(slotId);
+        }
+        throw new Error(payload.error || payload.message || 'Unable to confirm booking');
+      }
+
+      clearIdempotencyKey(slotId);
+      setSlots((previous) => previous.map((slot) => slot.id === slotId ? { ...slot, status: 'BOOKED' } : slot));
+      setSelectedSlot(null);
+      setShowPaymentOptions(false);
+      showToast.success('Appointment confirmed! Redirecting to dashboard...');
+      setTimeout(() => {
+        router.push('/patient');
+      }, 1000);
     } catch (cause) {
-      await releaseHold(hold);
       showToast.error(cause instanceof Error ? cause.message : 'Unable to book this slot');
     } finally {
       setBooking(false);
+      setCheckoutProgressText(null);
     }
   };
 
@@ -137,25 +139,41 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       showToast.warning('Please login to pay online');
       return;
     }
-    let hold: Hold | null = null;
-    let paymentCaptured = false;
+
     try {
       setBooking(true);
-      hold = await acquireHold(slotId);
+      const idempotencyKey = getOrGenerateIdempotencyKey(slotId);
+
       const payment = await processOnlinePayment({
         doctorId,
-        holdToken: hold.token,
         slotId,
         userId,
+        idempotencyKey,
         userEmail: user?.email || undefined,
         userName: user?.name || undefined,
         userPhone: user?.phoneNo || undefined,
+        onStateChange: (state: CheckoutState) => {
+          switch (state) {
+            case 'LOADING_SDK':
+            case 'CREATING_ORDER':
+              setCheckoutProgressText('Preparing payment...');
+              break;
+            case 'AWAITING_PAYMENT':
+              setCheckoutProgressText('Awaiting payment...');
+              break;
+            case 'CONFIRMING':
+              setCheckoutProgressText('Confirming booking...');
+              break;
+            default:
+              setCheckoutProgressText(null);
+              break;
+          }
+        },
       });
-      paymentCaptured = Boolean(payment.paymentCaptured);
 
       if (payment.state === 'BOOKED' && payment.success) {
-        setActiveHold(null);
-        setSlots((previous) => previous.map((slot) => slot.id === hold?.slotId ? { ...slot, status: 'BOOKED' } : slot));
+        clearIdempotencyKey(slotId);
+        setSlots((previous) => previous.map((slot) => slot.id === slotId ? { ...slot, status: 'BOOKED' } : slot));
         setSelectedSlot(null);
         setShowPaymentOptions(false);
         showToast.success('Payment successful and appointment confirmed! Redirecting to dashboard...');
@@ -166,13 +184,13 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
       }
 
       if (payment.state === 'REFUND_PENDING' || payment.state === 'REFUNDED') {
-        setActiveHold(null);
-        showToast.error(payment.error || 'The slot was no longer available. Your payment has been refunded.');
+        clearIdempotencyKey(slotId);
+        showToast.error(payment.error || 'The slot reservation expired. Your payment has been automatically refunded.');
         return;
       }
 
       if (payment.state === 'PAYMENT_RECEIVED_BOOKING_PENDING') {
-        setActiveHold(null);
+        clearIdempotencyKey(slotId);
         showToast.warning('Payment was received! Your booking confirmation is finalizing. Redirecting to dashboard...');
         setTimeout(() => {
           router.push('/patient');
@@ -182,12 +200,10 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
       throw new Error(payment.error || 'Payment failed or was cancelled');
     } catch (cause) {
-      if (!paymentCaptured) {
-        await releaseHold(hold);
-      }
       showToast.error(cause instanceof Error ? cause.message : 'Online payment failed');
     } finally {
       setBooking(false);
+      setCheckoutProgressText(null);
     }
   };
 
@@ -247,6 +263,11 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                       <p className="text-xl font-semibold">
                         {formatTime(slots.find((slot) => slot.id === selectedSlot)?.startTime || '')}
                       </p>
+                      {checkoutProgressText && (
+                        <p className="text-sm font-medium text-blue-600 animate-pulse mt-1">
+                          {checkoutProgressText}
+                        </p>
+                      )}
                     </div>
                     {!showPaymentOptions ? (
                       <Button onClick={() => setShowPaymentOptions(true)} size="lg" disabled={booking}>
@@ -255,12 +276,12 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                     ) : (
                       <div className="flex flex-wrap gap-3">
                         <Button onClick={() => void handleOnlinePayment(selectedSlot)} disabled={booking} size="lg" className="bg-purple-600 hover:bg-purple-700">
-                          {booking ? 'Booking...' : 'Pay Online'}
+                          {booking ? (checkoutProgressText || 'Booking...') : 'Pay Online'}
                         </Button>
                         <Button onClick={() => void handleOfflineBooking(selectedSlot)} disabled={booking} size="lg" className="bg-green-600 hover:bg-green-700">
-                          {booking ? 'Booking...' : 'Pay at Clinic'}
+                          {booking ? (checkoutProgressText || 'Booking...') : 'Pay at Clinic'}
                         </Button>
-                        <Button onClick={() => { void releaseHold(activeHold); setShowPaymentOptions(false); }} disabled={booking} variant="ghost" size="lg">
+                        <Button onClick={() => setShowPaymentOptions(false)} disabled={booking} variant="ghost" size="lg">
                           Cancel
                         </Button>
                       </div>
@@ -269,7 +290,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                 </div>
               )}
               <div className="pt-4 border-t text-sm text-muted-foreground">
-                A selected slot is held for up to 10 minutes only while payment is in progress.
+                Slots are reserved for up to 10 minutes only upon proceeding to payment.
               </div>
             </div>
           )}

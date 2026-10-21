@@ -159,6 +159,7 @@ model User {
   auditLogs       AuditLog[]
   chatMessages    ChatMessages[]
   payments        Payment[]
+  checkouts       Checkout[]
   notifications   Notification[]
 
   updatedAt    DateTime      @updatedAt
@@ -210,6 +211,7 @@ model Doctor {
   patientRelations DoctorPatientRelation[]
   appointments     Appointment[]
   slots            Slot[]
+  checkouts        Checkout[]
   comments         Comment[]
   ratings          Rating[]
   withdrawals      Withdrawal[]
@@ -243,6 +245,7 @@ model Patient {
   user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   doctorRelations        DoctorPatientRelation[]
   appointments           Appointment[]
+  checkouts              Checkout[]
   comments               Comment[]
   ratings                Rating[]
   medicalDocuments       MedicalDocument[]
@@ -351,6 +354,7 @@ model Slot {
   holdExpiresAt   DateTime?
 
   appointments Appointment[]
+  checkouts    Checkout[]
 
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
@@ -377,6 +381,7 @@ model Appointment {
   updatedAt            DateTime          @updatedAt
   slot                 Slot              @relation(fields: [slotId], references: [id])
   payment              Payment?          @relation(fields: [paymentId], references: [id])
+  checkout             Checkout?
   doctor               Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patient              Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
   isAppointmentOffline Boolean           @default(true)
@@ -445,12 +450,58 @@ model Payment {
   updatedAt         DateTime  @default(now()) @updatedAt
 
   appointment   Appointment?
+  checkout      Checkout?
   refunds       Refund[]
   webhookEvents WebhookEvent[]
 
   @@index([userId, status])
   @@index([slotId])
   @@index([razorpayPaymentId])
+}
+
+enum CheckoutStatus {
+  PENDING_ORDER
+  READY_FOR_PAYMENT
+  CONFIRMED
+  EXPIRED
+  FAILED
+  UNRESOLVED
+}
+
+model Checkout {
+  id             String         @id @default(cuid())
+  idempotencyKey String         @unique
+  userId         String
+  patientId      String
+  doctorId       String
+  slotId         String
+  holdToken      String
+  paymentMethod  PaymentMethod  @default(ONLINE)
+  amount         Int // Immutable amount in paise
+  currency       String         @default("INR")
+  status         CheckoutStatus @default(PENDING_ORDER)
+
+  razorpayOrderId String?  @unique
+  expiresAt       DateTime
+
+  paymentId     String? @unique
+  appointmentId String? @unique
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  slot        Slot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  payment     Payment?     @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
+
+  @@index([userId, status])
+  @@index([doctorId, slotId])
+  @@index([expiresAt, status])
+  @@index([razorpayOrderId])
 }
 
 enum RefundStatus {
