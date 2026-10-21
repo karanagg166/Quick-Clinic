@@ -213,8 +213,15 @@ export async function finalizeAppointmentBooking(input: ConfirmationInput) {
     },
   });
 
-  let appointment = existing;
-  if (!appointment) {
+  let appointment: any = null;
+  if (existing) {
+    if (existing.patientId === input.patientId) {
+      appointment = existing;
+    } else {
+      // Slot is occupied by a different patient
+      return null;
+    }
+  } else {
     appointment = await confirmSlotHold({
       slotId: input.slotId,
       doctorId: input.doctorId,
