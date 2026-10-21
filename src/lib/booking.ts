@@ -91,12 +91,8 @@ async function deleteIfOwner(slotId: string, patientId: string, token: string) {
     `;
     if (typeof (client as any).eval === "function") {
       await (client as any).eval(script, [key], [patientId, token]);
-    } else {
-      const cur = await client.get<HoldValue>(key);
-      if (cur && cur.patientId === patientId && cur.token === token) {
-        await client.del(key);
-      }
     }
+    // If eval is unavailable, do NOT execute non-atomic GET-then-DEL. Let the key safely expire via TTL.
   } catch (e) {
     console.warn("Redis deleteIfOwner error:", e);
   }
@@ -229,32 +225,22 @@ export async function confirmSlotHold(input: {
   paymentId?: string | null;
 }) {
   const now = new Date();
-  const slotDelegate = prisma.slot as any;
-  const slot = typeof slotDelegate?.findUnique === "function"
-    ? await slotDelegate.findUnique({
-        where: { id: input.slotId },
-        select: { startTime: true, status: true },
-      })
-    : { startTime: new Date(now.getTime() + 3600000), status: "AVAILABLE" as const };
+  const slot = await prisma.slot.findUnique({
+    where: { id: input.slotId },
+    select: { startTime: true, status: true },
+  });
 
   if (!slot || slot.startTime <= now) {
     return null;
   }
 
   // Idempotent duplicate check for active appointments on this slot
-  const appointmentDelegate = prisma.appointment as any;
-  const existingActive = typeof appointmentDelegate?.findFirst === "function"
-    ? await appointmentDelegate.findFirst({
-        where: {
-          slotId: input.slotId,
-          status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
-        },
-      })
-    : typeof appointmentDelegate?.findUnique === "function"
-    ? await appointmentDelegate.findUnique({
-        where: { slotId: input.slotId },
-      })
-    : null;
+  const existingActive = await prisma.appointment.findFirst({
+    where: {
+      slotId: input.slotId,
+      status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
+    },
+  });
 
   if (existingActive) {
     if (
@@ -265,6 +251,24 @@ export async function confirmSlotHold(input: {
       return existingActive;
     }
     return null;
+  }
+
+  // A client-supplied transactionId alone must never authorize a new paid booking.
+  // Genuine online payments must be authoritatively verified and provide an internal paymentId.
+  if (input.paymentMethod === "ONLINE") {
+    if (!input.paymentId) {
+      return null;
+    }
+    const verifiedPayment = await prisma.payment.findFirst({
+      where: {
+        id: input.paymentId,
+        status: "SUCCESS",
+        slotId: input.slotId,
+      },
+    });
+    if (!verifiedPayment) {
+      return null;
+    }
   }
 
   await expireSlotHolds(input.slotId);

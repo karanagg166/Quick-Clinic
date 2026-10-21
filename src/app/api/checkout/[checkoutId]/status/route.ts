@@ -29,6 +29,7 @@ export async function GET(
         isConfirmed: status.status === "CONFIRMED" || Boolean(status.appointment),
         appointment: status.appointment,
         paymentStatus: status,
+        refundStatus: status.refundStatus,
         checkout: status,
       },
       { status: 200 }

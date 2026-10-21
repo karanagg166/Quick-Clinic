@@ -87,12 +87,7 @@ export async function releaseSlotMutex(slotId: string, token: string | null): Pr
       const res = await (client as any).eval(exactCompareAndDelScript, [key], [token]);
       return res === 1;
     }
-    // Fallback if eval is unavailable
-    const cur = await client.get<string>(key);
-    if (cur === token) {
-      await client.del(key);
-      return true;
-    }
+    // If eval is unavailable, do NOT execute non-atomic GET-then-DEL. Let the key safely expire via TTL.
     return false;
   } catch (err) {
     console.warn(`[slot-mutex] Failed to release Redis mutex for slot ${slotId}:`, err);

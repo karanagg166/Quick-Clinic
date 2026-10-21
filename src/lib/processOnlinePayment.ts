@@ -94,15 +94,23 @@ export async function pollPaymentStatus(
           const appt = data.appointment || (typeof data.status === 'object' && data.status?.appointment);
           const paymentStatusObj = data.paymentStatus || (typeof data.status === 'object' ? data.status : null);
           const statusStr = typeof data.status === 'string' ? data.status : paymentStatusObj?.status;
+          const refundStatus =
+            data.refundStatus ||
+            paymentStatusObj?.refundStatus ||
+            (statusStr === 'REFUNDED' ? 'REFUNDED' : statusStr === 'REFUND_PENDING' ? 'REFUND_PENDING' : null);
 
-          if (appt || statusStr === 'CONFIRMED') {
+          // Require a canonical appointment record before declaring BOOKED
+          if (appt && (appt.id || statusStr === 'CONFIRMED')) {
             return { state: 'BOOKED', status: paymentStatusObj || { ...data, appointment: appt } };
           }
-          if (statusStr === 'REFUNDED') {
-            return { state: 'REFUNDED', status: paymentStatusObj || data };
+          if (refundStatus === 'REFUNDED' || statusStr === 'REFUNDED') {
+            return { state: 'REFUNDED', refundStatus: 'REFUNDED', status: paymentStatusObj || data };
           }
-          if (statusStr === 'REFUND_PENDING') {
-            return { state: 'REFUND_PENDING', status: paymentStatusObj || data };
+          if (refundStatus === 'REFUND_PENDING' || statusStr === 'REFUND_PENDING') {
+            return { state: 'REFUND_PENDING', refundStatus: 'REFUND_PENDING', status: paymentStatusObj || data };
+          }
+          if (refundStatus === 'FAILED') {
+            return { state: 'FAILED', refundStatus: 'FAILED', status: paymentStatusObj || data };
           }
           if (statusStr === 'FAILED' || statusStr === 'EXPIRED') {
             return { state: 'FAILED', status: paymentStatusObj || data };
@@ -157,7 +165,7 @@ export async function processOnlinePayment({
   return new Promise<ProcessPaymentResult>(async (resolve) => {
     let activeCheckoutId: string | null = null;
     let currentOrderId: string | null = null;
-    let paymentCaptured = false;
+    let paymentSubmitted = false;
 
     const cleanupAndResolve = (result: ProcessPaymentResult) => {
       isCheckoutActive = false;
@@ -179,9 +187,11 @@ export async function processOnlinePayment({
       }
 
       updateState('CREATING_ORDER');
-      const clientKey = idempotencyKey || (typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `ord_${userId.slice(-6)}_${slotId}_${Date.now()}`);
+      const clientKey =
+        idempotencyKey ||
+        (typeof crypto !== 'undefined' && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `ord_${userId.slice(-6)}_${slotId}_${Date.now()}`);
 
       let initRes = await fetch('/api/checkout', {
         method: 'POST',
@@ -226,11 +236,43 @@ export async function processOnlinePayment({
       const orderCurrency = orderData.currency || orderData.order?.currency || 'INR';
       const keyId = orderData.keyId;
 
+      if (!orderData.ok) {
+        if (orderData.status === 'PENDING_ORDER' || orderData.canRetry) {
+          cleanupAndResolve({
+            success: false,
+            state: 'CREATING_ORDER',
+            transactionId: null,
+            checkoutId: activeCheckoutId,
+            error: orderData.message || 'Payment order initialization is in progress. Please retry in a moment.',
+          });
+          return;
+        }
+        if (orderData.status === 'EXPIRED' || orderData.canRestart) {
+          cleanupAndResolve({
+            success: false,
+            state: 'FAILED',
+            transactionId: null,
+            checkoutId: activeCheckoutId,
+            error: orderData.error || 'Checkout reservation has expired. Please select a time slot to restart.',
+          });
+          return;
+        }
+        cleanupAndResolve({
+          success: false,
+          state: 'FAILED',
+          transactionId: null,
+          checkoutId: activeCheckoutId,
+          error: orderData.error || orderData.message || 'Unable to start checkout.',
+        });
+        return;
+      }
+
       if (!currentOrderId || !keyId) {
         cleanupAndResolve({
           success: false,
           state: 'FAILED',
           transactionId: null,
+          checkoutId: activeCheckoutId,
           error: orderData.message || orderData.error || 'Invalid gateway order response received.',
         });
         return;
@@ -260,7 +302,8 @@ export async function processOnlinePayment({
         order_id: currentOrderId,
         prefill: Object.keys(prefillData).length > 0 ? prefillData : undefined,
         handler: async function (response: RazorpaySuccessResponse) {
-          paymentCaptured = true;
+          // Razorpay modal callback invoked; payment is submitted to server for authoritative verification
+          paymentSubmitted = true;
           updateState('CONFIRMING', {
             transactionId: response.razorpay_payment_id,
             checkoutId: activeCheckoutId,
@@ -316,18 +359,48 @@ export async function processOnlinePayment({
             }
 
             if (verifyRes.status === 409) {
-              const refundStatus = verifyData.refundStatus || 'REFUND_PENDING';
+              const refundStatus = verifyData.refundStatus;
+              if (refundStatus === 'REFUNDED') {
+                cleanupAndResolve({
+                  success: false,
+                  state: 'REFUNDED',
+                  transactionId: response.razorpay_payment_id,
+                  checkoutId: activeCheckoutId,
+                  orderId: response.razorpay_order_id,
+                  amount: orderAmount,
+                  currency: orderCurrency,
+                  paymentCaptured: true,
+                  refundStatus: 'REFUNDED',
+                  error: verifyData.message || 'Reservation expired. Your payment has been refunded.',
+                });
+                return;
+              }
+              if (refundStatus === 'REFUND_PENDING') {
+                cleanupAndResolve({
+                  success: false,
+                  state: 'REFUND_PENDING',
+                  transactionId: response.razorpay_payment_id,
+                  checkoutId: activeCheckoutId,
+                  orderId: response.razorpay_order_id,
+                  amount: orderAmount,
+                  currency: orderCurrency,
+                  paymentCaptured: true,
+                  refundStatus: 'REFUND_PENDING',
+                  error: verifyData.message || 'Reservation expired. A refund has been initiated and is pending.',
+                });
+                return;
+              }
               cleanupAndResolve({
                 success: false,
-                state: refundStatus === 'REFUNDED' ? 'REFUNDED' : 'REFUND_PENDING',
+                state: 'FAILED',
                 transactionId: response.razorpay_payment_id,
                 checkoutId: activeCheckoutId,
                 orderId: response.razorpay_order_id,
                 amount: orderAmount,
                 currency: orderCurrency,
-                paymentCaptured: true,
-                refundStatus,
-                error: verifyData.message || verifyData.error || 'Reservation expired. Payment has been automatically refunded.',
+                paymentCaptured: refundStatus === 'FAILED',
+                refundStatus: refundStatus === 'FAILED' ? 'FAILED' : undefined,
+                error: verifyData.message || verifyData.error || 'The slot reservation expired. Please select a time slot again.',
               });
               return;
             }
@@ -347,6 +420,36 @@ export async function processOnlinePayment({
               });
               return;
             }
+            if (polled?.state === 'REFUNDED') {
+              cleanupAndResolve({
+                success: false,
+                state: 'REFUNDED',
+                transactionId: response.razorpay_payment_id,
+                checkoutId: activeCheckoutId,
+                orderId: response.razorpay_order_id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+                refundStatus: 'REFUNDED',
+                error: 'Reservation expired. Your payment has been refunded.',
+              });
+              return;
+            }
+            if (polled?.state === 'REFUND_PENDING') {
+              cleanupAndResolve({
+                success: false,
+                state: 'REFUND_PENDING',
+                transactionId: response.razorpay_payment_id,
+                checkoutId: activeCheckoutId,
+                orderId: response.razorpay_order_id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: true,
+                refundStatus: 'REFUND_PENDING',
+                error: 'Reservation expired. A refund has been initiated and is pending.',
+              });
+              return;
+            }
 
             cleanupAndResolve({
               success: false,
@@ -357,7 +460,7 @@ export async function processOnlinePayment({
               amount: orderAmount,
               currency: orderCurrency,
               paymentCaptured: true,
-              error: 'Payment was captured but booking confirmation is pending. Please check dashboard.',
+              error: 'Payment was authorized but booking confirmation is pending. Please check dashboard.',
             });
           } catch (networkError) {
             console.warn('[processOnlinePayment] Network error verifying order, polling status...', networkError);
@@ -386,13 +489,13 @@ export async function processOnlinePayment({
               amount: orderAmount,
               currency: orderCurrency,
               paymentCaptured: true,
-              error: 'Payment captured but verification network failed. Confirmation is finalizing.',
+              error: 'Payment authorized but verification network failed. Confirmation is finalizing.',
             });
           }
         },
         modal: {
           ondismiss: function () {
-            if (!paymentCaptured) {
+            if (!paymentSubmitted) {
               cleanupAndResolve({
                 success: false,
                 state: 'FAILED',

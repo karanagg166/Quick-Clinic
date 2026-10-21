@@ -1,14 +1,14 @@
 import { NextResponse, type NextRequest } from "next/server";
+import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/razorpay";
-import { verifyAndTransitionPayment } from "@/lib/payment-booking-service";
-import { verifyAndFinalizeCheckout } from "@/lib/checkout-service";
+import { processSingleWebhookEvent } from "@/lib/webhook-processor";
 
 export async function POST(req: NextRequest) {
   let rawBody = "";
   try {
     rawBody = await req.text();
-  } catch (readErr) {
+  } catch {
     return NextResponse.json({ error: "Failed to read request body" }, { status: 400 });
   }
 
@@ -29,18 +29,20 @@ export async function POST(req: NextRequest) {
   let event: any;
   try {
     event = JSON.parse(rawBody);
-  } catch (parseErr) {
+  } catch {
     return NextResponse.json({ error: "Invalid JSON payload" }, { status: 400 });
   }
 
   const eventType = typeof event.event === "string" ? event.event : "unknown";
+
+  // Use a stable deterministic event identity: provider ID or SHA-256 hash of payload
   const providerEventId =
     req.headers.get("x-razorpay-event-id") ||
     event.id ||
     event.event_id ||
-    `evt_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+    crypto.createHash("sha256").update(rawBody).digest("hex");
 
-  // 1. Store event durably with idempotency deduplication
+  // 1. Store or claim event durably with idempotency deduplication
   let storedEvent: any;
   try {
     storedEvent = await prisma.webhookEvent.create({
@@ -53,198 +55,87 @@ export async function POST(req: NextRequest) {
     });
   } catch (dbErr: any) {
     if (dbErr?.code === "P2002") {
-      // Event already received / processed (duplicate delivery)
-      return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+      storedEvent = await prisma.webhookEvent.findUnique({
+        where: { providerEventId },
+      });
+      if (!storedEvent) {
+        return NextResponse.json({ error: "Failed to locate existing event" }, { status: 500 });
+      }
+
+      // If already processed or ignored, return 200 immediately
+      if (storedEvent.status === "PROCESSED" || storedEvent.status === "IGNORED") {
+        return NextResponse.json({ received: true, duplicate: true, status: storedEvent.status }, { status: 200 });
+      }
+
+      // If currently processing and active (< 60s), avoid double-execution
+      if (storedEvent.status === "PROCESSING" && Date.now() - new Date(storedEvent.receivedAt).getTime() < 60_000) {
+        return NextResponse.json({ received: true, duplicate: true, status: "PROCESSING" }, { status: 200 });
+      }
+    } else {
+      console.error("[Webhook] Failed to store webhook event:", dbErr);
+      return NextResponse.json({ error: "Database error persisting event" }, { status: 500 });
     }
-    console.error("[Webhook] Failed to store webhook event:", dbErr);
-    return NextResponse.json({ error: "Database error persisting event" }, { status: 500 });
   }
 
-  // 2. Process relevant events asynchronously or synchronously before returning 200
+  // 2. Atomically claim event lease for processing
+  const claimed = await prisma.webhookEvent.updateMany({
+    where: {
+      id: storedEvent.id,
+      status: { in: ["RECEIVED", "FAILED", "PROCESSING"] },
+    },
+    data: { status: "PROCESSING", processingError: null },
+  });
+
+  if (claimed.count === 0 && storedEvent.status !== "RECEIVED") {
+    return NextResponse.json({ received: true, duplicate: true }, { status: 200 });
+  }
+
+  // 3. Process the event payload authoritatively
   try {
-    await prisma.webhookEvent.update({
-      where: { id: storedEvent.id },
-      data: { status: "PROCESSING" },
+    const outcome = await processSingleWebhookEvent({
+      id: storedEvent.id,
+      eventType,
+      payload: event,
     });
 
-    const paymentEntity = event.payload?.payment?.entity;
-    const orderEntity = event.payload?.order?.entity;
-    const refundEntity = event.payload?.refund?.entity;
-
-    if (eventType === "payment.captured") {
-      const orderId = paymentEntity?.order_id;
-      const paymentId = paymentEntity?.id;
-
-      if (orderId && paymentId) {
-        // Link to internal payment and checkout if exists
-        const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-        ]);
-
-        if (paymentRecord || checkoutRecord) {
-          if (paymentRecord) {
-            await prisma.webhookEvent.update({
-              where: { id: storedEvent.id },
-              data: { paymentId: paymentRecord.id },
-            });
-          }
-
-          if (checkoutRecord) {
-            await verifyAndFinalizeCheckout({
-              userId: checkoutRecord.userId,
-              checkoutId: checkoutRecord.id,
-              orderId,
-              paymentId,
-              source: "WEBHOOK",
-            });
-          } else {
-            await verifyAndTransitionPayment({
-              orderId,
-              paymentId,
-              source: "WEBHOOK",
-            });
-          }
-        }
-      }
-    } else if (eventType === "order.paid") {
-      const orderId = orderEntity?.id;
-      const paymentId = paymentEntity?.id;
-
-      if (orderId && paymentId) {
-        const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-        ]);
-
-        if (paymentRecord || checkoutRecord) {
-          if (paymentRecord) {
-            await prisma.webhookEvent.update({
-              where: { id: storedEvent.id },
-              data: { paymentId: paymentRecord.id },
-            });
-          }
-
-          if (checkoutRecord) {
-            await verifyAndFinalizeCheckout({
-              userId: checkoutRecord.userId,
-              checkoutId: checkoutRecord.id,
-              orderId,
-              paymentId,
-              source: "WEBHOOK",
-            });
-          } else {
-            await verifyAndTransitionPayment({
-              orderId,
-              paymentId,
-              source: "WEBHOOK",
-            });
-          }
-        }
-      }
-    } else if (eventType === "payment.failed") {
-      const orderId = paymentEntity?.order_id;
-      const paymentId = paymentEntity?.id;
-
-      if (orderId) {
-        const [paymentRecord, checkoutRecord] = await Promise.all([
-          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
-        ]);
-
-        if (paymentRecord && paymentRecord.status !== "SUCCESS" && paymentRecord.status !== "REFUNDED") {
-          await prisma.payment.update({
-            where: { id: paymentRecord.id },
-            data: { status: "FAILED", razorpayPaymentId: paymentId || undefined },
-          });
-          await prisma.webhookEvent.update({
-            where: { id: storedEvent.id },
-            data: { paymentId: paymentRecord.id },
-          });
-        }
-
-        if (checkoutRecord && checkoutRecord.status !== "CONFIRMED") {
-          await prisma.checkout.update({
-            where: { id: checkoutRecord.id },
-            data: { status: "FAILED" },
-          });
-        }
-      }
-    } else if (eventType === "refund.processed") {
-      const refundId = refundEntity?.id;
-      const paymentId = refundEntity?.payment_id;
-
-      if (paymentId) {
-        const paymentRecord = await prisma.payment.findFirst({
-          where: { razorpayPaymentId: paymentId },
-        });
-
-        if (paymentRecord) {
-          await prisma.$transaction([
-            prisma.payment.update({
-              where: { id: paymentRecord.id },
-              data: { status: "REFUNDED" },
-            }),
-            prisma.refund.updateMany({
-              where: {
-                paymentId: paymentRecord.id,
-                OR: [{ razorpayRefundId: refundId }, { razorpayRefundId: null }],
-              },
-              data: {
-                status: "PROCESSED",
-                razorpayRefundId: refundId || undefined,
-                processedAt: new Date(),
-                failureReason: null,
-              },
-            }),
-          ]);
-
-          await prisma.webhookEvent.update({
-            where: { id: storedEvent.id },
-            data: { paymentId: paymentRecord.id },
-          });
-        }
-      }
-    } else if (eventType === "refund.failed") {
-      const refundId = refundEntity?.id;
-      const paymentId = refundEntity?.payment_id;
-
-      if (paymentId) {
-        const paymentRecord = await prisma.payment.findFirst({
-          where: { razorpayPaymentId: paymentId },
-        });
-
-        if (paymentRecord) {
-          await prisma.refund.updateMany({
-            where: {
-              paymentId: paymentRecord.id,
-              OR: [{ razorpayRefundId: refundId }, { razorpayRefundId: null }],
-            },
-            data: {
-              status: "FAILED",
-              failureReason: refundEntity?.error_description || "Provider refund failed",
-            },
-          });
-        }
-      }
+    if (outcome.success) {
+      await prisma.webhookEvent.update({
+        where: { id: storedEvent.id },
+        data: {
+          status: "PROCESSED",
+          processedAt: new Date(),
+          processingError: null,
+        },
+      });
+      return NextResponse.json({ received: true, processed: true }, { status: 200 });
     }
 
-    // Mark event as successfully processed
+    if (outcome.unlinked) {
+      // Unmatched early event: keep in RECEIVED status so reconciliation can retry after order linkage
+      await prisma.webhookEvent.update({
+        where: { id: storedEvent.id },
+        data: {
+          status: "RECEIVED",
+          processingError: outcome.error,
+        },
+      });
+      return NextResponse.json({ received: true, pendingLinkage: true }, { status: 200 });
+    }
+
+    // Failed processing: mark FAILED for durable retry and cron replay
     await prisma.webhookEvent.update({
       where: { id: storedEvent.id },
       data: {
-        status: "PROCESSED",
-        processedAt: new Date(),
-        processingError: null,
+        status: "FAILED",
+        processingError: outcome.error || "Event processing failed",
       },
     });
 
-    return NextResponse.json({ received: true }, { status: 200 });
+    return NextResponse.json({ received: true, error: outcome.error }, { status: 200 });
   } catch (processErr: any) {
     const errorMsg = processErr instanceof Error ? processErr.message : String(processErr);
     console.error(`[Webhook] Error processing event ${providerEventId}:`, errorMsg);
 
-    // Keep event recoverable: mark as FAILED with error message
     await prisma.webhookEvent.update({
       where: { id: storedEvent.id },
       data: {
@@ -253,8 +144,6 @@ export async function POST(req: NextRequest) {
       },
     }).catch(() => undefined);
 
-    // Return 200 so provider doesn't spam retries if the event was durably persisted,
-    // or return 500 if transient retry is desired. Razorpay retries on non-2xx.
     return NextResponse.json({ received: true, error: errorMsg }, { status: 200 });
   }
 }

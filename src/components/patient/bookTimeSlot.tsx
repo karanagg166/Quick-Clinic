@@ -44,6 +44,64 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     return () => window.clearTimeout(timeout);
   }, []);
 
+  const clearIdempotencyKey = useCallback((slotId: string, method?: 'ONLINE' | 'OFFLINE') => {
+    if (typeof window === 'undefined') return;
+    if (method) {
+      sessionStorage.removeItem(`checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}_${method}`);
+    } else {
+      sessionStorage.removeItem(`checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}_ONLINE`);
+      sessionStorage.removeItem(`checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}_OFFLINE`);
+    }
+    sessionStorage.removeItem(`checkout_active_${userId || 'anon'}_${doctorId}`);
+  }, [doctorId, userId]);
+
+  // Resume status checks across page refresh for any in-flight checkout
+  useEffect(() => {
+    if (!userId || !doctorId) return;
+    const activeDataStr = sessionStorage.getItem(`checkout_active_${userId}_${doctorId}`);
+    if (!activeDataStr) return;
+
+    try {
+      const activeData = JSON.parse(activeDataStr);
+      if (!activeData?.checkoutId) return;
+
+      const checkActive = async () => {
+        try {
+          const res = await fetch(`/api/checkout/${encodeURIComponent(activeData.checkoutId)}/status`, {
+            credentials: 'include',
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data.isConfirmed && data.appointment) {
+              clearIdempotencyKey(activeData.slotId, activeData.paymentMethod);
+              showToast.success('Appointment confirmed! Redirecting to dashboard...');
+              router.push('/patient');
+              return;
+            }
+            if (data.status === 'REFUNDED' || data.refundStatus === 'REFUNDED') {
+              clearIdempotencyKey(activeData.slotId, activeData.paymentMethod);
+              showToast.info('Your reservation expired. Payment has been refunded.');
+              return;
+            }
+            if (data.status === 'REFUND_PENDING' || data.refundStatus === 'REFUND_PENDING') {
+              showToast.warning('Reservation expired. A refund has been initiated and is pending.');
+              return;
+            }
+            if (data.status === 'EXPIRED' || data.status === 'FAILED') {
+              clearIdempotencyKey(activeData.slotId, activeData.paymentMethod);
+            }
+          }
+        } catch {
+          // ignore transient mount fetch error
+        }
+      };
+
+      void checkActive();
+    } catch {
+      sessionStorage.removeItem(`checkout_active_${userId}_${doctorId}`);
+    }
+  }, [userId, doctorId, clearIdempotencyKey, router]);
+
   useEffect(() => {
     if (!doctorId || !date) return;
     const fetchSlots = async () => {
@@ -67,23 +125,17 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
   });
 
-  const getOrGenerateIdempotencyKey = useCallback((slotId: string) => {
-    if (typeof window === 'undefined') return `ord_${userId || 'anon'}_${slotId}_${Date.now()}`;
-    const storageKey = `checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}`;
+  const getOrGenerateIdempotencyKey = useCallback((slotId: string, method: 'ONLINE' | 'OFFLINE') => {
+    if (typeof window === 'undefined') return `ord_${userId || 'anon'}_${slotId}_${method}_${Date.now()}`;
+    const storageKey = `checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}_${method}`;
     let key = sessionStorage.getItem(storageKey);
     if (!key) {
       key = typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
-        : `ord_${userId?.slice(-6) || 'usr'}_${slotId}_${Date.now()}`;
+        : `ord_${userId?.slice(-6) || 'usr'}_${slotId}_${method}_${Date.now()}`;
       sessionStorage.setItem(storageKey, key);
     }
     return key;
-  }, [doctorId, userId]);
-
-  const clearIdempotencyKey = useCallback((slotId: string) => {
-    if (typeof window === 'undefined') return;
-    const storageKey = `checkout_idem_${userId || 'anon'}_${doctorId}_${slotId}`;
-    sessionStorage.removeItem(storageKey);
   }, [doctorId, userId]);
 
   const handleOfflineBooking = async (slotId: string) => {
@@ -95,7 +147,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     try {
       setBooking(true);
       setCheckoutProgressText('Confirming clinic booking...');
-      const idempotencyKey = getOrGenerateIdempotencyKey(slotId);
+      const idempotencyKey = getOrGenerateIdempotencyKey(slotId, 'OFFLINE');
 
       const res = await fetch('/api/checkout', {
         method: 'POST',
@@ -112,13 +164,13 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
       const payload = await res.json().catch(() => ({}));
       if (!res.ok) {
-        if (res.status === 409) {
-          clearIdempotencyKey(slotId);
+        if (res.status === 409 || payload.canRestart) {
+          clearIdempotencyKey(slotId, 'OFFLINE');
         }
         throw new Error(payload.error || payload.message || 'Unable to confirm booking');
       }
 
-      clearIdempotencyKey(slotId);
+      clearIdempotencyKey(slotId, 'OFFLINE');
       setSlots((previous) => previous.map((slot) => slot.id === slotId ? { ...slot, status: 'BOOKED' } : slot));
       setSelectedSlot(null);
       setShowPaymentOptions(false);
@@ -142,7 +194,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
     try {
       setBooking(true);
-      const idempotencyKey = getOrGenerateIdempotencyKey(slotId);
+      const idempotencyKey = getOrGenerateIdempotencyKey(slotId, 'ONLINE');
 
       const payment = await processOnlinePayment({
         doctorId,
@@ -171,8 +223,8 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
         },
       });
 
-      if (payment.state === 'BOOKED' && payment.success) {
-        clearIdempotencyKey(slotId);
+      if (payment.state === 'BOOKED' && payment.success && payment.appointmentId) {
+        clearIdempotencyKey(slotId, 'ONLINE');
         setSlots((previous) => previous.map((slot) => slot.id === slotId ? { ...slot, status: 'BOOKED' } : slot));
         setSelectedSlot(null);
         setShowPaymentOptions(false);
@@ -183,19 +235,34 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
         return;
       }
 
-      if (payment.state === 'REFUND_PENDING' || payment.state === 'REFUNDED') {
-        clearIdempotencyKey(slotId);
-        showToast.error(payment.error || 'The slot reservation expired. Your payment has been automatically refunded.');
+      if (payment.state === 'REFUNDED') {
+        clearIdempotencyKey(slotId, 'ONLINE');
+        showToast.error(payment.error || 'The slot reservation expired. Your payment has been refunded.');
+        return;
+      }
+
+      if (payment.state === 'REFUND_PENDING') {
+        clearIdempotencyKey(slotId, 'ONLINE');
+        showToast.error(payment.error || 'The slot reservation expired. A refund has been initiated and is pending.');
         return;
       }
 
       if (payment.state === 'PAYMENT_RECEIVED_BOOKING_PENDING') {
-        clearIdempotencyKey(slotId);
+        if (payment.checkoutId) {
+          sessionStorage.setItem(
+            `checkout_active_${userId}_${doctorId}`,
+            JSON.stringify({ checkoutId: payment.checkoutId, slotId, doctorId, paymentMethod: 'ONLINE' })
+          );
+        }
         showToast.warning('Payment was received! Your booking confirmation is finalizing. Redirecting to dashboard...');
         setTimeout(() => {
           router.push('/patient');
         }, 2000);
         return;
+      }
+
+      if (payment.state === 'FAILED') {
+        clearIdempotencyKey(slotId, 'ONLINE');
       }
 
       throw new Error(payment.error || 'Payment failed or was cancelled');
