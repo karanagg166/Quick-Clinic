@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { fetchRazorpayPayment, fetchRazorpayRefund, createRazorpayRefund } from "@/lib/razorpay";
 import { verifyAndTransitionPayment } from "@/lib/payment-booking-service";
+import { expireStaleCheckouts } from "@/lib/checkout-service";
 import { publishToSocketServer } from "@/lib/socket-publisher";
 
 export async function POST(req: NextRequest) {
@@ -20,6 +21,7 @@ export async function POST(req: NextRequest) {
   const results = {
     reconciledRefunds: 0,
     reconciledPayments: 0,
+    reconciledCheckouts: 0,
     outboxDelivered: 0,
     outboxFailed: 0,
     errors: [] as string[],
@@ -172,6 +174,14 @@ export async function POST(req: NextRequest) {
     }
   } catch (err: any) {
     results.errors.push(`Outbox reconciliation query error: ${err?.message}`);
+  }
+
+  // 3. Reconcile Stale / Expired Checkouts and Reservations
+  try {
+    const expiredCount = await expireStaleCheckouts();
+    results.reconciledCheckouts = expiredCount;
+  } catch (err: any) {
+    results.errors.push(`Stale checkout cleanup error: ${err?.message}`);
   }
 
   return NextResponse.json({ ok: true, results }, { status: 200 });

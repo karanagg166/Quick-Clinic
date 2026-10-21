@@ -189,6 +189,33 @@ export async function createOrReusePaymentOrder(params: CreateOrderParams): Prom
       },
     });
 
+    // Ensure durable Checkout record exists with READY_FOR_PAYMENT state
+    if (prisma.checkout && typeof prisma.checkout.upsert === "function") {
+      await prisma.checkout.upsert({
+        where: { idempotencyKey: `chk_${idempotencyKey}` },
+        update: {
+          paymentId: savedOrder.id,
+          razorpayOrderId: providerOrder.id,
+          status: "READY_FOR_PAYMENT",
+        },
+        create: {
+          idempotencyKey: `chk_${idempotencyKey}`,
+          userId,
+          patientId,
+          doctorId,
+          slotId,
+          holdToken,
+          paymentMethod: "ONLINE",
+          amount: Number(providerOrder.amount),
+          currency: providerOrder.currency,
+          status: "READY_FOR_PAYMENT",
+          razorpayOrderId: providerOrder.id,
+          paymentId: savedOrder.id,
+          expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+        },
+      }).catch((e) => console.warn("[createOrReusePaymentOrder] Checkout upsert warning:", e));
+    }
+
     return {
       ok: true,
       order: savedOrder,
@@ -571,13 +598,26 @@ export async function verifyAndTransitionPayment(
 
   if (payment.status === "SUCCESS") {
     // If appointment is already linked or created
-    const existingAppointment =
+    let existingAppointment =
       payment.appointment ||
       (await prisma.appointment.findFirst({
         where: {
           OR: [{ paymentId: payment.id }, { transactionId: paymentId }],
         },
       }));
+
+    if (!existingAppointment) {
+      // If payment was already set to SUCCESS, wait briefly for concurrent appointment creation to finish
+      for (let attempt = 0; attempt < 10; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        existingAppointment = await prisma.appointment.findFirst({
+          where: {
+            OR: [{ paymentId: payment.id }, { transactionId: paymentId }],
+          },
+        });
+        if (existingAppointment) break;
+      }
+    }
 
     if (existingAppointment) {
       return {
@@ -815,6 +855,36 @@ export async function verifyAndTransitionPayment(
   });
 
   if (!appointment) {
+    // Check if a concurrent request (e.g. webhook vs browser verification) just finalized the appointment
+    let concurrentAppointment = await prisma.appointment.findFirst({
+      where: {
+        OR: [{ paymentId: payment.id }, { transactionId: paymentId }],
+      },
+    });
+
+    if (!concurrentAppointment) {
+      for (let attempt = 0; attempt < 10; attempt++) {
+        await new Promise((resolve) => setTimeout(resolve, 300));
+        concurrentAppointment = await prisma.appointment.findFirst({
+          where: {
+            OR: [{ paymentId: payment.id }, { transactionId: paymentId }],
+          },
+        });
+        if (concurrentAppointment) break;
+      }
+    }
+
+    if (concurrentAppointment) {
+      return {
+        success: true,
+        status: "SUCCESS",
+        statusCode: 200,
+        message: "Payment verified and appointment confirmed",
+        transactionId: paymentId,
+        appointment: concurrentAppointment,
+      };
+    }
+
     console.error(
       `[verifyAndTransitionPayment] Appointment finalization failed for payment ${payment.id}. Executing automatic refund compensation.`,
       { orderId, paymentId, slotId: payment.slotId }
@@ -828,6 +898,20 @@ export async function verifyAndTransitionPayment(
       amount: payment.amount,
     });
 
+    if (prisma.checkout && typeof prisma.checkout.updateMany === "function") {
+      await prisma.checkout.updateMany({
+        where: {
+          OR: [
+            { paymentId: payment.id },
+            { razorpayOrderId: orderId },
+          ],
+        },
+        data: {
+          status: "EXPIRED",
+        },
+      }).catch(() => undefined);
+    }
+
     return {
       success: false,
       status: "SLOT_UNAVAILABLE_REFUNDED",
@@ -837,6 +921,22 @@ export async function verifyAndTransitionPayment(
       refundStatus: refundRes.status,
       transactionId: paymentId,
     };
+  }
+
+  if (prisma.checkout && typeof prisma.checkout.updateMany === "function") {
+    await prisma.checkout.updateMany({
+      where: {
+        OR: [
+          { paymentId: payment.id },
+          { razorpayOrderId: orderId },
+        ],
+      },
+      data: {
+        status: "CONFIRMED",
+        appointmentId: appointment.id,
+        confirmedAt: new Date(),
+      },
+    }).catch(() => undefined);
   }
 
   return {

@@ -76,12 +76,14 @@ async function deleteIfOwner(slotId: string, patientId: string, token: string) {
   try {
     const key = bookingSlotKey(slotId);
     // Atomic compare-and-delete via Lua script so an expired owner cannot delete a newer owner's hold
+    // Uses exact JSON/field equality rather than substring matching
     const script = `
       local val = redis.call('get', KEYS[1])
       if not val then
         return 0
       end
-      if string.find(val, ARGV[1], 1, true) and string.find(val, ARGV[2], 1, true) then
+      local ok, data = pcall(cjson.decode, val)
+      if ok and data and data.patientId == ARGV[1] and data.token == ARGV[2] then
         return redis.call('del', KEYS[1])
       else
         return 0
@@ -89,8 +91,11 @@ async function deleteIfOwner(slotId: string, patientId: string, token: string) {
     `;
     if (typeof (client as any).eval === "function") {
       await (client as any).eval(script, [key], [patientId, token]);
-    } else if (await ownsHold(slotId, patientId, token)) {
-      await client.del(key);
+    } else {
+      const cur = await client.get<HoldValue>(key);
+      if (cur && cur.patientId === patientId && cur.token === token) {
+        await client.del(key);
+      }
     }
   } catch (e) {
     console.warn("Redis deleteIfOwner error:", e);
@@ -267,30 +272,18 @@ export async function confirmSlotHold(input: {
   try {
     const appointment = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       // Decisive database transition: PostgreSQL is booking authority
+      // Strict expiry policy: late payments never re-acquire expired or available slots
       const transitioned = await tx.slot.updateMany({
         where: {
           id: input.slotId,
           doctorId: input.doctorId,
           startTime: { gt: now },
+          status: "HELD",
+          heldByPatientId: input.patientId,
+          holdToken: input.token,
           OR: [
-            // Valid unexpired hold owned by this patient
-            {
-              status: "HELD",
-              heldByPatientId: input.patientId,
-              holdToken: input.token,
-              OR: [
-                { holdExpiresAt: { gt: now } },
-                { holdExpiresAt: null, heldAt: { gt: new Date(now.getTime() - HOLD_TTL_MS) } },
-              ],
-            },
-            // Online captured payment re-acquiring available or expired slot
-            ...(input.paymentMethod === "ONLINE" && input.transactionId
-              ? [
-                  { status: "AVAILABLE" as const },
-                  { status: "HELD" as const, holdExpiresAt: { lte: now } },
-                  { status: "HELD" as const, holdExpiresAt: null, heldAt: { lte: new Date(now.getTime() - HOLD_TTL_MS) } },
-                ]
-              : []),
+            { holdExpiresAt: { gt: now } },
+            { holdExpiresAt: null, heldAt: { gt: new Date(now.getTime() - HOLD_TTL_MS) } },
           ],
         },
         data: {
@@ -301,7 +294,22 @@ export async function confirmSlotHold(input: {
           holdExpiresAt: null,
         },
       });
-      if (transitioned.count !== 1) throw new Error("SLOT_UNAVAILABLE");
+      if (transitioned.count !== 1) {
+        const concurrentAppt = await tx.appointment.findFirst({
+          where: {
+            slotId: input.slotId,
+            status: { in: ["PENDING", "CONFIRMED", "COMPLETED", "NO_SHOW"] },
+            OR: [
+              ...(input.paymentId ? [{ paymentId: input.paymentId }] : []),
+              ...(input.transactionId ? [{ transactionId: input.transactionId }] : []),
+            ],
+          },
+        });
+        if (concurrentAppt) {
+          return concurrentAppt;
+        }
+        throw new Error("SLOT_UNAVAILABLE");
+      }
 
       // Verify no concurrent active appointment was booked
       const activeAppt = await tx.appointment.findFirst({
@@ -311,6 +319,13 @@ export async function confirmSlotHold(input: {
         },
       });
       if (activeAppt) {
+        if (
+          input.paymentMethod === "ONLINE" &&
+          ((input.transactionId && activeAppt.transactionId === input.transactionId) ||
+           (input.paymentId && activeAppt.paymentId === input.paymentId))
+        ) {
+          return activeAppt;
+        }
         throw new Error("SLOT_UNAVAILABLE");
       }
 

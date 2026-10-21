@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { verifyAndTransitionPayment } from "@/lib/payment-booking-service";
+import { verifyAndFinalizeCheckout } from "@/lib/checkout-service";
 
 export async function POST(req: NextRequest) {
   let rawBody = "";
@@ -75,22 +76,35 @@ export async function POST(req: NextRequest) {
       const paymentId = paymentEntity?.id;
 
       if (orderId && paymentId) {
-        // Link to internal payment if exists
-        const paymentRecord = await prisma.payment.findUnique({
-          where: { razorpayOrderId: orderId },
-        });
+        // Link to internal payment and checkout if exists
+        const [paymentRecord, checkoutRecord] = await Promise.all([
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+        ]);
 
-        if (paymentRecord) {
-          await prisma.webhookEvent.update({
-            where: { id: storedEvent.id },
-            data: { paymentId: paymentRecord.id },
-          });
+        if (paymentRecord || checkoutRecord) {
+          if (paymentRecord) {
+            await prisma.webhookEvent.update({
+              where: { id: storedEvent.id },
+              data: { paymentId: paymentRecord.id },
+            });
+          }
 
-          await verifyAndTransitionPayment({
-            orderId,
-            paymentId,
-            source: "WEBHOOK",
-          });
+          if (checkoutRecord) {
+            await verifyAndFinalizeCheckout({
+              userId: checkoutRecord.userId,
+              checkoutId: checkoutRecord.id,
+              orderId,
+              paymentId,
+              source: "WEBHOOK",
+            });
+          } else {
+            await verifyAndTransitionPayment({
+              orderId,
+              paymentId,
+              source: "WEBHOOK",
+            });
+          }
         }
       }
     } else if (eventType === "order.paid") {
@@ -98,21 +112,34 @@ export async function POST(req: NextRequest) {
       const paymentId = paymentEntity?.id;
 
       if (orderId && paymentId) {
-        const paymentRecord = await prisma.payment.findUnique({
-          where: { razorpayOrderId: orderId },
-        });
+        const [paymentRecord, checkoutRecord] = await Promise.all([
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+        ]);
 
-        if (paymentRecord) {
-          await prisma.webhookEvent.update({
-            where: { id: storedEvent.id },
-            data: { paymentId: paymentRecord.id },
-          });
+        if (paymentRecord || checkoutRecord) {
+          if (paymentRecord) {
+            await prisma.webhookEvent.update({
+              where: { id: storedEvent.id },
+              data: { paymentId: paymentRecord.id },
+            });
+          }
 
-          await verifyAndTransitionPayment({
-            orderId,
-            paymentId,
-            source: "WEBHOOK",
-          });
+          if (checkoutRecord) {
+            await verifyAndFinalizeCheckout({
+              userId: checkoutRecord.userId,
+              checkoutId: checkoutRecord.id,
+              orderId,
+              paymentId,
+              source: "WEBHOOK",
+            });
+          } else {
+            await verifyAndTransitionPayment({
+              orderId,
+              paymentId,
+              source: "WEBHOOK",
+            });
+          }
         }
       }
     } else if (eventType === "payment.failed") {
@@ -120,9 +147,10 @@ export async function POST(req: NextRequest) {
       const paymentId = paymentEntity?.id;
 
       if (orderId) {
-        const paymentRecord = await prisma.payment.findUnique({
-          where: { razorpayOrderId: orderId },
-        });
+        const [paymentRecord, checkoutRecord] = await Promise.all([
+          prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+          prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }) : null,
+        ]);
 
         if (paymentRecord && paymentRecord.status !== "SUCCESS" && paymentRecord.status !== "REFUNDED") {
           await prisma.payment.update({
@@ -132,6 +160,13 @@ export async function POST(req: NextRequest) {
           await prisma.webhookEvent.update({
             where: { id: storedEvent.id },
             data: { paymentId: paymentRecord.id },
+          });
+        }
+
+        if (checkoutRecord && checkoutRecord.status !== "CONFIRMED") {
+          await prisma.checkout.update({
+            where: { id: checkoutRecord.id },
+            data: { status: "FAILED" },
           });
         }
       }

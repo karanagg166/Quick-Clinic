@@ -983,8 +983,8 @@ describe("Payment, Booking & Real-Time Production Integration Test Suite", () =>
   // SECTION 3: Slot Booking, Expiry, Competing Holds & History
   // ==========================================================================
   describe("3. Slot Booking, Expiry, Competing Holds & History", () => {
-    it("3.1 Capture after hold expiry: reacquires slot if available, triggers refund compensation if taken", async () => {
-      // Case A: Hold expired, but slot remains AVAILABLE -> reacquires and confirms
+    it("3.1 Capture after hold expiry: strictly enforces expiry without slot reacquisition, triggers refund compensation", async () => {
+      // Case A: Hold expired -> strict expiry policy rejects reacquisition and triggers refund compensation
       const slotAId = await createFutureSlot(33);
       const holdA = await createSlotHold(slotAId, doctorId, patient1Id);
       const holdTokenA = (holdA as any).token;
@@ -1033,9 +1033,10 @@ describe("Payment, Booking & Real-Time Production Integration Test Suite", () =>
       const verifyARes = await verifyOrderPOST(verifyAReq, {
         params: Promise.resolve({ userId: patient1UserId }),
       });
-      expect(verifyARes.status).toBe(200);
+      expect(verifyARes.status).toBe(409);
       const verifyAData = await verifyARes.json();
-      expect(verifyAData.message).toMatch(/confirmed/i);
+      expect(verifyAData.error || verifyAData.message).toMatch(/unavailable|refund/i);
+      expect(verifyAData.refundStatus).toBeDefined();
 
       // Case B: Hold expired, AND slot was booked by someone else -> compensation refund
       const slotBId = await createFutureSlot(34);

@@ -296,6 +296,27 @@ exports.Prisma.PaymentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.CheckoutScalarFieldEnum = {
+  id: 'id',
+  idempotencyKey: 'idempotencyKey',
+  userId: 'userId',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  slotId: 'slotId',
+  holdToken: 'holdToken',
+  paymentMethod: 'paymentMethod',
+  amount: 'amount',
+  currency: 'currency',
+  status: 'status',
+  razorpayOrderId: 'razorpayOrderId',
+  expiresAt: 'expiresAt',
+  paymentId: 'paymentId',
+  appointmentId: 'appointmentId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  confirmedAt: 'confirmedAt'
+};
+
 exports.Prisma.RefundScalarFieldEnum = {
   id: 'id',
   paymentId: 'paymentId',
@@ -568,6 +589,15 @@ exports.PaymentMethod = exports.$Enums.PaymentMethod = {
   ONLINE: 'ONLINE'
 };
 
+exports.CheckoutStatus = exports.$Enums.CheckoutStatus = {
+  PENDING_ORDER: 'PENDING_ORDER',
+  READY_FOR_PAYMENT: 'READY_FOR_PAYMENT',
+  CONFIRMED: 'CONFIRMED',
+  EXPIRED: 'EXPIRED',
+  FAILED: 'FAILED',
+  UNRESOLVED: 'UNRESOLVED'
+};
+
 exports.RefundStatus = exports.$Enums.RefundStatus = {
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
@@ -624,6 +654,7 @@ exports.Prisma.ModelName = {
   DoctorPatientRelation: 'DoctorPatientRelation',
   ChatMessages: 'ChatMessages',
   Payment: 'Payment',
+  Checkout: 'Checkout',
   Refund: 'Refund',
   WebhookEvent: 'WebhookEvent',
   NotificationOutbox: 'NotificationOutbox',

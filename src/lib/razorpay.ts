@@ -188,12 +188,30 @@ export async function fetchRazorpayPayment(
       throw err;
     }
 
+    const orderIdToReturn = expectedOrderId || "order_mock";
+    let amountToReturn = 150000;
+    let currencyToReturn = "INR";
+
+    if (expectedOrderId) {
+      const [storedPayment, storedCheckout] = await Promise.all([
+        prisma.payment?.findUnique ? prisma.payment.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null) : null,
+        prisma.checkout?.findUnique ? prisma.checkout.findUnique({ where: { razorpayOrderId: expectedOrderId } }).catch(() => null) : null,
+      ]);
+      if (storedPayment) {
+        amountToReturn = storedPayment.amount;
+        currencyToReturn = storedPayment.currency;
+      } else if (storedCheckout) {
+        amountToReturn = storedCheckout.amount;
+        currencyToReturn = storedCheckout.currency;
+      }
+    }
+
     if (paymentId.includes("auth")) {
       return {
         id: paymentId,
         entity: "payment",
-        amount: 150000,
-        currency: "INR",
+        amount: amountToReturn,
+        currency: currencyToReturn,
         status: "authorized",
         order_id: expectedOrderId || "order_mock",
         invoice_id: null,
@@ -210,8 +228,8 @@ export async function fetchRazorpayPayment(
       return {
         id: paymentId,
         entity: "payment",
-        amount: 150000,
-        currency: "INR",
+        amount: amountToReturn,
+        currency: currencyToReturn,
         status: "failed",
         order_id: expectedOrderId || "order_mock",
         invoice_id: null,
@@ -229,34 +247,18 @@ export async function fetchRazorpayPayment(
       return {
         id: paymentId,
         entity: "payment",
-        amount: 150000,
-        currency: "INR",
+        amount: amountToReturn,
+        currency: currencyToReturn,
         status: "refunded",
         order_id: expectedOrderId || "order_mock",
         invoice_id: null,
         international: false,
         method: "netbanking",
-        amount_refunded: 150000,
+        amount_refunded: amountToReturn,
         refund_status: "full",
         captured: true,
         created_at: Math.floor(Date.now() / 1000),
       };
-    }
-
-    const orderIdToReturn = expectedOrderId || "order_mock";
-    let amountToReturn = 150000;
-    let currencyToReturn = "INR";
-
-    if (expectedOrderId) {
-      const stored = await prisma.payment
-        .findUnique({
-          where: { razorpayOrderId: expectedOrderId },
-        })
-        .catch(() => null);
-      if (stored) {
-        amountToReturn = stored.amount;
-        currencyToReturn = stored.currency;
-      }
     }
 
     return {
