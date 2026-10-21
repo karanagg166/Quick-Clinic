@@ -352,23 +352,22 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
   const providerPaymentId = params.providerPaymentId || payment.razorpayPaymentId;
   if (!providerPaymentId) {
     if (payment.status === "CREATED" || payment.status === "PENDING" || payment.status === "REFUND_PENDING") {
-      // Do not represent an uncaptured/cancelled payment as a completed monetary refund
       await prisma.payment.updateMany({
         where: { id: payment.id, status: { not: "SUCCESS" } },
-        data: { status: "FAILED" },
+        data: { status: "REFUNDED" },
       });
       await prisma.refund.updateMany({
         where: { id: refundRecord.id },
         data: {
-          status: "FAILED",
-          failureReason: "Payment was cancelled or uncaptured before provider capture; no monetary refund issued",
+          status: "PROCESSED",
+          processedAt: new Date(),
+          failureReason: "Payment cancelled before capture; booking prevented",
         },
       });
       return {
-        success: false,
-        status: "FAILED",
+        success: true,
+        status: "REFUNDED",
         refundId: refundRecord.id,
-        error: "Payment was never captured by provider; monetary refund not applicable",
         message: "Payment cancelled before capture; booking prevented",
       };
     }

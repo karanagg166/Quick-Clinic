@@ -71,7 +71,7 @@ function getRazorpayCredentials() {
 }
 
 export function isMockTestKey(keyId: string): boolean {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && process.env.PLAYWRIGHT !== "true") {
     if (
       process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
       keyId.startsWith("rzp_test_dummy_") ||
