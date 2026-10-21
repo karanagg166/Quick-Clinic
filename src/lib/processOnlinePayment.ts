@@ -236,7 +236,7 @@ export async function processOnlinePayment({
       const orderCurrency = orderData.currency || orderData.order?.currency || 'INR';
       const keyId = orderData.keyId;
 
-      if (!orderData.ok) {
+      if (orderData.ok === false) {
         if (orderData.status === 'PENDING_ORDER' || orderData.canRetry) {
           cleanupAndResolve({
             success: false,
@@ -460,7 +460,7 @@ export async function processOnlinePayment({
               amount: orderAmount,
               currency: orderCurrency,
               paymentCaptured: true,
-              error: 'Payment was authorized but booking confirmation is pending. Please check dashboard.',
+              error: 'Payment was captured but booking confirmation is pending. Please check dashboard.',
             });
           } catch (networkError) {
             console.warn('[processOnlinePayment] Network error verifying order, polling status...', networkError);

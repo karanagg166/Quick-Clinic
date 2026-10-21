@@ -81,11 +81,23 @@ export function isMockTestKey(keyId: string): boolean {
     return false;
   }
 
+  const isTestRunner = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+  if (!isTestRunner) {
+    // Outside test runner, genuine test-mode credentials must call genuine provider test environment.
+    // Synthetic responses are strictly forbidden outside the test runner.
+    return false;
+  }
+
+  // Inside test runner, allow synthetic fixture for test keys unless live network is explicitly enabled
+  if (process.env.RAZORPAY_LIVE_NETWORK === "true") {
+    return false;
+  }
+
   return (
-    (process.env.NODE_ENV === "test" || process.env.VITEST === "true") &&
-    (process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
-      keyId.startsWith("rzp_test_dummy_") ||
-      keyId.startsWith("rzp_test_mock_"))
+    process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
+    keyId.startsWith("rzp_test_") ||
+    keyId.startsWith("mock_") ||
+    keyId === "test"
   );
 }
 
