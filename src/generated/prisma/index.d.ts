@@ -305,7 +305,8 @@ export const CheckoutStatus: {
   CONFIRMED: 'CONFIRMED',
   EXPIRED: 'EXPIRED',
   FAILED: 'FAILED',
-  UNRESOLVED: 'UNRESOLVED'
+  UNRESOLVED: 'UNRESOLVED',
+  MANUAL_REVIEW: 'MANUAL_REVIEW'
 };
 
 export type CheckoutStatus = (typeof CheckoutStatus)[keyof typeof CheckoutStatus]
@@ -20793,10 +20794,12 @@ export namespace Prisma {
 
   export type PaymentAvgAggregateOutputType = {
     amount: number | null
+    attempts: number | null
   }
 
   export type PaymentSumAggregateOutputType = {
     amount: number | null
+    attempts: number | null
   }
 
   export type PaymentMinAggregateOutputType = {
@@ -20812,6 +20815,10 @@ export namespace Prisma {
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
     capturedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -20829,6 +20836,10 @@ export namespace Prisma {
     razorpayOrderId: string | null
     razorpayPaymentId: string | null
     capturedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
   }
@@ -20846,6 +20857,10 @@ export namespace Prisma {
     razorpayOrderId: number
     razorpayPaymentId: number
     capturedAt: number
+    leaseExpiresAt: number
+    leaseOwner: number
+    attempts: number
+    nextAttemptAt: number
     createdAt: number
     updatedAt: number
     _all: number
@@ -20854,10 +20869,12 @@ export namespace Prisma {
 
   export type PaymentAvgAggregateInputType = {
     amount?: true
+    attempts?: true
   }
 
   export type PaymentSumAggregateInputType = {
     amount?: true
+    attempts?: true
   }
 
   export type PaymentMinAggregateInputType = {
@@ -20873,6 +20890,10 @@ export namespace Prisma {
     razorpayOrderId?: true
     razorpayPaymentId?: true
     capturedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -20890,6 +20911,10 @@ export namespace Prisma {
     razorpayOrderId?: true
     razorpayPaymentId?: true
     capturedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
   }
@@ -20907,6 +20932,10 @@ export namespace Prisma {
     razorpayOrderId?: true
     razorpayPaymentId?: true
     capturedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
     _all?: true
@@ -21011,6 +21040,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId: string | null
     capturedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number
+    nextAttemptAt: Date | null
     createdAt: Date
     updatedAt: Date
     _count: PaymentCountAggregateOutputType | null
@@ -21047,6 +21080,10 @@ export namespace Prisma {
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
     capturedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -21070,6 +21107,10 @@ export namespace Prisma {
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
     capturedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -21088,6 +21129,10 @@ export namespace Prisma {
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
     capturedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     user?: boolean | UserDefaultArgs<ExtArgs>
@@ -21106,11 +21151,15 @@ export namespace Prisma {
     razorpayOrderId?: boolean
     razorpayPaymentId?: boolean
     capturedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "amount" | "currency" | "userId" | "doctorId" | "slotId" | "holdToken" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "capturedAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "amount" | "currency" | "userId" | "doctorId" | "slotId" | "holdToken" | "status" | "razorpayOrderId" | "razorpayPaymentId" | "capturedAt" | "leaseExpiresAt" | "leaseOwner" | "attempts" | "nextAttemptAt" | "createdAt" | "updatedAt", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     appointment?: boolean | Payment$appointmentArgs<ExtArgs>
@@ -21148,6 +21197,10 @@ export namespace Prisma {
       razorpayOrderId: string
       razorpayPaymentId: string | null
       capturedAt: Date | null
+      leaseExpiresAt: Date | null
+      leaseOwner: string | null
+      attempts: number
+      nextAttemptAt: Date | null
       createdAt: Date
       updatedAt: Date
     }, ExtArgs["result"]["payment"]>
@@ -21590,6 +21643,10 @@ export namespace Prisma {
     readonly razorpayOrderId: FieldRef<"Payment", 'String'>
     readonly razorpayPaymentId: FieldRef<"Payment", 'String'>
     readonly capturedAt: FieldRef<"Payment", 'DateTime'>
+    readonly leaseExpiresAt: FieldRef<"Payment", 'DateTime'>
+    readonly leaseOwner: FieldRef<"Payment", 'String'>
+    readonly attempts: FieldRef<"Payment", 'Int'>
+    readonly nextAttemptAt: FieldRef<"Payment", 'DateTime'>
     readonly createdAt: FieldRef<"Payment", 'DateTime'>
     readonly updatedAt: FieldRef<"Payment", 'DateTime'>
   }
@@ -22111,10 +22168,12 @@ export namespace Prisma {
 
   export type CheckoutAvgAggregateOutputType = {
     amount: number | null
+    attempts: number | null
   }
 
   export type CheckoutSumAggregateOutputType = {
     amount: number | null
+    attempts: number | null
   }
 
   export type CheckoutMinAggregateOutputType = {
@@ -22130,9 +22189,17 @@ export namespace Prisma {
     currency: string | null
     status: $Enums.CheckoutStatus | null
     razorpayOrderId: string | null
+    providerReference: string | null
     expiresAt: Date | null
     paymentId: string | null
     appointmentId: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    lastAttemptAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
     createdAt: Date | null
     updatedAt: Date | null
     confirmedAt: Date | null
@@ -22151,9 +22218,17 @@ export namespace Prisma {
     currency: string | null
     status: $Enums.CheckoutStatus | null
     razorpayOrderId: string | null
+    providerReference: string | null
     expiresAt: Date | null
     paymentId: string | null
     appointmentId: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    lastAttemptAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
     createdAt: Date | null
     updatedAt: Date | null
     confirmedAt: Date | null
@@ -22172,9 +22247,17 @@ export namespace Prisma {
     currency: number
     status: number
     razorpayOrderId: number
+    providerReference: number
     expiresAt: number
     paymentId: number
     appointmentId: number
+    processingStartedAt: number
+    leaseExpiresAt: number
+    leaseOwner: number
+    attempts: number
+    lastAttemptAt: number
+    nextAttemptAt: number
+    lastError: number
     createdAt: number
     updatedAt: number
     confirmedAt: number
@@ -22184,10 +22267,12 @@ export namespace Prisma {
 
   export type CheckoutAvgAggregateInputType = {
     amount?: true
+    attempts?: true
   }
 
   export type CheckoutSumAggregateInputType = {
     amount?: true
+    attempts?: true
   }
 
   export type CheckoutMinAggregateInputType = {
@@ -22203,9 +22288,17 @@ export namespace Prisma {
     currency?: true
     status?: true
     razorpayOrderId?: true
+    providerReference?: true
     expiresAt?: true
     paymentId?: true
     appointmentId?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    lastAttemptAt?: true
+    nextAttemptAt?: true
+    lastError?: true
     createdAt?: true
     updatedAt?: true
     confirmedAt?: true
@@ -22224,9 +22317,17 @@ export namespace Prisma {
     currency?: true
     status?: true
     razorpayOrderId?: true
+    providerReference?: true
     expiresAt?: true
     paymentId?: true
     appointmentId?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    lastAttemptAt?: true
+    nextAttemptAt?: true
+    lastError?: true
     createdAt?: true
     updatedAt?: true
     confirmedAt?: true
@@ -22245,9 +22346,17 @@ export namespace Prisma {
     currency?: true
     status?: true
     razorpayOrderId?: true
+    providerReference?: true
     expiresAt?: true
     paymentId?: true
     appointmentId?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    lastAttemptAt?: true
+    nextAttemptAt?: true
+    lastError?: true
     createdAt?: true
     updatedAt?: true
     confirmedAt?: true
@@ -22353,9 +22462,17 @@ export namespace Prisma {
     currency: string
     status: $Enums.CheckoutStatus
     razorpayOrderId: string | null
+    providerReference: string | null
     expiresAt: Date
     paymentId: string | null
     appointmentId: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number
+    lastAttemptAt: Date | null
+    nextAttemptAt: Date | null
+    lastError: string | null
     createdAt: Date
     updatedAt: Date
     confirmedAt: Date | null
@@ -22393,9 +22510,17 @@ export namespace Prisma {
     currency?: boolean
     status?: boolean
     razorpayOrderId?: boolean
+    providerReference?: boolean
     expiresAt?: boolean
     paymentId?: boolean
     appointmentId?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confirmedAt?: boolean
@@ -22420,9 +22545,17 @@ export namespace Prisma {
     currency?: boolean
     status?: boolean
     razorpayOrderId?: boolean
+    providerReference?: boolean
     expiresAt?: boolean
     paymentId?: boolean
     appointmentId?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confirmedAt?: boolean
@@ -22447,9 +22580,17 @@ export namespace Prisma {
     currency?: boolean
     status?: boolean
     razorpayOrderId?: boolean
+    providerReference?: boolean
     expiresAt?: boolean
     paymentId?: boolean
     appointmentId?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confirmedAt?: boolean
@@ -22474,15 +22615,23 @@ export namespace Prisma {
     currency?: boolean
     status?: boolean
     razorpayOrderId?: boolean
+    providerReference?: boolean
     expiresAt?: boolean
     paymentId?: boolean
     appointmentId?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    lastAttemptAt?: boolean
+    nextAttemptAt?: boolean
+    lastError?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     confirmedAt?: boolean
   }
 
-  export type CheckoutOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "userId" | "patientId" | "doctorId" | "slotId" | "holdToken" | "paymentMethod" | "amount" | "currency" | "status" | "razorpayOrderId" | "expiresAt" | "paymentId" | "appointmentId" | "createdAt" | "updatedAt" | "confirmedAt", ExtArgs["result"]["checkout"]>
+  export type CheckoutOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "idempotencyKey" | "userId" | "patientId" | "doctorId" | "slotId" | "holdToken" | "paymentMethod" | "amount" | "currency" | "status" | "razorpayOrderId" | "providerReference" | "expiresAt" | "paymentId" | "appointmentId" | "processingStartedAt" | "leaseExpiresAt" | "leaseOwner" | "attempts" | "lastAttemptAt" | "nextAttemptAt" | "lastError" | "createdAt" | "updatedAt" | "confirmedAt", ExtArgs["result"]["checkout"]>
   export type CheckoutInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     patient?: boolean | PatientDefaultArgs<ExtArgs>
@@ -22531,9 +22680,17 @@ export namespace Prisma {
       currency: string
       status: $Enums.CheckoutStatus
       razorpayOrderId: string | null
+      providerReference: string | null
       expiresAt: Date
       paymentId: string | null
       appointmentId: string | null
+      processingStartedAt: Date | null
+      leaseExpiresAt: Date | null
+      leaseOwner: string | null
+      attempts: number
+      lastAttemptAt: Date | null
+      nextAttemptAt: Date | null
+      lastError: string | null
       createdAt: Date
       updatedAt: Date
       confirmedAt: Date | null
@@ -22978,9 +23135,17 @@ export namespace Prisma {
     readonly currency: FieldRef<"Checkout", 'String'>
     readonly status: FieldRef<"Checkout", 'CheckoutStatus'>
     readonly razorpayOrderId: FieldRef<"Checkout", 'String'>
+    readonly providerReference: FieldRef<"Checkout", 'String'>
     readonly expiresAt: FieldRef<"Checkout", 'DateTime'>
     readonly paymentId: FieldRef<"Checkout", 'String'>
     readonly appointmentId: FieldRef<"Checkout", 'String'>
+    readonly processingStartedAt: FieldRef<"Checkout", 'DateTime'>
+    readonly leaseExpiresAt: FieldRef<"Checkout", 'DateTime'>
+    readonly leaseOwner: FieldRef<"Checkout", 'String'>
+    readonly attempts: FieldRef<"Checkout", 'Int'>
+    readonly lastAttemptAt: FieldRef<"Checkout", 'DateTime'>
+    readonly nextAttemptAt: FieldRef<"Checkout", 'DateTime'>
+    readonly lastError: FieldRef<"Checkout", 'String'>
     readonly createdAt: FieldRef<"Checkout", 'DateTime'>
     readonly updatedAt: FieldRef<"Checkout", 'DateTime'>
     readonly confirmedAt: FieldRef<"Checkout", 'DateTime'>
@@ -23475,6 +23640,9 @@ export namespace Prisma {
     failureReason: string | null
     attempts: number | null
     lastAttemptAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     processedAt: Date | null
@@ -23492,6 +23660,9 @@ export namespace Prisma {
     failureReason: string | null
     attempts: number | null
     lastAttemptAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     updatedAt: Date | null
     processedAt: Date | null
@@ -23509,6 +23680,9 @@ export namespace Prisma {
     failureReason: number
     attempts: number
     lastAttemptAt: number
+    leaseExpiresAt: number
+    leaseOwner: number
+    nextAttemptAt: number
     createdAt: number
     updatedAt: number
     processedAt: number
@@ -23538,6 +23712,9 @@ export namespace Prisma {
     failureReason?: true
     attempts?: true
     lastAttemptAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
     processedAt?: true
@@ -23555,6 +23732,9 @@ export namespace Prisma {
     failureReason?: true
     attempts?: true
     lastAttemptAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
     processedAt?: true
@@ -23572,6 +23752,9 @@ export namespace Prisma {
     failureReason?: true
     attempts?: true
     lastAttemptAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     updatedAt?: true
     processedAt?: true
@@ -23676,6 +23859,9 @@ export namespace Prisma {
     failureReason: string | null
     attempts: number
     lastAttemptAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date
     updatedAt: Date
     processedAt: Date | null
@@ -23712,6 +23898,9 @@ export namespace Prisma {
     failureReason?: boolean
     attempts?: boolean
     lastAttemptAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     processedAt?: boolean
@@ -23730,6 +23919,9 @@ export namespace Prisma {
     failureReason?: boolean
     attempts?: boolean
     lastAttemptAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     processedAt?: boolean
@@ -23748,6 +23940,9 @@ export namespace Prisma {
     failureReason?: boolean
     attempts?: boolean
     lastAttemptAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     processedAt?: boolean
@@ -23766,12 +23961,15 @@ export namespace Prisma {
     failureReason?: boolean
     attempts?: boolean
     lastAttemptAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     updatedAt?: boolean
     processedAt?: boolean
   }
 
-  export type RefundOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "paymentId" | "amount" | "currency" | "reason" | "status" | "idempotencyKey" | "razorpayRefundId" | "failureReason" | "attempts" | "lastAttemptAt" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["refund"]>
+  export type RefundOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "paymentId" | "amount" | "currency" | "reason" | "status" | "idempotencyKey" | "razorpayRefundId" | "failureReason" | "attempts" | "lastAttemptAt" | "leaseExpiresAt" | "leaseOwner" | "nextAttemptAt" | "createdAt" | "updatedAt" | "processedAt", ExtArgs["result"]["refund"]>
   export type RefundInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     payment?: boolean | PaymentDefaultArgs<ExtArgs>
   }
@@ -23799,6 +23997,9 @@ export namespace Prisma {
       failureReason: string | null
       attempts: number
       lastAttemptAt: Date | null
+      leaseExpiresAt: Date | null
+      leaseOwner: string | null
+      nextAttemptAt: Date | null
       createdAt: Date
       updatedAt: Date
       processedAt: Date | null
@@ -24237,6 +24438,9 @@ export namespace Prisma {
     readonly failureReason: FieldRef<"Refund", 'String'>
     readonly attempts: FieldRef<"Refund", 'Int'>
     readonly lastAttemptAt: FieldRef<"Refund", 'DateTime'>
+    readonly leaseExpiresAt: FieldRef<"Refund", 'DateTime'>
+    readonly leaseOwner: FieldRef<"Refund", 'String'>
+    readonly nextAttemptAt: FieldRef<"Refund", 'DateTime'>
     readonly createdAt: FieldRef<"Refund", 'DateTime'>
     readonly updatedAt: FieldRef<"Refund", 'DateTime'>
     readonly processedAt: FieldRef<"Refund", 'DateTime'>
@@ -24665,8 +24869,18 @@ export namespace Prisma {
 
   export type AggregateWebhookEvent = {
     _count: WebhookEventCountAggregateOutputType | null
+    _avg: WebhookEventAvgAggregateOutputType | null
+    _sum: WebhookEventSumAggregateOutputType | null
     _min: WebhookEventMinAggregateOutputType | null
     _max: WebhookEventMaxAggregateOutputType | null
+  }
+
+  export type WebhookEventAvgAggregateOutputType = {
+    attempts: number | null
+  }
+
+  export type WebhookEventSumAggregateOutputType = {
+    attempts: number | null
   }
 
   export type WebhookEventMinAggregateOutputType = {
@@ -24676,6 +24890,11 @@ export namespace Prisma {
     paymentId: string | null
     status: $Enums.WebhookEventStatus | null
     processingError: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
     receivedAt: Date | null
     processedAt: Date | null
   }
@@ -24687,6 +24906,11 @@ export namespace Prisma {
     paymentId: string | null
     status: $Enums.WebhookEventStatus | null
     processingError: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number | null
+    nextAttemptAt: Date | null
     receivedAt: Date | null
     processedAt: Date | null
   }
@@ -24699,11 +24923,24 @@ export namespace Prisma {
     status: number
     payload: number
     processingError: number
+    processingStartedAt: number
+    leaseExpiresAt: number
+    leaseOwner: number
+    attempts: number
+    nextAttemptAt: number
     receivedAt: number
     processedAt: number
     _all: number
   }
 
+
+  export type WebhookEventAvgAggregateInputType = {
+    attempts?: true
+  }
+
+  export type WebhookEventSumAggregateInputType = {
+    attempts?: true
+  }
 
   export type WebhookEventMinAggregateInputType = {
     id?: true
@@ -24712,6 +24949,11 @@ export namespace Prisma {
     paymentId?: true
     status?: true
     processingError?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     receivedAt?: true
     processedAt?: true
   }
@@ -24723,6 +24965,11 @@ export namespace Prisma {
     paymentId?: true
     status?: true
     processingError?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     receivedAt?: true
     processedAt?: true
   }
@@ -24735,6 +24982,11 @@ export namespace Prisma {
     status?: true
     payload?: true
     processingError?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    attempts?: true
+    nextAttemptAt?: true
     receivedAt?: true
     processedAt?: true
     _all?: true
@@ -24778,6 +25030,18 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
+     * Select which fields to average
+    **/
+    _avg?: WebhookEventAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: WebhookEventSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
      * Select which fields to find the minimum value
     **/
     _min?: WebhookEventMinAggregateInputType
@@ -24808,6 +25072,8 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: WebhookEventCountAggregateInputType | true
+    _avg?: WebhookEventAvgAggregateInputType
+    _sum?: WebhookEventSumAggregateInputType
     _min?: WebhookEventMinAggregateInputType
     _max?: WebhookEventMaxAggregateInputType
   }
@@ -24820,9 +25086,16 @@ export namespace Prisma {
     status: $Enums.WebhookEventStatus
     payload: JsonValue
     processingError: string | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    attempts: number
+    nextAttemptAt: Date | null
     receivedAt: Date
     processedAt: Date | null
     _count: WebhookEventCountAggregateOutputType | null
+    _avg: WebhookEventAvgAggregateOutputType | null
+    _sum: WebhookEventSumAggregateOutputType | null
     _min: WebhookEventMinAggregateOutputType | null
     _max: WebhookEventMaxAggregateOutputType | null
   }
@@ -24849,6 +25122,11 @@ export namespace Prisma {
     status?: boolean
     payload?: boolean
     processingError?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     receivedAt?: boolean
     processedAt?: boolean
     payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
@@ -24862,6 +25140,11 @@ export namespace Prisma {
     status?: boolean
     payload?: boolean
     processingError?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     receivedAt?: boolean
     processedAt?: boolean
     payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
@@ -24875,6 +25158,11 @@ export namespace Prisma {
     status?: boolean
     payload?: boolean
     processingError?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     receivedAt?: boolean
     processedAt?: boolean
     payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
@@ -24888,11 +25176,16 @@ export namespace Prisma {
     status?: boolean
     payload?: boolean
     processingError?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    attempts?: boolean
+    nextAttemptAt?: boolean
     receivedAt?: boolean
     processedAt?: boolean
   }
 
-  export type WebhookEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerEventId" | "eventType" | "paymentId" | "status" | "payload" | "processingError" | "receivedAt" | "processedAt", ExtArgs["result"]["webhookEvent"]>
+  export type WebhookEventOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "providerEventId" | "eventType" | "paymentId" | "status" | "payload" | "processingError" | "processingStartedAt" | "leaseExpiresAt" | "leaseOwner" | "attempts" | "nextAttemptAt" | "receivedAt" | "processedAt", ExtArgs["result"]["webhookEvent"]>
   export type WebhookEventInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     payment?: boolean | WebhookEvent$paymentArgs<ExtArgs>
   }
@@ -24916,6 +25209,11 @@ export namespace Prisma {
       status: $Enums.WebhookEventStatus
       payload: Prisma.JsonValue
       processingError: string | null
+      processingStartedAt: Date | null
+      leaseExpiresAt: Date | null
+      leaseOwner: string | null
+      attempts: number
+      nextAttemptAt: Date | null
       receivedAt: Date
       processedAt: Date | null
     }, ExtArgs["result"]["webhookEvent"]>
@@ -25349,6 +25647,11 @@ export namespace Prisma {
     readonly status: FieldRef<"WebhookEvent", 'WebhookEventStatus'>
     readonly payload: FieldRef<"WebhookEvent", 'Json'>
     readonly processingError: FieldRef<"WebhookEvent", 'String'>
+    readonly processingStartedAt: FieldRef<"WebhookEvent", 'DateTime'>
+    readonly leaseExpiresAt: FieldRef<"WebhookEvent", 'DateTime'>
+    readonly leaseOwner: FieldRef<"WebhookEvent", 'String'>
+    readonly attempts: FieldRef<"WebhookEvent", 'Int'>
+    readonly nextAttemptAt: FieldRef<"WebhookEvent", 'DateTime'>
     readonly receivedAt: FieldRef<"WebhookEvent", 'DateTime'>
     readonly processedAt: FieldRef<"WebhookEvent", 'DateTime'>
   }
@@ -25818,6 +26121,10 @@ export namespace Prisma {
     attempts: number | null
     lastError: string | null
     lastAttemptAt: Date | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     deliveredAt: Date | null
   }
@@ -25831,6 +26138,10 @@ export namespace Prisma {
     attempts: number | null
     lastError: string | null
     lastAttemptAt: Date | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date | null
     deliveredAt: Date | null
   }
@@ -25845,6 +26156,10 @@ export namespace Prisma {
     attempts: number
     lastError: number
     lastAttemptAt: number
+    processingStartedAt: number
+    leaseExpiresAt: number
+    leaseOwner: number
+    nextAttemptAt: number
     createdAt: number
     deliveredAt: number
     _all: number
@@ -25868,6 +26183,10 @@ export namespace Prisma {
     attempts?: true
     lastError?: true
     lastAttemptAt?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     deliveredAt?: true
   }
@@ -25881,6 +26200,10 @@ export namespace Prisma {
     attempts?: true
     lastError?: true
     lastAttemptAt?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     deliveredAt?: true
   }
@@ -25895,6 +26218,10 @@ export namespace Prisma {
     attempts?: true
     lastError?: true
     lastAttemptAt?: true
+    processingStartedAt?: true
+    leaseExpiresAt?: true
+    leaseOwner?: true
+    nextAttemptAt?: true
     createdAt?: true
     deliveredAt?: true
     _all?: true
@@ -25996,6 +26323,10 @@ export namespace Prisma {
     attempts: number
     lastError: string | null
     lastAttemptAt: Date | null
+    processingStartedAt: Date | null
+    leaseExpiresAt: Date | null
+    leaseOwner: string | null
+    nextAttemptAt: Date | null
     createdAt: Date
     deliveredAt: Date | null
     _count: NotificationOutboxCountAggregateOutputType | null
@@ -26029,6 +26360,10 @@ export namespace Prisma {
     attempts?: boolean
     lastError?: boolean
     lastAttemptAt?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     deliveredAt?: boolean
   }, ExtArgs["result"]["notificationOutbox"]>
@@ -26043,6 +26378,10 @@ export namespace Prisma {
     attempts?: boolean
     lastError?: boolean
     lastAttemptAt?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     deliveredAt?: boolean
   }, ExtArgs["result"]["notificationOutbox"]>
@@ -26057,6 +26396,10 @@ export namespace Prisma {
     attempts?: boolean
     lastError?: boolean
     lastAttemptAt?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     deliveredAt?: boolean
   }, ExtArgs["result"]["notificationOutbox"]>
@@ -26071,11 +26414,15 @@ export namespace Prisma {
     attempts?: boolean
     lastError?: boolean
     lastAttemptAt?: boolean
+    processingStartedAt?: boolean
+    leaseExpiresAt?: boolean
+    leaseOwner?: boolean
+    nextAttemptAt?: boolean
     createdAt?: boolean
     deliveredAt?: boolean
   }
 
-  export type NotificationOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "channel" | "targetUserId" | "payload" | "status" | "attempts" | "lastError" | "lastAttemptAt" | "createdAt" | "deliveredAt", ExtArgs["result"]["notificationOutbox"]>
+  export type NotificationOutboxOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "eventId" | "channel" | "targetUserId" | "payload" | "status" | "attempts" | "lastError" | "lastAttemptAt" | "processingStartedAt" | "leaseExpiresAt" | "leaseOwner" | "nextAttemptAt" | "createdAt" | "deliveredAt", ExtArgs["result"]["notificationOutbox"]>
 
   export type $NotificationOutboxPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "NotificationOutbox"
@@ -26090,6 +26437,10 @@ export namespace Prisma {
       attempts: number
       lastError: string | null
       lastAttemptAt: Date | null
+      processingStartedAt: Date | null
+      leaseExpiresAt: Date | null
+      leaseOwner: string | null
+      nextAttemptAt: Date | null
       createdAt: Date
       deliveredAt: Date | null
     }, ExtArgs["result"]["notificationOutbox"]>
@@ -26524,6 +26875,10 @@ export namespace Prisma {
     readonly attempts: FieldRef<"NotificationOutbox", 'Int'>
     readonly lastError: FieldRef<"NotificationOutbox", 'String'>
     readonly lastAttemptAt: FieldRef<"NotificationOutbox", 'DateTime'>
+    readonly processingStartedAt: FieldRef<"NotificationOutbox", 'DateTime'>
+    readonly leaseExpiresAt: FieldRef<"NotificationOutbox", 'DateTime'>
+    readonly leaseOwner: FieldRef<"NotificationOutbox", 'String'>
+    readonly nextAttemptAt: FieldRef<"NotificationOutbox", 'DateTime'>
     readonly createdAt: FieldRef<"NotificationOutbox", 'DateTime'>
     readonly deliveredAt: FieldRef<"NotificationOutbox", 'DateTime'>
   }
@@ -37026,6 +37381,10 @@ export namespace Prisma {
     razorpayOrderId: 'razorpayOrderId',
     razorpayPaymentId: 'razorpayPaymentId',
     capturedAt: 'capturedAt',
+    leaseExpiresAt: 'leaseExpiresAt',
+    leaseOwner: 'leaseOwner',
+    attempts: 'attempts',
+    nextAttemptAt: 'nextAttemptAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
   };
@@ -37046,9 +37405,17 @@ export namespace Prisma {
     currency: 'currency',
     status: 'status',
     razorpayOrderId: 'razorpayOrderId',
+    providerReference: 'providerReference',
     expiresAt: 'expiresAt',
     paymentId: 'paymentId',
     appointmentId: 'appointmentId',
+    processingStartedAt: 'processingStartedAt',
+    leaseExpiresAt: 'leaseExpiresAt',
+    leaseOwner: 'leaseOwner',
+    attempts: 'attempts',
+    lastAttemptAt: 'lastAttemptAt',
+    nextAttemptAt: 'nextAttemptAt',
+    lastError: 'lastError',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     confirmedAt: 'confirmedAt'
@@ -37069,6 +37436,9 @@ export namespace Prisma {
     failureReason: 'failureReason',
     attempts: 'attempts',
     lastAttemptAt: 'lastAttemptAt',
+    leaseExpiresAt: 'leaseExpiresAt',
+    leaseOwner: 'leaseOwner',
+    nextAttemptAt: 'nextAttemptAt',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt',
     processedAt: 'processedAt'
@@ -37085,6 +37455,11 @@ export namespace Prisma {
     status: 'status',
     payload: 'payload',
     processingError: 'processingError',
+    processingStartedAt: 'processingStartedAt',
+    leaseExpiresAt: 'leaseExpiresAt',
+    leaseOwner: 'leaseOwner',
+    attempts: 'attempts',
+    nextAttemptAt: 'nextAttemptAt',
     receivedAt: 'receivedAt',
     processedAt: 'processedAt'
   };
@@ -37102,6 +37477,10 @@ export namespace Prisma {
     attempts: 'attempts',
     lastError: 'lastError',
     lastAttemptAt: 'lastAttemptAt',
+    processingStartedAt: 'processingStartedAt',
+    leaseExpiresAt: 'leaseExpiresAt',
+    leaseOwner: 'leaseOwner',
+    nextAttemptAt: 'nextAttemptAt',
     createdAt: 'createdAt',
     deliveredAt: 'deliveredAt'
   };
@@ -38733,6 +39112,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
     capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Payment"> | string | null
+    attempts?: IntFilter<"Payment"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -38755,6 +39138,10 @@ export namespace Prisma {
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
     capturedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     user?: UserOrderByWithRelationInput
@@ -38780,6 +39167,10 @@ export namespace Prisma {
     holdToken?: StringNullableFilter<"Payment"> | string | null
     status?: StringFilter<"Payment"> | string
     capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Payment"> | string | null
+    attempts?: IntFilter<"Payment"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
     user?: XOR<UserScalarRelationFilter, UserWhereInput>
@@ -38802,6 +39193,10 @@ export namespace Prisma {
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrderInput | SortOrder
     capturedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PaymentCountOrderByAggregateInput
@@ -38827,6 +39222,10 @@ export namespace Prisma {
     razorpayOrderId?: StringWithAggregatesFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     capturedAt?: DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
+    leaseOwner?: StringNullableWithAggregatesFilter<"Payment"> | string | null
+    attempts?: IntWithAggregatesFilter<"Payment"> | number
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Payment"> | Date | string
   }
@@ -38847,9 +39246,17 @@ export namespace Prisma {
     currency?: StringFilter<"Checkout"> | string
     status?: EnumCheckoutStatusFilter<"Checkout"> | $Enums.CheckoutStatus
     razorpayOrderId?: StringNullableFilter<"Checkout"> | string | null
+    providerReference?: StringNullableFilter<"Checkout"> | string | null
     expiresAt?: DateTimeFilter<"Checkout"> | Date | string
     paymentId?: StringNullableFilter<"Checkout"> | string | null
     appointmentId?: StringNullableFilter<"Checkout"> | string | null
+    processingStartedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Checkout"> | string | null
+    attempts?: IntFilter<"Checkout"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    lastError?: StringNullableFilter<"Checkout"> | string | null
     createdAt?: DateTimeFilter<"Checkout"> | Date | string
     updatedAt?: DateTimeFilter<"Checkout"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
@@ -38874,9 +39281,17 @@ export namespace Prisma {
     currency?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrderInput | SortOrder
+    providerReference?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
     paymentId?: SortOrderInput | SortOrder
     appointmentId?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -38906,7 +39321,15 @@ export namespace Prisma {
     amount?: IntFilter<"Checkout"> | number
     currency?: StringFilter<"Checkout"> | string
     status?: EnumCheckoutStatusFilter<"Checkout"> | $Enums.CheckoutStatus
+    providerReference?: StringNullableFilter<"Checkout"> | string | null
     expiresAt?: DateTimeFilter<"Checkout"> | Date | string
+    processingStartedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Checkout"> | string | null
+    attempts?: IntFilter<"Checkout"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    lastError?: StringNullableFilter<"Checkout"> | string | null
     createdAt?: DateTimeFilter<"Checkout"> | Date | string
     updatedAt?: DateTimeFilter<"Checkout"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
@@ -38931,9 +39354,17 @@ export namespace Prisma {
     currency?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrderInput | SortOrder
+    providerReference?: SortOrderInput | SortOrder
     expiresAt?: SortOrder
     paymentId?: SortOrderInput | SortOrder
     appointmentId?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
+    lastError?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confirmedAt?: SortOrderInput | SortOrder
@@ -38960,9 +39391,17 @@ export namespace Prisma {
     currency?: StringWithAggregatesFilter<"Checkout"> | string
     status?: EnumCheckoutStatusWithAggregatesFilter<"Checkout"> | $Enums.CheckoutStatus
     razorpayOrderId?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
+    providerReference?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
     expiresAt?: DateTimeWithAggregatesFilter<"Checkout"> | Date | string
     paymentId?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
     appointmentId?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
+    processingStartedAt?: DateTimeNullableWithAggregatesFilter<"Checkout"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"Checkout"> | Date | string | null
+    leaseOwner?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
+    attempts?: IntWithAggregatesFilter<"Checkout"> | number
+    lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"Checkout"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"Checkout"> | Date | string | null
+    lastError?: StringNullableWithAggregatesFilter<"Checkout"> | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Checkout"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Checkout"> | Date | string
     confirmedAt?: DateTimeNullableWithAggregatesFilter<"Checkout"> | Date | string | null
@@ -38983,6 +39422,9 @@ export namespace Prisma {
     failureReason?: StringNullableFilter<"Refund"> | string | null
     attempts?: IntFilter<"Refund"> | number
     lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Refund"> | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
     createdAt?: DateTimeFilter<"Refund"> | Date | string
     updatedAt?: DateTimeFilter<"Refund"> | Date | string
     processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
@@ -39001,6 +39443,9 @@ export namespace Prisma {
     failureReason?: SortOrderInput | SortOrder
     attempts?: SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
@@ -39022,6 +39467,9 @@ export namespace Prisma {
     failureReason?: StringNullableFilter<"Refund"> | string | null
     attempts?: IntFilter<"Refund"> | number
     lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Refund"> | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
     createdAt?: DateTimeFilter<"Refund"> | Date | string
     updatedAt?: DateTimeFilter<"Refund"> | Date | string
     processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
@@ -39040,6 +39488,9 @@ export namespace Prisma {
     failureReason?: SortOrderInput | SortOrder
     attempts?: SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
@@ -39065,6 +39516,9 @@ export namespace Prisma {
     failureReason?: StringNullableWithAggregatesFilter<"Refund"> | string | null
     attempts?: IntWithAggregatesFilter<"Refund"> | number
     lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
+    leaseOwner?: StringNullableWithAggregatesFilter<"Refund"> | string | null
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"Refund"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"Refund"> | Date | string
     processedAt?: DateTimeNullableWithAggregatesFilter<"Refund"> | Date | string | null
@@ -39081,6 +39535,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
     payload?: JsonFilter<"WebhookEvent">
     processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    processingStartedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"WebhookEvent"> | string | null
+    attempts?: IntFilter<"WebhookEvent"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
     receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
     processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
     payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
@@ -39094,6 +39553,11 @@ export namespace Prisma {
     status?: SortOrder
     payload?: SortOrder
     processingError?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     receivedAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
     payment?: PaymentOrderByWithRelationInput
@@ -39110,6 +39574,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
     payload?: JsonFilter<"WebhookEvent">
     processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    processingStartedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"WebhookEvent"> | string | null
+    attempts?: IntFilter<"WebhookEvent"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
     receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
     processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
     payment?: XOR<PaymentNullableScalarRelationFilter, PaymentWhereInput> | null
@@ -39123,11 +39592,18 @@ export namespace Prisma {
     status?: SortOrder
     payload?: SortOrder
     processingError?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     receivedAt?: SortOrder
     processedAt?: SortOrderInput | SortOrder
     _count?: WebhookEventCountOrderByAggregateInput
+    _avg?: WebhookEventAvgOrderByAggregateInput
     _max?: WebhookEventMaxOrderByAggregateInput
     _min?: WebhookEventMinOrderByAggregateInput
+    _sum?: WebhookEventSumOrderByAggregateInput
   }
 
   export type WebhookEventScalarWhereWithAggregatesInput = {
@@ -39141,6 +39617,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusWithAggregatesFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
     payload?: JsonWithAggregatesFilter<"WebhookEvent">
     processingError?: StringNullableWithAggregatesFilter<"WebhookEvent"> | string | null
+    processingStartedAt?: DateTimeNullableWithAggregatesFilter<"WebhookEvent"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"WebhookEvent"> | Date | string | null
+    leaseOwner?: StringNullableWithAggregatesFilter<"WebhookEvent"> | string | null
+    attempts?: IntWithAggregatesFilter<"WebhookEvent"> | number
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"WebhookEvent"> | Date | string | null
     receivedAt?: DateTimeWithAggregatesFilter<"WebhookEvent"> | Date | string
     processedAt?: DateTimeNullableWithAggregatesFilter<"WebhookEvent"> | Date | string | null
   }
@@ -39158,6 +39639,10 @@ export namespace Prisma {
     attempts?: IntFilter<"NotificationOutbox"> | number
     lastError?: StringNullableFilter<"NotificationOutbox"> | string | null
     lastAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    processingStartedAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"NotificationOutbox"> | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
     createdAt?: DateTimeFilter<"NotificationOutbox"> | Date | string
     deliveredAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
   }
@@ -39172,6 +39657,10 @@ export namespace Prisma {
     attempts?: SortOrder
     lastError?: SortOrderInput | SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     deliveredAt?: SortOrderInput | SortOrder
   }
@@ -39189,6 +39678,10 @@ export namespace Prisma {
     attempts?: IntFilter<"NotificationOutbox"> | number
     lastError?: StringNullableFilter<"NotificationOutbox"> | string | null
     lastAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    processingStartedAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"NotificationOutbox"> | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
     createdAt?: DateTimeFilter<"NotificationOutbox"> | Date | string
     deliveredAt?: DateTimeNullableFilter<"NotificationOutbox"> | Date | string | null
   }, "id" | "eventId">
@@ -39203,6 +39696,10 @@ export namespace Prisma {
     attempts?: SortOrder
     lastError?: SortOrderInput | SortOrder
     lastAttemptAt?: SortOrderInput | SortOrder
+    processingStartedAt?: SortOrderInput | SortOrder
+    leaseExpiresAt?: SortOrderInput | SortOrder
+    leaseOwner?: SortOrderInput | SortOrder
+    nextAttemptAt?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     deliveredAt?: SortOrderInput | SortOrder
     _count?: NotificationOutboxCountOrderByAggregateInput
@@ -39225,6 +39722,10 @@ export namespace Prisma {
     attempts?: IntWithAggregatesFilter<"NotificationOutbox"> | number
     lastError?: StringNullableWithAggregatesFilter<"NotificationOutbox"> | string | null
     lastAttemptAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
+    processingStartedAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
+    leaseOwner?: StringNullableWithAggregatesFilter<"NotificationOutbox"> | string | null
+    nextAttemptAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
     createdAt?: DateTimeWithAggregatesFilter<"NotificationOutbox"> | Date | string
     deliveredAt?: DateTimeNullableWithAggregatesFilter<"NotificationOutbox"> | Date | string | null
   }
@@ -41057,6 +41558,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -41079,6 +41584,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
@@ -41099,6 +41608,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -41121,6 +41634,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
@@ -41142,6 +41659,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -41158,6 +41679,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41175,6 +41700,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -41188,7 +41717,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -41213,9 +41750,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -41230,7 +41775,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41255,9 +41808,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41276,9 +41837,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -41293,7 +41862,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41312,9 +41889,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41331,6 +41916,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -41349,6 +41937,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -41365,6 +41956,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41383,6 +41977,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41400,6 +41997,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -41416,6 +42016,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41433,6 +42036,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -41445,6 +42051,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
     payment?: PaymentCreateNestedOneWithoutWebhookEventsInput
@@ -41458,6 +42069,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -41469,6 +42085,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     payment?: PaymentUpdateOneWithoutWebhookEventsNestedInput
@@ -41482,6 +42103,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41494,6 +42120,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -41505,6 +42136,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41517,6 +42153,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41531,6 +42172,10 @@ export namespace Prisma {
     attempts?: number
     lastError?: string | null
     lastAttemptAt?: Date | string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     deliveredAt?: Date | string | null
   }
@@ -41545,6 +42190,10 @@ export namespace Prisma {
     attempts?: number
     lastError?: string | null
     lastAttemptAt?: Date | string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     deliveredAt?: Date | string | null
   }
@@ -41559,6 +42208,10 @@ export namespace Prisma {
     attempts?: IntFieldUpdateOperationsInput | number
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41573,6 +42226,10 @@ export namespace Prisma {
     attempts?: IntFieldUpdateOperationsInput | number
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41587,6 +42244,10 @@ export namespace Prisma {
     attempts?: number
     lastError?: string | null
     lastAttemptAt?: Date | string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     deliveredAt?: Date | string | null
   }
@@ -41601,6 +42262,10 @@ export namespace Prisma {
     attempts?: IntFieldUpdateOperationsInput | number
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -41615,6 +42280,10 @@ export namespace Prisma {
     attempts?: IntFieldUpdateOperationsInput | number
     lastError?: NullableStringFieldUpdateOperationsInput | string | null
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     deliveredAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -43445,12 +44114,17 @@ export namespace Prisma {
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
     capturedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type PaymentAvgOrderByAggregateInput = {
     amount?: SortOrder
+    attempts?: SortOrder
   }
 
   export type PaymentMaxOrderByAggregateInput = {
@@ -43466,6 +44140,10 @@ export namespace Prisma {
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
     capturedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
@@ -43483,12 +44161,17 @@ export namespace Prisma {
     razorpayOrderId?: SortOrder
     razorpayPaymentId?: SortOrder
     capturedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
   }
 
   export type PaymentSumOrderByAggregateInput = {
     amount?: SortOrder
+    attempts?: SortOrder
   }
 
   export type EnumCheckoutStatusFilter<$PrismaModel = never> = {
@@ -43511,9 +44194,17 @@ export namespace Prisma {
     currency?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
+    providerReference?: SortOrder
     expiresAt?: SortOrder
     paymentId?: SortOrder
     appointmentId?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confirmedAt?: SortOrder
@@ -43521,6 +44212,7 @@ export namespace Prisma {
 
   export type CheckoutAvgOrderByAggregateInput = {
     amount?: SortOrder
+    attempts?: SortOrder
   }
 
   export type CheckoutMaxOrderByAggregateInput = {
@@ -43536,9 +44228,17 @@ export namespace Prisma {
     currency?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
+    providerReference?: SortOrder
     expiresAt?: SortOrder
     paymentId?: SortOrder
     appointmentId?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confirmedAt?: SortOrder
@@ -43557,9 +44257,17 @@ export namespace Prisma {
     currency?: SortOrder
     status?: SortOrder
     razorpayOrderId?: SortOrder
+    providerReference?: SortOrder
     expiresAt?: SortOrder
     paymentId?: SortOrder
     appointmentId?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    lastAttemptAt?: SortOrder
+    nextAttemptAt?: SortOrder
+    lastError?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     confirmedAt?: SortOrder
@@ -43567,6 +44275,7 @@ export namespace Prisma {
 
   export type CheckoutSumOrderByAggregateInput = {
     amount?: SortOrder
+    attempts?: SortOrder
   }
 
   export type EnumCheckoutStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -43603,6 +44312,9 @@ export namespace Prisma {
     failureReason?: SortOrder
     attempts?: SortOrder
     lastAttemptAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     processedAt?: SortOrder
@@ -43625,6 +44337,9 @@ export namespace Prisma {
     failureReason?: SortOrder
     attempts?: SortOrder
     lastAttemptAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     processedAt?: SortOrder
@@ -43642,6 +44357,9 @@ export namespace Prisma {
     failureReason?: SortOrder
     attempts?: SortOrder
     lastAttemptAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
     processedAt?: SortOrder
@@ -43677,8 +44395,17 @@ export namespace Prisma {
     status?: SortOrder
     payload?: SortOrder
     processingError?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     receivedAt?: SortOrder
     processedAt?: SortOrder
+  }
+
+  export type WebhookEventAvgOrderByAggregateInput = {
+    attempts?: SortOrder
   }
 
   export type WebhookEventMaxOrderByAggregateInput = {
@@ -43688,6 +44415,11 @@ export namespace Prisma {
     paymentId?: SortOrder
     status?: SortOrder
     processingError?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     receivedAt?: SortOrder
     processedAt?: SortOrder
   }
@@ -43699,8 +44431,17 @@ export namespace Prisma {
     paymentId?: SortOrder
     status?: SortOrder
     processingError?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    attempts?: SortOrder
+    nextAttemptAt?: SortOrder
     receivedAt?: SortOrder
     processedAt?: SortOrder
+  }
+
+  export type WebhookEventSumOrderByAggregateInput = {
+    attempts?: SortOrder
   }
 
   export type EnumWebhookEventStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -43730,6 +44471,10 @@ export namespace Prisma {
     attempts?: SortOrder
     lastError?: SortOrder
     lastAttemptAt?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     deliveredAt?: SortOrder
   }
@@ -43747,6 +44492,10 @@ export namespace Prisma {
     attempts?: SortOrder
     lastError?: SortOrder
     lastAttemptAt?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     deliveredAt?: SortOrder
   }
@@ -43760,6 +44509,10 @@ export namespace Prisma {
     attempts?: SortOrder
     lastError?: SortOrder
     lastAttemptAt?: SortOrder
+    processingStartedAt?: SortOrder
+    leaseExpiresAt?: SortOrder
+    leaseOwner?: SortOrder
+    nextAttemptAt?: SortOrder
     createdAt?: SortOrder
     deliveredAt?: SortOrder
   }
@@ -47205,6 +47958,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentCreateNestedOneWithoutPaymentInput
@@ -47225,6 +47982,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
@@ -47252,7 +48013,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -47275,9 +48044,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -47644,6 +48421,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFilter<"Payment"> | string
     razorpayPaymentId?: StringNullableFilter<"Payment"> | string | null
     capturedAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Payment"> | string | null
+    attempts?: IntFilter<"Payment"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"Payment"> | Date | string | null
     createdAt?: DateTimeFilter<"Payment"> | Date | string
     updatedAt?: DateTimeFilter<"Payment"> | Date | string
   }
@@ -47680,9 +48461,17 @@ export namespace Prisma {
     currency?: StringFilter<"Checkout"> | string
     status?: EnumCheckoutStatusFilter<"Checkout"> | $Enums.CheckoutStatus
     razorpayOrderId?: StringNullableFilter<"Checkout"> | string | null
+    providerReference?: StringNullableFilter<"Checkout"> | string | null
     expiresAt?: DateTimeFilter<"Checkout"> | Date | string
     paymentId?: StringNullableFilter<"Checkout"> | string | null
     appointmentId?: StringNullableFilter<"Checkout"> | string | null
+    processingStartedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Checkout"> | string | null
+    attempts?: IntFilter<"Checkout"> | number
+    lastAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
+    lastError?: StringNullableFilter<"Checkout"> | string | null
     createdAt?: DateTimeFilter<"Checkout"> | Date | string
     updatedAt?: DateTimeFilter<"Checkout"> | Date | string
     confirmedAt?: DateTimeNullableFilter<"Checkout"> | Date | string | null
@@ -48326,7 +49115,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -48349,9 +49146,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -49121,7 +49926,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -49144,9 +49957,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -49970,7 +50791,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -49993,9 +50822,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -50204,6 +51041,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -50225,6 +51066,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     checkout?: CheckoutUncheckedCreateNestedOneWithoutPaymentInput
@@ -50246,7 +51091,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -50270,8 +51123,16 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -50438,6 +51299,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -50459,6 +51324,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     checkout?: CheckoutUncheckedUpdateOneWithoutPaymentNestedInput
@@ -50486,7 +51355,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -50510,8 +51387,16 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -51136,7 +52021,15 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -51160,8 +52053,16 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -51183,6 +52084,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -51199,6 +52103,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -51221,6 +52128,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -51232,6 +52144,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -51374,7 +52291,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -51398,8 +52323,16 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -51436,6 +52369,9 @@ export namespace Prisma {
     failureReason?: StringNullableFilter<"Refund"> | string | null
     attempts?: IntFilter<"Refund"> | number
     lastAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"Refund"> | string | null
+    nextAttemptAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
     createdAt?: DateTimeFilter<"Refund"> | Date | string
     updatedAt?: DateTimeFilter<"Refund"> | Date | string
     processedAt?: DateTimeNullableFilter<"Refund"> | Date | string | null
@@ -51468,6 +52404,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFilter<"WebhookEvent"> | $Enums.WebhookEventStatus
     payload?: JsonFilter<"WebhookEvent">
     processingError?: StringNullableFilter<"WebhookEvent"> | string | null
+    processingStartedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseExpiresAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
+    leaseOwner?: StringNullableFilter<"WebhookEvent"> | string | null
+    attempts?: IntFilter<"WebhookEvent"> | number
+    nextAttemptAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
     receivedAt?: DateTimeFilter<"WebhookEvent"> | Date | string
     processedAt?: DateTimeNullableFilter<"WebhookEvent"> | Date | string | null
   }
@@ -51672,6 +52613,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -51693,6 +52638,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
@@ -51975,6 +52924,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -51996,6 +52949,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
@@ -52056,6 +53013,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -52077,6 +53038,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
@@ -52112,6 +53077,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -52133,6 +53102,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
@@ -52152,6 +53125,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     user: UserCreateNestedOneWithoutPaymentsInput
@@ -52173,6 +53150,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     appointment?: AppointmentUncheckedCreateNestedOneWithoutPaymentInput
@@ -52208,6 +53189,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     user?: UserUpdateOneRequiredWithoutPaymentsNestedInput
@@ -52229,6 +53214,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
@@ -53590,6 +54579,10 @@ export namespace Prisma {
     razorpayOrderId: string
     razorpayPaymentId?: string | null
     capturedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -53606,9 +54599,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -53745,6 +54746,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUpdateOneWithoutPaymentNestedInput
@@ -53765,6 +54770,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     appointment?: AppointmentUncheckedUpdateOneWithoutPaymentNestedInput
@@ -53785,6 +54794,10 @@ export namespace Prisma {
     razorpayOrderId?: StringFieldUpdateOperationsInput | string
     razorpayPaymentId?: NullableStringFieldUpdateOperationsInput | string | null
     capturedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -53798,7 +54811,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53821,9 +54842,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -53841,9 +54870,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54084,9 +55121,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -54279,7 +55324,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54302,9 +55355,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54322,9 +55383,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54488,9 +55557,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -54614,7 +55691,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54637,9 +55722,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54657,9 +55750,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54819,9 +55920,17 @@ export namespace Prisma {
     currency?: string
     status?: $Enums.CheckoutStatus
     razorpayOrderId?: string | null
+    providerReference?: string | null
     expiresAt: Date | string
     paymentId?: string | null
     appointmentId?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    lastAttemptAt?: Date | string | null
+    nextAttemptAt?: Date | string | null
+    lastError?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     confirmedAt?: Date | string | null
@@ -54880,7 +55989,15 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54903,9 +56020,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54923,9 +56048,17 @@ export namespace Prisma {
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumCheckoutStatusFieldUpdateOperationsInput | $Enums.CheckoutStatus
     razorpayOrderId?: NullableStringFieldUpdateOperationsInput | string | null
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     expiresAt?: DateTimeFieldUpdateOperationsInput | Date | string
     paymentId?: NullableStringFieldUpdateOperationsInput | string | null
     appointmentId?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    lastError?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     confirmedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -54978,6 +56111,9 @@ export namespace Prisma {
     failureReason?: string | null
     attempts?: number
     lastAttemptAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    nextAttemptAt?: Date | string | null
     createdAt?: Date | string
     updatedAt?: Date | string
     processedAt?: Date | string | null
@@ -54990,6 +56126,11 @@ export namespace Prisma {
     status?: $Enums.WebhookEventStatus
     payload: JsonNullValueInput | InputJsonValue
     processingError?: string | null
+    processingStartedAt?: Date | string | null
+    leaseExpiresAt?: Date | string | null
+    leaseOwner?: string | null
+    attempts?: number
+    nextAttemptAt?: Date | string | null
     receivedAt?: Date | string
     processedAt?: Date | string | null
   }
@@ -55005,6 +56146,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55021,6 +56165,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55037,6 +56184,9 @@ export namespace Prisma {
     failureReason?: NullableStringFieldUpdateOperationsInput | string | null
     attempts?: IntFieldUpdateOperationsInput | number
     lastAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -55049,6 +56199,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -55060,6 +56215,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -55071,6 +56231,11 @@ export namespace Prisma {
     status?: EnumWebhookEventStatusFieldUpdateOperationsInput | $Enums.WebhookEventStatus
     payload?: JsonNullValueInput | InputJsonValue
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
+    processingStartedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseExpiresAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    leaseOwner?: NullableStringFieldUpdateOperationsInput | string | null
+    attempts?: IntFieldUpdateOperationsInput | number
+    nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }

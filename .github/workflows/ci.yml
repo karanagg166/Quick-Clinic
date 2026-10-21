@@ -130,3 +130,78 @@ jobs:
 
       - name: Run socket-server tests
         run: pnpm -C socket-server test
+
+  browser-e2e-checks:
+    name: Browser E2E Checks (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quickclinic_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      DIRECT_URL: "postgresql://postgres:postgres@localhost:5432/quickclinic_test"
+      JWT_SECRET: "ci_jwt_secret_must_be_at_least_32_characters_long_for_security"
+      INTERNAL_API_SECRET: "ci_internal_secret_at_least_32_characters_long_for_security"
+      NEXT_PUBLIC_SOCKET_URL: "http://localhost:4000"
+      CRON_SECRET: "ci_cron_secret_1234567890"
+      RAZORPAY_KEY_ID: "rzp_test_dummy_key_id"
+      RAZORPAY_KEY_SECRET: "rzp_test_dummy_key_secret"
+      SUPER_ADMIN_CODE: "QUICK_CLINIC_SUPER_ADMIN"
+      PLAYWRIGHT: "true"
+      RAZORPAY_MOCK_TEST_MODE: "true"
+      CI: "true"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Generate Prisma Client & Push Database Schema
+        run: |
+          pnpm prisma generate
+          pnpm prisma db push --accept-data-loss
+          pnpm prisma db execute --stdin << 'EOF'
+          CREATE UNIQUE INDEX IF NOT EXISTS "Appointment_active_slot_unique" ON "Appointment"("slotId") WHERE "status" IN ('PENDING', 'CONFIRMED', 'COMPLETED', 'NO_SHOW');
+          EOF
+
+      - name: Build Next.js application
+        run: pnpm build
+
+      - name: Run Playwright E2E Tests
+        run: pnpm exec playwright test e2e/unified-checkout.spec.ts
+
+      - name: Upload Playwright Artifacts on Failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

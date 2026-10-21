@@ -166,8 +166,11 @@ export async function processOnlinePayment({
     let activeCheckoutId: string | null = null;
     let currentOrderId: string | null = null;
     let paymentSubmitted = false;
+    let settled = false;
 
     const cleanupAndResolve = (result: ProcessPaymentResult) => {
+      if (settled) return;
+      settled = true;
       isCheckoutActive = false;
       updateState(result.state, result);
       resolve(result);
@@ -278,6 +281,13 @@ export async function processOnlinePayment({
         return;
       }
 
+      if (typeof window !== 'undefined' && activeCheckoutId) {
+        sessionStorage.setItem(
+          `checkout_active_${userId}_${doctorId}`,
+          JSON.stringify({ checkoutId: activeCheckoutId, slotId, doctorId, paymentMethod: 'ONLINE', orderId: currentOrderId })
+        );
+      }
+
       updateState('AWAITING_PAYMENT', {
         checkoutId: activeCheckoutId,
         orderId: currentOrderId,
@@ -358,9 +368,24 @@ export async function processOnlinePayment({
               return;
             }
 
+            if (verifyRes.status === 202 || verifyData.status === 'PENDING_CAPTURE') {
+              cleanupAndResolve({
+                success: false,
+                state: 'PAYMENT_RECEIVED_BOOKING_PENDING',
+                transactionId: response.razorpay_payment_id,
+                checkoutId: activeCheckoutId,
+                orderId: response.razorpay_order_id,
+                amount: orderAmount,
+                currency: orderCurrency,
+                paymentCaptured: false,
+                message: verifyData.message || 'Payment authorized. Awaiting capture confirmation.',
+              });
+              return;
+            }
+
             if (verifyRes.status === 409) {
               const refundStatus = verifyData.refundStatus;
-              if (refundStatus === 'REFUNDED') {
+              if (refundStatus === 'REFUNDED' || verifyData.status === 'SLOT_UNAVAILABLE_REFUNDED') {
                 cleanupAndResolve({
                   success: false,
                   state: 'REFUNDED',
@@ -400,7 +425,7 @@ export async function processOnlinePayment({
                 currency: orderCurrency,
                 paymentCaptured: refundStatus === 'FAILED',
                 refundStatus: refundStatus === 'FAILED' ? 'FAILED' : undefined,
-                error: verifyData.message || verifyData.error || 'The slot reservation expired. Please select a time slot again.',
+                error: verifyData.message || verifyData.error || 'The slot reservation conflict or expired. Please select a time slot again.',
               });
               return;
             }

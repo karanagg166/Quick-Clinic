@@ -1,10 +1,16 @@
 name: Scheduled Payment Reconciliation
 
+# NOTE: GitHub Actions cron scheduling is best-effort and queued according to
+# GitHub infrastructure load. It is not an exact hard 10-minute guarantee.
+
 on:
   schedule:
-    # Run every 10 minutes to recover pending webhooks, unconfirmed checkouts, and refunds
     - cron: '*/10 * * * *'
   workflow_dispatch:
+
+concurrency:
+  group: scheduled-payment-reconciliation
+  cancel-in-progress: false
 
 jobs:
   reconcile:
@@ -13,14 +19,53 @@ jobs:
     steps:
       - name: Trigger Reconciliation Endpoint
         run: |
-          APP_URL="${{ secrets.PRODUCTION_APP_URL || 'https://quickclinic.vercel.app' }}"
+          APP_URL="${{ secrets.PRODUCTION_APP_URL || 'https://quick-clinic-nine.vercel.app' }}"
           CRON_SECRET="${{ secrets.CRON_SECRET }}"
+
           if [ -z "$CRON_SECRET" ]; then
-            echo "CRON_SECRET is not configured in repository secrets; skipping trigger."
-            exit 0
+            echo "::error::CRON_SECRET is required but not configured in repository secrets."
+            exit 1
           fi
-          echo "Triggering reconciliation at $APP_URL/api/cron/reconcile-payments..."
-          curl -f -s -X POST \
+
+          if [ -z "$APP_URL" ]; then
+            echo "::error::PRODUCTION_APP_URL is empty."
+            exit 1
+          fi
+
+          echo "Triggering reconciliation endpoint at $APP_URL/api/cron/reconcile-payments..."
+
+          # Execute curl capturing both body and HTTP status code; fail visibly on timeouts or network errors
+          HTTP_RESPONSE=$(curl -s -S --max-time 60 \
             -H "Authorization: Bearer $CRON_SECRET" \
             -H "Content-Type: application/json" \
-            "$APP_URL/api/cron/reconcile-payments" || echo "Trigger attempted."
+            -w "\n%{http_code}" \
+            -X POST \
+            "$APP_URL/api/cron/reconcile-payments")
+
+          HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
+          HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
+
+          echo "Received HTTP status: $HTTP_STATUS"
+
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "Reconciliation completed successfully."
+            echo "$HTTP_BODY" | jq . || echo "$HTTP_BODY"
+            
+            # Check if internal processing errors were reported in the JSON payload
+            ERROR_COUNT=$(echo "$HTTP_BODY" | jq '.results.errors | length' 2>/dev/null || echo 0)
+            if [ "$ERROR_COUNT" -gt 0 ]; then
+              echo "::warning::$ERROR_COUNT item-level processing error(s) occurred during reconciliation."
+            fi
+            exit 0
+          elif [ "$HTTP_STATUS" -eq 409 ]; then
+            # Valid distributed mutex overlap: another reconciliation run is active
+            echo "Notice: Mutex lock busy; another reconciliation job is currently active. Overlap skipped safely."
+            echo "$HTTP_BODY" | jq . 2>/dev/null || echo "$HTTP_BODY"
+            exit 0
+          elif [ "$HTTP_STATUS" -eq 401 ]; then
+            echo "::error::Unauthorized: CRON_SECRET rejected by $APP_URL."
+            exit 1
+          else
+            echo "::error::Reconciliation request failed with HTTP $HTTP_STATUS: $HTTP_BODY"
+            exit 1
+          fi

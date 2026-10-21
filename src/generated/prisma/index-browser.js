@@ -292,6 +292,10 @@ exports.Prisma.PaymentScalarFieldEnum = {
   razorpayOrderId: 'razorpayOrderId',
   razorpayPaymentId: 'razorpayPaymentId',
   capturedAt: 'capturedAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  leaseOwner: 'leaseOwner',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -309,9 +313,17 @@ exports.Prisma.CheckoutScalarFieldEnum = {
   currency: 'currency',
   status: 'status',
   razorpayOrderId: 'razorpayOrderId',
+  providerReference: 'providerReference',
   expiresAt: 'expiresAt',
   paymentId: 'paymentId',
   appointmentId: 'appointmentId',
+  processingStartedAt: 'processingStartedAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  leaseOwner: 'leaseOwner',
+  attempts: 'attempts',
+  lastAttemptAt: 'lastAttemptAt',
+  nextAttemptAt: 'nextAttemptAt',
+  lastError: 'lastError',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   confirmedAt: 'confirmedAt'
@@ -329,6 +341,9 @@ exports.Prisma.RefundScalarFieldEnum = {
   failureReason: 'failureReason',
   attempts: 'attempts',
   lastAttemptAt: 'lastAttemptAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  leaseOwner: 'leaseOwner',
+  nextAttemptAt: 'nextAttemptAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
   processedAt: 'processedAt'
@@ -342,6 +357,11 @@ exports.Prisma.WebhookEventScalarFieldEnum = {
   status: 'status',
   payload: 'payload',
   processingError: 'processingError',
+  processingStartedAt: 'processingStartedAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  leaseOwner: 'leaseOwner',
+  attempts: 'attempts',
+  nextAttemptAt: 'nextAttemptAt',
   receivedAt: 'receivedAt',
   processedAt: 'processedAt'
 };
@@ -356,6 +376,10 @@ exports.Prisma.NotificationOutboxScalarFieldEnum = {
   attempts: 'attempts',
   lastError: 'lastError',
   lastAttemptAt: 'lastAttemptAt',
+  processingStartedAt: 'processingStartedAt',
+  leaseExpiresAt: 'leaseExpiresAt',
+  leaseOwner: 'leaseOwner',
+  nextAttemptAt: 'nextAttemptAt',
   createdAt: 'createdAt',
   deliveredAt: 'deliveredAt'
 };
@@ -595,7 +619,8 @@ exports.CheckoutStatus = exports.$Enums.CheckoutStatus = {
   CONFIRMED: 'CONFIRMED',
   EXPIRED: 'EXPIRED',
   FAILED: 'FAILED',
-  UNRESOLVED: 'UNRESOLVED'
+  UNRESOLVED: 'UNRESOLVED',
+  MANUAL_REVIEW: 'MANUAL_REVIEW'
 };
 
 exports.RefundStatus = exports.$Enums.RefundStatus = {

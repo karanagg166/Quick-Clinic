@@ -164,17 +164,48 @@ export async function persistBookingSideEffectsTx(
 
 /**
  * Dispatches pending outbox events asynchronously to Socket.IO server.
+ * Uses atomic lease claims to coordinate safely with background scheduled reconciliation.
  * Uses canonical endpoint /api/notifications/new-appointment for appointment requests.
  */
 export async function dispatchPendingOutboxEvents(eventIds: string[]) {
   if (!eventIds.length) return;
+  const workerId = `direct_${process.pid}_${Math.random().toString(36).slice(2, 9)}`;
+  const now = new Date();
+
   try {
     const items = await prisma.notificationOutbox.findMany({
-      where: { eventId: { in: eventIds }, status: 'PENDING' },
+      where: {
+        eventId: { in: eventIds },
+        status: 'PENDING',
+        OR: [
+          { leaseExpiresAt: null },
+          { leaseExpiresAt: { lte: now } },
+        ],
+      },
     });
 
     await Promise.allSettled(
       items.map(async (item) => {
+        // Atomically claim lease for this item
+        const claimed = await prisma.notificationOutbox.updateMany({
+          where: {
+            id: item.id,
+            status: 'PENDING',
+            OR: [
+              { leaseExpiresAt: null },
+              { leaseExpiresAt: { lte: now } },
+            ],
+          },
+          data: {
+            status: 'PROCESSING',
+            leaseOwner: workerId,
+            leaseExpiresAt: new Date(Date.now() + 30_000),
+            processingStartedAt: new Date(),
+          },
+        });
+
+        if (claimed.count === 0) return;
+
         const payload = item.payload as any;
         const endpoint =
           item.channel === 'SOCKET_APPOINTMENT_REQUEST'
@@ -183,17 +214,28 @@ export async function dispatchPendingOutboxEvents(eventIds: string[]) {
 
         const res = await publishToSocketServer(endpoint, payload);
         if (res !== null) {
-          await prisma.notificationOutbox.update({
-            where: { id: item.id },
-            data: { status: 'DELIVERED', deliveredAt: new Date() },
+          await prisma.notificationOutbox.updateMany({
+            where: { id: item.id, leaseOwner: workerId },
+            data: {
+              status: 'DELIVERED',
+              deliveredAt: new Date(),
+              leaseOwner: null,
+              leaseExpiresAt: null,
+            },
           }).catch(() => undefined);
         } else {
-          await prisma.notificationOutbox.update({
-            where: { id: item.id },
+          const newAttempts = item.attempts + 1;
+          const nextAttemptAt = new Date(Date.now() + Math.min(30_000 * Math.pow(2, newAttempts), 300_000));
+          await prisma.notificationOutbox.updateMany({
+            where: { id: item.id, leaseOwner: workerId },
             data: {
-              attempts: { increment: 1 },
+              status: newAttempts >= 5 ? 'FAILED' : 'PENDING',
+              attempts: newAttempts,
               lastAttemptAt: new Date(),
+              nextAttemptAt,
               lastError: 'Socket server returned null or connection error',
+              leaseOwner: null,
+              leaseExpiresAt: null,
             },
           }).catch(() => undefined);
         }
