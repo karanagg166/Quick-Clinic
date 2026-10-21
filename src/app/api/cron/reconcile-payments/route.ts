@@ -1,190 +1,83 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { fetchRazorpayPayment, fetchRazorpayRefund, createRazorpayRefund } from "@/lib/razorpay";
-import { verifyAndTransitionPayment } from "@/lib/payment-booking-service";
+import { acquireSlotMutex, releaseSlotMutex } from "@/lib/slot-mutex";
 import { expireStaleCheckouts } from "@/lib/checkout-service";
-import { publishToSocketServer } from "@/lib/socket-publisher";
+import {
+  reconcilePendingRefunds,
+  reconcileCapturedCheckouts,
+  replayRetryableWebhookEvents,
+  reconcileNotificationOutbox,
+} from "@/lib/reconciliation-service";
 
 export async function POST(req: NextRequest) {
-  // Protect cron endpoint: verify CRON_SECRET or ADMIN role or INTERNAL_API_SECRET
-  const authHeader = req.headers.get("authorization");
+  // 1. Fail closed when cron credentials are absent or invalid
   const cronSecret = process.env.CRON_SECRET || process.env.INTERNAL_API_SECRET;
+  if (!cronSecret) {
+    return NextResponse.json({ error: "Cron secret is not configured" }, { status: 500 });
+  }
+
+  const authHeader = req.headers.get("authorization");
   const isAuthorized =
-    !cronSecret ||
     authHeader === `Bearer ${cronSecret}` ||
     req.headers.get("x-cron-secret") === cronSecret;
 
-  if (!isAuthorized && process.env.NODE_ENV === "production") {
+  if (!isAuthorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // 2. Coordinate overlapping cron executions via distributed mutex
+  const lockKey = "cron:reconcile-payments:lock";
+  const mutex = await acquireSlotMutex(lockKey, 120);
+  if (!mutex.acquired) {
+    return NextResponse.json(
+      { ok: false, skipped: true, message: "Another reconciliation job is currently active" },
+      { status: 409 }
+    );
   }
 
   const results = {
     reconciledRefunds: 0,
     reconciledPayments: 0,
     reconciledCheckouts: 0,
+    replayedWebhooks: 0,
     outboxDelivered: 0,
     outboxFailed: 0,
     errors: [] as string[],
   };
 
-  // 1. Reconcile PENDING refunds
   try {
-    const pendingRefunds = await prisma.refund.findMany({
-      where: {
-        status: "PENDING",
-        updatedAt: { lt: new Date(Date.now() - 2 * 60 * 1000) }, // Older than 2 mins
-      },
-      include: {
-        payment: true,
-      },
-      take: 20,
-    });
+    // 3. Reconcile PENDING refunds (older than 2 mins, bounded batch of 20)
+    const refundRes = await reconcilePendingRefunds(20);
+    results.reconciledRefunds += refundRes.reconciled;
+    results.errors.push(...refundRes.errors);
 
-    for (const refund of pendingRefunds) {
-      try {
-        const payment = refund.payment;
-        if (!payment || !payment.razorpayPaymentId) {
-          continue;
-        }
+    // 4. Reconcile captured checkouts and pending orders (bounded batch of 20)
+    const checkoutRes = await reconcileCapturedCheckouts(20);
+    results.reconciledPayments += checkoutRes.reconciled;
+    results.errors.push(...checkoutRes.errors);
 
-        if (refund.razorpayRefundId) {
-          const providerRefund = await fetchRazorpayRefund(
-            payment.razorpayPaymentId,
-            refund.razorpayRefundId
-          );
+    // 5. Replay retryable Webhook events (FAILED, stale RECEIVED, or stale PROCESSING, bounded batch of 25)
+    const webhookRes = await replayRetryableWebhookEvents(25);
+    results.replayedWebhooks += webhookRes.replayed;
+    results.errors.push(...webhookRes.errors);
 
-          if (providerRefund.status === "processed") {
-            await prisma.$transaction([
-              prisma.refund.update({
-                where: { id: refund.id },
-                data: {
-                  status: "PROCESSED",
-                  processedAt: new Date(),
-                  failureReason: null,
-                },
-              }),
-              prisma.payment.update({
-                where: { id: payment.id },
-                data: { status: "REFUNDED" },
-              }),
-            ]);
-            results.reconciledRefunds++;
-          } else if (providerRefund.status === "failed") {
-            await prisma.refund.update({
-              where: { id: refund.id },
-              data: {
-                status: "FAILED",
-                failureReason: "Provider refund marked failed",
-              },
-            });
-          }
-        } else {
-          // Timeout occurred before provider refund ID was recorded.
-          // Retry using the exact same idempotencyKey!
-          const providerRefund = await createRazorpayRefund({
-            paymentId: payment.razorpayPaymentId,
-            amount: refund.amount,
-            idempotencyKey: refund.idempotencyKey,
-            notes: {
-              reason: refund.reason,
-              reconciled: "true",
-            },
-          });
+    // 6. Reconcile Notification Outbox (bounded batch of 50)
+    const outboxRes = await reconcileNotificationOutbox(50);
+    results.outboxDelivered += outboxRes.delivered;
+    results.outboxFailed += outboxRes.failed;
+    results.errors.push(...outboxRes.errors);
 
-          if (providerRefund.status === "processed") {
-            await prisma.$transaction([
-              prisma.refund.update({
-                where: { id: refund.id },
-                data: {
-                  status: "PROCESSED",
-                  razorpayRefundId: providerRefund.id,
-                  processedAt: new Date(),
-                  failureReason: null,
-                },
-              }),
-              prisma.payment.update({
-                where: { id: payment.id },
-                data: { status: "REFUNDED" },
-              }),
-            ]);
-            results.reconciledRefunds++;
-          } else {
-            await prisma.refund.update({
-              where: { id: refund.id },
-              data: {
-                razorpayRefundId: providerRefund.id,
-                attempts: { increment: 1 },
-                lastAttemptAt: new Date(),
-              },
-            });
-          }
-        }
-      } catch (err: any) {
-        results.errors.push(`Refund ${refund.id}: ${err?.message}`);
-      }
+    // 7. Expire stale checkouts and reservations
+    try {
+      const expiredCount = await expireStaleCheckouts();
+      results.reconciledCheckouts = expiredCount;
+    } catch (err: any) {
+      results.errors.push(`Stale checkout cleanup error: ${err?.message}`);
     }
-  } catch (err: any) {
-    results.errors.push(`Refund reconciliation query error: ${err?.message}`);
+
+    return NextResponse.json({ ok: true, results }, { status: 200 });
+  } finally {
+    await releaseSlotMutex(lockKey, mutex.token).catch(() => undefined);
   }
-
-  // 2. Reconcile Notification Outbox
-  try {
-    const pendingOutbox = await prisma.notificationOutbox.findMany({
-      where: {
-        status: "PENDING",
-        attempts: { lt: 5 },
-      },
-      take: 50,
-    });
-
-    for (const item of pendingOutbox) {
-      try {
-        const payload = item.payload as Record<string, unknown>;
-        let path = "/api/notifications/broadcast";
-        if (payload?.appointment && payload?.doctorUserId) {
-          path = "/api/appointments/request";
-        }
-
-        const res = await publishToSocketServer(path, payload);
-        if (res !== null) {
-          await prisma.notificationOutbox.update({
-            where: { id: item.id },
-            data: {
-              status: "DELIVERED",
-              deliveredAt: new Date(),
-            },
-          });
-          results.outboxDelivered++;
-        } else {
-          const newAttempts = item.attempts + 1;
-          await prisma.notificationOutbox.update({
-            where: { id: item.id },
-            data: {
-              attempts: newAttempts,
-              lastAttemptAt: new Date(),
-              status: newAttempts >= 5 ? "FAILED" : "PENDING",
-              lastError: "Socket server unreachable or returned non-ok status",
-            },
-          });
-          if (newAttempts >= 5) results.outboxFailed++;
-        }
-      } catch (err: any) {
-        results.errors.push(`Outbox item ${item.id}: ${err?.message}`);
-      }
-    }
-  } catch (err: any) {
-    results.errors.push(`Outbox reconciliation query error: ${err?.message}`);
-  }
-
-  // 3. Reconcile Stale / Expired Checkouts and Reservations
-  try {
-    const expiredCount = await expireStaleCheckouts();
-    results.reconciledCheckouts = expiredCount;
-  } catch (err: any) {
-    results.errors.push(`Stale checkout cleanup error: ${err?.message}`);
-  }
-
-  return NextResponse.json({ ok: true, results }, { status: 200 });
 }
 
 export async function GET(req: NextRequest) {

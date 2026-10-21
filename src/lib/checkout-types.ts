@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Checkout, CheckoutStatus, PaymentMethod } from "@/generated/prisma";
+import type { CheckoutStatus, PaymentMethod } from "@/generated/prisma";
 
 export const checkoutInitiateSchema = z.object({
   action: z.literal("INITIATE"),
@@ -26,6 +26,25 @@ export type CheckoutInitiateInput = z.infer<typeof checkoutInitiateSchema>;
 export type CheckoutVerifyInput = z.infer<typeof checkoutVerifySchema>;
 export type CheckoutRequestInput = z.infer<typeof checkoutRequestSchema>;
 
+export type CheckoutResultCode =
+  | "SUCCESS"
+  | "RESERVATION_CONFLICT"
+  | "VALIDATION_ERROR"
+  | "CAPTURE_PENDING"
+  | "CONFIRMATION_PENDING"
+  | "REFUND_PENDING"
+  | "REFUNDED"
+  | "FAILED"
+  | "EXPIRED";
+
+export type CheckoutNextAction =
+  | "NONE"
+  | "RETRY_VERIFY"
+  | "RESTART_CHECKOUT"
+  | "CONTACT_SUPPORT"
+  | "REDIRECT_DASHBOARD"
+  | "WAIT_RETRY";
+
 export interface InitiateCheckoutParams {
   userId: string;
   patientId: string;
@@ -47,6 +66,12 @@ export interface InitiateCheckoutResult {
   keyId?: string;
   reused?: boolean;
   appointment?: any;
+  canRetry?: boolean;
+  canRestart?: boolean;
+  error?: string;
+  message?: string;
+  resultCode?: CheckoutResultCode;
+  nextAction?: CheckoutNextAction;
 }
 
 export interface VerifyCheckoutParams {
@@ -68,4 +93,6 @@ export interface VerifyCheckoutResult {
   transactionId?: string;
   appointment?: any;
   refundStatus?: "REFUNDED" | "REFUND_PENDING" | "FAILED";
+  resultCode?: CheckoutResultCode;
+  nextAction?: CheckoutNextAction;
 }

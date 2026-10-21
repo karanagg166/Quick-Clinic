@@ -1,0 +1,26 @@
+name: Scheduled Payment Reconciliation
+
+on:
+  schedule:
+    # Run every 10 minutes to recover pending webhooks, unconfirmed checkouts, and refunds
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  reconcile:
+    name: Trigger Reconcile Payments API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Reconciliation Endpoint
+        run: |
+          APP_URL="${{ secrets.PRODUCTION_APP_URL || 'https://quickclinic.vercel.app' }}"
+          CRON_SECRET="${{ secrets.CRON_SECRET }}"
+          if [ -z "$CRON_SECRET" ]; then
+            echo "CRON_SECRET is not configured in repository secrets; skipping trigger."
+            exit 0
+          fi
+          echo "Triggering reconciliation at $APP_URL/api/cron/reconcile-payments..."
+          curl -f -s -X POST \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            -H "Content-Type: application/json" \
+            "$APP_URL/api/cron/reconcile-payments" || echo "Trigger attempted."

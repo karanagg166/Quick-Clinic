@@ -69,13 +69,35 @@ function getRazorpayCredentials() {
   return { keyId, keySecret };
 }
 
-function isMockTestKey(keyId: string): boolean {
+export function isMockTestKey(keyId: string): boolean {
+  if (process.env.NODE_ENV === "production") {
+    if (
+      process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
+      keyId.startsWith("rzp_test_dummy_") ||
+      keyId.startsWith("rzp_test_mock_")
+    ) {
+      throw new Error("Forbidden synthetic Razorpay mock configuration detected in production environment");
+    }
+    return false;
+  }
+
+  const isTestRunner = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+  if (!isTestRunner) {
+    // Outside test runner, genuine test-mode credentials must call genuine provider test environment.
+    // Synthetic responses are strictly forbidden outside the test runner.
+    return false;
+  }
+
+  // Inside test runner, allow synthetic fixture for test keys unless live network is explicitly enabled
+  if (process.env.RAZORPAY_LIVE_NETWORK === "true") {
+    return false;
+  }
+
   return (
-    process.env.NODE_ENV === "test" ||
-    process.env.VITEST === "true" ||
     process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
-    keyId.startsWith("rzp_test_dummy_") ||
-    keyId.startsWith("rzp_test_mock_")
+    keyId.startsWith("rzp_test_") ||
+    keyId.startsWith("mock_") ||
+    keyId === "test"
   );
 }
 
@@ -98,46 +120,17 @@ export async function createRazorpayOrder(params: {
   const { keyId, keySecret } = getRazorpayCredentials();
 
   if (isMockTestKey(keyId)) {
-    let sdkOrder: any = null;
-    try {
-      const RazorpayMod = await import("razorpay");
-      const RazorpayCtor = (RazorpayMod as any).default || RazorpayMod;
-      if (typeof RazorpayCtor === "function") {
-        const instance = new RazorpayCtor({
-          key_id: keyId || "rzp_test_mock",
-          key_secret: keySecret || "rzp_test_secret",
-        });
-        const isMock = Boolean(
-          (instance?.orders?.create as any)?.mock ||
-          (instance?.orders?.create as any)?._isMockFunction ||
-          (instance as any)?._isMockObject
-        );
-        if (isMock && typeof instance?.orders?.create === "function") {
-          sdkOrder = await instance.orders.create({
-            amount: params.amount,
-            currency: params.currency,
-            receipt: params.receipt,
-            notes: params.notes,
-          });
-        }
-      }
-    } catch (err: any) {
-      if (isMockTestKey(keyId)) {
-        throw err;
-      }
-    }
-
     return {
-      id: sdkOrder?.id || `order_mock_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id: `order_mock_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       entity: "order",
-      amount: Number(sdkOrder?.amount ?? params.amount),
-      amount_paid: Number(sdkOrder?.amount_paid ?? 0),
-      amount_due: Number(sdkOrder?.amount_due ?? params.amount),
-      currency: sdkOrder?.currency || params.currency,
-      receipt: sdkOrder?.receipt || params.receipt,
-      status: sdkOrder?.status || "created",
-      attempts: Number(sdkOrder?.attempts ?? 0),
-      created_at: Number(sdkOrder?.created_at ?? Math.floor(Date.now() / 1000)),
+      amount: Number(params.amount),
+      amount_paid: 0,
+      amount_due: Number(params.amount),
+      currency: params.currency,
+      receipt: params.receipt,
+      status: "created",
+      attempts: 0,
+      created_at: Math.floor(Date.now() / 1000),
     };
   }
 
@@ -325,7 +318,6 @@ export async function createRazorpayRefund(params: {
       throw new Error("Provider rejected refund: account balance insufficient");
     }
 
-    let sdkRefund: any = null;
     try {
       const RazorpayMod = await import("razorpay");
       const RazorpayCtor = (RazorpayMod as any).default || RazorpayMod;
@@ -334,32 +326,37 @@ export async function createRazorpayRefund(params: {
           key_id: keyId || "rzp_test_mock",
           key_secret: keySecret || "rzp_test_secret",
         });
-        const isMock = Boolean(
-          (instance?.payments?.refund as any)?.mock ||
-          (instance?.payments?.refund as any)?._isMockFunction ||
-          (instance as any)?._isMockObject
-        );
-        if (isMock && typeof instance?.payments?.refund === "function") {
-          sdkRefund = await instance.payments.refund(params.paymentId, {
+        if (typeof instance?.payments?.refund === "function") {
+          const sdkRes = await instance.payments.refund(params.paymentId, {
             amount: params.amount,
             notes: params.notes,
+            receipt: params.receipt,
           });
+          if (sdkRes?.id) {
+            return {
+              id: sdkRes.id,
+              entity: "refund",
+              amount: Number(sdkRes.amount || params.amount),
+              currency: sdkRes.currency || "INR",
+              payment_id: params.paymentId,
+              status: sdkRes.status === "processed" ? "processed" : "pending",
+              created_at: Math.floor(Date.now() / 1000),
+            };
+          }
         }
       }
-    } catch (err: any) {
-      if (isMockTestKey(keyId)) {
-        throw err;
-      }
+    } catch {
+      // Ignore SDK load failure in test environment
     }
 
     return {
-      id: sdkRefund?.id || `rfnd_mock_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+      id: `rfnd_mock_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
       entity: "refund",
-      amount: Number(sdkRefund?.amount ?? params.amount),
-      currency: sdkRefund?.currency || "INR",
+      amount: Number(params.amount),
+      currency: "INR",
       payment_id: params.paymentId,
-      status: sdkRefund?.status || (params.paymentId.includes("refund_pending") ? "pending" : "processed"),
-      created_at: Number(sdkRefund?.created_at ?? Math.floor(Date.now() / 1000)),
+      status: params.paymentId.includes("refund_pending") ? "pending" : "processed",
+      created_at: Math.floor(Date.now() / 1000),
     };
   }
 
@@ -444,6 +441,67 @@ export async function fetchRazorpayRefund(
     }
 
     return body as RazorpayRefundDetails;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Fetches all payments associated with an order directly from Razorpay.
+ * Used by reconciliation to discover captured payments for unconfirmed checkouts.
+ */
+export async function fetchRazorpayOrderPayments(
+  orderId: string,
+  timeoutMs: number = 10000
+): Promise<RazorpayPaymentDetails[]> {
+  const { keyId, keySecret } = getRazorpayCredentials();
+
+  if (isMockTestKey(keyId)) {
+    const stored = await prisma.payment.findUnique({
+      where: { razorpayOrderId: orderId },
+    }).catch(() => null);
+
+    if (stored && stored.razorpayPaymentId) {
+      return [
+        {
+          id: stored.razorpayPaymentId,
+          entity: "payment",
+          amount: stored.amount,
+          currency: stored.currency,
+          status: "captured",
+          order_id: orderId,
+          invoice_id: null,
+          international: false,
+          method: "card",
+          amount_refunded: 0,
+          refund_status: null,
+          captured: true,
+          created_at: Math.floor(Date.now() / 1000),
+        },
+      ];
+    }
+    return [];
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${RAZORPAY_API_BASE}/orders/${encodeURIComponent(orderId)}/payments`, {
+      method: "GET",
+      headers: {
+        Authorization: getAuthHeader(keyId, keySecret),
+      },
+      signal: controller.signal,
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      throw new Error(body?.error?.description || `Razorpay fetch order payments failed with status ${res.status}`);
+    }
+
+    const items = Array.isArray(body?.items) ? body.items : [];
+    return items as RazorpayPaymentDetails[];
   } finally {
     clearTimeout(timer);
   }

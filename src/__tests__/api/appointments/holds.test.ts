@@ -61,19 +61,7 @@ describe('appointment holds', () => {
     expect(mocks.cancelSlotHold).toHaveBeenCalledWith('slot_1', patient.id, holdToken);
   });
 
-  it('successfully confirms an appointment with ONLINE payment and transactionId', async () => {
-    const mockConfirmedAppointment = {
-      id: 'apt_online_123',
-      patientId: patient.id,
-      doctorId: 'doctor_1',
-      slotId: 'slot_1',
-      paymentMethod: 'ONLINE',
-      paymentStatus: 'PAID',
-      transactionId: 'pay_rzp_test_789',
-      status: 'CONFIRMED',
-    };
-    mocks.finalizeAppointmentBooking.mockResolvedValue(mockConfirmedAppointment);
-
+  it('rejects confirmation with ONLINE payment and arbitrary transactionId without verified order', async () => {
     const response = await confirm(new NextRequest('http://localhost/api/appointments/confirm', {
       method: 'POST',
       body: JSON.stringify({
@@ -85,16 +73,9 @@ describe('appointment holds', () => {
       }),
     }));
 
-    expect(response.status).toBe(201);
+    expect(response.status).toBe(400);
     const data = await response.json();
-    expect(data.appointment).toEqual(mockConfirmedAppointment);
-    expect(mocks.finalizeAppointmentBooking).toHaveBeenCalledWith(expect.objectContaining({
-      slotId: 'slot_1',
-      doctorId: 'doctor_1',
-      patientId: patient.id,
-      holdToken,
-      paymentMethod: 'ONLINE',
-      transactionId: 'pay_rzp_test_789',
-    }));
+    expect(data.error).toMatch(/no matching payment|payment verification failed/i);
+    expect(mocks.finalizeAppointmentBooking).not.toHaveBeenCalled();
   });
 });

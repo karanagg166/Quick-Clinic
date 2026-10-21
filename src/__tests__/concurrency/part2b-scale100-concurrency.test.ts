@@ -14,7 +14,7 @@ describe('PART 2B — High-Scale Concurrency Invariant Verification (100x Scale)
   let patientTokens100: { token: string; patientId: string }[] = [];
 
   beforeAll(async () => {
-    dataset = await seedPart2Dataset('p2b_conc');
+    dataset = await seedPart2Dataset();
     doctor = dataset.doctors[0];
 
     doctorToken = await createToken({
