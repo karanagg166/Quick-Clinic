@@ -67,8 +67,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true, duplicate: true, status: storedEvent.status }, { status: 200 });
       }
 
-      // If currently processing and active (< 60s), avoid double-execution
-      if (storedEvent.status === "PROCESSING" && Date.now() - new Date(storedEvent.receivedAt).getTime() < 60_000) {
+      // If currently processing under an active lease, avoid double-execution
+      if (
+        storedEvent.status === "PROCESSING" &&
+        storedEvent.leaseExpiresAt &&
+        new Date() < storedEvent.leaseExpiresAt
+      ) {
         return NextResponse.json({ received: true, duplicate: true, status: "PROCESSING" }, { status: 200 });
       }
     } else {
@@ -78,12 +82,24 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Atomically claim event lease for processing
+  const workerId = `wh_post_${process.pid}_${crypto.randomUUID().slice(0, 8)}`;
+  const now = new Date();
   const claimed = await prisma.webhookEvent.updateMany({
     where: {
       id: storedEvent.id,
       status: { in: ["RECEIVED", "FAILED", "PROCESSING"] },
+      OR: [
+        { leaseExpiresAt: null },
+        { leaseExpiresAt: { lte: now } },
+      ],
     },
-    data: { status: "PROCESSING", processingError: null },
+    data: {
+      status: "PROCESSING",
+      leaseOwner: workerId,
+      leaseExpiresAt: new Date(now.getTime() + 30_000),
+      processingStartedAt: now,
+      processingError: null,
+    },
   });
 
   if (claimed.count === 0 && storedEvent.status !== "RECEIVED") {
@@ -99,12 +115,14 @@ export async function POST(req: NextRequest) {
     });
 
     if (outcome.success) {
-      await prisma.webhookEvent.update({
-        where: { id: storedEvent.id },
+      await prisma.webhookEvent.updateMany({
+        where: { id: storedEvent.id, leaseOwner: workerId },
         data: {
           status: "PROCESSED",
           processedAt: new Date(),
           processingError: null,
+          leaseOwner: null,
+          leaseExpiresAt: null,
         },
       });
       return NextResponse.json({ received: true, processed: true }, { status: 200 });
@@ -112,22 +130,28 @@ export async function POST(req: NextRequest) {
 
     if (outcome.unlinked) {
       // Unmatched early event: keep in RECEIVED status so reconciliation can retry after order linkage
-      await prisma.webhookEvent.update({
-        where: { id: storedEvent.id },
+      await prisma.webhookEvent.updateMany({
+        where: { id: storedEvent.id, leaseOwner: workerId },
         data: {
           status: "RECEIVED",
           processingError: outcome.error,
+          nextAttemptAt: new Date(Date.now() + 30_000),
+          leaseOwner: null,
+          leaseExpiresAt: null,
         },
       });
       return NextResponse.json({ received: true, pendingLinkage: true }, { status: 200 });
     }
 
     // Failed processing: mark FAILED for durable retry and cron replay
-    await prisma.webhookEvent.update({
-      where: { id: storedEvent.id },
+    await prisma.webhookEvent.updateMany({
+      where: { id: storedEvent.id, leaseOwner: workerId },
       data: {
         status: "FAILED",
         processingError: outcome.error || "Event processing failed",
+        nextAttemptAt: new Date(Date.now() + 60_000),
+        leaseOwner: null,
+        leaseExpiresAt: null,
       },
     });
 
@@ -136,11 +160,14 @@ export async function POST(req: NextRequest) {
     const errorMsg = processErr instanceof Error ? processErr.message : String(processErr);
     console.error(`[Webhook] Error processing event ${providerEventId}:`, errorMsg);
 
-    await prisma.webhookEvent.update({
-      where: { id: storedEvent.id },
+    await prisma.webhookEvent.updateMany({
+      where: { id: storedEvent.id, leaseOwner: workerId },
       data: {
         status: "FAILED",
         processingError: errorMsg,
+        nextAttemptAt: new Date(Date.now() + 60_000),
+        leaseOwner: null,
+        leaseExpiresAt: null,
       },
     }).catch(() => undefined);
 

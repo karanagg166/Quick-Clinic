@@ -222,6 +222,7 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
         throw err;
       }
 
+      const providerReference = `rcpt_${idempotencyKey.slice(0, 30)}`;
       const createdCheckout = await tx.checkout.create({
         data: {
           idempotencyKey,
@@ -234,6 +235,7 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
           amount: amountInPaise,
           currency: "INR",
           status: "PENDING_ORDER",
+          providerReference,
           expiresAt,
         },
       });
@@ -386,11 +388,13 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
   }
 
   let providerOrder: any;
+  const orderReceipt = checkoutRecord.providerReference || `rcpt_${checkoutRecord.id.replace(/-/g, "").slice(0, 30)}`;
+
   try {
     providerOrder = await createRazorpayOrder({
       amount: checkoutRecord.amount,
       currency: checkoutRecord.currency,
-      receipt: `rcpt_${checkoutRecord.id.slice(0, 30)}`,
+      receipt: orderReceipt,
       notes: {
         checkoutId: checkoutRecord.id,
         userId,
@@ -410,10 +414,15 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
       errorMsg.toLowerCase().includes("econnreset");
 
     if (isTimeout) {
-      // Provider state uncertain: record UNRESOLVED for recovery/reconciliation
-      await prisma.checkout.update({
-        where: { id: checkoutRecord.id },
-        data: { status: "UNRESOLVED" },
+      // Provider state uncertain: record UNRESOLVED for recovery/reconciliation without overwriting CONFIRMED
+      await prisma.checkout.updateMany({
+        where: { id: checkoutRecord.id, status: { not: "CONFIRMED" } },
+        data: {
+          status: "UNRESOLVED",
+          providerReference: orderReceipt,
+          lastError: "Payment provider timed out",
+          lastAttemptAt: new Date(),
+        },
       });
 
       const err = new Error("Payment provider timed out. Your reservation is held while we verify order status.");
@@ -421,11 +430,16 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
       throw err;
     }
 
-    // Definite failure: release slot and mark FAILED
+    // Definite failure: release slot and mark FAILED without overwriting CONFIRMED
     await prisma.$transaction([
-      prisma.checkout.update({
-        where: { id: checkoutRecord.id },
-        data: { status: "FAILED" },
+      prisma.checkout.updateMany({
+        where: { id: checkoutRecord.id, status: { not: "CONFIRMED" } },
+        data: {
+          status: "FAILED",
+          providerReference: orderReceipt,
+          lastError: errorMsg,
+          lastAttemptAt: new Date(),
+        },
       }),
       prisma.slot.updateMany({
         where: {
@@ -484,6 +498,7 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
       data: {
         status: "READY_FOR_PAYMENT",
         razorpayOrderId: providerOrder.id,
+        providerReference: providerOrder.receipt || orderReceipt,
         paymentId: payment.id,
       },
     });
@@ -491,11 +506,12 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
     if (updated.count === 0) {
       // Late provider response arrived after expiry or concurrent transition:
       // Preserve provider order reference so reconciliation/webhooks can locate it,
-      // but do NOT make it payable! Keep/set status to EXPIRED.
+      // but do NOT make it payable! Keep/set status to EXPIRED unless already CONFIRMED.
       await tx.checkout.updateMany({
-        where: { id: checkoutRecord.id },
+        where: { id: checkoutRecord.id, status: { not: "CONFIRMED" } },
         data: {
           razorpayOrderId: providerOrder.id,
+          providerReference: providerOrder.receipt || orderReceipt,
           paymentId: payment.id,
           status: "EXPIRED",
         },
@@ -816,22 +832,35 @@ export async function verifyAndFinalizeCheckout(params: VerifyCheckoutParams): P
     };
   }
 
-  // 8. Transaction 2: Atomic finalization
+  // 8. Persist authoritative captured-payment evidence independently before Transaction 2
+  // This guarantees that capture evidence survives rollback or server crash
   const capturedAt = new Date(providerPayment.created_at * 1000 || Date.now());
+  if (checkout.paymentId) {
+    await prisma.payment.updateMany({
+      where: { id: checkout.paymentId, status: { not: "SUCCESS" } },
+      data: {
+        razorpayPaymentId: paymentId,
+        capturedAt,
+      },
+    });
+  }
+
   let txEventIds: { doctorEventId: string; patientEventId: string } | null = null;
 
   try {
     const txOutcome = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      // 8a. Atomically claim Checkout transition
+      const txNow = new Date();
+
+      // 8a. Atomically claim Checkout transition using fresh database time
       const claimedCheckout = await tx.checkout.updateMany({
         where: {
           id: checkout.id,
           status: { in: ["PENDING_ORDER", "READY_FOR_PAYMENT", "UNRESOLVED"] },
-          expiresAt: { gt: now },
+          expiresAt: { gt: txNow },
         },
         data: {
           status: "CONFIRMED",
-          confirmedAt: now,
+          confirmedAt: txNow,
         },
       });
 
@@ -855,9 +884,9 @@ export async function verifyAndFinalizeCheckout(params: VerifyCheckoutParams): P
           status: "HELD",
           heldByPatientId: checkout.patientId,
           holdToken: checkout.holdToken,
-          startTime: { gt: now },
+          startTime: { gt: txNow },
           OR: [
-            { holdExpiresAt: { gt: now } },
+            { holdExpiresAt: { gt: txNow } },
             { holdExpiresAt: null },
           ],
         },
@@ -1088,6 +1117,7 @@ export async function getAuthoritativeCheckoutStatus(checkoutIdOrOrderId: string
   return {
     checkoutId: checkout.id,
     orderId: checkout.razorpayOrderId,
+    providerReference: checkout.providerReference,
     paymentId: checkout.payment?.razorpayPaymentId,
     amount: checkout.amount,
     currency: checkout.currency,
@@ -1141,18 +1171,20 @@ export async function expireStaleCheckouts() {
       expiresAt: { lte: now },
     },
     take: 50,
+    orderBy: { expiresAt: "asc" },
   });
 
   let expiredCount = 0;
   for (const checkout of staleCheckouts) {
     try {
       await prisma.$transaction(async (tx) => {
+        const freshNow = new Date();
         // Guarded transition: only claim expiry if still in an eligible state and actually expired!
         const claimed = await tx.checkout.updateMany({
           where: {
             id: checkout.id,
             status: { in: ["PENDING_ORDER", "READY_FOR_PAYMENT", "UNRESOLVED"] },
-            expiresAt: { lte: now },
+            expiresAt: { lte: freshNow },
           },
           data: { status: "EXPIRED" },
         });

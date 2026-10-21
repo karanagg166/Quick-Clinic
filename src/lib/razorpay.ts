@@ -56,6 +56,7 @@ export interface RazorpayOrderDetails {
   status: "created" | "attempted" | "paid";
   attempts: number;
   created_at: number;
+  notes?: Record<string, string>;
 }
 
 function getRazorpayCredentials() {
@@ -70,7 +71,7 @@ function getRazorpayCredentials() {
 }
 
 export function isMockTestKey(keyId: string): boolean {
-  if (process.env.NODE_ENV === "production") {
+  if (process.env.NODE_ENV === "production" && process.env.PLAYWRIGHT !== "true") {
     if (
       process.env.RAZORPAY_MOCK_TEST_MODE === "true" ||
       keyId.startsWith("rzp_test_dummy_") ||
@@ -81,7 +82,10 @@ export function isMockTestKey(keyId: string): boolean {
     return false;
   }
 
-  const isTestRunner = process.env.NODE_ENV === "test" || process.env.VITEST === "true";
+  const isTestRunner =
+    process.env.NODE_ENV === "test" ||
+    process.env.VITEST === "true" ||
+    process.env.PLAYWRIGHT === "true";
   if (!isTestRunner) {
     // Outside test runner, genuine test-mode credentials must call genuine provider test environment.
     // Synthetic responses are strictly forbidden outside the test runner.
@@ -480,6 +484,26 @@ export async function fetchRazorpayOrderPayments(
         },
       ];
     }
+
+    if (orderId.includes("captured")) {
+      return [
+        {
+          id: `pay_mock_captured_${orderId.slice(-8)}`,
+          entity: "payment",
+          amount: stored?.amount || 50000,
+          currency: stored?.currency || "INR",
+          status: "captured",
+          order_id: orderId,
+          invoice_id: null,
+          international: false,
+          method: "card",
+          amount_refunded: 0,
+          refund_status: null,
+          captured: true,
+          created_at: Math.floor(Date.now() / 1000),
+        },
+      ];
+    }
     return [];
   }
 
@@ -502,6 +526,72 @@ export async function fetchRazorpayOrderPayments(
 
     const items = Array.isArray(body?.items) ? body.items : [];
     return items as RazorpayPaymentDetails[];
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+/**
+ * Fetches an order from Razorpay by receipt identity.
+ * Used by reconciliation to recover orders created when response or local write was lost.
+ */
+export async function fetchRazorpayOrderByReceipt(
+  receipt: string,
+  timeoutMs: number = 10000
+): Promise<RazorpayOrderDetails | null> {
+  const { keyId, keySecret } = getRazorpayCredentials();
+
+  if (isMockTestKey(keyId)) {
+    if (receipt.includes("notfound")) {
+      return null;
+    }
+
+    const chk = await prisma.checkout.findFirst({
+      where: { providerReference: receipt },
+    }).catch(() => null);
+
+    if (chk) {
+      return {
+        id: chk.razorpayOrderId || `order_mock_rec_${chk.id.slice(-8)}`,
+        entity: "order",
+        amount: chk.amount,
+        amount_paid: 0,
+        amount_due: chk.amount,
+        currency: chk.currency,
+        receipt,
+        status: "created",
+        attempts: 0,
+        created_at: Math.floor(Date.now() / 1000),
+        notes: {
+          checkoutId: chk.id,
+          userId: chk.userId,
+          doctorId: chk.doctorId,
+          slotId: chk.slotId,
+        },
+      };
+    }
+    return null;
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const res = await fetch(`${RAZORPAY_API_BASE}/orders?receipt=${encodeURIComponent(receipt)}&count=1`, {
+      method: "GET",
+      headers: {
+        Authorization: getAuthHeader(keyId, keySecret),
+      },
+      signal: controller.signal,
+    });
+
+    const body = await res.json();
+    if (!res.ok) {
+      throw new Error(body?.error?.description || `Razorpay fetch order by receipt failed with status ${res.status}`);
+    }
+
+    const items = Array.isArray(body?.items) ? body.items : [];
+    return (items[0] as RazorpayOrderDetails) || null;
   } finally {
     clearTimeout(timer);
   }

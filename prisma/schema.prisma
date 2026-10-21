@@ -446,6 +446,10 @@ model Payment {
   razorpayOrderId   String   @unique
   razorpayPaymentId String?  @unique
   capturedAt        DateTime?
+  leaseExpiresAt    DateTime?
+  leaseOwner        String?
+  attempts          Int      @default(0)
+  nextAttemptAt     DateTime?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now()) @updatedAt
 
@@ -457,6 +461,7 @@ model Payment {
   @@index([userId, status])
   @@index([slotId])
   @@index([razorpayPaymentId])
+  @@index([status, nextAttemptAt])
 }
 
 enum CheckoutStatus {
@@ -466,6 +471,7 @@ enum CheckoutStatus {
   EXPIRED
   FAILED
   UNRESOLVED
+  MANUAL_REVIEW
 }
 
 model Checkout {
@@ -481,11 +487,21 @@ model Checkout {
   currency        String         @default("INR")
   status          CheckoutStatus @default(PENDING_ORDER)
 
-  razorpayOrderId String?        @unique
-  expiresAt       DateTime
+  razorpayOrderId   String?        @unique
+  providerReference String?
+  expiresAt         DateTime
 
   paymentId       String?        @unique
   appointmentId   String?        @unique
+
+  // Processing, lease & reconciliation tracking
+  processingStartedAt DateTime?
+  leaseExpiresAt      DateTime?
+  leaseOwner          String?
+  attempts            Int            @default(0)
+  lastAttemptAt       DateTime?
+  nextAttemptAt       DateTime?
+  lastError           String?
 
   user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
@@ -502,6 +518,8 @@ model Checkout {
   @@index([doctorId, slotId])
   @@index([expiresAt, status])
   @@index([razorpayOrderId])
+  @@index([providerReference])
+  @@index([status, nextAttemptAt])
 }
 
 enum RefundStatus {
@@ -524,12 +542,16 @@ model Refund {
   failureReason    String?
   attempts         Int          @default(0)
   lastAttemptAt    DateTime?
+  leaseExpiresAt   DateTime?
+  leaseOwner       String?
+  nextAttemptAt    DateTime?
   createdAt        DateTime     @default(now())
   updatedAt        DateTime     @updatedAt
   processedAt      DateTime?
 
   @@index([paymentId])
   @@index([status])
+  @@index([status, nextAttemptAt])
 }
 
 enum WebhookEventStatus {
@@ -541,20 +563,26 @@ enum WebhookEventStatus {
 }
 
 model WebhookEvent {
-  id              String             @id @default(cuid())
-  providerEventId String             @unique
-  eventType       String
-  paymentId       String?
-  payment         Payment?           @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  status          WebhookEventStatus @default(RECEIVED)
-  payload         Json
-  processingError String?
-  receivedAt      DateTime           @default(now())
-  processedAt     DateTime?
+  id                  String             @id @default(cuid())
+  providerEventId     String             @unique
+  eventType           String
+  paymentId           String?
+  payment             Payment?           @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  status              WebhookEventStatus @default(RECEIVED)
+  payload             Json
+  processingError     String?
+  processingStartedAt DateTime?
+  leaseExpiresAt      DateTime?
+  leaseOwner          String?
+  attempts            Int                @default(0)
+  nextAttemptAt       DateTime?
+  receivedAt          DateTime           @default(now())
+  processedAt         DateTime?
 
   @@index([status])
   @@index([eventType])
   @@index([paymentId])
+  @@index([status, nextAttemptAt])
 }
 
 enum OutboxStatus {
@@ -565,20 +593,25 @@ enum OutboxStatus {
 }
 
 model NotificationOutbox {
-  id            String       @id @default(cuid())
-  eventId       String       @unique
-  channel       String       // e.g. "SOCKET_NOTIFICATION", "SOCKET_APPOINTMENT_REQUEST", "SOCKET_APPOINTMENT_STATUS"
-  targetUserId  String
-  payload       Json
-  status        OutboxStatus @default(PENDING)
-  attempts      Int          @default(0)
-  lastError     String?
-  lastAttemptAt DateTime?
-  createdAt     DateTime     @default(now())
-  deliveredAt   DateTime?
+  id                  String       @id @default(cuid())
+  eventId             String       @unique
+  channel             String       // e.g. "SOCKET_NOTIFICATION", "SOCKET_APPOINTMENT_REQUEST", "SOCKET_APPOINTMENT_STATUS"
+  targetUserId        String
+  payload             Json
+  status              OutboxStatus @default(PENDING)
+  attempts            Int          @default(0)
+  lastError           String?
+  lastAttemptAt       DateTime?
+  processingStartedAt DateTime?
+  leaseExpiresAt      DateTime?
+  leaseOwner          String?
+  nextAttemptAt       DateTime?
+  createdAt           DateTime     @default(now())
+  deliveredAt         DateTime?
 
   @@index([status, createdAt])
   @@index([targetUserId])
+  @@index([status, nextAttemptAt])
 }
 
 enum WithdrawalStatus {

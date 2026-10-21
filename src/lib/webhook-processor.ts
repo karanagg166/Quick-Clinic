@@ -102,16 +102,24 @@ export async function processSingleWebhookEvent(eventRecord: {
         prisma.checkout.findUnique({ where: { razorpayOrderId: orderId } }),
       ]);
 
-      if (paymentRecord && paymentRecord.status !== "SUCCESS" && paymentRecord.status !== "REFUNDED") {
-        await prisma.payment.update({
-          where: { id: paymentRecord.id },
+      if (
+        paymentRecord &&
+        paymentRecord.status !== "SUCCESS" &&
+        paymentRecord.status !== "REFUNDED" &&
+        paymentRecord.status !== "REFUND_PENDING"
+      ) {
+        await prisma.payment.updateMany({
+          where: {
+            id: paymentRecord.id,
+            status: { notIn: ["SUCCESS", "REFUNDED", "REFUND_PENDING"] },
+          },
           data: {
             status: "FAILED",
             razorpayPaymentId: paymentId || undefined,
           },
         }).catch(() => undefined);
 
-        await prisma.webhookEvent.update({
+        await prisma.webhookEvent.updateMany({
           where: { id: eventId },
           data: { paymentId: paymentRecord.id },
         }).catch(() => undefined);
@@ -122,8 +130,11 @@ export async function processSingleWebhookEvent(eventRecord: {
       if (checkoutRecord && checkoutRecord.status !== "CONFIRMED") {
         const isExpired = new Date() >= checkoutRecord.expiresAt;
         if (isExpired) {
-          await prisma.checkout.update({
-            where: { id: checkoutRecord.id },
+          await prisma.checkout.updateMany({
+            where: {
+              id: checkoutRecord.id,
+              status: { not: "CONFIRMED" },
+            },
             data: { status: "EXPIRED" },
           }).catch(() => undefined);
         }

@@ -352,11 +352,11 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
   const providerPaymentId = params.providerPaymentId || payment.razorpayPaymentId;
   if (!providerPaymentId) {
     if (payment.status === "CREATED" || payment.status === "PENDING" || payment.status === "REFUND_PENDING") {
-      await prisma.payment.update({
-        where: { id: payment.id },
+      await prisma.payment.updateMany({
+        where: { id: payment.id, status: { not: "SUCCESS" } },
         data: { status: "REFUNDED" },
       });
-      await prisma.refund.update({
+      await prisma.refund.updateMany({
         where: { id: refundRecord.id },
         data: {
           status: "PROCESSED",
@@ -372,7 +372,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
       };
     }
 
-    await prisma.refund.update({
+    await prisma.refund.updateMany({
       where: { id: refundRecord.id },
       data: {
         status: "FAILED",
@@ -401,7 +401,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
 
     if (providerRefund.status === "processed") {
       await prisma.$transaction([
-        prisma.refund.update({
+        prisma.refund.updateMany({
           where: { id: refundRecord.id },
           data: {
             status: "PROCESSED",
@@ -410,7 +410,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
             failureReason: null,
           },
         }),
-        prisma.payment.update({
+        prisma.payment.updateMany({
           where: { id: payment.id },
           data: { status: "REFUNDED" },
         }),
@@ -423,7 +423,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
       };
     } else {
       // Provider status is 'pending'
-      await prisma.refund.update({
+      await prisma.refund.updateMany({
         where: { id: refundRecord.id },
         data: {
           status: "PENDING",
@@ -448,10 +448,12 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
       errorMessage.toLowerCase().includes("econnreset");
 
     if (isTimeout) {
-      await prisma.refund.update({
+      const nextAttemptAt = new Date(Date.now() + 60_000);
+      await prisma.refund.updateMany({
         where: { id: refundRecord.id },
         data: {
           failureReason: `Provider request timed out: ${errorMessage}. Scheduled for reconciliation.`,
+          nextAttemptAt,
         },
       });
 
@@ -472,7 +474,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
         const pmt = await fetchRazorpayPayment(providerPaymentId);
         if (pmt.amount_refunded >= refundAmount || pmt.refund_status === "full") {
           await prisma.$transaction([
-            prisma.refund.update({
+            prisma.refund.updateMany({
               where: { id: refundRecord.id },
               data: {
                 status: "PROCESSED",
@@ -480,7 +482,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
                 failureReason: "Reconciled with provider status",
               },
             }),
-            prisma.payment.update({
+            prisma.payment.updateMany({
               where: { id: payment.id },
               data: { status: "REFUNDED" },
             }),
@@ -497,8 +499,7 @@ export async function claimAndExecuteRefund(params: RefundClaimParams): Promise<
       }
     }
 
-    // Provider rejected refund
-    await prisma.refund.update({
+    await prisma.refund.updateMany({
       where: { id: refundRecord.id },
       data: {
         status: "FAILED",
