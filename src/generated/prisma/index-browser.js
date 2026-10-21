@@ -265,6 +265,8 @@ exports.Prisma.DoctorPatientRelationScalarFieldEnum = {
   id: 'id',
   doctorsUserId: 'doctorsUserId',
   patientsUserId: 'patientsUserId',
+  doctorLastReadAt: 'doctorLastReadAt',
+  patientLastReadAt: 'patientLastReadAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };
@@ -275,6 +277,8 @@ exports.Prisma.ChatMessagesScalarFieldEnum = {
   text: 'text',
   senderId: 'senderId',
   clientMessageId: 'clientMessageId',
+  isRead: 'isRead',
+  readAt: 'readAt',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 };

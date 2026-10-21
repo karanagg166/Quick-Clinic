@@ -210,6 +210,8 @@ export async function dispatchPendingOutboxEvents(eventIds: string[]) {
         const endpoint =
           item.channel === 'SOCKET_APPOINTMENT_REQUEST'
             ? '/api/notifications/new-appointment'
+            : item.channel === 'SOCKET_APPOINTMENT_STATUS'
+            ? '/api/notifications/appointment-status'
             : '/api/notifications/broadcast';
 
         const res = await publishToSocketServer(endpoint, payload);

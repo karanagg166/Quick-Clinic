@@ -1,6 +1,7 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import crypto from 'crypto';
 import type { PrismaClient } from '../src/generated/prisma/client';
+import { persistChatMessage, formatChatMessage, FormattedChatMessage } from './chat-persistence';
 
 export interface JWTPayload {
   id?: string;
@@ -139,6 +140,27 @@ export function verifySocketJWT(
   }
 }
 
+class SocketRateLimiter {
+  private timestamps: Map<string, number[]> = new Map();
+
+  public check(key: string, maxEvents: number, windowMs: number): boolean {
+    const now = Date.now();
+    const list = this.timestamps.get(key) || [];
+    const valid = list.filter((t) => now - t < windowMs);
+    if (valid.length >= maxEvents) {
+      this.timestamps.set(key, valid);
+      return false;
+    }
+    valid.push(now);
+    this.timestamps.set(key, valid);
+    return true;
+  }
+
+  public clear(key: string): void {
+    this.timestamps.delete(key);
+  }
+}
+
 /**
  * Socket.IO server configuration and event handlers
  */
@@ -146,13 +168,47 @@ export class SocketServer {
   private io: SocketIOServer;
   private prisma: PrismaClient;
   private jwtSecret?: string;
+  private rateLimiter: SocketRateLimiter;
 
   constructor(io: SocketIOServer, prisma: PrismaClient, jwtSecret?: string) {
     this.io = io;
     this.prisma = prisma;
     this.jwtSecret = jwtSecret;
+    this.rateLimiter = new SocketRateLimiter();
     this.setupAuthentication();
     this.setupEventHandlers();
+  }
+
+  /**
+   * Disconnect any sockets associated with a revoked or deactivated user
+   */
+  public disconnectUser(userId: string, reason = 'Account updated or session terminated'): void {
+    const room = this.io.sockets.adapter.rooms.get(`user_${userId}`);
+    if (room) {
+      for (const socketId of room) {
+        const s = this.io.sockets.sockets.get(socketId);
+        if (s) {
+          s.emit('account_revoked', { reason });
+          s.disconnect(true);
+        }
+      }
+    }
+  }
+
+  /**
+   * Disconnect any sockets in a conversation where access was revoked
+   */
+  public disconnectRelation(relationId: string, reason = 'Conversation access revoked'): void {
+    const room = this.io.sockets.adapter.rooms.get(`relation_${relationId}`);
+    if (room) {
+      for (const socketId of room) {
+        const s = this.io.sockets.sockets.get(socketId);
+        if (s) {
+          s.emit('relation_revoked', { relationId, reason });
+          s.leave(`relation_${relationId}`);
+        }
+      }
+    }
   }
 
   /**
@@ -233,26 +289,29 @@ export class SocketServer {
             relation.doctor?.user?.id === verifiedUserId || (relation as any).doctorsUserId === verifiedUserId;
           const isPatient =
             relation.patient?.user?.id === verifiedUserId || (relation as any).patientsUserId === verifiedUserId;
+          const isAdmin = user.role === 'ADMIN';
 
-          if (!isDoctor && !isPatient) {
+          if (!isDoctor && !isPatient && !isAdmin) {
             return next(new Error('Unauthorized'));
           }
 
           const userName = isDoctor
             ? (relation.doctor?.user?.name || user.name || 'Doctor')
             : (relation.patient?.user?.name || user.name || 'Patient');
-          const userRole = isDoctor ? 'DOCTOR' : 'PATIENT';
+          const userRole = isDoctor ? 'DOCTOR' : (isPatient ? 'PATIENT' : 'ADMIN');
 
           (socket as any).relationId = relationId;
           (socket as any).userId = verifiedUserId;
           (socket as any).userName = userName;
           (socket as any).userRole = userRole;
+          (socket as any).tokenExp = tokenPayload.exp;
         } else {
           // Notification connection - verified user in database
           (socket as any).relationId = undefined;
           (socket as any).userId = verifiedUserId;
           (socket as any).userRole = user.role;
           (socket as any).userName = user.name;
+          (socket as any).tokenExp = tokenPayload.exp;
         }
 
         next();
@@ -282,9 +341,25 @@ export class SocketServer {
       const userId = (socket as any).userId;
       const userName = (socket as any).userName;
       const userRole = (socket as any).userRole;
+      const tokenExp = (socket as any).tokenExp;
 
       // Always join user's own private notification room
       socket.join(`user_${userId}`);
+
+      // Handle connected socket ticket expiration
+      if (tokenExp && typeof tokenExp === 'number') {
+        const msUntilExpiry = tokenExp * 1000 - Date.now();
+        if (msUntilExpiry > 0) {
+          const expiryTimer = setTimeout(() => {
+            socket.emit('auth_expired', { message: 'Authentication ticket expired' });
+            socket.disconnect(true);
+          }, msUntilExpiry);
+          (socket as any).expiryTimer = expiryTimer;
+        }
+      }
+
+      // Handle re-authentication before or after ticket refresh
+      this.handleReauthentication(socket, userId, relationId);
 
       // Handle notification connections (no relationId)
       if (!relationId) {
@@ -306,6 +381,9 @@ export class SocketServer {
       // Handle request for initial messages
       this.handleGetInitialMessages(socket, relationId);
 
+      // Handle sync/missed-message recovery
+      this.handleSyncMessages(socket, relationId);
+
       // Handle sending new message with acknowledgement and deduplication
       this.handleSendMessage(socket, relationId, userId, userName);
 
@@ -320,6 +398,61 @@ export class SocketServer {
 
       // Handle errors
       this.handleSocketError(socket, userName);
+    });
+  }
+
+  /**
+   * Handle in-flight re-authentication ticket refresh
+   */
+  private handleReauthentication(socket: Socket, currentUserId: string, currentRelationId?: string): void {
+    socket.on('reauthenticate', async (data: { token?: string }, callback?: (ack: any) => void) => {
+      try {
+        if (!data?.token || typeof data.token !== 'string') {
+          const errRes = { success: false, error: 'Missing token' };
+          if (typeof callback === 'function') callback(errRes);
+          return;
+        }
+
+        const authResult = verifySocketJWT(data.token, this.jwtSecret);
+        if (!authResult.valid || !authResult.payload) {
+          const errRes = { success: false, error: authResult.error || 'Authentication failed' };
+          if (typeof callback === 'function') callback(errRes);
+          return;
+        }
+
+        const freshUserId = authResult.payload.id || authResult.payload.userId;
+        if (freshUserId !== currentUserId) {
+          const errRes = { success: false, error: 'Cannot switch user identity on connected socket' };
+          if (typeof callback === 'function') callback(errRes);
+          return;
+        }
+
+        if (currentRelationId && authResult.payload.relationId && authResult.payload.relationId !== currentRelationId) {
+          const errRes = { success: false, error: 'Relation mismatch in fresh ticket' };
+          if (typeof callback === 'function') callback(errRes);
+          return;
+        }
+
+        // Reset expiry timer
+        if ((socket as any).expiryTimer) {
+          clearTimeout((socket as any).expiryTimer);
+        }
+
+        const newExpMs = authResult.payload.exp! * 1000 - Date.now();
+        if (newExpMs > 0) {
+          (socket as any).expiryTimer = setTimeout(() => {
+            socket.emit('auth_expired', { message: 'Authentication ticket expired' });
+            socket.disconnect(true);
+          }, newExpMs);
+        }
+
+        const okRes = { success: true, exp: authResult.payload.exp };
+        if (typeof callback === 'function') callback(okRes);
+        socket.emit('reauthenticated', okRes);
+      } catch (err: any) {
+        const errRes = { success: false, error: 'Reauthentication failed' };
+        if (typeof callback === 'function') callback(errRes);
+      }
     });
   }
 
@@ -403,7 +536,7 @@ export class SocketServer {
    * Handle getting initial messages with pagination and recent ordering
    */
   private handleGetInitialMessages(socket: Socket, relationId: string): void {
-    socket.on('get_initial_messages', async (data: { page?: number; limit?: number }) => {
+    socket.on('get_initial_messages', async (data: { page?: number; limit?: number }, callback?: (ack: any) => void) => {
       try {
         const page = Math.max(1, data?.page || 1);
         const limit = Math.min(Math.max(1, data?.limit || 50), 100);
@@ -431,17 +564,19 @@ export class SocketServer {
         });
 
         const messages = messagesDesc.reverse();
-
         const formattedMessages = messages.map((msg) => ({
           id: msg.id,
+          ...(msg.clientMessageId ? { clientMessageId: msg.clientMessageId } : {}),
           text: msg.text,
           senderId: msg.senderId,
-          senderName: msg.sender.name,
-          senderRole: msg.sender.role,
-          createdAt: msg.createdAt.toISOString(),
+          senderName: msg.sender?.name,
+          senderRole: msg.sender?.role,
+          createdAt: msg.createdAt instanceof Date ? msg.createdAt.toISOString() : String(msg.createdAt),
+          ...(msg.isRead !== undefined ? { isRead: Boolean(msg.isRead) } : {}),
+          ...(msg.readAt !== undefined ? { readAt: msg.readAt instanceof Date ? msg.readAt.toISOString() : String(msg.readAt) } : {}),
         }));
 
-        socket.emit('initial_messages', {
+        const responsePayload = {
           messages: formattedMessages,
           pagination: {
             page,
@@ -449,16 +584,88 @@ export class SocketServer {
             total: totalCount,
             hasMore: skip + limit < totalCount,
           },
-        });
+        };
+
+        if (typeof callback === 'function') {
+          callback({ success: true, ...responsePayload });
+        }
+        socket.emit('initial_messages', responsePayload);
       } catch (error) {
         console.error('Error fetching initial messages:', error);
+        if (typeof callback === 'function') {
+          callback({ success: false, error: 'Failed to load messages' });
+        }
         socket.emit('error', { message: 'Failed to load messages' });
       }
     });
   }
 
   /**
-   * Handle sending new message with typed acknowledgement and deduplication
+   * Handle sync / missed-message recovery across disconnections
+   */
+  private handleSyncMessages(socket: Socket, relationId: string): void {
+    socket.on('sync_messages', async (data: { since?: string; lastMessageId?: string; limit?: number }, callback?: (ack: any) => void) => {
+      try {
+        if (!relationId) {
+          const errRes = { success: false, error: 'Unauthorized: not connected to a chat room', messages: [] };
+          if (typeof callback === 'function') callback(errRes);
+          return socket.emit('error', { message: 'Unauthorized: not connected to a chat room' });
+        }
+
+        const limit = Math.min(Math.max(1, data?.limit || 100), 100);
+        let whereClause: any = { doctorPatientRelationId: relationId };
+
+        if (data?.since) {
+          const sinceDate = new Date(data.since);
+          if (!isNaN(sinceDate.getTime())) {
+            if (data.lastMessageId && typeof data.lastMessageId === 'string' && data.lastMessageId.trim()) {
+              whereClause = {
+                doctorPatientRelationId: relationId,
+                OR: [
+                  { createdAt: { gt: sinceDate } },
+                  { AND: [{ createdAt: sinceDate }, { id: { gt: data.lastMessageId.trim() } }] },
+                ],
+              };
+            } else {
+              whereClause = {
+                doctorPatientRelationId: relationId,
+                createdAt: { gt: sinceDate },
+              };
+            }
+          }
+        }
+
+        const messages = await this.prisma.chatMessages.findMany({
+          where: whereClause,
+          include: {
+            sender: { select: { id: true, name: true, role: true } },
+          },
+          orderBy: [{ createdAt: 'asc' }, { id: 'asc' }],
+          take: limit,
+        });
+
+        const formatted = messages.map(formatChatMessage);
+        const result = {
+          success: true,
+          messages: formatted,
+          hasMore: messages.length === limit,
+        };
+
+        if (typeof callback === 'function') {
+          callback(result);
+        }
+        socket.emit('sync_messages_result', result);
+      } catch (err: any) {
+        console.error('Error syncing messages:', err);
+        const errRes = { success: false, error: 'Failed to sync messages', messages: [] };
+        if (typeof callback === 'function') callback(errRes);
+        socket.emit('error', { message: 'Failed to sync messages' });
+      }
+    });
+  }
+
+  /**
+   * Handle sending new message with typed acknowledgement, deduplication, and single broadcast
    */
   private handleSendMessage(socket: Socket, relationId: string, userId: string, _userName: string): void {
     socket.on('send_message', async (data: any, callback?: (ack: any) => void) => {
@@ -469,6 +676,12 @@ export class SocketServer {
           return socket.emit('error', { message: 'Unauthorized: not connected to a chat room' });
         }
 
+        if (!this.rateLimiter.check(`msg_${socket.id}`, 30, 60_000)) {
+          const errRes = { success: false, error: 'Rate limit exceeded: maximum 30 messages per minute' };
+          if (typeof callback === 'function') callback(errRes);
+          return socket.emit('error', { message: 'Rate limit exceeded: maximum 30 messages per minute' });
+        }
+
         if (!data || typeof data !== 'object') {
           const errRes = { success: false, error: 'Invalid message payload' };
           if (typeof callback === 'function') callback(errRes);
@@ -476,165 +689,38 @@ export class SocketServer {
         }
 
         const rawText = data.text !== undefined ? data.text : data.message;
-        if (typeof rawText !== 'string' || !rawText.trim()) {
-          const errRes = { success: false, error: 'Message cannot be empty' };
+        const clientMessageId = data.clientMessageId !== undefined ? data.clientMessageId : data.idempotencyKey;
+
+        // Persist using shared canonical persistence service
+        const result = await persistChatMessage({
+          doctorPatientRelationId: relationId,
+          senderId: userId,
+          text: rawText,
+          clientMessageId,
+          prismaClient: this.prisma,
+          includeSender: true,
+          skipRelationCheck: true,
+        });
+
+        if (!result.success) {
+          const errRes = { success: false, error: result.error || 'Failed to send message' };
           if (typeof callback === 'function') callback(errRes);
-          return socket.emit('error', { message: 'Message cannot be empty' });
+          return socket.emit('error', { message: result.error || 'Failed to send message' });
         }
 
-        const text = rawText.trim();
-        if (text.length > 5000) {
-          const errRes = { success: false, error: 'Message exceeds maximum length of 5000 characters' };
-          if (typeof callback === 'function') callback(errRes);
-          return socket.emit('error', { message: 'Message exceeds maximum length of 5000 characters' });
-        }
+        const formattedMessage: FormattedChatMessage = result.chat;
 
-        let clientMessageId: string | null = null;
-        const rawClientId = data.clientMessageId !== undefined ? data.clientMessageId : data.idempotencyKey;
-        if (rawClientId !== undefined && rawClientId !== null) {
-          if (typeof rawClientId !== 'string') {
-            const errRes = { success: false, error: 'clientMessageId must be a string' };
-            if (typeof callback === 'function') callback(errRes);
-            return socket.emit('error', { message: 'clientMessageId must be a string' });
-          }
-          if (rawClientId.trim()) {
-            clientMessageId = rawClientId.trim();
-          }
-        }
-
-        // Deduplication pre-check
-        if (clientMessageId) {
-          const existing = await this.prisma.chatMessages.findFirst({
-            where: {
-              OR: [
-                { clientMessageId },
-                { id: clientMessageId },
-              ],
-            },
-            include: {
-              sender: {
-                select: { id: true, name: true, role: true },
-              },
-            },
-          });
-
-          if (existing) {
-            if (existing.doctorPatientRelationId !== relationId) {
-              const errRes = { success: false, error: 'Idempotency key does not belong to this relation' };
-              if (typeof callback === 'function') callback(errRes);
-              return socket.emit('error', { message: 'Idempotency key does not belong to this relation' });
-            }
-            if (existing.senderId !== userId) {
-              const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different sender' };
-              if (typeof callback === 'function') callback(errRes);
-              return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different sender' });
-            }
-            if (existing.text !== text) {
-              const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different content' };
-              if (typeof callback === 'function') callback(errRes);
-              return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different content' });
-            }
-
-            const formattedExisting = {
-              id: existing.id,
-              clientMessageId: existing.clientMessageId || existing.id,
-              text: existing.text,
-              senderId: existing.senderId,
-              senderName: existing.sender.name,
-              senderRole: existing.sender.role,
-              createdAt: existing.createdAt.toISOString(),
-            };
-            if (typeof callback === 'function') {
-              callback({ success: true, message: formattedExisting });
-            }
-            return;
-          }
-        }
-
-        // Save message to database using verified userId with concurrency collision protection
-        let message: any;
-        try {
-          message = await this.prisma.chatMessages.create({
-            data: {
-              ...(clientMessageId ? { id: clientMessageId, clientMessageId } : {}),
-              text,
-              senderId: userId,
-              doctorPatientRelationId: relationId,
-            },
-            include: {
-              sender: {
-                select: {
-                  id: true,
-                  name: true,
-                  role: true,
-                },
-              },
-            },
-          });
-        } catch (createErr: any) {
-          // Catch concurrent collision on unique constraint (P2002)
-          if (createErr?.code === 'P2002' && clientMessageId) {
-            const existing = await this.prisma.chatMessages.findFirst({
-              where: {
-                OR: [{ clientMessageId }, { id: clientMessageId }],
-              },
-              include: {
-                sender: { select: { id: true, name: true, role: true } },
-              },
-            });
-            if (existing) {
-              if (existing.doctorPatientRelationId !== relationId) {
-                const errRes = { success: false, error: 'Idempotency key does not belong to this relation' };
-                if (typeof callback === 'function') callback(errRes);
-                return socket.emit('error', { message: 'Idempotency key does not belong to this relation' });
-              }
-              if (existing.senderId !== userId) {
-                const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different sender' };
-                if (typeof callback === 'function') callback(errRes);
-                return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different sender' });
-              }
-              if (existing.text !== text) {
-                const errRes = { success: false, error: 'Conflicting reuse of clientMessageId with different content' };
-                if (typeof callback === 'function') callback(errRes);
-                return socket.emit('error', { message: 'Conflicting reuse of clientMessageId with different content' });
-              }
-              const formattedExisting = {
-                id: existing.id,
-                clientMessageId: existing.clientMessageId || existing.id,
-                text: existing.text,
-                senderId: existing.senderId,
-                senderName: existing.sender.name,
-                senderRole: existing.sender.role,
-                createdAt: existing.createdAt.toISOString(),
-              };
-              if (typeof callback === 'function') {
-                callback({ success: true, message: formattedExisting });
-              }
-              return;
-            }
-          }
-          throw createErr;
-        }
-
-        const formattedMessage = {
-          id: message.id,
-          clientMessageId: message.clientMessageId || message.id,
-          text: message.text,
-          senderId: message.senderId,
-          senderName: message.sender.name,
-          senderRole: message.sender.role,
-          createdAt: message.createdAt.toISOString(),
-        };
-
-        // Acknowledge sending client
+        // Acknowledge sending client FIRST with canonical stored message
         if (typeof callback === 'function') {
           callback({ success: true, message: formattedMessage });
         }
 
-        // Broadcast to all users in the relation
-        this.io.to(`relation_${relationId}`).emit('new_message', {
-          message: formattedMessage,
-        });
+        // Only broadcast if this was an original new message (do NOT produce duplicate room broadcasts on replay)
+        if (!result.isDuplicate) {
+          this.io.to(`relation_${relationId}`).emit('new_message', {
+            message: formattedMessage,
+          });
+        }
       } catch (error) {
         console.error('Error saving message:', error);
         const errRes = { success: false, error: 'Failed to send message' };
@@ -645,7 +731,7 @@ export class SocketServer {
   }
 
   /**
-   * Handle typing indicator
+   * Handle typing indicator with throttling
    */
   private handleTypingIndicator(
     socket: Socket,
@@ -655,44 +741,115 @@ export class SocketServer {
     userRole: string
   ): void {
     socket.on('user_typing', () => {
+      if (!this.rateLimiter.check(`typing_${socket.id}`, 1, 1500)) {
+        return; // Throttled
+      }
       socket.to(`relation_${relationId}`).emit('user_typing', {
         userId,
         userName,
         userRole,
       });
     });
+
+    socket.on('user_stop_typing', () => {
+      socket.to(`relation_${relationId}`).emit('user_stop_typing', {
+        userId,
+      });
+    });
   }
 
   /**
-   * Handle message read status
+   * Handle message read status with monotonic cursor update and cross-device sync
    */
   private handleMarkAsRead(socket: Socket, relationId: string, userId: string): void {
-    socket.on('mark_as_read', async (data: { messageId: string }) => {
+    socket.on('mark_as_read', async (data: { messageId?: string; lastReadAt?: string }, callback?: (ack: any) => void) => {
       try {
         if (!relationId) return;
-        if (!data || typeof data.messageId !== 'string' || !data.messageId.trim()) return;
-        const messageId = data.messageId.trim();
+        if (!data || typeof data !== 'object') return;
+        const messageId = typeof data.messageId === 'string' ? data.messageId.trim() : null;
 
-        // Verify relation membership and message ownership before accepting a read receipt
-        const msg = await this.prisma.chatMessages.findUnique({
-          where: { id: messageId },
-          select: { id: true, doctorPatientRelationId: true, senderId: true },
-        });
+        let targetMessage: any = null;
+        if (messageId) {
+          targetMessage = await this.prisma.chatMessages.findUnique({
+            where: { id: messageId },
+            select: { id: true, doctorPatientRelationId: true, senderId: true, createdAt: true },
+          });
+        } else if (data.lastReadAt) {
+          const d = new Date(data.lastReadAt);
+          if (!isNaN(d.getTime())) {
+            targetMessage = await this.prisma.chatMessages.findFirst({
+              where: { doctorPatientRelationId: relationId, createdAt: { lte: d } },
+              orderBy: [{ createdAt: 'desc' }, { id: 'desc' }],
+              select: { id: true, doctorPatientRelationId: true, senderId: true, createdAt: true },
+            });
+          }
+        }
 
-        if (!msg || msg.doctorPatientRelationId !== relationId) {
-          // Reject mark_as_read on unrelated message
+        if (!targetMessage || targetMessage.doctorPatientRelationId !== relationId) {
           return;
         }
 
         // Users do not mark their own messages as read
-        if (msg.senderId === userId) {
+        if (targetMessage.senderId === userId) {
           return;
         }
 
-        socket.to(`relation_${relationId}`).emit('message_read', {
-          messageId,
+        const now = new Date();
+
+        // Monotonically mark all unread messages up to targetMessage.createdAt
+        if (typeof this.prisma.chatMessages?.updateMany === 'function') {
+          await this.prisma.chatMessages.updateMany({
+            where: {
+              doctorPatientRelationId: relationId,
+              senderId: { not: userId },
+              createdAt: { lte: targetMessage.createdAt || now },
+              isRead: false,
+            },
+            data: {
+              isRead: true,
+              readAt: now,
+            },
+          }).catch(() => undefined);
+        }
+
+        // Update conversation monotonic read cursor on DoctorPatientRelation
+        const isDoctor = (socket as any).userRole === 'DOCTOR';
+        if (typeof this.prisma.doctorPatientRelation?.updateMany === 'function') {
+          if (isDoctor) {
+            await this.prisma.doctorPatientRelation.updateMany({
+              where: {
+                id: relationId,
+                OR: [{ doctorLastReadAt: null }, { doctorLastReadAt: { lt: targetMessage.createdAt || now } }],
+              },
+              data: { doctorLastReadAt: targetMessage.createdAt || now },
+            }).catch(() => undefined);
+          } else {
+            await this.prisma.doctorPatientRelation.updateMany({
+              where: {
+                id: relationId,
+                OR: [{ patientLastReadAt: null }, { patientLastReadAt: { lt: targetMessage.createdAt || now } }],
+              },
+              data: { patientLastReadAt: targetMessage.createdAt || now },
+            }).catch(() => undefined);
+          }
+        }
+
+        const receiptPayload = {
+          messageId: targetMessage.id,
           readBy: userId,
-        });
+        };
+
+        // Broadcast to conversation room (counterparty)
+        socket.to(`relation_${relationId}`).emit('message_read', receiptPayload);
+
+        // Synchronize this user's other open tabs/devices if available
+        try {
+          socket.to(`user_${userId}`).emit('message_read', { ...receiptPayload, relationId });
+        } catch {}
+
+        if (typeof callback === 'function') {
+          callback({ success: true, ...receiptPayload, relationId, readAt: now.toISOString() });
+        }
       } catch (error) {
         console.error('Error marking message as read:', error);
       }
@@ -700,12 +857,18 @@ export class SocketServer {
   }
 
   /**
-   * Handle socket disconnect
+   * Handle socket disconnect and cleanup
    */
   private handleDisconnect(socket: Socket, _userName: string, relationId: string, userId: string): void {
     socket.on('disconnect', () => {
+      if ((socket as any).expiryTimer) {
+        clearTimeout((socket as any).expiryTimer);
+      }
+      this.rateLimiter.clear(`msg_${socket.id}`);
+      this.rateLimiter.clear(`typing_${socket.id}`);
       socket.leave(`user_${userId}`);
       if (relationId) {
+        socket.to(`relation_${relationId}`).emit('user_stop_typing', { userId });
         socket.leave(`relation_${relationId}`);
       }
     });

@@ -61,6 +61,8 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
     },
     chatMessages: {
       findMany: vi.fn(),
+      findFirst: vi.fn().mockResolvedValue(null),
+      findUnique: vi.fn().mockResolvedValue(null),
       count: vi.fn(),
       create: vi.fn(),
       updateMany: vi.fn(),
@@ -690,11 +692,11 @@ describe('Socket Server - Comprehensive HTTP & WebSocket Integration Suite', () 
       expect(received.message.id).toBe('msg_123');
       expect(received.message.text).toBe('Hello, how are you feeling today?');
       expect(mockPrisma.chatMessages.create).toHaveBeenCalledWith({
-        data: {
+        data: expect.objectContaining({
           doctorPatientRelationId: 'rel_room_1',
           senderId: 'doc_chat',
           text: 'Hello, how are you feeling today?',
-        },
+        }),
         include: {
           sender: {
             select: { id: true, name: true, role: true },

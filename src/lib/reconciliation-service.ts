@@ -803,6 +803,8 @@ export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ del
       const endpoint =
         item.channel === "SOCKET_APPOINTMENT_REQUEST" || (payload?.appointment && payload?.doctorUserId)
           ? "/api/notifications/new-appointment"
+          : item.channel === "SOCKET_APPOINTMENT_STATUS"
+          ? "/api/notifications/appointment-status"
           : "/api/notifications/broadcast";
 
       const res = await publishToSocketServer(endpoint, payload);

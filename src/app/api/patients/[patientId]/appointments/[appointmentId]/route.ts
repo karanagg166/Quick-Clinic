@@ -5,6 +5,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
 import { publishToSocketServer } from '@/lib/socket-publisher';
 import { claimAndExecuteRefund } from '@/lib/payment-booking-service';
+import { dispatchPendingOutboxEvents } from '@/lib/appointment-confirmation';
 
 export async function GET(
 	req: Request,
@@ -260,26 +261,49 @@ export async function PATCH(
 				},
 			});
 
-			// 2. Notification to doctor
-			const notification = await prisma.notification.create({
-				data: {
-					userId: doctorUserId,
-					message: `Appointment with ${patientName} on ${apptDate} was cancelled by the patient.`,
-					actionHref: `/doctor/appointments/${appointmentId}`,
-					actionLabel: 'View appointment',
-				},
-			});
-			await publishToSocketServer('/api/notifications/broadcast', {
-				userId: doctorUserId,
-				notification: {
-					id: notification.id,
-					message: notification.message,
-					actionHref: notification.actionHref,
-					actionLabel: notification.actionLabel,
-					createdAt: notification.createdAt.toISOString(),
-					isRead: notification.isRead,
-				},
-			});
+			// 2. Notification to doctor (replay-safe & transactional outbox)
+			const doctorEventId = `apt:${appointmentId}:CANCELLED_BY_PATIENT`;
+			try {
+				const notification = await prisma.notification.upsert({
+					where: { userId_eventId: { userId: doctorUserId, eventId: doctorEventId } },
+					update: {},
+					create: {
+						userId: doctorUserId,
+						eventId: doctorEventId,
+						message: `Appointment with ${patientName} on ${apptDate} was cancelled by the patient.`,
+						actionHref: `/doctor/appointments/${appointmentId}`,
+						actionLabel: 'View appointment',
+					},
+				});
+
+				await prisma.notificationOutbox.upsert({
+					where: { eventId: doctorEventId },
+					update: {},
+					create: {
+						eventId: doctorEventId,
+						channel: 'SOCKET_NOTIFICATION',
+						targetUserId: doctorUserId,
+						payload: {
+							userId: doctorUserId,
+							notification: {
+								id: notification.id,
+								message: notification.message,
+								actionHref: notification.actionHref,
+								actionLabel: notification.actionLabel,
+								createdAt: notification.createdAt.toISOString(),
+								isRead: notification.isRead,
+							},
+						},
+						status: 'PENDING',
+					},
+				});
+
+				await dispatchPendingOutboxEvents([doctorEventId]).catch((err) => {
+					console.warn('[PatientCancelAppointment] outbox dispatch warning:', err);
+				});
+			} catch (notifErr) {
+				console.warn('Failed to persist cancellation notification to doctor:', notifErr);
+			}
 		} catch {}
 
 		return NextResponse.json(

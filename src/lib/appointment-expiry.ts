@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { publishToSocketServer } from "@/lib/socket-publisher";
+import { dispatchPendingOutboxEvents } from "@/lib/appointment-confirmation";
 
 let lastAutoExpireRun = 0;
 const AUTO_EXPIRE_COOLDOWN_MS = 5 * 60 * 1000; // 5 minutes
@@ -158,43 +159,92 @@ export async function autoExpirePastAppointments(force = false) {
             });
           }
 
+          const patientEventId = `apt:${appointment.id}:EXPIRED`;
+          const doctorEventId = `apt:${appointment.id}:EXPIRED:doc`;
+          const outboxEventIds: string[] = [];
+
           let patientNotifRecord: any = null;
           if (patientUserId) {
-            patientNotifRecord = await prisma.notification.create({
-              data: {
+            patientNotifRecord = await prisma.notification.upsert({
+              where: { userId_eventId: { userId: patientUserId, eventId: patientEventId } },
+              update: {},
+              create: {
                 userId: patientUserId,
+                eventId: patientEventId,
                 message: `Your appointment with Dr. ${doctorName} on ${apptDate} has expired as the appointment date passed.`,
+                actionHref: `/patient/appointments/${appointment.id}`,
+                actionLabel: "View appointment",
               },
             });
+
+            await prisma.notificationOutbox.upsert({
+              where: { eventId: patientEventId },
+              update: {},
+              create: {
+                eventId: patientEventId,
+                channel: "SOCKET_APPOINTMENT_STATUS",
+                targetUserId: patientUserId,
+                payload: {
+                  patientUserId,
+                  appointmentId: appointment.id,
+                  status: "EXPIRED",
+                  appointmentDate: appointment.slot.date.toISOString(),
+                  appointmentTime: appointment.slot.startTime.toISOString(),
+                  doctorName: appointment.doctor.user.name,
+                  notification: {
+                    id: patientNotifRecord.id,
+                    message: patientNotifRecord.message,
+                    actionHref: patientNotifRecord.actionHref,
+                    actionLabel: patientNotifRecord.actionLabel,
+                    createdAt: patientNotifRecord.createdAt.toISOString(),
+                    isRead: patientNotifRecord.isRead,
+                  },
+                },
+                status: "PENDING",
+              },
+            });
+            outboxEventIds.push(patientEventId);
           }
 
           if (doctorUserId && previousStatus === "CONFIRMED") {
-            await prisma.notification.create({
-              data: {
+            const doctorNotifRecord = await prisma.notification.upsert({
+              where: { userId_eventId: { userId: doctorUserId, eventId: doctorEventId } },
+              update: {},
+              create: {
                 userId: doctorUserId,
+                eventId: doctorEventId,
                 message: `Your appointment with ${patientName} on ${apptDate} was marked expired as the scheduled date passed.`,
+                actionHref: `/doctor/appointments/${appointment.id}`,
+                actionLabel: "View appointment",
               },
             });
+
+            await prisma.notificationOutbox.upsert({
+              where: { eventId: doctorEventId },
+              update: {},
+              create: {
+                eventId: doctorEventId,
+                channel: "SOCKET_NOTIFICATION",
+                targetUserId: doctorUserId,
+                payload: {
+                  userId: doctorUserId,
+                  notification: {
+                    id: doctorNotifRecord.id,
+                    message: doctorNotifRecord.message,
+                    actionHref: doctorNotifRecord.actionHref,
+                    actionLabel: doctorNotifRecord.actionLabel,
+                    createdAt: doctorNotifRecord.createdAt.toISOString(),
+                    isRead: doctorNotifRecord.isRead,
+                  },
+                },
+                status: "PENDING",
+              },
+            });
+            outboxEventIds.push(doctorEventId);
           }
 
-          // 5. Send socket notification if socket server is configured
-          if (appointment.patient?.user?.id) {
-            await publishToSocketServer("/api/notifications/appointment-status", {
-              patientUserId: appointment.patient.user.id,
-              appointmentId: appointment.id,
-              status: "EXPIRED",
-              appointmentDate: appointment.slot.date.toISOString(),
-              appointmentTime: appointment.slot.startTime.toISOString(),
-              doctorName: appointment.doctor.user.name,
-              notification: patientNotifRecord
-                ? {
-                    id: patientNotifRecord.id,
-                    message: patientNotifRecord.message,
-                    createdAt: patientNotifRecord.createdAt.toISOString(),
-                    isRead: patientNotifRecord.isRead,
-                  }
-                : undefined,
-            });
+          if (outboxEventIds.length > 0) {
+            await dispatchPendingOutboxEvents(outboxEventIds).catch(() => undefined);
           }
         } catch {
           // Non-critical notification failure

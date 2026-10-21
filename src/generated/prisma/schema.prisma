@@ -400,6 +400,9 @@ model DoctorPatientRelation {
   doctorsUserId  String
   patientsUserId String
 
+  doctorLastReadAt  DateTime?
+  patientLastReadAt DateTime?
+
   chatMessages ChatMessages[]
 
   doctor  Doctor  @relation(fields: [doctorsUserId], references: [userId], onDelete: Cascade)
@@ -424,10 +427,14 @@ model ChatMessages {
   sender          User    @relation(fields: [senderId], references: [id], onDelete: Cascade)
   clientMessageId String? @unique
 
+  isRead Boolean   @default(false)
+  readAt DateTime?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([doctorPatientRelationId, createdAt])
+  @@index([doctorPatientRelationId, isRead])
   @@index([senderId])
 }
 

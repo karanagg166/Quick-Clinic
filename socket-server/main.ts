@@ -11,6 +11,12 @@ import fs from 'fs';
 
 // Load environment variables
 dotenv.config();
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(__dirname, '../.env') });
+}
+if (!process.env.DATABASE_URL) {
+  dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+}
 
 const app = express();
 const httpServer = createServer(app);
@@ -120,9 +126,36 @@ app.get('/health', (req: express.Request, res: express.Response) => {
   });
 });
 
+app.get('/ready', async (req: express.Request, res: express.Response) => {
+  try {
+    await (prisma as any).$queryRaw`SELECT 1`;
+    res.json({
+      status: 'ready',
+      database: 'connected',
+      connections: io.engine.clientsCount,
+      gitCommit: gitRevision,
+    });
+  } catch (err: any) {
+    res.status(503).json({
+      status: 'error',
+      database: 'disconnected',
+      error: err?.message || 'Database unavailable',
+    });
+  }
+});
+
+app.get('/metrics', requireInternalAuth, (req: express.Request, res: express.Response) => {
+  res.json({
+    connectedSockets: io.engine.clientsCount,
+    roomsCount: io.sockets.adapter.rooms.size,
+    uptimeSeconds: process.uptime(),
+    memoryUsage: process.memoryUsage(),
+  });
+});
+
 // Internal server-to-server publishing authentication middleware
 export function requireInternalAuth(req: express.Request, res: express.Response, next: express.NextFunction) {
-  const secret = process.env.INTERNAL_API_SECRET || process.env.JWT_SECRET;
+  const secret = process.env.INTERNAL_SECRET || process.env.INTERNAL_API_SECRET || process.env.JWT_SECRET;
   if (!secret) {
     return res.status(500).json({ error: 'Server misconfiguration: internal secret not set' });
   }
@@ -456,6 +489,25 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
   }
 });
 
+// Server-side revocation endpoints
+app.post('/api/sockets/revoke-user', requireInternalAuth, (req: express.Request, res: express.Response) => {
+  const { userId, reason } = req.body;
+  if (!userId || typeof userId !== 'string') {
+    return res.status(400).json({ error: 'userId is required' });
+  }
+  socketServer.disconnectUser(userId, reason);
+  return res.json({ success: true, message: `Sockets for user ${userId} disconnected` });
+});
+
+app.post('/api/sockets/revoke-relation', requireInternalAuth, (req: express.Request, res: express.Response) => {
+  const { relationId, reason } = req.body;
+  if (!relationId || typeof relationId !== 'string') {
+    return res.status(400).json({ error: 'relationId is required' });
+  }
+  socketServer.disconnectRelation(relationId, reason);
+  return res.json({ success: true, message: `Sockets in relation ${relationId} disconnected` });
+});
+
 // Export express app, httpServer, io, and socketServer instance for tests and API routes
 export { app, httpServer, io, socketServer };
 
@@ -470,14 +522,27 @@ process.on('uncaughtException', (error: Error) => {
 });
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, closing server...');
-  await prisma.$disconnect();
+async function gracefulShutdown(signal: string) {
+  console.log(`${signal} received, closing Socket.IO server gracefully...`);
+  io.close();
+  const shutdownTimeout = setTimeout(() => {
+    console.error('Graceful shutdown timed out, forcing exit');
+    process.exit(1);
+  }, 5000);
+  try {
+    await prisma.$disconnect();
+  } catch (err) {
+    console.error('Error disconnecting prisma:', err);
+  }
   httpServer.close(() => {
-    console.log('Server closed');
+    clearTimeout(shutdownTimeout);
+    console.log('Socket.IO HTTP server closed cleanly');
     process.exit(0);
   });
-});
+}
+
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Start server when run directly (not during unit/integration tests)
 if (process.env.NODE_ENV !== 'test') {
