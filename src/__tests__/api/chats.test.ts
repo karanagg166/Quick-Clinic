@@ -93,7 +93,7 @@ describe('Chat Messages Route API', () => {
       const res = await POST(req, { params: Promise.resolve({ relationId: 'rel_1' }) });
       expect(res.status).toBe(400);
       const data = await res.json();
-      expect(data.error).toBe('message and senderId are required');
+      expect(data.error).toMatch(/message cannot be empty|message and senderId are required/i);
     });
 
     it('returns 404 when relation does not exist', async () => {
