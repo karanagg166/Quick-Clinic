@@ -63,36 +63,43 @@ export const GET = async (req: NextRequest) => {
     }
 
     const { searchParams } = new URL(req.url);
-    const clientDoctorId = searchParams.get("doctorId");
+    const clientDoctorId = searchParams.get("doctorId")?.trim() || null;
 
     let effectiveDoctorId = clientDoctorId;
 
-    if (authUser) {
-      if (authUser.role === "DOCTOR") {
-        const doctorRecord = await prisma.doctor.findUnique({
-          where: { userId: authUser.id },
-          select: { id: true },
-        });
+    if (authUser.role === "DOCTOR") {
+      const doctorRecord = await prisma.doctor.findUnique({
+        where: { userId: authUser.id },
+        select: { id: true },
+      });
 
-        if (!doctorRecord) {
-          return NextResponse.json({ error: "Doctor profile not found" }, { status: 404 });
-        }
-
-        // Prevent doctor impersonation: reject conflicting client-supplied doctorId
-        if (clientDoctorId && clientDoctorId !== doctorRecord.id) {
-          return NextResponse.json(
-            { error: "Access denied. Cannot query patients for another doctor." },
-            { status: 403 }
-          );
-        }
-        effectiveDoctorId = doctorRecord.id;
-      } else if (authUser.role !== "ADMIN") {
-        return NextResponse.json({ error: "Access denied" }, { status: 403 });
+      if (!doctorRecord) {
+        return NextResponse.json({ error: "Doctor profile not found" }, { status: 404 });
       }
+
+      // Prevent doctor impersonation: reject conflicting client-supplied doctorId
+      if (clientDoctorId && clientDoctorId !== doctorRecord.id) {
+        return NextResponse.json(
+          { error: "Access denied. Cannot query patients for another doctor." },
+          { status: 403 }
+        );
+      }
+      effectiveDoctorId = doctorRecord.id;
+    } else if (authUser.role !== "ADMIN") {
+      return NextResponse.json({ error: "Access denied" }, { status: 403 });
     }
 
-    if (!effectiveDoctorId) {
-      return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
+    const scopeAll = searchParams.get("all") === "true" || searchParams.get("scope") === "all";
+
+    if (scopeAll && authUser.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden. Non-admin users cannot query all patients." },
+        { status: 403 }
+      );
+    }
+
+    if (authUser.role === "ADMIN" && !scopeAll && !effectiveDoctorId) {
+      return NextResponse.json({ error: "doctorId is required when scope is not all" }, { status: 400 });
     }
 
     // --- build patient & user filters ---
@@ -156,17 +163,19 @@ export const GET = async (req: NextRequest) => {
       userFilter.location = locationFilter;
     }
 
-    const scopeAll = searchParams.get("all") === "true" || searchParams.get("scope") === "all";
-
     const where: any = {
       ...patientFilter,
     };
 
-    if (scopeAll && authUser.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    if (!scopeAll) {
-      // --- get appointment rows for the doctor ---
+    // Patient access scoping:
+    // 1. DOCTOR: Always strictly scoped to their own confirmed/completed patients,
+    //    even if client passed scope=all, preventing 403 crashes and preventing cross-doctor patient data leakage.
+    // 2. ADMIN: Can query clinic-wide (scopeAll) or doctor-scoped.
+    if (authUser.role === "DOCTOR" || (authUser.role === "ADMIN" && !scopeAll)) {
+      if (!effectiveDoctorId) {
+        return NextResponse.json({ error: "doctorId is required" }, { status: 400 });
+      }
+
       const appointmentRows = (await prisma.appointment.findMany({
         where: { doctorId: effectiveDoctorId, status: { in: ["CONFIRMED", "COMPLETED"] } },
         select: { patientId: true },
@@ -220,7 +229,7 @@ export const GET = async (req: NextRequest) => {
     const patientAppointments = (await prisma.appointment.findMany({
       where: {
         patientId: { in: patients.map((p) => p.id) },
-        doctorId: effectiveDoctorId,
+        ...(effectiveDoctorId ? { doctorId: effectiveDoctorId } : {}),
       },
       include: {
         slot: {

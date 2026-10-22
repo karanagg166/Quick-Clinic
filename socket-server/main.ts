@@ -211,30 +211,42 @@ type SocketNotification = {
 // Notification records are persisted by the Next.js API. This endpoint broadcasts
 // that record, preventing a second database notification per event.
 app.post('/api/notifications/broadcast', requireInternalAuth, (req: express.Request, res: express.Response) => {
-  const { userId, notification } = req.body as { userId?: string; notification?: SocketNotification };
-  if (!userId || typeof userId !== 'string' || !notification?.id || !notification.message) {
-    return res.status(400).json({ error: 'userId and a valid notification object are required' });
-  }
+  try {
+    const { userId, notification } = req.body as { userId?: string; notification?: SocketNotification };
+    if (!userId || typeof userId !== 'string' || !notification?.id || !notification.message) {
+      return res.status(400).json({ error: 'userId and a valid notification object are required' });
+    }
 
-  socketServer.sendNotificationToUser(userId, notification);
-  return res.json({ success: true });
+    socketServer.sendNotificationToUser(userId, notification);
+    return res.json({ success: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Error broadcasting notification:', msg);
+    return res.status(500).json({ error: msg });
+  }
 });
 
 // A newly-booked appointment has already been persisted by Next.js. Emit its
 // notification and appointment payload so the doctor's list updates instantly.
 app.post('/api/notifications/new-appointment', requireInternalAuth, (req: express.Request, res: express.Response) => {
-  const { doctorUserId, notification, appointment } = req.body as {
-    doctorUserId?: string;
-    notification?: SocketNotification;
-    appointment?: Parameters<SocketServer['sendAppointmentRequest']>[1];
-  };
-  if (!doctorUserId || typeof doctorUserId !== 'string' || !notification?.id || !appointment?.id) {
-    return res.status(400).json({ error: 'doctorUserId, notification, and appointment are required' });
-  }
+  try {
+    const { doctorUserId, notification, appointment } = req.body as {
+      doctorUserId?: string;
+      notification?: SocketNotification;
+      appointment?: Parameters<SocketServer['sendAppointmentRequest']>[1];
+    };
+    if (!doctorUserId || typeof doctorUserId !== 'string' || !notification?.id || !appointment?.id) {
+      return res.status(400).json({ error: 'doctorUserId, notification, and appointment are required' });
+    }
 
-  socketServer.sendNotificationToUser(doctorUserId, notification);
-  socketServer.sendAppointmentRequest(doctorUserId, appointment);
-  return res.json({ success: true });
+    socketServer.sendNotificationToUser(doctorUserId, notification);
+    socketServer.sendAppointmentRequest(doctorUserId, appointment);
+    return res.json({ success: true });
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Error handling new appointment notification:', msg);
+    return res.status(500).json({ error: msg });
+  }
 });
 
 // API endpoint to send appointment status update (replay-safe)
@@ -398,8 +410,14 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
       return res.status(400).json({ error: 'Appointment does not belong to specified doctor' });
     }
 
-    const doctorUserId = appointment.doctor.user.id;
-    const patientName = appointment.patient.user.name;
+    const doctorUserId = appointment.doctor?.user?.id;
+    const patientUser = appointment.patient?.user;
+
+    if (!doctorUserId || !patientUser) {
+      return res.status(400).json({ error: 'Doctor or patient user record not found for appointment' });
+    }
+
+    const patientName = patientUser.name || 'Patient';
 
     const eventId = `apt:${appointmentId}:BOOKED`;
 
@@ -461,14 +479,14 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
 
     const appointmentData = {
       id: appointment.id,
-      patientName: appointment.patient.user.name,
-      patientString: appointment.patient.user.email,
-      gender: appointment.patient.user.gender,
+      patientName: patientUser.name || 'Patient',
+      patientString: patientUser.email || 'N/A',
+      gender: patientUser.gender || 'MALE',
       appointmentDate: appointment.slot?.date?.toISOString() || new Date().toISOString(),
       appointmentTime: appointment.slot?.startTime?.toISOString() || new Date().toISOString(),
       status: appointment.status,
-      city: appointment.patient.user.location?.city || 'N/A',
-      age: appointment.patient.user.age,
+      city: patientUser.location?.city || 'N/A',
+      age: patientUser.age || 0,
       paymentMethod: appointment.paymentMethod,
     };
 

@@ -811,13 +811,19 @@ export async function replayRetryableWebhookEvents(batchSize = 25): Promise<{ re
 /**
  * Reconciles pending notifications in the Outbox with atomic leases.
  * Prevents concurrent direct/scheduled dispatch collision and starvation.
+ * Includes deadline enforcement and circuit-breaking when socket server is cold or unreachable.
  */
-export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ delivered: number; failed: number; errors: string[] }> {
+export async function reconcileNotificationOutbox(
+  batchSize = 20,
+  deadlineMs?: number
+): Promise<{ delivered: number; failed: number; errors: string[] }> {
   let delivered = 0;
   let failed = 0;
   const errors: string[] = [];
   const now = new Date();
   const workerId = `worker_outbox_${process.pid}_${randomUUID().slice(0, 8)}`;
+  const deadline = deadlineMs ?? (Date.now() + 15_000);
+  let socketUnreachable = false;
 
   const pendingOutbox = await prisma.notificationOutbox.findMany({
     where: {
@@ -841,6 +847,15 @@ export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ del
   });
 
   for (const item of pendingOutbox) {
+    if (Date.now() >= deadline) {
+      errors.push("Notification outbox reconciliation reached time budget deadline");
+      break;
+    }
+    if (socketUnreachable) {
+      // Abort sequential outbox attempts when socket server is unreachable to protect execution budget
+      break;
+    }
+
     const claimed = await prisma.notificationOutbox.updateMany({
       where: {
         id: item.id,
@@ -883,6 +898,7 @@ export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ del
         });
         delivered++;
       } else {
+        socketUnreachable = true;
         const newAttempts = item.attempts + 1;
         const nextAttemptAt = new Date(Date.now() + Math.min(30_000 * Math.pow(2, newAttempts), 300_000));
         await prisma.notificationOutbox.updateMany({
@@ -900,6 +916,7 @@ export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ del
         if (newAttempts >= 5) failed++;
       }
     } catch (err: any) {
+      socketUnreachable = true;
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Outbox item ${item.id}: ${msg}`);
       await prisma.notificationOutbox.updateMany({
