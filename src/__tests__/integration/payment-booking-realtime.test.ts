@@ -1444,6 +1444,7 @@ describe("Payment, Booking & Real-Time Production Integration Test Suite", () =>
     });
 
     it("4.5 Notification outbox processing: cron worker delivers pending outbox records", async () => {
+      await prisma.notificationOutbox.deleteMany({});
       const outboxItem = await prisma.notificationOutbox.create({
         data: {
           eventId: `evt_outbox_${Date.now()}`,

@@ -40,32 +40,71 @@ jobs:
             -H "Content-Type: application/json" \
             -w "\n%{http_code}" \
             -X POST \
-            "$APP_URL/api/cron/reconcile-payments")
+            "$APP_URL/api/cron/reconcile-payments") || {
+            echo "::error::Network error or timeout occurred connecting to $APP_URL"
+            exit 1
+          }
 
           HTTP_BODY=$(echo "$HTTP_RESPONSE" | sed '$d')
           HTTP_STATUS=$(echo "$HTTP_RESPONSE" | tail -n 1)
 
           echo "Received HTTP status: $HTTP_STATUS"
 
-          if [ "$HTTP_STATUS" -eq 200 ]; then
-            echo "Reconciliation completed successfully."
-            echo "$HTTP_BODY" | jq . || echo "$HTTP_BODY"
-            
-            # Check if internal processing errors were reported in the JSON payload
-            ERROR_COUNT=$(echo "$HTTP_BODY" | jq '.results.errors | length' 2>/dev/null || echo 0)
-            if [ "$ERROR_COUNT" -gt 0 ]; then
-              echo "::warning::$ERROR_COUNT item-level processing error(s) occurred during reconciliation."
+          # 1. Mutex Contention (409)
+          if [ "$HTTP_STATUS" -eq 409 ]; then
+            if ! echo "$HTTP_BODY" | jq -e . > /dev/null 2>&1; then
+              echo "::error::Received HTTP 409 with non-JSON body: $HTTP_BODY"
+              exit 1
             fi
-            exit 0
-          elif [ "$HTTP_STATUS" -eq 409 ]; then
-            # Valid distributed mutex overlap: another reconciliation run is active
-            echo "Notice: Mutex lock busy; another reconciliation job is currently active. Overlap skipped safely."
-            echo "$HTTP_BODY" | jq . 2>/dev/null || echo "$HTTP_BODY"
-            exit 0
-          elif [ "$HTTP_STATUS" -eq 401 ]; then
-            echo "::error::Unauthorized: CRON_SECRET rejected by $APP_URL."
-            exit 1
-          else
-            echo "::error::Reconciliation request failed with HTTP $HTTP_STATUS: $HTTP_BODY"
+            IS_SKIPPED=$(echo "$HTTP_BODY" | jq -r '.skipped // false')
+            if [ "$IS_SKIPPED" = "true" ]; then
+              echo "Notice: Mutex lock active; another reconciliation worker is currently running. Skipping execution safely."
+              echo "$HTTP_BODY" | jq .
+              exit 0
+            else
+              echo "::error::HTTP 409 returned without skipped=true: $HTTP_BODY"
+              exit 1
+            fi
+          fi
+
+          # 2. Authentication failure (401 / 403)
+          if [ "$HTTP_STATUS" -eq 401 ] || [ "$HTTP_STATUS" -eq 403 ]; then
+            echo "::error::Unauthorized: CRON_SECRET rejected by $APP_URL (HTTP $HTTP_STATUS)."
             exit 1
           fi
+
+          # 3. Server or Gateway errors (500, 502, 503, 504)
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Reconciliation endpoint failed with HTTP $HTTP_STATUS: $HTTP_BODY"
+            exit 1
+          fi
+
+          # 4. Strict JSON parsing for HTTP 200 response
+          if ! echo "$HTTP_BODY" | jq -e . > /dev/null 2>&1; then
+            echo "::error::Reconciliation endpoint returned non-JSON body: $HTTP_BODY"
+            exit 1
+          fi
+
+          # Validate required JSON fields
+          IS_OK=$(echo "$HTTP_BODY" | jq -r '.ok // false')
+          ERROR_COUNT=$(echo "$HTTP_BODY" | jq -r '.results.errors | length // 0')
+          BUDGET_EXCEEDED=$(echo "$HTTP_BODY" | jq -r '.budgetExceeded // false')
+          SKIPPED_PHASES=$(echo "$HTTP_BODY" | jq -r '.skippedPhases // [] | join(", ")')
+
+          echo "Reconciliation payload:"
+          echo "$HTTP_BODY" | jq .
+
+          if [ "$IS_OK" != "true" ] || [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "::error::Reconciliation finished with unhealthy state! ok=$IS_OK, errorCount=$ERROR_COUNT"
+            echo "::group::Reconciliation Errors"
+            echo "$HTTP_BODY" | jq -r '.results.errors[]?'
+            echo "::endgroup::"
+            exit 1
+          fi
+
+          if [ "$BUDGET_EXCEEDED" = "true" ]; then
+            echo "::warning::Reconciliation execution time budget exceeded (<24s). Skipped phases: $SKIPPED_PHASES"
+          fi
+
+          echo "Reconciliation succeeded cleanly with 0 errors."
+          exit 0

@@ -21,7 +21,7 @@ export async function publishToSocketServer<T = unknown>(
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 1500);
 
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     const targetUrl = `${socketUrl.replace(/\/$/, "")}${normalizedPath}`;

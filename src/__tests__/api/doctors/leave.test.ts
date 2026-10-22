@@ -41,6 +41,19 @@ vi.mock('@/lib/prisma', () => ({
         createdAt: new Date(),
         isRead: false,
       }),
+      upsert: vi.fn().mockResolvedValue({
+        id: 'notif_1',
+        message: 'notification message',
+        actionHref: '/patient/appointments/appt_1',
+        actionLabel: 'View appointment',
+        createdAt: new Date(),
+        isRead: false,
+      }),
+    },
+    notificationOutbox: {
+      upsert: vi.fn().mockResolvedValue({ id: 'outbox_1' }),
+      findMany: vi.fn().mockResolvedValue([]),
+      updateMany: vi.fn().mockResolvedValue({ count: 0 }),
     },
     doctorPatientRelation: {
       findUnique: vi.fn().mockResolvedValue({ id: 'rel_1' }),
@@ -176,18 +189,18 @@ describe('Doctor Leave Route', () => {
     );
 
     // Verify notifications sent to both patient and doctor
-    expect(prisma.notification.create).toHaveBeenCalledWith(
+    expect(prisma.notification.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
+        create: expect.objectContaining({
           userId: 'patient_u1',
           message: expect.stringContaining('cancelled'),
         }),
       })
     );
 
-    expect(prisma.notification.create).toHaveBeenCalledWith(
+    expect(prisma.notification.upsert).toHaveBeenCalledWith(
       expect.objectContaining({
-        data: expect.objectContaining({
+        create: expect.objectContaining({
           userId: 'user_1',
         }),
       })
