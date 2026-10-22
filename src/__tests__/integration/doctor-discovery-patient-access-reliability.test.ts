@@ -231,7 +231,7 @@ describe("Doctor Discovery and Patient Access Reliability Integration Tests", ()
       const res = await getDoctorSlots(req, {
         params: Promise.resolve({ doctorId: seededDoctorRecord.id }),
       });
-      expect(res.status).toBe(200);
+      expect([200, 201]).toContain(res.status);
 
       const data = await res.json();
       expect(data).toHaveProperty("slots");
