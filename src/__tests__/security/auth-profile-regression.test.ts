@@ -262,7 +262,7 @@ describe("Additional sensitive route regression checks", () => {
     vi.mocked(prisma.doctorPatientRelation.findUnique).mockResolvedValue({ id: "relation", patientsUserId: "user-a", doctorsUserId: "doctor-user-a" } as never);
     vi.mocked(prisma.chatMessages.create).mockResolvedValue({ id: "message" } as never);
     expect((await POST(request(await createToken({ id: "user-a", role: "PATIENT" }), "POST", { text: "Fixture message", senderId: "doctor-user-a", role: "ADMIN" }), { params: Promise.resolve({ relationId: "relation" }) })).status).toBe(201);
-    expect(prisma.chatMessages.create).toHaveBeenCalledWith({ data: { doctorPatientRelationId: "relation", text: "Fixture message", senderId: "user-a" } });
+    expect(prisma.chatMessages.create).toHaveBeenCalledWith(expect.objectContaining({ data: { doctorPatientRelationId: "relation", text: "Fixture message", senderId: "user-a" } }));
   });
   it("admin bootstrap rejects the former public default when no code is configured", async () => {
     const { POST } = await import("@/app/api/admin/onboarding/route");

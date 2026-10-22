@@ -6,6 +6,7 @@ import { getAuthenticatedUser } from '@/lib/auth';
 import { validateStatusTransition } from '@/lib/appointment-state-machine';
 import { publishToSocketServer } from '@/lib/socket-publisher';
 import { claimAndExecuteRefund } from '@/lib/payment-booking-service';
+import { dispatchPendingOutboxEvents } from '@/lib/appointment-confirmation';
 
 export async function GET(
   req: Request,
@@ -409,36 +410,94 @@ export async function PATCH(
           : `Your appointment on ${apptDate} with Dr. ${doctorName} has been cancelled.`;
       }
 
+      const patientEventId = `apt:${appointmentId}:${status}`;
+      const doctorEventId = `apt:${appointmentId}:${status}:doc`;
+      const outboxEventIds: string[] = [];
+
       try {
-        const patientNotification = await prisma.notification.create({
-          data: {
+        const patientNotification = await prisma.notification.upsert({
+          where: { userId_eventId: { userId: patientUserId, eventId: patientEventId } },
+          update: {},
+          create: {
             userId: patientUserId,
+            eventId: patientEventId,
             message: patientNotificationMessage,
             actionHref: patientActionHref,
             actionLabel: patientActionLabel,
           },
         });
-        await publishToSocketServer('/api/notifications/broadcast', {
-          userId: patientUserId,
-          notification: {
-            id: patientNotification.id,
-            message: patientNotification.message,
-            actionHref: patientNotification.actionHref,
-            actionLabel: patientNotification.actionLabel,
-            createdAt: patientNotification.createdAt.toISOString(),
-            isRead: patientNotification.isRead,
+
+        await prisma.notificationOutbox.upsert({
+          where: { eventId: patientEventId },
+          update: {},
+          create: {
+            eventId: patientEventId,
+            channel: 'SOCKET_APPOINTMENT_STATUS',
+            targetUserId: patientUserId,
+            payload: {
+              patientUserId,
+              appointmentId,
+              status,
+              appointmentDate: apptDate,
+              appointmentTime: appointmentBefore.slot?.startTime ? new Date(appointmentBefore.slot.startTime).toISOString() : new Date().toISOString(),
+              doctorName,
+              notification: {
+                id: patientNotification.id,
+                message: patientNotification.message,
+                actionHref: patientNotification.actionHref,
+                actionLabel: patientNotification.actionLabel,
+                createdAt: patientNotification.createdAt.toISOString(),
+                isRead: patientNotification.isRead,
+              },
+            },
+            status: 'PENDING',
           },
         });
-      } catch {}
+        outboxEventIds.push(patientEventId);
+      } catch (notifErr) {
+        console.warn('Failed to persist patient status notification:', notifErr);
+      }
 
       try {
-        await prisma.notification.create({
-          data: {
+        const doctorNotification = await prisma.notification.upsert({
+          where: { userId_eventId: { userId: doctorUserId, eventId: doctorEventId } },
+          update: {},
+          create: {
             userId: doctorUserId,
+            eventId: doctorEventId,
             message: `Appointment with ${patientName} on ${apptDate} has been marked as ${status.toLowerCase()}.`,
           },
         });
-      } catch {}
+
+        await prisma.notificationOutbox.upsert({
+          where: { eventId: doctorEventId },
+          update: {},
+          create: {
+            eventId: doctorEventId,
+            channel: 'SOCKET_NOTIFICATION',
+            targetUserId: doctorUserId,
+            payload: {
+              userId: doctorUserId,
+              notification: {
+                id: doctorNotification.id,
+                message: doctorNotification.message,
+                createdAt: doctorNotification.createdAt.toISOString(),
+                isRead: doctorNotification.isRead,
+              },
+            },
+            status: 'PENDING',
+          },
+        });
+        outboxEventIds.push(doctorEventId);
+      } catch (notifErr) {
+        console.warn('Failed to persist doctor status notification:', notifErr);
+      }
+
+      if (outboxEventIds.length > 0) {
+        await dispatchPendingOutboxEvents(outboxEventIds).catch((err) => {
+          console.warn('[AppointmentStatusUpdate] immediate outbox dispatch warning:', err);
+        });
+      }
 
     }
 

@@ -98,23 +98,70 @@ https://quickclinic-socket-server.onrender.com
 
 ---
 
-## 🔍 Verify Deployment
+## 🔍 Verify Deployment & Health Checks
 
-### Test Health Endpoint
+### Liveness Health Endpoint
 ```bash
 curl https://quickclinic-socket-server.onrender.com/health
 ```
-
-Should return:
+Should return HTTP 200:
 ```json
-{"status":"ok","timestamp":"2025-12-22T..."}
+{"status":"ok","timestamp":"2026-10-22T04:20:00.000Z","gitCommit":"main"}
 ```
 
-### Test from Frontend
-1. Open your Vercel app
-2. Navigate to a chat page
-3. Check browser console - should see Socket.IO connection
-4. Send a test message
+### Readiness Health Endpoint (Checks PostgreSQL Connectivity)
+```bash
+curl https://quickclinic-socket-server.onrender.com/ready
+```
+Should return HTTP 200:
+```json
+{"status":"ready","database":"connected","connections":0,"gitCommit":"main"}
+```
+*(Returns HTTP 503 if the database is unreachable or down).*
+
+### Server Metrics Endpoint
+```bash
+curl https://quickclinic-socket-server.onrender.com/metrics
+```
+Should return HTTP 200:
+```json
+{
+  "connections": 12,
+  "uptimeSeconds": 3600,
+  "memoryUsage": {"rss": "65MB", "heapUsed": "38MB"},
+  "timestamp": "2026-10-22T04:20:00.000Z",
+  "gitCommit": "main"
+}
+```
+
+---
+
+## 🏗️ Scaling Topology & Instance Guidelines
+
+### Supported Architecture: Single-Instance
+- The socket server is architected as an authoritative **single-instance** service by default.
+- In-memory Socket.IO rooms (`relation_${relationId}`, `user_${userId}`) provide sub-millisecond broadcast latency.
+- Connection state, rate limits, typing timeouts, and ticket expiry timers are handled directly in-process.
+
+### Horizontal Scaling Requirements (Multi-Instance)
+If scaling horizontally across multiple Render instances:
+1. **Redis Adapter**: Attach `@socket.io/redis-adapter` with a managed Redis cluster to relay room broadcasts cross-instance.
+2. **Sticky Sessions (Session Affinity)**: Enable sticky sessions on the load balancer so HTTP long-polling handshake queries from the same socket client route to the same server replica.
+3. *Note*: Never add multi-instance scaling components solely for appearance if single-instance meets capacity requirements.
+
+---
+
+## 🔒 Security, Privacy & Internal Endpoints
+
+- **Server-to-Server Endpoints** (Secured via `x-internal-secret` or `Authorization: Bearer <secret>`):
+  - `POST /api/notifications/broadcast`
+  - `POST /api/notifications/new-appointment`
+  - `POST /api/notifications/appointment-status`
+  - `POST /api/sockets/revoke-user`
+  - `POST /api/sockets/revoke-relation`
+- **Data Protection & Compliance**:
+  - Structured server logs record timestamps, correlation IDs, and event counts.
+  - Message contents, credentials, tokens, and Protected Health Information (PHI) are strictly scrubbed and never logged.
 
 ---
 

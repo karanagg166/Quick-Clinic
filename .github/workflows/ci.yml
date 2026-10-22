@@ -193,8 +193,15 @@ jobs:
       - name: Build Next.js application
         run: pnpm build
 
+      - name: Build Socket.IO server
+        run: |
+          cd socket-server
+          pnpm install --frozen-lockfile
+          pnpm build
+          cd ..
+
       - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test e2e/unified-checkout.spec.ts
+        run: pnpm exec playwright test e2e/unified-checkout.spec.ts e2e/chat-reliability.spec.ts
 
       - name: Upload Playwright Artifacts on Failure
         if: failure()

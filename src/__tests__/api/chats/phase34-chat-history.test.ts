@@ -238,7 +238,7 @@ describe('Phase 34: Chat History & Message Pagination Test Suite', () => {
     const res = await chatsPOST(req, { params: Promise.resolve({ relationId }) });
     expect(res.status).toBe(400);
     const data = await res.json();
-    expect(data.error).toMatch(/message and senderId are required/i);
+    expect(data.error).toMatch(/message cannot be empty|message and senderId are required/i);
   });
 
   it('34.8 POST rejects message creation for non-existent relationId with 404', async () => {

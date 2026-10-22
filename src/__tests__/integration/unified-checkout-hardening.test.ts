@@ -498,7 +498,7 @@ describe("Unified Checkout Hardening Suite", () => {
       });
 
       await prisma.$executeRawUnsafe(
-        `UPDATE "Checkout" SET "updatedAt" = NOW() - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
+        `UPDATE "Checkout" SET "updatedAt" = (NOW() AT TIME ZONE 'utc') - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
       );
 
       const outcome = await reconcileUnresolvedOrders(10);
@@ -552,7 +552,7 @@ describe("Unified Checkout Hardening Suite", () => {
       });
 
       await prisma.$executeRawUnsafe(
-        `UPDATE "Checkout" SET "updatedAt" = NOW() - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
+        `UPDATE "Checkout" SET "updatedAt" = (NOW() AT TIME ZONE 'utc') - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
       );
 
       // Mock provider returning a mismatched order (wrong currency)
@@ -642,10 +642,10 @@ describe("Unified Checkout Hardening Suite", () => {
       });
 
       await prisma.$executeRawUnsafe(
-        `UPDATE "Checkout" SET "updatedAt" = NOW() - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
+        `UPDATE "Checkout" SET "updatedAt" = (NOW() AT TIME ZONE 'utc') - INTERVAL '30 seconds' WHERE id = '${checkout.id}'`
       );
       await prisma.$executeRawUnsafe(
-        `UPDATE "Payment" SET "updatedAt" = NOW() - INTERVAL '30 seconds' WHERE id = '${payment.id}'`
+        `UPDATE "Payment" SET "updatedAt" = (NOW() AT TIME ZONE 'utc') - INTERVAL '30 seconds' WHERE id = '${payment.id}'`
       );
 
       // No refund row exists prior to reconciliation (simulating crash before refund intent)
@@ -719,7 +719,7 @@ describe("Unified Checkout Hardening Suite", () => {
       });
 
       await prisma.$executeRawUnsafe(
-        `UPDATE "Refund" SET "updatedAt" = NOW() - INTERVAL '60 seconds' WHERE id = '${refund.id}'`
+        `UPDATE "Refund" SET "updatedAt" = (NOW() AT TIME ZONE 'utc') - INTERVAL '60 seconds' WHERE id = '${refund.id}'`
       );
 
       const outcome = await reconcilePendingRefunds(10);

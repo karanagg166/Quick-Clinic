@@ -43,9 +43,9 @@ export function reconcileMessages(prev: Message[], incoming: Message[]): Message
     if (existingIdx !== -1) {
       const existing = result[existingIdx];
       const preferredId =
-        msg.id && !msg.id.startsWith('msg_')
+        msg.status === 'sent' && msg.id
           ? msg.id
-          : existing.id && !existing.id.startsWith('msg_')
+          : existing.status === 'sent' && existing.id
           ? existing.id
           : msg.id || existing.id;
 
@@ -83,11 +83,11 @@ export function reconcileMessages(prev: Message[], incoming: Message[]): Message
     if (dupIdx !== -1) {
       const existing = deduplicated[dupIdx];
       const preferredId =
-        msg.id && !msg.id.startsWith('msg_')
+        msg.status === 'sent' && msg.id
           ? msg.id
-          : existing.id && !existing.id.startsWith('msg_')
+          : existing.status === 'sent' && existing.id
           ? existing.id
-          : msg.id;
+          : msg.id || existing.id;
       deduplicated[dupIdx] = {
         ...existing,
         ...msg,
@@ -282,14 +282,22 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'offline'>('connecting');
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'connecting' | 'reconnecting' | 'offline' | 'recovery-failed'>('connecting');
   const [typingUser, setTypingUser] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesRef = useRef<Message[]>([]);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const socketRef = useRef<Socket | null>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const ackTimersRef = useRef<Set<NodeJS.Timeout>>(new Set());
+  const inFlightTicketRef = useRef<Promise<{ token: string; socketUrl: string } | null> | null>(null);
+  const authFailureCountRef = useRef<number>(0);
+
+  // Keep messagesRef in sync with messages state
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   // Helper: merge messages without creating duplicates or discarding newer ones
   const mergeMessages = useCallback((incoming: Message[]) => {
@@ -312,6 +320,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             senderRole: c.sender?.role,
             createdAt: c.createdAt,
             status: 'sent',
+            isRead: Boolean(c.isRead),
           }));
           mergeMessages(formatted);
         }
@@ -327,39 +336,85 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
     fetchMessagesFromAPI();
   }, [fetchMessagesFromAPI]);
 
-  // Request short-lived audience-bound socket ticket
+  // Request short-lived audience-bound socket ticket through bounded, single-flight requests
   const fetchTicket = useCallback(async () => {
-    try {
-      const res = await fetch('/api/socket/token', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ relationId: doctorPatientRelationId }),
-        credentials: 'same-origin',
-      });
-      if (!res.ok) return null;
-      const data = await res.json();
-      if (data?.success && data?.token) {
-        return { token: data.token, socketUrl: data.socketUrl };
-      }
-      return null;
-    } catch {
+    if (inFlightTicketRef.current) {
+      return inFlightTicketRef.current;
+    }
+    if (authFailureCountRef.current >= 3) {
+      console.warn('[ChatBar] Max auth refresh retries reached');
       return null;
     }
+
+    inFlightTicketRef.current = (async () => {
+      try {
+        const res = await fetch('/api/socket/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ relationId: doctorPatientRelationId }),
+          credentials: 'same-origin',
+        });
+        if (!res.ok) {
+          authFailureCountRef.current++;
+          return null;
+        }
+        const data = await res.json();
+        if (data?.success && data?.token) {
+          authFailureCountRef.current = 0;
+          return { token: data.token, socketUrl: data.socketUrl };
+        }
+        authFailureCountRef.current++;
+        return null;
+      } catch {
+        authFailureCountRef.current++;
+        return null;
+      } finally {
+        inFlightTicketRef.current = null;
+      }
+    })();
+
+    return inFlightTicketRef.current;
   }, [doctorPatientRelationId]);
+
+  // Visibility-aware read receipts helper: only emits when tab is actively visible
+  const markVisibleUnread = useCallback((sock: Socket | null) => {
+    if (!sock || !sock.connected) return;
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') {
+      return;
+    }
+    const currentList = messagesRef.current;
+    const unreadFromCounterparty = currentList.filter(
+      (m) => m.senderId !== userId && !m.isRead && m.id && m.status !== 'pending' && m.status !== 'failed'
+    );
+    if (unreadFromCounterparty.length > 0) {
+      const latest = unreadFromCounterparty[unreadFromCounterparty.length - 1];
+      sock.emit('mark_as_read', { messageId: latest.id });
+    }
+  }, [userId]);
 
   // 2. Initialize authenticated Socket.IO connection
   useEffect(() => {
+    if (!userId) {
+      setMessages([]);
+      setConnectionStatus('offline');
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+      return;
+    }
+
     let isMounted = true;
     let socketInstance: Socket | null = null;
 
-    const setupSocket = async () => {
-      setConnectionStatus('connecting');
+    const setupSocket = async (isReconnect = false) => {
+      setConnectionStatus(isReconnect ? 'reconnecting' : 'connecting');
 
       const ticket = await fetchTicket();
       if (!isMounted) return;
 
       if (!ticket) {
-        setConnectionStatus('offline');
+        setConnectionStatus(authFailureCountRef.current >= 3 ? 'recovery-failed' : 'offline');
         setLoading(false);
         return;
       }
@@ -372,6 +427,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       }
 
       socketInstance = io(socketUrl, {
+        path: '/socket.io',
         auth: {
           token: ticket.token,
           relationId: doctorPatientRelationId,
@@ -387,8 +443,20 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       socketInstance.on('connect', () => {
         if (!isMounted) return;
         setConnectionStatus('connected');
-        // Request latest messages upon connect / reconnect
-        socketInstance?.emit('get_initial_messages', { page: 1, limit: 50 });
+        authFailureCountRef.current = 0;
+
+        // Synchronize and recover missed messages across disconnect gap
+        const currentList = messagesRef.current;
+        if (currentList.length > 0) {
+          const lastMsg = currentList[currentList.length - 1];
+          socketInstance?.emit('sync_messages', {
+            since: lastMsg.createdAt,
+            lastMessageId: lastMsg.id,
+            limit: 100,
+          });
+        } else {
+          socketInstance?.emit('get_initial_messages', { page: 1, limit: 50 });
+        }
       });
 
       socketInstance.on('connected', () => {
@@ -398,34 +466,47 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       socketInstance.on('initial_messages', (data: { messages?: Message[] }) => {
         if (isMounted && data?.messages && Array.isArray(data.messages)) {
           mergeMessages(data.messages);
-          // Mark received unread messages from counterparty as read
-          for (const msg of data.messages) {
-            if (msg.senderId !== userId && msg.id && !msg.id.startsWith('msg_')) {
-              socketInstance?.emit('mark_as_read', { messageId: msg.id });
-            }
-          }
+          markVisibleUnread(socketInstance);
         }
         if (isMounted) setLoading(false);
+      });
+
+      socketInstance.on('sync_messages_result', (data: { messages?: Message[] }) => {
+        if (isMounted && data?.messages && Array.isArray(data.messages)) {
+          mergeMessages(data.messages);
+          markVisibleUnread(socketInstance);
+        }
       });
 
       socketInstance.on('new_message', (data: { message: Message }) => {
         if (isMounted && data?.message) {
           mergeMessages([data.message]);
-          if (data.message.senderId !== userId && data.message.id && !data.message.id.startsWith('msg_')) {
-            socketInstance?.emit('mark_as_read', { messageId: data.message.id });
+          if (data.message.senderId !== userId && data.message.id && data.message.status !== 'pending' && data.message.status !== 'failed') {
+            if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+              socketInstance?.emit('mark_as_read', { messageId: data.message.id });
+            }
           }
         }
       });
 
       socketInstance.on('message_read', (data: { messageId: string; readBy?: string }) => {
         if (isMounted && data?.messageId) {
-          setMessages((prev) =>
-            prev.map((m) =>
+          setMessages((prev) => {
+            const targetIdx = prev.findIndex(
+              (m) => m.id === data.messageId || m.clientMessageId === data.messageId
+            );
+            if (targetIdx !== -1) {
+              const targetTime = new Date(prev[targetIdx].createdAt).getTime();
+              return prev.map((m) =>
+                new Date(m.createdAt).getTime() <= targetTime ? { ...m, isRead: true } : m
+              );
+            }
+            return prev.map((m) =>
               m.id === data.messageId || m.clientMessageId === data.messageId
                 ? { ...m, isRead: true }
                 : m
-            )
-          );
+            );
+          });
         }
       });
 
@@ -437,8 +518,37 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
         }
       });
 
+      socketInstance.on('user_stop_typing', (data: { userId: string }) => {
+        if (isMounted && data.userId !== userId) {
+          setTypingUser(null);
+        }
+      });
+
       socketInstance.on('disconnect', () => {
         if (isMounted) setConnectionStatus('offline');
+      });
+
+      socketInstance.on('auth_expired', async () => {
+        if (!isMounted) return;
+        setConnectionStatus('reconnecting');
+        const fresh = await fetchTicket();
+        if (fresh && socketInstance) {
+          socketInstance.auth = {
+            token: fresh.token,
+            relationId: doctorPatientRelationId,
+          };
+          socketInstance.connect();
+        } else {
+          setConnectionStatus('recovery-failed');
+        }
+      });
+
+      socketInstance.on('account_revoked', () => {
+        if (isMounted) {
+          setConnectionStatus('offline');
+          setMessages([]);
+        }
+        if (socketInstance) socketInstance.disconnect();
       });
 
       socketInstance.on('connect_error', async (err: Error) => {
@@ -461,16 +571,28 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
       if (isMounted) {
         socketRef.current = socketInstance;
+      if (typeof window !== 'undefined') {
+        (window as any).__quickClinicChatSocket = socketInstance;
+      }
       }
     };
 
     setupSocket();
 
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        markVisibleUnread(socketRef.current);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
     const handleOnline = () => {
       if (socketRef.current && !socketRef.current.connected) {
         socketRef.current.connect();
       } else if (!socketRef.current) {
-        setupSocket();
+        setupSocket(true);
       }
     };
 
@@ -480,6 +602,8 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
 
     return () => {
       isMounted = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
       window.removeEventListener('online', handleOnline);
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       ackTimers.forEach((t) => clearTimeout(t));
@@ -490,7 +614,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
       }
       socketRef.current = null;
     };
-  }, [doctorPatientRelationId, userId, fetchTicket, mergeMessages]);
+  }, [doctorPatientRelationId, userId, fetchTicket, mergeMessages, markVisibleUnread]);
 
   // Auto-scroll to bottom on message update
   useEffect(() => {
@@ -683,7 +807,7 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
             <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">Secure conversation with your provider</p>
           </div>
           <Badge
-            variant={connectionStatus === 'connected' ? 'default' : 'secondary'}
+            variant={connectionStatus === 'connected' ? 'default' : connectionStatus === 'recovery-failed' ? 'destructive' : 'secondary'}
             className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1 text-xs shrink-0"
           >
             {connectionStatus === 'connected' ? (
@@ -697,6 +821,18 @@ export default function ChatBar({ doctorPatientRelationId, userId }: ChatBarProp
                 <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
                 <span className="hidden sm:inline">Connecting...</span>
                 <span className="sm:hidden">Connecting</span>
+              </>
+            ) : connectionStatus === 'reconnecting' ? (
+              <>
+                <RefreshCw className="w-3.5 h-3.5 animate-spin text-amber-500" />
+                <span className="hidden sm:inline">Reconnecting...</span>
+                <span className="sm:hidden">Reconnecting</span>
+              </>
+            ) : connectionStatus === 'recovery-failed' ? (
+              <>
+                <AlertCircle className="w-3.5 h-3.5 text-white" />
+                <span className="hidden sm:inline">Recovery Failed</span>
+                <span className="sm:hidden">Failed</span>
               </>
             ) : (
               <>

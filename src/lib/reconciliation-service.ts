@@ -4,6 +4,7 @@ import { randomUUID } from "crypto";
 import { prisma } from "@/lib/prisma";
 import {
   fetchRazorpayRefund,
+  fetchRazorpayPayment,
   createRazorpayRefund,
   fetchRazorpayOrderPayments,
   fetchRazorpayOrderByReceipt,
@@ -37,9 +38,10 @@ export async function reconcileUnresolvedOrders(batchSize = 20): Promise<{ recon
 
   const candidates = await prisma.checkout.findMany({
     where: {
-      status: { in: ["PENDING_ORDER", "UNRESOLVED"] },
+      status: { in: ["PENDING_ORDER", "UNRESOLVED", "EXPIRED"] },
       razorpayOrderId: null,
       providerReference: { not: null },
+      attempts: { lt: 5 },
       updatedAt: { lt: new Date(now.getTime() - 10_000) },
       OR: [
         { leaseExpiresAt: null },
@@ -65,7 +67,7 @@ export async function reconcileUnresolvedOrders(batchSize = 20): Promise<{ recon
     const claimed = await prisma.checkout.updateMany({
       where: {
         id: checkout.id,
-        status: { in: ["PENDING_ORDER", "UNRESOLVED"] },
+        status: { in: ["PENDING_ORDER", "UNRESOLVED", "EXPIRED"] },
         razorpayOrderId: null,
         OR: [
           { leaseExpiresAt: null },
@@ -131,7 +133,7 @@ export async function reconcileUnresolvedOrders(batchSize = 20): Promise<{ recon
           });
         }
 
-        const isExpired = new Date() >= checkout.expiresAt;
+        const isExpired = checkout.status === "EXPIRED" || new Date() >= checkout.expiresAt;
         const targetStatus = isExpired ? "EXPIRED" : "READY_FOR_PAYMENT";
 
         // Commit linkage guarded by leaseOwner
@@ -157,37 +159,28 @@ export async function reconcileUnresolvedOrders(batchSize = 20): Promise<{ recon
         }
       } else {
         // Order not found on provider
-        const isExpired = new Date() >= checkout.expiresAt;
+        const isExpired = checkout.status === "EXPIRED" || new Date() >= checkout.expiresAt;
         const newAttempts = checkout.attempts + 1;
 
-        if (isExpired && newAttempts >= 3) {
-          // Bounded retries exhausted and reservation expired: transition to EXPIRED
+        if (newAttempts >= 5) {
+          // Bounded retries exhausted: retain actionable manual review state if disputed
           await prisma.checkout.updateMany({
             where: { id: checkout.id, leaseOwner: workerId, status: { not: "CONFIRMED" } },
             data: {
-              status: "EXPIRED",
-              lastError: "Provider order not found after retries; reservation expired",
-              leaseOwner: null,
-              leaseExpiresAt: null,
-            },
-          });
-        } else if (newAttempts >= 5) {
-          // Retain actionable manual review state
-          await prisma.checkout.updateMany({
-            where: { id: checkout.id, leaseOwner: workerId, status: { not: "CONFIRMED" } },
-            data: {
-              status: "MANUAL_REVIEW",
-              lastError: "Provider order not located after 5 attempts; requires manual review",
+              status: isExpired ? "EXPIRED" : "MANUAL_REVIEW",
+              lastError: "Provider order not located after 5 attempts; requires operator review if disputed",
               leaseOwner: null,
               leaseExpiresAt: null,
             },
           });
         } else {
-          // Retry with exponential backoff
+          // Retry with exponential backoff: reservation may be expired, but we continue financial reconciliation
           const nextAttemptAt = new Date(Date.now() + Math.min(15_000 * Math.pow(2, newAttempts), 300_000));
           await prisma.checkout.updateMany({
             where: { id: checkout.id, leaseOwner: workerId },
             data: {
+              status: isExpired ? "EXPIRED" : checkout.status,
+              lastError: "Provider order lookup pending; retrying",
               nextAttemptAt,
               leaseOwner: null,
               leaseExpiresAt: null,
@@ -431,9 +424,15 @@ export async function reconcileCapturedCheckouts(batchSize = 20): Promise<{ reco
         data: { leaseOwner: null, leaseExpiresAt: null },
       });
     } catch (e: any) {
+      const msg = e instanceof Error ? e.message : String(e);
+      errors.push(`Pending payment ${payment.id}: ${msg}`);
       await prisma.payment.updateMany({
         where: { id: payment.id, leaseOwner: workerId },
-        data: { leaseOwner: null, leaseExpiresAt: null },
+        data: {
+          leaseOwner: null,
+          leaseExpiresAt: null,
+          nextAttemptAt: new Date(Date.now() + 60_000),
+        },
       }).catch(() => undefined);
     }
   }
@@ -573,50 +572,114 @@ export async function reconcilePendingRefunds(batchSize = 20): Promise<{ reconci
           });
         }
       } else {
-        // Execute refund with documented provider idempotency header
-        const providerRefund = await createRazorpayRefund({
-          paymentId: payment.razorpayPaymentId,
-          amount: refund.amount,
-          idempotencyKey: refund.idempotencyKey,
-          notes: {
-            reason: refund.reason,
-            reconciled: "true",
-          },
-        });
+        // Crash safety check: verify if the payment was already refunded on provider before re-executing
+        let alreadyRefunded = false;
+        try {
+          const pmt = await fetchRazorpayPayment(payment.razorpayPaymentId);
+          if (pmt.amount_refunded >= refund.amount || pmt.refund_status === "full") {
+            await prisma.$transaction([
+              prisma.refund.updateMany({
+                where: { id: refund.id, leaseOwner: workerId },
+                data: {
+                  status: "PROCESSED",
+                  processedAt: new Date(),
+                  failureReason: "Payment verified fully refunded by provider",
+                  leaseOwner: null,
+                  leaseExpiresAt: null,
+                },
+              }),
+              prisma.payment.updateMany({
+                where: { id: payment.id },
+                data: { status: "REFUNDED" },
+              }),
+            ]);
+            reconciled++;
+            alreadyRefunded = true;
+          }
+        } catch {
+          // If fetching payment details fails or is unsupported, proceed to standard execution
+        }
 
-        if (providerRefund.status === "processed") {
-          await prisma.$transaction([
-            prisma.refund.updateMany({
-              where: { id: refund.id, leaseOwner: workerId },
-              data: {
-                status: "PROCESSED",
-                razorpayRefundId: providerRefund.id,
-                processedAt: new Date(),
-                failureReason: null,
-                leaseOwner: null,
-                leaseExpiresAt: null,
-              },
-            }),
-            prisma.payment.updateMany({
-              where: { id: payment.id },
-              data: { status: "REFUNDED" },
-            }),
-          ]);
-          reconciled++;
-        } else {
-          await prisma.refund.updateMany({
-            where: { id: refund.id, leaseOwner: workerId },
-            data: {
-              razorpayRefundId: providerRefund.id,
-              leaseOwner: null,
-              leaseExpiresAt: null,
-              nextAttemptAt: new Date(Date.now() + 60_000),
+        if (!alreadyRefunded) {
+          // Execute refund with documented provider idempotency header
+          const providerRefund = await createRazorpayRefund({
+            paymentId: payment.razorpayPaymentId,
+            amount: refund.amount,
+            idempotencyKey: refund.idempotencyKey,
+            notes: {
+              reason: refund.reason,
+              reconciled: "true",
             },
           });
+
+          if (providerRefund.status === "processed") {
+            await prisma.$transaction([
+              prisma.refund.updateMany({
+                where: { id: refund.id, leaseOwner: workerId },
+                data: {
+                  status: "PROCESSED",
+                  razorpayRefundId: providerRefund.id,
+                  processedAt: new Date(),
+                  failureReason: null,
+                  leaseOwner: null,
+                  leaseExpiresAt: null,
+                },
+              }),
+              prisma.payment.updateMany({
+                where: { id: payment.id },
+                data: { status: "REFUNDED" },
+              }),
+            ]);
+            reconciled++;
+          } else {
+            await prisma.refund.updateMany({
+              where: { id: refund.id, leaseOwner: workerId },
+              data: {
+                razorpayRefundId: providerRefund.id,
+                leaseOwner: null,
+                leaseExpiresAt: null,
+                nextAttemptAt: new Date(Date.now() + 60_000),
+              },
+            });
+          }
         }
       }
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : String(err);
+
+      // If error indicates payment is already refunded, check authoritative provider state
+      if (
+        (msg.toLowerCase().includes("already refunded") ||
+          msg.toLowerCase().includes("fully refunded")) &&
+        payment?.razorpayPaymentId
+      ) {
+        try {
+          const pmt = await fetchRazorpayPayment(payment.razorpayPaymentId);
+          if (pmt.amount_refunded >= refund.amount || pmt.refund_status === "full") {
+            await prisma.$transaction([
+              prisma.refund.updateMany({
+                where: { id: refund.id, leaseOwner: workerId },
+                data: {
+                  status: "PROCESSED",
+                  processedAt: new Date(),
+                  failureReason: "Reconciled with provider already refunded state",
+                  leaseOwner: null,
+                  leaseExpiresAt: null,
+                },
+              }),
+              prisma.payment.updateMany({
+                where: { id: payment.id },
+                data: { status: "REFUNDED" },
+              }),
+            ]);
+            reconciled++;
+            continue;
+          }
+        } catch {
+          // Fall through to error recording
+        }
+      }
+
       errors.push(`Refund ${refund.id}: ${msg}`);
       await prisma.refund.updateMany({
         where: { id: refund.id, leaseOwner: workerId },
@@ -803,6 +866,8 @@ export async function reconcileNotificationOutbox(batchSize = 50): Promise<{ del
       const endpoint =
         item.channel === "SOCKET_APPOINTMENT_REQUEST" || (payload?.appointment && payload?.doctorUserId)
           ? "/api/notifications/new-appointment"
+          : item.channel === "SOCKET_APPOINTMENT_STATUS"
+          ? "/api/notifications/appointment-status"
           : "/api/notifications/broadcast";
 
       const res = await publishToSocketServer(endpoint, payload);

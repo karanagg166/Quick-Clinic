@@ -17,11 +17,11 @@ export async function publishToSocketServer<T = unknown>(
   }
 
   const internalSecret =
-    process.env.INTERNAL_API_SECRET || process.env.JWT_SECRET || "";
+    process.env.INTERNAL_SECRET || process.env.INTERNAL_API_SECRET || process.env.JWT_SECRET || "";
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 4000);
+    const timeout = setTimeout(() => controller.abort(), 1500);
 
     const normalizedPath = path.startsWith("/") ? path : `/${path}`;
     const targetUrl = `${socketUrl.replace(/\/$/, "")}${normalizedPath}`;

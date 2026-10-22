@@ -1,186 +1,256 @@
 'use client';
 
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { useUserStore } from '@/store/userStore';
 
-interface Notification {
+export interface NotificationItem {
   id: string;
   message: string;
-  actionHref: string | null;
-  actionLabel: string | null;
+  actionHref?: string | null;
+  actionLabel?: string | null;
   createdAt: string;
   isRead: boolean;
 }
 
-export function useNotifications() {
-  const user = useUserStore((state) => state.user);
-  const userId = user?.id;
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isConnected, setIsConnected] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+// Module-level singleton state to avoid duplicate notification connections across components
+let activeUserId: string | null = null;
+let sharedSocket: Socket | null = null;
+let cachedNotifications: NotificationItem[] = [];
+let isSocketConnected = false;
+let consecutiveAuthFailures = 0;
+let inFlightTokenPromise: Promise<{ token: string; socketUrl: string } | null> | null = null;
 
-  const fetchSocketToken = useCallback(async (): Promise<{ token: string; socketUrl: string } | null> => {
+const notificationSubscribers = new Set<(items: NotificationItem[]) => void>();
+const connectionSubscribers = new Set<(connected: boolean) => void>();
+
+function notifyAllSubscribers() {
+  for (const sub of notificationSubscribers) {
+    sub([...cachedNotifications]);
+  }
+}
+
+function notifyConnectionSubscribers() {
+  for (const sub of connectionSubscribers) {
+    sub(isSocketConnected);
+  }
+}
+
+// Bounded, single-flight token fetcher
+async function fetchSingleFlightToken(): Promise<{ token: string; socketUrl: string } | null> {
+  if (inFlightTokenPromise) {
+    return inFlightTokenPromise;
+  }
+  if (consecutiveAuthFailures >= 3) {
+    console.warn('[NotificationSocket] Max auth retry attempts reached. Pausing auth refresh.');
+    return null;
+  }
+
+  inFlightTokenPromise = (async () => {
     try {
       const res = await fetch('/api/socket/token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'same-origin',
       });
-      if (!res.ok) return null;
+      if (!res.ok) {
+        consecutiveAuthFailures++;
+        return null;
+      }
       const data = await res.json();
       if (data?.success && data?.token) {
+        consecutiveAuthFailures = 0;
         return { token: data.token, socketUrl: data.socketUrl };
       }
+      consecutiveAuthFailures++;
       return null;
     } catch {
+      consecutiveAuthFailures++;
       return null;
+    } finally {
+      inFlightTokenPromise = null;
     }
-  }, []);
+  })();
+
+  return inFlightTokenPromise;
+}
+
+async function fetchPersistedNotifications(userId: string) {
+  try {
+    const res = await fetch(`/api/user/${userId}/notification`);
+    if (res.ok) {
+      const list = await res.json();
+      if (Array.isArray(list)) {
+        const prevMap = new Map(cachedNotifications.map((n) => [n.id, n]));
+        for (const item of list) {
+          prevMap.set(item.id, {
+            id: item.id,
+            message: item.message,
+            actionHref: item.actionHref ?? null,
+            actionLabel: item.actionLabel ?? null,
+            createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString(),
+            isRead: Boolean(item.isRead),
+          });
+        }
+        cachedNotifications = Array.from(prevMap.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+        notifyAllSubscribers();
+      }
+    }
+  } catch (err) {
+    console.warn('Failed to load persisted notifications:', err);
+  }
+}
+
+async function initNotificationSocket(userId: string) {
+  if (sharedSocket && activeUserId === userId && sharedSocket.connected) {
+    return;
+  }
+
+  if (activeUserId !== userId && sharedSocket) {
+    sharedSocket.disconnect();
+    sharedSocket = null;
+    cachedNotifications = [];
+    isSocketConnected = false;
+    consecutiveAuthFailures = 0;
+    notifyAllSubscribers();
+    notifyConnectionSubscribers();
+  }
+
+  activeUserId = userId;
+  await fetchPersistedNotifications(userId);
+
+  const ticket = await fetchSingleFlightToken();
+  if (!ticket || activeUserId !== userId) return;
+
+  const socketUrl = ticket.socketUrl || process.env.NEXT_PUBLIC_SOCKET_URL;
+  if (!socketUrl) return;
+
+  if (sharedSocket) {
+    sharedSocket.disconnect();
+    sharedSocket = null;
+  }
+
+  const socket = io(socketUrl, {
+    path: '/socket.io',
+    auth: { token: ticket.token },
+    transports: ['websocket', 'polling'],
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: 10,
+    timeout: 10000,
+  });
+
+  sharedSocket = socket;
+
+  socket.on('connect', () => {
+    isSocketConnected = true;
+    notifyConnectionSubscribers();
+    if (activeUserId) void fetchPersistedNotifications(activeUserId);
+  });
+
+  socket.on('notification_connected', () => {
+    isSocketConnected = true;
+    notifyConnectionSubscribers();
+    if (activeUserId) void fetchPersistedNotifications(activeUserId);
+  });
+
+  socket.on('new_notification', (data: { notification: NotificationItem }) => {
+    if (data?.notification) {
+      const exists = cachedNotifications.some((n) => n.id === data.notification.id);
+      if (!exists) {
+        cachedNotifications = [data.notification, ...cachedNotifications];
+        notifyAllSubscribers();
+      }
+    }
+  });
+
+  socket.on('disconnect', () => {
+    isSocketConnected = false;
+    notifyConnectionSubscribers();
+  });
+
+  socket.on('auth_expired', async () => {
+    isSocketConnected = false;
+    notifyConnectionSubscribers();
+    const fresh = await fetchSingleFlightToken();
+    if (fresh && sharedSocket) {
+      sharedSocket.auth = { token: fresh.token };
+      sharedSocket.connect();
+    }
+  });
+
+  socket.on('account_revoked', () => {
+    if (sharedSocket) {
+      sharedSocket.disconnect();
+      sharedSocket = null;
+    }
+    cachedNotifications = [];
+    isSocketConnected = false;
+    notifyAllSubscribers();
+    notifyConnectionSubscribers();
+  });
+
+  socket.on('connect_error', async (err: Error) => {
+    isSocketConnected = false;
+    notifyConnectionSubscribers();
+    if (err.message && /token|auth|expired/i.test(err.message)) {
+      const fresh = await fetchSingleFlightToken();
+      if (fresh && sharedSocket) {
+        sharedSocket.auth = { token: fresh.token };
+        sharedSocket.connect();
+      }
+    }
+  });
+}
+
+export function useNotifications() {
+  const user = useUserStore((state) => state.user);
+  const userId = user?.id;
+  const [notifications, setNotifications] = useState<NotificationItem[]>(cachedNotifications);
+  const [isConnected, setIsConnected] = useState<boolean>(isSocketConnected);
 
   useEffect(() => {
     if (!userId) {
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
+      if (sharedSocket) {
+        sharedSocket.disconnect();
+        sharedSocket = null;
       }
-      setIsConnected(false);
+      activeUserId = null;
+      cachedNotifications = [];
+      isSocketConnected = false;
       setNotifications([]);
+      setIsConnected(false);
       return;
     }
 
-    let isMounted = true;
+    notificationSubscribers.add(setNotifications);
+    connectionSubscribers.add(setIsConnected);
 
-    const fetchPersistedNotifications = async () => {
-      try {
-        const res = await fetch(`/api/user/${userId}/notification`);
-        if (res.ok) {
-          const list = await res.json();
-          if (Array.isArray(list) && isMounted) {
-            setNotifications((prev) => {
-              const prevMap = new Map(prev.map((n) => [n.id, n]));
-              for (const item of list) {
-                if (!prevMap.has(item.id)) {
-                  prevMap.set(item.id, {
-                    id: item.id,
-                    message: item.message,
-                    actionHref: item.actionHref ?? null,
-                    actionLabel: item.actionLabel ?? null,
-                    createdAt: typeof item.createdAt === 'string' ? item.createdAt : new Date(item.createdAt).toISOString(),
-                    isRead: Boolean(item.isRead),
-                  });
-                }
-              }
-              return Array.from(prevMap.values()).sort(
-                (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-              );
-            });
-          }
-        }
-      } catch (err) {
-        console.warn('Failed to load persisted notifications:', err);
-      }
-    };
+    // Sync initial state
+    setNotifications([...cachedNotifications]);
+    setIsConnected(isSocketConnected);
 
-    fetchPersistedNotifications();
-
-    const connectSocket = async () => {
-      const ticket = await fetchSocketToken();
-      if (!isMounted || !ticket) {
-        return;
-      }
-
-      const socketUrl = ticket.socketUrl || process.env.NEXT_PUBLIC_SOCKET_URL;
-      if (!socketUrl) {
-        // In production without socket URL, do not fallback to visitor's localhost
-        return;
-      }
-
-      // Disconnect any existing socket before opening a new authenticated one
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
-
-      const socket = io(socketUrl, {
-        auth: {
-          token: ticket.token,
-        },
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 10,
-        timeout: 10000,
-      });
-
-      socketRef.current = socket;
-
-      socket.on('connect', () => {
-        if (isMounted) {
-          setIsConnected(true);
-          fetchPersistedNotifications();
-        }
-      });
-
-      socket.on('notification_connected', () => {
-        if (isMounted) {
-          setIsConnected(true);
-          fetchPersistedNotifications();
-        }
-      });
-
-      socket.on('new_notification', (data: { notification: Notification }) => {
-        if (isMounted && data?.notification) {
-          setNotifications((prev) => {
-            const exists = prev.some((n) => n.id === data.notification.id);
-            return exists ? prev : [data.notification, ...prev];
-          });
-        }
-      });
-
-      socket.on('disconnect', () => {
-        if (isMounted) setIsConnected(false);
-      });
-
-      socket.on('connect_error', async (err: Error) => {
-        if (!isMounted) return;
-        setIsConnected(false);
-
-        // If authentication failed (e.g. ticket expired), re-fetch ticket and retry
-        if (err.message && /token|auth|expired/i.test(err.message)) {
-          const freshTicket = await fetchSocketToken();
-          if (freshTicket && socketRef.current) {
-            socketRef.current.auth = { token: freshTicket.token };
-            socketRef.current.connect();
-          }
-        }
-      });
-    };
-
-    connectSocket();
+    void initNotificationSocket(userId);
 
     const handleOnline = () => {
-      if (socketRef.current && !socketRef.current.connected) {
-        socketRef.current.connect();
-      } else if (!socketRef.current) {
-        connectSocket();
+      if (sharedSocket && !sharedSocket.connected) {
+        sharedSocket.connect();
+      } else if (!sharedSocket && activeUserId) {
+        void initNotificationSocket(activeUserId);
       }
     };
 
     window.addEventListener('online', handleOnline);
 
     return () => {
-      isMounted = false;
+      notificationSubscribers.delete(setNotifications);
+      connectionSubscribers.delete(setIsConnected);
       window.removeEventListener('online', handleOnline);
-      if (reconnectTimeoutRef.current) clearTimeout(reconnectTimeoutRef.current);
-      if (socketRef.current) {
-        socketRef.current.disconnect();
-        socketRef.current = null;
-      }
     };
-  }, [userId, fetchSocketToken]);
+  }, [userId]);
 
   return {
     notifications,

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { isValidStatusTransition } from "@/lib/appointment-state-machine";
 import { publishToSocketServer } from "@/lib/socket-publisher";
+import { dispatchPendingOutboxEvents } from "@/lib/appointment-confirmation";
 
 /**
  * Helper: get all dates between two DateTimes (inclusive, UTC midnight dates)
@@ -259,43 +260,47 @@ async function cancelAppointmentsForLeave(
             ? `Your appointment on ${apptDate} with Dr. ${docName} has been cancelled due to doctor leave (Reason: ${reason}). A full refund has been initiated to your payment method.`
             : `Your appointment on ${apptDate} with Dr. ${docName} has been cancelled. Reason: Doctor is on leave — ${reason}`;
 
-        const patientNotification = await prisma.notification.create({
-          data: {
+        const patientEventId = `apt:${appt.id}:CANCELLED_BY_LEAVE`;
+        const patientNotification = await prisma.notification.upsert({
+          where: { userId_eventId: { userId: patientUserId, eventId: patientEventId } },
+          update: {},
+          create: {
             userId: patientUserId,
+            eventId: patientEventId,
             message: patientMessage,
             actionHref: `/patient/appointments/${appt.id}`,
             actionLabel: "View appointment",
           },
         });
 
-        await publishToSocketServer("/api/notifications/broadcast", {
-          userId: patientUserId,
-          notification: {
-            id: patientNotification.id,
-            message: patientNotification.message,
-            actionHref: patientNotification.actionHref,
-            actionLabel: patientNotification.actionLabel,
-            createdAt: patientNotification.createdAt.toISOString(),
-            isRead: patientNotification.isRead,
+        await prisma.notificationOutbox.upsert({
+          where: { eventId: patientEventId },
+          update: {},
+          create: {
+            eventId: patientEventId,
+            channel: 'SOCKET_APPOINTMENT_STATUS',
+            targetUserId: patientUserId,
+            payload: {
+              patientUserId,
+              appointmentId: appt.id,
+              status: "CANCELLED",
+              appointmentDate: appt.slot?.date ? appt.slot.date.toISOString() : new Date().toISOString(),
+              appointmentTime: appt.slot?.startTime ? appt.slot.startTime.toISOString() : new Date().toISOString(),
+              doctorName: docName,
+              notification: {
+                id: patientNotification.id,
+                message: patientNotification.message,
+                actionHref: patientNotification.actionHref,
+                actionLabel: patientNotification.actionLabel,
+                createdAt: patientNotification.createdAt.toISOString(),
+                isRead: patientNotification.isRead,
+              },
+            },
+            status: 'PENDING',
           },
         });
 
-        if (appt.slot?.date && appt.slot?.startTime) {
-          await publishToSocketServer("/api/notifications/appointment-status", {
-            patientUserId,
-            appointmentId: appt.id,
-            status: "CANCELLED",
-            appointmentDate: appt.slot.date.toISOString(),
-            appointmentTime: appt.slot.startTime.toISOString(),
-            doctorName: docName,
-            notification: {
-              id: patientNotification.id,
-              message: patientNotification.message,
-              createdAt: patientNotification.createdAt.toISOString(),
-              isRead: patientNotification.isRead,
-            },
-          });
-        }
+        await dispatchPendingOutboxEvents([patientEventId]).catch(() => undefined);
       } catch {}
     }
 
@@ -303,27 +308,43 @@ async function cancelAppointmentsForLeave(
     if (doctorUserId) {
       try {
         const doctorMessage = `Appointment with ${patientName} on ${apptDate} was cancelled due to your scheduled leave (Reason: ${reason}).`;
+        const doctorEventId = `apt:${appt.id}:CANCELLED_BY_LEAVE:doc`;
 
-        const doctorNotification = await prisma.notification.create({
-          data: {
+        const doctorNotification = await prisma.notification.upsert({
+          where: { userId_eventId: { userId: doctorUserId, eventId: doctorEventId } },
+          update: {},
+          create: {
             userId: doctorUserId,
+            eventId: doctorEventId,
             message: doctorMessage,
             actionHref: `/doctor/appointments/${appt.id}`,
             actionLabel: "View appointment",
           },
         });
 
-        await publishToSocketServer("/api/notifications/broadcast", {
-          userId: doctorUserId,
-          notification: {
-            id: doctorNotification.id,
-            message: doctorNotification.message,
-            actionHref: doctorNotification.actionHref,
-            actionLabel: doctorNotification.actionLabel,
-            createdAt: doctorNotification.createdAt.toISOString(),
-            isRead: doctorNotification.isRead,
+        await prisma.notificationOutbox.upsert({
+          where: { eventId: doctorEventId },
+          update: {},
+          create: {
+            eventId: doctorEventId,
+            channel: "SOCKET_NOTIFICATION",
+            targetUserId: doctorUserId,
+            payload: {
+              userId: doctorUserId,
+              notification: {
+                id: doctorNotification.id,
+                message: doctorNotification.message,
+                actionHref: doctorNotification.actionHref,
+                actionLabel: doctorNotification.actionLabel,
+                createdAt: doctorNotification.createdAt.toISOString(),
+                isRead: doctorNotification.isRead,
+              },
+            },
+            status: "PENDING",
           },
         });
+
+        await dispatchPendingOutboxEvents([doctorEventId]).catch(() => undefined);
       } catch {}
     }
   }
@@ -427,27 +448,43 @@ export async function POST(
           ? `Leave request submitted. ${cancelledCount} appointment(s) for this period have been cancelled, and patients have been notified on chat and notifications.`
           : "Leave request has been successfully added. No existing appointments were affected.";
 
+      const summaryEventId = `leave:${leaveRequest.id}:summary`;
       try {
-        const summaryNotif = await prisma.notification.create({
-          data: {
+        const summaryNotif = await prisma.notification.upsert({
+          where: { userId_eventId: { userId: summaryUserId, eventId: summaryEventId } },
+          update: {},
+          create: {
             userId: summaryUserId,
+            eventId: summaryEventId,
             message: summaryMessage,
             actionHref: `/doctor/leave/history`,
             actionLabel: "View leave history",
           },
         });
 
-        await publishToSocketServer("/api/notifications/broadcast", {
-          userId: summaryUserId,
-          notification: {
-            id: summaryNotif.id,
-            message: summaryNotif.message,
-            actionHref: summaryNotif.actionHref,
-            actionLabel: summaryNotif.actionLabel,
-            createdAt: summaryNotif.createdAt.toISOString(),
-            isRead: summaryNotif.isRead,
+        await prisma.notificationOutbox.upsert({
+          where: { eventId: summaryEventId },
+          update: {},
+          create: {
+            eventId: summaryEventId,
+            channel: "SOCKET_NOTIFICATION",
+            targetUserId: summaryUserId,
+            payload: {
+              userId: summaryUserId,
+              notification: {
+                id: summaryNotif.id,
+                message: summaryNotif.message,
+                actionHref: summaryNotif.actionHref,
+                actionLabel: summaryNotif.actionLabel,
+                createdAt: summaryNotif.createdAt.toISOString(),
+                isRead: summaryNotif.isRead,
+              },
+            },
+            status: "PENDING",
           },
         });
+
+        await dispatchPendingOutboxEvents([summaryEventId]).catch(() => undefined);
       } catch {}
     }
 
