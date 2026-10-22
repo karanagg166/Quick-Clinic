@@ -36,7 +36,6 @@ export default function DoctorPatientsPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [genderFilter, setGenderFilter] = useState("all");
-  const [scope, setScope] = useState<"my" | "all">("my");
 
   const fetchPatients = useCallback(async () => {
     if (!doctorId) {
@@ -48,9 +47,6 @@ export default function DoctorPatientsPage() {
     try {
       const params = new URLSearchParams();
       params.append("doctorId", doctorId);
-      if (scope === "all") {
-        params.append("scope", "all");
-      }
 
       const res = await fetch(`/api/patients?${params.toString()}`, {
         method: "GET",
@@ -77,7 +73,7 @@ export default function DoctorPatientsPage() {
     } finally {
       setLoading(false);
     }
-  }, [doctorId, scope]);
+  }, [doctorId]);
 
   useEffect(() => {
     fetchPatients();
@@ -86,7 +82,6 @@ export default function DoctorPatientsPage() {
   const handleReset = () => {
     setSearchQuery("");
     setGenderFilter("all");
-    setScope("my");
   };
 
   const filteredPatients = patients.filter((patient) => {
@@ -155,30 +150,6 @@ export default function DoctorPatientsPage() {
             Access your patient profiles, clinical history, known allergies, medications, and interaction logs.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="inline-flex p-1 bg-muted rounded-xl border">
-            <button
-              onClick={() => setScope("my")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                scope === "my"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              My Patients
-            </button>
-            <button
-              onClick={() => setScope("all")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                scope === "all"
-                  ? "bg-card text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              All Clinic Patients
-            </button>
-          </div>
-        </div>
       </div>
 
       {/* Stats Cards */}
@@ -187,7 +158,7 @@ export default function DoctorPatientsPage() {
           <CardContent className="p-5 flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                Total {scope === "my" ? "My Patients" : "Patients"}
+                Total Patients
               </p>
               <p className="text-2xl font-bold mt-1 text-foreground">{totalPatients}</p>
             </div>
@@ -306,17 +277,10 @@ export default function DoctorPatientsPage() {
               <h3 className="text-lg font-semibold text-foreground">No Patients Found</h3>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
                 {patients.length === 0
-                  ? scope === "my"
-                    ? "You do not have any patient appointments on record yet. You can switch to 'All Clinic Patients' or view your schedule."
-                    : "No patients are registered in the system."
+                  ? "You do not have any patient appointments on record yet. View your schedule to see upcoming appointments."
                   : "No patients match your search or gender filter criteria."}
               </p>
               <div className="flex justify-center gap-3 pt-2">
-                {scope === "my" && patients.length === 0 && (
-                  <Button size="sm" onClick={() => setScope("all")}>
-                    View All Clinic Patients
-                  </Button>
-                )}
                 <Button variant="outline" size="sm" asChild>
                   <Link href="/doctor/today">View Today's Schedule</Link>
                 </Button>

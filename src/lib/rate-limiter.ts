@@ -1,6 +1,8 @@
 import { Redis } from "@upstash/redis";
 
 let redis: Redis | undefined;
+let redisCircuitBreakerUntil = 0;
+const REDIS_FAILOVER_COOLDOWN_MS = 30_000; // 30-second circuit breaker cooldown on Redis/DNS failure
 
 function getRedis(): Redis | null {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -16,6 +18,16 @@ function getRedis(): Redis | null {
 
 // In-memory sliding window fallback
 const memoryStore = new Map<string, { count: number; resetAt: number }>();
+
+function pruneMemoryStore(now: number): void {
+  if (memoryStore.size > 1000) {
+    for (const [k, v] of memoryStore.entries()) {
+      if (v.resetAt <= now) {
+        memoryStore.delete(k);
+      }
+    }
+  }
+}
 
 export interface RateLimitResult {
   allowed: boolean;
@@ -41,35 +53,41 @@ const ENDPOINT_LIMITS: Record<DoctorMedicalEndpoint, { limit: number; windowSeco
 
 /**
  * Checks and increments rate limit for a specific key.
- * Backed by Redis with in-memory fallback.
+ * Backed by Redis with instantaneous in-memory fallback on DNS or network failure.
  */
 export async function checkRateLimit(
   key: string,
   limit: number,
   windowSeconds: number
 ): Promise<RateLimitResult> {
-  const client = getRedis();
   const now = Date.now();
+  const isCircuitOpen = now < redisCircuitBreakerUntil;
 
-  if (client) {
-    try {
-      const fullKey = `ratelimit:${key}`;
-      const count = await client.incr(fullKey);
-      if (count === 1) {
-        await client.expire(fullKey, windowSeconds);
+  if (!isCircuitOpen) {
+    const client = getRedis();
+    if (client) {
+      try {
+        const fullKey = `ratelimit:${key}`;
+        const count = await client.incr(fullKey);
+        if (count === 1) {
+          await client.expire(fullKey, windowSeconds);
+        }
+        const ttl = await client.ttl(fullKey);
+        const resetSeconds = ttl > 0 ? ttl : windowSeconds;
+        const allowed = count <= limit;
+        const remaining = Math.max(0, limit - count);
+
+        return { allowed, limit, remaining, resetSeconds };
+      } catch (e: any) {
+        // Trip circuit breaker immediately on DNS or network failure to prevent multi-second request stalls
+        redisCircuitBreakerUntil = Date.now() + REDIS_FAILOVER_COOLDOWN_MS;
+        console.warn(`[RateLimiter] Upstash Redis unavailable (circuit open for 30s): ${e?.message || e}`);
       }
-      const ttl = await client.ttl(fullKey);
-      const resetSeconds = ttl > 0 ? ttl : windowSeconds;
-      const allowed = count <= limit;
-      const remaining = Math.max(0, limit - count);
-
-      return { allowed, limit, remaining, resetSeconds };
-    } catch (e) {
-      console.warn("Redis rate limiter failed, using in-memory fallback:", e);
     }
   }
 
   // In-memory fallback
+  pruneMemoryStore(now);
   const entry = memoryStore.get(key);
   if (!entry || entry.resetAt <= now) {
     memoryStore.set(key, { count: 1, resetAt: now + windowSeconds * 1000 });
@@ -103,8 +121,17 @@ export async function checkDoctorMedicalRateLimit(
 }
 
 /**
- * Clears in-memory rate limit counters (useful for unit and integration testing).
+ * Clears in-memory rate limit counters and circuit breaker (useful for unit and integration testing).
  */
 export function clearInMemoryRateLimits(): void {
   memoryStore.clear();
+  redisCircuitBreakerUntil = 0;
+}
+
+export function isRedisCircuitBreakerOpen(): boolean {
+  return Date.now() < redisCircuitBreakerUntil;
+}
+
+export function tripRedisCircuitBreaker(durationMs = REDIS_FAILOVER_COOLDOWN_MS): void {
+  redisCircuitBreakerUntil = Date.now() + durationMs;
 }

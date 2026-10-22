@@ -93,9 +93,10 @@ export async function POST(req: NextRequest) {
       skippedPhases.push("replayRetryableWebhookEvents");
     }
 
-    // 7. Reconcile Notification Outbox (bounded batch of 50)
+    // 7. Reconcile Notification Outbox (bounded batch of 15 with execution deadline)
     if (!isBudgetExceeded()) {
-      const outboxRes = await reconcileNotificationOutbox(50);
+      const remainingMs = Math.max(0, TIME_BUDGET_MS - (Date.now() - startTime));
+      const outboxRes = await reconcileNotificationOutbox(15, Date.now() + remainingMs);
       results.outboxDelivered += outboxRes.delivered;
       results.outboxFailed += outboxRes.failed;
       results.errors.push(...outboxRes.errors);

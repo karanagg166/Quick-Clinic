@@ -56,7 +56,7 @@ function DoctorPatientReportsContent() {
 
     setLoading(true);
     try {
-      const res = await fetch(`/api/patients?doctorId=${doctorId}&scope=all`, {
+      const res = await fetch(`/api/patients?doctorId=${encodeURIComponent(doctorId)}`, {
         method: "GET",
         credentials: "include",
       });
