@@ -119,7 +119,21 @@ export default function UploadMedicalDocumentPage() {
 
       const data = await res.json();
       if (!res.ok) {
-        throw new Error(data.error || "Failed to upload document");
+        const errorMsg = data.error || "Failed to upload document";
+        if (data.retryable) {
+          toast.error(errorMsg, {
+            action: {
+              label: "Retry",
+              onClick: () => {
+                const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+                handleSubmit(fakeEvent);
+              },
+            },
+          });
+        } else {
+          toast.error(errorMsg);
+        }
+        return;
       }
 
       toast.success("Medical document uploaded successfully!");

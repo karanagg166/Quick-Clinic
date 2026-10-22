@@ -22,21 +22,40 @@ import type {
 
 export * from "@/types/search-sphere";
 
+export class SearchSphereConfigError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SearchSphereConfigError";
+  }
+}
+
+export class SearchSphereUploadError extends Error {
+  constructor(
+    message: string,
+    public readonly status: number = 502,
+    public readonly retryable: boolean = true,
+    public readonly code: string = "STORAGE_UNAVAILABLE"
+  ) {
+    super(message);
+    this.name = "SearchSphereUploadError";
+  }
+}
+
 function getServiceConfig() {
   const secret = process.env.SEARCH_SPHERE_API_KEY || process.env.SEARCH_SPHERE_SERVICE_SECRET;
   if (!secret) {
-    throw new Error("SEARCH_SPHERE_API_KEY or SEARCH_SPHERE_SERVICE_SECRET is not configured");
+    throw new SearchSphereConfigError("SEARCH_SPHERE_API_KEY or SEARCH_SPHERE_SERVICE_SECRET is not configured");
   }
 
   const rawUrl = process.env.SEARCH_SPHERE_API_URL;
   if (!rawUrl) {
-    throw new Error("SEARCH_SPHERE_API_URL is not configured");
+    throw new SearchSphereConfigError("SEARCH_SPHERE_API_URL is not configured");
   }
 
   const baseUrl = rawUrl.replace(/\/$/, "");
   const clientId = process.env.SEARCH_SPHERE_CLIENT_ID || "quick_clinic";
   const tenantId = process.env.SEARCH_SPHERE_TENANT_ID || "quick_clinic_default";
-  if (clientId !== "quick_clinic") throw new Error("Invalid Search Sphere client configuration");
+  if (clientId !== "quick_clinic") throw new SearchSphereConfigError("Invalid Search Sphere client configuration");
   return { baseUrl, secret, clientId, tenantId };
 }
 
@@ -197,28 +216,61 @@ export async function uploadToStorage(
   form.append("patient_id", params.patientId);
   form.append("document_id", params.documentId);
 
-  const response = await fetchWithRetry(
-    `${baseUrl}/internal/medical-documents`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
+  let response: Response;
+  try {
+    response = await fetchWithRetry(
+      `${baseUrl}/internal/medical-documents`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secret}`,
+        },
+        body: form,
       },
-      body: form,
-    },
-    { ...options, retries: 0 } // Do not auto-retry multipart streaming upload
-  );
+      { ...options, retries: 0 } // Do not auto-retry multipart streaming upload
+    );
+  } catch (err: any) {
+    if (err instanceof SearchSphereConfigError) {
+      throw err;
+    }
+    const isTimeout =
+      err?.name === "AbortError" ||
+      err?.name === "TimeoutError" ||
+      err?.message?.toLowerCase().includes("timeout");
+    throw new SearchSphereUploadError(
+      isTimeout
+        ? "Storage upload request timed out."
+        : "Storage service is temporarily unavailable.",
+      isTimeout ? 504 : 503,
+      true,
+      isTimeout ? "GATEWAY_TIMEOUT" : "STORAGE_UNAVAILABLE"
+    );
+  }
 
   if (!response.ok) {
-    const errorText = await response.text();
     let detail = "Failed to store document in object storage";
-    try {
-      const parsed = JSON.parse(errorText);
-      void parsed; // Upstream details may contain infrastructure or credentials.
-    } catch {
-      // ignore
+    let retryable = false;
+    let code = "STORAGE_ERROR";
+
+    if (response.status === 400) {
+      detail = "Invalid document payload rejected by storage service.";
+      code = "VALIDATION_FAILED";
+    } else if (response.status === 401 || response.status === 403) {
+      detail = "Storage service authentication failure.";
+      code = "STORAGE_AUTH_FAILURE";
+    } else if (response.status === 413) {
+      detail = "File exceeds upstream storage size limit.";
+      code = "FILE_TOO_LARGE";
+    } else if (response.status === 429) {
+      detail = "Storage rate limit exceeded. Please retry shortly.";
+      code = "RATE_LIMIT_EXCEEDED";
+      retryable = true;
+    } else if (response.status >= 500) {
+      detail = "Upstream storage provider temporarily unavailable.";
+      code = "STORAGE_UNAVAILABLE";
+      retryable = true;
     }
-    throw new Error(`Storage upload failed (${response.status}): ${detail}`);
+    throw new SearchSphereUploadError(detail, response.status, retryable, code);
   }
 
   const data = await response.json();

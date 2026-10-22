@@ -2,46 +2,49 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAudit, logAccess } from "@/lib/logger";
+import { getOrCreateRequestId } from "@/lib/correlation-id";
 import {
   uploadToStorage,
   deleteFromStorage,
   queueMedicalDocumentIngestion,
+  SearchSphereUploadError,
+  SearchSphereConfigError,
 } from "@/lib/search-sphere-client";
+import {
+  validateFileSignature,
+  sanitizeFileName,
+  checkPatientUploadRateLimit,
+  checkPatientStorageQuota,
+  MAX_FILE_SIZE_BYTES,
+  ALLOWED_MIME_TYPES,
+} from "@/lib/medical-document-validator";
 import { MedicalDocumentType } from "@/generated/prisma";
 
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
-
-const ALLOWED_MIME_TYPES = new Set([
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-]);
-
-function sanitizeFileName(fileName: string): string {
-  const base = fileName.split(/[/\\]/).pop() || "document";
-  const lastDot = base.lastIndexOf(".");
-  if (lastDot === -1) {
-    return base.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 100);
-  }
-  const name = base.slice(0, lastDot).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 100);
-  const ext = base.slice(lastDot + 1).replace(/[^a-zA-Z0-9]/g, "").toLowerCase().slice(0, 10);
-  return `${name || "document"}.${ext}`;
-}
-
 export async function POST(req: NextRequest) {
+  const requestId = getOrCreateRequestId(req);
+
   try {
     const user = await getAuthenticatedUser(req, { verifyDb: true });
     if (!user) {
       return NextResponse.json(
-        { error: "Authentication required" },
+        {
+          error: "Authentication required",
+          code: "UNAUTHENTICATED",
+          requestId,
+          retryable: false,
+        },
         { status: 401 }
       );
     }
 
     if (user.role !== "PATIENT") {
       return NextResponse.json(
-        { error: "Access denied. Only patients can manage medical documents." },
+        {
+          error: "Access denied. Only patients can manage medical documents.",
+          code: "UNAUTHORIZED",
+          requestId,
+          retryable: false,
+        },
         { status: 403 }
       );
     }
@@ -58,6 +61,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // 0. Enforce upload rate limiting per patient account
+    const rateLimit = await checkPatientUploadRateLimit(patient.id);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: "Upload rate limit exceeded. Please wait a minute before uploading additional documents.",
+          code: "RATE_LIMIT_EXCEEDED",
+          requestId,
+          retryable: true,
+        },
+        { status: 429 }
+      );
+    }
+
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
     const title = (formData.get("title") as string | null)?.trim();
@@ -66,32 +83,49 @@ export async function POST(req: NextRequest) {
     const hospitalOrDoctor =
       (formData.get("hospitalOrDoctor") as string | null)?.trim() || null;
     const notes = (formData.get("notes") as string | null)?.trim() || null;
+    const idempotencyKey =
+      (formData.get("idempotencyKey") as string | null)?.trim() ||
+      req.headers.get("x-idempotency-key")?.trim() ||
+      null;
 
-    // 1. Validate File
+    // 1. Validate File Existence and Basic Type
     if (!file || typeof file === "string" || !file.size) {
       return NextResponse.json(
-        { error: "File is required and must not be empty" },
+        {
+          error: "File is required and must not be empty",
+          code: "EMPTY_FILE",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
 
     if (file.size > MAX_FILE_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "File size exceeds 10 MB limit" },
+        {
+          error: "File size exceeds 10 MB limit",
+          code: "FILE_TOO_LARGE",
+          requestId,
+          retryable: false,
+        },
         { status: 413 }
       );
     }
 
-    let mimeType = file.type?.toLowerCase() || "";
-    if (mimeType === "image/jpg") {
-      mimeType = "image/jpeg";
+    let reportedMime = file.type?.toLowerCase() || "";
+    if (reportedMime === "image/jpg") {
+      reportedMime = "image/jpeg";
     }
 
-    if (!ALLOWED_MIME_TYPES.has(mimeType)) {
+    if (reportedMime && !ALLOWED_MIME_TYPES.has(reportedMime)) {
       return NextResponse.json(
         {
           error:
             "Unsupported file type. Only PDF, JPEG, PNG, and WebP files are allowed.",
+          code: "UNSUPPORTED_FORMAT",
+          requestId,
+          retryable: false,
         },
         { status: 400 }
       );
@@ -100,13 +134,23 @@ export async function POST(req: NextRequest) {
     // 2. Validate Title
     if (!title) {
       return NextResponse.json(
-        { error: "Document title is required" },
+        {
+          error: "Document title is required",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
     if (title.length > 200) {
       return NextResponse.json(
-        { error: "Document title must not exceed 200 characters" },
+        {
+          error: "Document title must not exceed 200 characters",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
@@ -116,6 +160,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         {
           error: `Invalid document type. Must be one of: ${Object.values(MedicalDocumentType).join(", ")}`,
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
         },
         { status: 400 }
       );
@@ -125,53 +172,138 @@ export async function POST(req: NextRequest) {
     // 4. Validate Report Date
     if (!reportDateStr) {
       return NextResponse.json(
-        { error: "Report date is required" },
+        {
+          error: "Report date is required",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
     const reportDate = new Date(reportDateStr);
     if (isNaN(reportDate.getTime())) {
       return NextResponse.json(
-        { error: "Invalid report date format" },
+        {
+          error: "Invalid report date format",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
 
-    // 5. Validate optional metadata
+    // 5. Validate Optional Metadata
     if (hospitalOrDoctor && hospitalOrDoctor.length > 200) {
       return NextResponse.json(
-        { error: "Hospital / Doctor name must not exceed 200 characters" },
+        {
+          error: "Hospital / Doctor name must not exceed 200 characters",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
     if (notes && notes.length > 2000) {
       return NextResponse.json(
-        { error: "Notes must not exceed 2000 characters" },
+        {
+          error: "Notes must not exceed 2000 characters",
+          code: "INVALID_METADATA",
+          requestId,
+          retryable: false,
+        },
         { status: 400 }
       );
     }
 
-    const documentId = crypto.randomUUID();
+    // 6. Validate Binary File Signature (Magic Bytes)
+    const arrayBuffer = await file.arrayBuffer();
+    const fileBuffer = Buffer.from(arrayBuffer);
+    const signatureCheck = validateFileSignature(fileBuffer, reportedMime);
+    if (!signatureCheck.isValid) {
+      return NextResponse.json(
+        {
+          error: signatureCheck.error || "Invalid file content",
+          code: signatureCheck.code || "FILE_SIGNATURE_MISMATCH",
+          requestId,
+          retryable: false,
+        },
+        { status: 400 }
+      );
+    }
+    const verifiedMimeType = signatureCheck.detectedMime;
+
+    // 7. Check Account Storage Quota
+    const quotaCheck = await checkPatientStorageQuota(patient.id, fileBuffer.length);
+    if (!quotaCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: quotaCheck.reason || "Storage quota exceeded",
+          code: "QUOTA_EXCEEDED",
+          requestId,
+          retryable: false,
+        },
+        { status: 403 }
+      );
+    }
+
+    // 8. Idempotency Check: if idempotency key or identical doc exists
+    if (idempotencyKey) {
+      const existingDoc = await prisma.medicalDocument.findFirst({
+        where: {
+          id: idempotencyKey,
+          patientId: patient.id,
+        },
+      });
+      if (existingDoc) {
+        return NextResponse.json(
+          { document: existingDoc, idempotencyHit: true, requestId },
+          { status: 200 }
+        );
+      }
+    }
+
+    const documentId = idempotencyKey || crypto.randomUUID();
     const sanitizedFileName = sanitizeFileName(file.name);
 
-    // 6. Call Search Sphere storage API
+    // 9. Call Search Sphere storage API
     let storageResult;
     try {
+      const uploadBlob = new Blob([fileBuffer], { type: verifiedMimeType });
       storageResult = await uploadToStorage({
-        file,
+        file: uploadBlob,
         fileName: sanitizedFileName,
         patientId: patient.id,
         documentId,
       });
     } catch (storageError: any) {
-      console.error("Search Sphere storage upload failed:", storageError);
+      console.error(`[${requestId}] Search Sphere storage upload failed:`, storageError);
+      if (storageError instanceof SearchSphereConfigError) {
+        return NextResponse.json(
+          {
+            error: "Document storage service is not properly configured.",
+            code: "PROCESSING_SERVICE_UNAVAILABLE",
+            requestId,
+            retryable: false,
+          },
+          { status: 503 }
+        );
+      }
+      const statusCode = storageError?.status || 502;
       return NextResponse.json(
-        { error: "Failed to upload document to storage" },
-        { status: 502 }
+        {
+          error: "Failed to upload document to storage",
+          code: storageError?.code || "STORAGE_UNAVAILABLE",
+          requestId,
+          retryable: storageError?.retryable ?? true,
+        },
+        { status: statusCode }
       );
     }
 
-    // 7. Persist metadata in Neon PostgreSQL
+    // 10. Persist metadata in Neon PostgreSQL
     let createdDoc;
     try {
       createdDoc = await prisma.medicalDocument.create({
@@ -181,29 +313,35 @@ export async function POST(req: NextRequest) {
           title,
           type: docType,
           fileName: sanitizedFileName,
-          mimeType: storageResult.mimeType || mimeType,
-          fileSize: storageResult.fileSize || file.size,
+          mimeType: storageResult.mimeType || verifiedMimeType,
+          fileSize: storageResult.fileSize || fileBuffer.length,
           storagePath: storageResult.storagePath,
           reportDate,
           hospitalOrDoctor,
           notes,
+          processingStatus: "PENDING",
         },
       });
     } catch (dbError) {
-      console.error("Database metadata insert failed. Compensating storage:", dbError);
+      console.error(`[${requestId}] Database metadata insert failed. Compensating storage:`, dbError);
       // Compensation: remove orphaned storage object
       try {
         await deleteFromStorage(storageResult.storagePath);
       } catch (compensateError) {
-        console.error("Failed to compensate storage object deletion:", compensateError);
+        console.error(`[${requestId}] Failed to compensate storage object deletion:`, compensateError);
       }
       return NextResponse.json(
-        { error: "Failed to save medical document metadata" },
+        {
+          error: "Failed to save medical document metadata",
+          code: "DATABASE_ERROR",
+          requestId,
+          retryable: true,
+        },
         { status: 500 }
       );
     }
 
-    // 8. Trigger asynchronous Search Sphere indexing
+    // 11. Trigger asynchronous Search Sphere indexing
     try {
       await queueMedicalDocumentIngestion({
         documentId: createdDoc.id,
@@ -214,28 +352,39 @@ export async function POST(req: NextRequest) {
         fileSize: createdDoc.fileSize,
         documentType: createdDoc.type,
         reportDate: createdDoc.reportDate,
+        requestId,
       });
 
-      createdDoc = await prisma.medicalDocument.update({
+      const updated = await prisma.medicalDocument.update({
         where: { id: createdDoc.id },
         data: {
           processingStatus: "QUEUED",
           processingError: null,
         },
       });
+      if (updated) {
+        createdDoc = updated;
+      }
     } catch (ingestError: any) {
-      console.error("Search Sphere ingestion queue failed:", ingestError);
+      console.error(`[${requestId}] Search Sphere ingestion queue failed:`, ingestError);
       // Important: Do NOT delete document or fail the upload. Mark FAILED so patient can still view/download and retry.
-      createdDoc = await prisma.medicalDocument.update({
-        where: { id: createdDoc.id },
-        data: {
-          processingStatus: "FAILED",
-          processingError: ingestError?.message || "Failed to trigger ingestion pipeline",
-        },
-      });
+      try {
+        const updated = await prisma.medicalDocument.update({
+          where: { id: createdDoc.id },
+          data: {
+            processingStatus: "FAILED",
+            processingError: ingestError?.message || "Failed to trigger ingestion pipeline",
+          },
+        });
+        if (updated) {
+          createdDoc = updated;
+        }
+      } catch {
+        // preserve createdDoc if status update fails
+      }
     }
 
-    // 9. Audit Log
+    // 12. Audit Log
     await logAudit(
       user.id,
       "MEDICAL_DOCUMENT_UPLOAD",
@@ -250,11 +399,16 @@ export async function POST(req: NextRequest) {
       "MEDICAL_RECORD"
     );
 
-    return NextResponse.json({ document: createdDoc }, { status: 201 });
+    return NextResponse.json({ document: createdDoc, requestId }, { status: 201 });
   } catch (error: any) {
-    console.error("Unhandled medical document upload error:", error);
+    console.error(`[${requestId}] Unhandled medical document upload error:`, error);
     return NextResponse.json(
-      { error: "Internal server error" },
+      {
+        error: "Internal server error",
+        code: "INTERNAL_ERROR",
+        requestId,
+        retryable: false,
+      },
       { status: 500 }
     );
   }

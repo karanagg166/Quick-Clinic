@@ -75,7 +75,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: "Failed to generate temporary document access link",
-          details: storageError.message,
+          code: "STORAGE_UNAVAILABLE",
+          retryable: true,
         },
         { status: 502 }
       );
