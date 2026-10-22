@@ -12,10 +12,10 @@ import path from "path";
 const FIXTURES_DIR = path.resolve(__dirname, "../../fixtures");
 function getFixture(name: string): Buffer {
   const fixturePath = path.join(FIXTURES_DIR, name);
-  if (fs.existsSync(fixturePath)) {
-    return fs.readFileSync(fixturePath);
+  if (!fs.existsSync(fixturePath)) {
+    throw new Error(`Required test fixture not found: ${fixturePath}`);
   }
-  return Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 2\ntrailer<</Size 2/Root 1 0 R>>\nstartxref\n50\n%%EOF");
+  return fs.readFileSync(fixturePath);
 }
 
 vi.mock("@/lib/prisma", () => ({
@@ -895,6 +895,122 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
       const data = await res.json();
       expect(data.code).toBe("UNAUTHORIZED");
       expect(storageClient.uploadToStorage).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("6. Upstream Timeout, Cold Start & Error Classification", () => {
+    it("maps storage client timeout to HTTP 504 GATEWAY_TIMEOUT with retryable=true and releases locks", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockRejectedValueOnce(
+        new storageClient.SearchSphereUploadError(
+          "Storage upload request timed out.",
+          504,
+          true,
+          "GATEWAY_TIMEOUT"
+        )
+      );
+
+      const idemKey = "timeout-retry-key-12345";
+      const form = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Cold Start Timeout Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: idemKey,
+      });
+
+      const res = await POST(
+        new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+          method: "POST",
+          body: form,
+        })
+      );
+
+      expect(res.status).toBe(504);
+      const data = await res.json();
+      expect(data.code).toBe("GATEWAY_TIMEOUT");
+      expect(data.retryable).toBe(true);
+      expect(data.error).toContain("timed out");
+
+      // Verify that after timeout, the same idempotency key can immediately be retried without 409 conflict
+      vi.mocked(storageClient.uploadToStorage).mockResolvedValueOnce({
+        storagePath: "medical-documents/pat_rec_001/doc/report.pdf",
+        mimeType: "application/pdf",
+        fileSize: 100,
+      });
+      vi.mocked(prisma.medicalDocument.create).mockResolvedValueOnce({
+        id: "doc_retry_ok",
+        patientId: "pat_rec_001",
+        title: "Cold Start Timeout Test",
+        type: "LAB_REPORT",
+      } as any);
+
+      const retryRes = await POST(
+        new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+          method: "POST",
+          body: form,
+        })
+      );
+      expect(retryRes.status).toBe(201);
+    });
+
+    it("maps upstream 503 to HTTP 503 STORAGE_UNAVAILABLE with retryable=true", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockRejectedValueOnce(
+        new storageClient.SearchSphereUploadError(
+          "Storage service is temporarily unavailable.",
+          503,
+          true,
+          "STORAGE_UNAVAILABLE"
+        )
+      );
+
+      const form = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Upstream 503 Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+      });
+
+      const res = await POST(
+        new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+          method: "POST",
+          body: form,
+        })
+      );
+
+      expect(res.status).toBe(503);
+      const data = await res.json();
+      expect(data.code).toBe("STORAGE_UNAVAILABLE");
+      expect(data.retryable).toBe(true);
+    });
+
+    it("maps missing Search-Sphere credentials to 503 PROCESSING_SERVICE_UNAVAILABLE with retryable=false", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockRejectedValueOnce(
+        new storageClient.SearchSphereConfigError(
+          "SEARCH_SPHERE_API_KEY or SEARCH_SPHERE_SERVICE_SECRET is not configured"
+        )
+      );
+
+      const form = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Config Error Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+      });
+
+      const res = await POST(
+        new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+          method: "POST",
+          body: form,
+        })
+      );
+
+      expect(res.status).toBe(503);
+      const data = await res.json();
+      expect(data.code).toBe("PROCESSING_SERVICE_UNAVAILABLE");
+      expect(data.retryable).toBe(false);
     });
   });
 });

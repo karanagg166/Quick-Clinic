@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import fs from "fs";
+import path from "path";
 import { POST, GET } from "@/app/api/patients/me/medical-documents/route";
 import {
   GET as GET_DOC,
@@ -10,6 +12,15 @@ import { GET as GET_ACCESS } from "@/app/api/patients/me/medical-documents/[docu
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import * as storageClient from "@/lib/search-sphere-client";
+
+const FIXTURES_DIR = path.resolve(__dirname, "../../fixtures");
+function getFixture(name: string): Buffer {
+  const fixturePath = path.join(FIXTURES_DIR, name);
+  if (!fs.existsSync(fixturePath)) {
+    throw new Error(`Required test fixture not found: ${fixturePath}`);
+  }
+  return fs.readFileSync(fixturePath);
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -208,7 +219,7 @@ describe("Patient Medical Documents Backend API Suite", () => {
 
     it("returns 400 when required metadata is missing (e.g. title)", async () => {
       const formData = new FormData();
-      const pdfBlob = new Blob(["%PDF-1.4 sample content"], { type: "application/pdf" });
+      const pdfBlob = new Blob([getFixture("one_page_digital.pdf")], { type: "application/pdf" });
       formData.append("file", pdfBlob, "report.pdf");
       formData.append("type", "LAB_REPORT");
       formData.append("reportDate", "2026-09-15");
@@ -226,7 +237,7 @@ describe("Patient Medical Documents Backend API Suite", () => {
 
     it("returns 400 when document type is not a valid enum value", async () => {
       const formData = new FormData();
-      const pdfBlob = new Blob(["%PDF-1.4 sample content"], { type: "application/pdf" });
+      const pdfBlob = new Blob([getFixture("one_page_digital.pdf")], { type: "application/pdf" });
       formData.append("file", pdfBlob, "report.pdf");
       formData.append("title", "Report");
       formData.append("type", "INVALID_TYPE_XYZ");
@@ -244,7 +255,7 @@ describe("Patient Medical Documents Backend API Suite", () => {
     });
 
     it("successfully uploads valid PDF document and stores metadata in Neon", async () => {
-      const pdfBlob = new Blob(["%PDF-1.4 valid pdf content"], { type: "application/pdf" });
+      const pdfBlob = new Blob([getFixture("one_page_digital.pdf")], { type: "application/pdf" });
       const formData = new FormData();
       formData.append("file", pdfBlob, "blood_test.pdf");
       formData.append("title", "Blood Test Results");
@@ -294,7 +305,7 @@ describe("Patient Medical Documents Backend API Suite", () => {
     });
 
     it("performs compensation delete in Search Sphere if database insert fails after upload", async () => {
-      const pdfBlob = new Blob(["%PDF-1.4 test"], { type: "application/pdf" });
+      const pdfBlob = new Blob([getFixture("one_page_digital.pdf")], { type: "application/pdf" });
       const formData = new FormData();
       formData.append("file", pdfBlob, "report.pdf");
       formData.append("title", "Failing DB Report");

@@ -24,7 +24,7 @@ import {
 } from "@/lib/medical-document-validator";
 import { MedicalDocumentType } from "@/generated/prisma";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
@@ -319,10 +319,14 @@ export async function POST(req: NextRequest) {
         );
       }
       const statusCode = storageError?.status || 502;
+      const errorMessage =
+        statusCode === 504
+          ? "Document storage request timed out. Please try again."
+          : storageError?.message || "Failed to upload document to storage";
       return NextResponse.json(
         {
-          error: "Failed to upload document to storage",
-          code: storageError?.code || "STORAGE_UNAVAILABLE",
+          error: errorMessage,
+          code: storageError?.code || (statusCode === 504 ? "GATEWAY_TIMEOUT" : "STORAGE_UNAVAILABLE"),
           requestId,
           retryable: storageError?.retryable ?? true,
         },

@@ -29,6 +29,16 @@ export class SearchSphereConfigError extends Error {
   }
 }
 
+export class SearchSphereTimeoutError extends Error {
+  public readonly status = 504;
+  public readonly retryable = true;
+  public readonly code = "GATEWAY_TIMEOUT";
+  constructor(message = "Search-Sphere request timed out.") {
+    super(message);
+    this.name = "SearchSphereTimeoutError";
+  }
+}
+
 export class SearchSphereUploadError extends Error {
   constructor(
     message: string,
@@ -185,12 +195,23 @@ async function fetchWithRetry(
       clearTimeout(timer);
       lastError = err;
 
+      const isTimeout =
+        err?.name === "AbortError" ||
+        err?.name === "TimeoutError" ||
+        (err?.message && String(err.message).toLowerCase().includes("timeout"));
+
       if (isRetryableError(err) && attempt < maxRetries) {
         await delay((attempt + 1) * 200);
         continue;
       }
 
-      throw new Error("Search-Sphere is temporarily unavailable.");
+      if (isTimeout) {
+        throw new SearchSphereTimeoutError(
+          `Search-Sphere request timed out after ${timeoutMs}ms.`
+        );
+      }
+
+      throw err;
     }
   }
 
@@ -216,6 +237,9 @@ export async function uploadToStorage(
   form.append("patient_id", params.patientId);
   form.append("document_id", params.documentId);
 
+  // Default timeout of 45s accommodates Render free tier cold-starts while remaining within serverless limits
+  const timeoutMs = options?.timeoutMs ?? 45000;
+
   let response: Response;
   try {
     response = await fetchWithRetry(
@@ -227,20 +251,29 @@ export async function uploadToStorage(
         },
         body: form,
       },
-      { ...options, retries: 0 } // Do not auto-retry multipart streaming upload
+      { timeoutMs, ...options, retries: 0 } // Do not auto-retry multipart streaming upload
     );
   } catch (err: any) {
     if (err instanceof SearchSphereConfigError) {
       throw err;
     }
+    if (err instanceof SearchSphereTimeoutError) {
+      throw new SearchSphereUploadError(
+        "Storage upload request timed out.",
+        504,
+        true,
+        "GATEWAY_TIMEOUT"
+      );
+    }
     const isTimeout =
       err?.name === "AbortError" ||
       err?.name === "TimeoutError" ||
+      err?.code === "GATEWAY_TIMEOUT" ||
       err?.message?.toLowerCase().includes("timeout");
     throw new SearchSphereUploadError(
       isTimeout
         ? "Storage upload request timed out."
-        : "Storage service is temporarily unavailable.",
+        : `Storage service is temporarily unavailable: ${err?.message || "Unknown error"}`,
       isTimeout ? 504 : 503,
       true,
       isTimeout ? "GATEWAY_TIMEOUT" : "STORAGE_UNAVAILABLE"

@@ -8,7 +8,7 @@ import {
 } from "@/lib/search-sphere-client";
 import { MedicalDocumentType } from "@/generated/prisma";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 interface RouteParams {
   params: Promise<{

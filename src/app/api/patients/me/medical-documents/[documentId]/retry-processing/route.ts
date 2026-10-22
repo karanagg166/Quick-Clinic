@@ -4,7 +4,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { logAudit } from "@/lib/logger";
 import { retryMedicalDocumentIngestion } from "@/lib/search-sphere-client";
 
-export const maxDuration = 30;
+export const maxDuration = 60;
 
 interface RouteParams {
   params: Promise<{
