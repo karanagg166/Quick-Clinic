@@ -39,7 +39,6 @@ test.describe('Patient E2E Golden Flow — Doctor Discovery & Slot Selection', (
           gender: 'FEMALE',
           role: 'PATIENT',
           address: 'E2E Testing Avenue',
-          pinCode: 560001,
           location: {
             connectOrCreate: {
               where: { pincode: 560001 },
