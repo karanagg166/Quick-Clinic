@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
-import { generatePatientMedicalAnswer } from "@/lib/search-sphere-client";
+import { generatePatientMedicalAnswer, sanitizeCitations } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
@@ -219,7 +219,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           answer: ragResponse.answer,
-          citations: ragResponse.citations,
+          citations: sanitizeCitations(ragResponse.citations),
           resultCount: ragResponse.resultCount,
         },
         { status: 200 }

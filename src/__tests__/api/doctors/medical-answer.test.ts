@@ -36,9 +36,14 @@ vi.mock("@/lib/logger", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/search-sphere-client", () => ({
-  generatePatientMedicalAnswer: vi.fn(),
-}));
+vi.mock("@/lib/search-sphere-client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/lib/search-sphere-client")>();
+  return {
+    ...actual,
+    generatePatientMedicalAnswer: vi.fn(),
+    sanitizeCitations: actual.sanitizeCitations || vi.fn((c) => c || []),
+  };
+});
 
 describe("Doctor Medical Grounded RAG Answer API (POST /api/doctors/me/patients/[patientId]/medical-answer)", () => {
   const doctorUser = { id: "user_doc_1", role: "DOCTOR", email: "doctor@example.com" };

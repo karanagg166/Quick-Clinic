@@ -4,6 +4,8 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess } from "@/lib/logger";
 import { getSignedStorageUrl } from "@/lib/search-sphere-client";
 
+export const maxDuration = 60;
+
 interface RouteParams {
   params: Promise<{
     documentId: string;
@@ -75,7 +77,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       return NextResponse.json(
         {
           error: "Failed to generate temporary document access link",
-          details: storageError.message,
+          code: "STORAGE_UNAVAILABLE",
+          retryable: true,
         },
         { status: 502 }
       );
