@@ -24,6 +24,8 @@ import {
 } from "@/lib/medical-document-validator";
 import { MedicalDocumentType } from "@/generated/prisma";
 
+export const maxDuration = 30;
+
 export async function POST(req: NextRequest) {
   const requestId = getOrCreateRequestId(req);
 

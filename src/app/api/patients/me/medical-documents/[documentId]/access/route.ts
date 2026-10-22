@@ -4,6 +4,8 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess } from "@/lib/logger";
 import { getSignedStorageUrl } from "@/lib/search-sphere-client";
 
+export const maxDuration = 30;
+
 interface RouteParams {
   params: Promise<{
     documentId: string;

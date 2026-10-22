@@ -4,6 +4,8 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { getMedicalDocumentProcessingStatus } from "@/lib/search-sphere-client";
 import { MedicalDocumentProcessingStatus } from "@/generated/prisma";
 
+export const maxDuration = 30;
+
 interface RouteParams {
   params: Promise<{
     documentId: string;
