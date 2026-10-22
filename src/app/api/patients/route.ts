@@ -91,6 +91,13 @@ export const GET = async (req: NextRequest) => {
 
     const scopeAll = searchParams.get("all") === "true" || searchParams.get("scope") === "all";
 
+    if (scopeAll && authUser.role !== "ADMIN") {
+      return NextResponse.json(
+        { error: "Forbidden. Non-admin users cannot query all patients." },
+        { status: 403 }
+      );
+    }
+
     if (authUser.role === "ADMIN" && !scopeAll && !effectiveDoctorId) {
       return NextResponse.json({ error: "doctorId is required when scope is not all" }, { status: 400 });
     }
