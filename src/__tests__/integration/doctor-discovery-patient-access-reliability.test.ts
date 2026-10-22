@@ -49,23 +49,43 @@ describe("Doctor Discovery and Patient Access Reliability Integration Tests", ()
       doctorRecord = await prisma.doctor.create({
         data: {
           userId: docUser.id,
-          specialization: "CARDIOLOGY",
-          qualification: "MBBS, MD Cardiology",
+          specialty: "CARDIOLOGY",
           experience: 15,
-          consultationFee: 750,
-          about: "Experienced cardiologist specializing in preventive heart health.",
+          fees: 750,
+          doctorBio: "Experienced cardiologist specializing in preventive heart health.",
           schedule: {
-            create: [
-              {
-                dayOfWeek: "MONDAY",
-                startTime: "09:00",
-                endTime: "17:00",
-                slotDuration: 30,
-                breakStart: "13:00",
-                breakEnd: "14:00",
-                isActive: true,
-              },
-            ],
+            create: {
+              weeklySchedule: [
+                {
+                  day: "Monday",
+                  slots: [{ slotNo: 1, start: "09:00", end: "17:00" }],
+                },
+                {
+                  day: "Tuesday",
+                  slots: [{ slotNo: 1, start: "09:00", end: "17:00" }],
+                },
+                {
+                  day: "Wednesday",
+                  slots: [{ slotNo: 1, start: "09:00", end: "17:00" }],
+                },
+                {
+                  day: "Thursday",
+                  slots: [{ slotNo: 1, start: "09:00", end: "17:00" }],
+                },
+                {
+                  day: "Friday",
+                  slots: [{ slotNo: 1, start: "09:00", end: "17:00" }],
+                },
+                {
+                  day: "Saturday",
+                  slots: [{ slotNo: 1, start: "10:00", end: "14:00" }],
+                },
+                {
+                  day: "Sunday",
+                  slots: [],
+                },
+              ],
+            },
           },
         },
         include: { user: true, schedule: true },
@@ -101,11 +121,10 @@ describe("Doctor Discovery and Patient Access Reliability Integration Tests", ()
       secondDoctor = await prisma.doctor.create({
         data: {
           userId: docUser2.id,
-          specialization: "DERMATOLOGY",
-          qualification: "MBBS, MD Dermatology",
+          specialty: "DERMATOLOGY",
           experience: 11,
-          consultationFee: 600,
-          about: "Dermatologist with clinical focus on skin conditions.",
+          fees: 600,
+          doctorBio: "Dermatologist with clinical focus on skin conditions.",
         },
         include: { user: true },
       });
