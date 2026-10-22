@@ -5,6 +5,18 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import * as storageClient from "@/lib/search-sphere-client";
 import { clearInMemoryRateLimits } from "@/lib/rate-limiter";
+import { clearInMemoryDocumentGuards } from "@/lib/medical-document-validator";
+import fs from "fs";
+import path from "path";
+
+const FIXTURES_DIR = path.resolve(__dirname, "../../fixtures");
+function getFixture(name: string): Buffer {
+  const fixturePath = path.join(FIXTURES_DIR, name);
+  if (fs.existsSync(fixturePath)) {
+    return fs.readFileSync(fixturePath);
+  }
+  return Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 2\ntrailer<</Size 2/Root 1 0 R>>\nstartxref\n50\n%%EOF");
+}
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
@@ -51,8 +63,11 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
   const mockDoctorUser = { id: "user_doctor_1", role: "DOCTOR", email: "doctor1@example.com" };
   const mockPatientRecord = { id: "pat_rec_001", userId: "user_patient_1" };
 
-  // Realistic file fixture byte generators
-  const createPdfBytes = () => Buffer.from("%PDF-1.4\n1 0 obj<</Type/Catalog>>endobj\nxref\n0 2\ntrailer<</Size 2/Root 1 0 R>>\nstartxref\n50\n%%EOF");
+  // Deterministic file fixture byte providers using real structural test assets
+  const createPdfBytes = () => getFixture("one_page_digital.pdf");
+  const createLabReportPdfBytes = () => getFixture("lab_report_units.pdf");
+  const createMedicalDatesPdfBytes = () => getFixture("medical_report_multiple_dates.pdf");
+  const createTablePdfBytes = () => getFixture("tables.pdf");
   const createJpegBytes = () => Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01]);
   const createPngBytes = () => Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d]);
   const createWebpBytes = () => Buffer.from([
@@ -61,10 +76,10 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
     0x57, 0x45, 0x42, 0x50, // "WEBP"
     0x56, 0x50, 0x38, 0x20, // "VP8 "
   ]);
-  const createExeBytes = () => Buffer.from([0x4d, 0x5a, 0x90, 0x00, 0x03, 0x00, 0x00, 0x00]); // "MZ" DOS executable
-  const createElfBytes = () => Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0x02, 0x01, 0x01, 0x00]); // ELF executable
+  const createExeBytes = () => getFixture("renamed_pe.pdf"); // "MZ" DOS/PE executable
+  const createElfBytes = () => getFixture("renamed_elf.pdf"); // ELF executable
   const createShellScriptBytes = () => Buffer.from("#!/bin/bash\nrm -rf / --no-preserve-root\n");
-  const createZipBytes = () => Buffer.from([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00, 0x00, 0x00]); // PK zip
+  const createZipBytes = () => getFixture("renamed_zip.pdf"); // PK zip archive
 
   function buildUploadForm(params: {
     fileBytes?: Buffer;
@@ -94,6 +109,7 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
   beforeEach(() => {
     vi.clearAllMocks();
     clearInMemoryRateLimits();
+    clearInMemoryDocumentGuards();
     vi.mocked(getAuthenticatedUser).mockResolvedValue(mockPatientUser as any);
     vi.mocked(prisma.patient.findUnique).mockResolvedValue(mockPatientRecord as any);
     vi.mocked(prisma.medicalDocument.findMany).mockResolvedValue([]);
@@ -589,26 +605,19 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
       expect(data.error).toContain("Storage quota exceeded");
     });
 
-    it("supports idempotent re-upload with identical idempotencyKey (does not create duplicate record)", async () => {
-      const existingDoc = {
-        id: "idempotency_key_999",
-        patientId: "pat_rec_001",
-        title: "Blood Test",
-        type: "LAB_REPORT",
-        fileName: "report.pdf",
-        storagePath: "medical-documents/pat_rec_001/doc/report.pdf",
-        processingStatus: "QUEUED",
-      };
+    it("enforces patient storage bytes quota limit (rejects when cumulative bytes exceed 100 MB)", async () => {
+      // 99.5 MB already used
+      const existingDocs = [{ fileSize: 99.5 * 1024 * 1024 }];
+      vi.mocked(prisma.medicalDocument.findMany).mockResolvedValueOnce(existingDocs as any);
 
-      vi.mocked(prisma.medicalDocument.findFirst).mockResolvedValueOnce(existingDoc as any);
-
+      // Uploading 1 MB more would push it to 100.5 MB (> 100 MB)
+      const oneMbBuffer = Buffer.concat([createPdfBytes(), Buffer.alloc(1024 * 1024)]);
       const form = buildUploadForm({
-        fileBytes: createPdfBytes(),
-        fileName: "report.pdf",
-        title: "Blood Test",
+        fileBytes: oneMbBuffer,
+        fileName: "large_report.pdf",
+        title: "Large Report",
         type: "LAB_REPORT",
         reportDate: "2026-10-01",
-        idempotencyKey: "idempotency_key_999",
       });
 
       const req = new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
@@ -617,12 +626,250 @@ describe("A3. Medical Document Upload Hardening & Adversarial Regression Suite",
       });
 
       const res = await POST(req);
-      expect(res.status).toBe(200);
+      expect(res.status).toBe(403);
       const data = await res.json();
-      expect(data.idempotencyHit).toBe(true);
-      expect(data.document.id).toBe("idempotency_key_999");
+      expect(data.code).toBe("QUOTA_EXCEEDED");
+      expect(data.error).toContain("100 MB");
+    });
+
+    it("enforces FAIL-CLOSED quota policy: returns 503 STORAGE_QUOTA_UNAVAILABLE when quota database check errors", async () => {
+      vi.mocked(prisma.medicalDocument.findMany).mockRejectedValueOnce(
+        new Error("PostgreSQL connection failure during quota verification")
+      );
+
+      const form = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Lab Report",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+      });
+
+      const req = new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: form,
+      });
+
+      const res = await POST(req);
+      expect(res.status).toBe(503);
+      const data = await res.json();
+      expect(data.code).toBe("STORAGE_QUOTA_UNAVAILABLE");
+      expect(data.retryable).toBe(true);
       expect(storageClient.uploadToStorage).not.toHaveBeenCalled();
-      expect(prisma.medicalDocument.create).not.toHaveBeenCalled();
+    });
+
+    it("supports idempotent re-upload with identical idempotencyKey and same payload (returns 200 with idempotencyHit: true)", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockResolvedValueOnce({
+        storagePath: "medical-documents/pat_rec_001/doc_orig/report.pdf",
+        mimeType: "application/pdf",
+        fileSize: 100,
+      });
+      vi.mocked(prisma.medicalDocument.create).mockResolvedValueOnce({
+        id: "server_gen_uuid_001",
+        patientId: "pat_rec_001",
+        title: "Blood Test",
+        type: "LAB_REPORT",
+        fileName: "report.pdf",
+        storagePath: "medical-documents/pat_rec_001/doc_orig/report.pdf",
+        processingStatus: "PENDING",
+        fileSize: 100,
+        reportDate: new Date("2026-10-01"),
+      } as any);
+
+      const formFirst = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Blood Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "idem_key_patient_alpha_12345",
+      });
+
+      // 1. Initial upload
+      const resFirst = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formFirst,
+      }));
+      expect(resFirst.status).toBe(201);
+      const dataFirst = await resFirst.json();
+      expect(dataFirst.document.id).toBe("server_gen_uuid_001");
+
+      // 2. Client retry with identical idempotency key and identical payload
+      const formRetry = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Blood Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "idem_key_patient_alpha_12345",
+      });
+
+      const resRetry = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formRetry,
+      }));
+      expect(resRetry.status).toBe(200);
+      const dataRetry = await resRetry.json();
+      expect(dataRetry.idempotencyHit).toBe(true);
+      expect(dataRetry.document.id).toBe("server_gen_uuid_001");
+      // Upstream storage and DB create should not be called again
+      expect(storageClient.uploadToStorage).toHaveBeenCalledTimes(1);
+      expect(prisma.medicalDocument.create).toHaveBeenCalledTimes(1);
+    });
+
+    it("rejects reuse of idempotencyKey with different request payload (409 IDEMPOTENCY_CONFLICT)", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockResolvedValueOnce({
+        storagePath: "medical-documents/pat_rec_001/doc_orig/report.pdf",
+        mimeType: "application/pdf",
+        fileSize: 100,
+      });
+      vi.mocked(prisma.medicalDocument.create).mockResolvedValueOnce({
+        id: "server_gen_uuid_001",
+        patientId: "pat_rec_001",
+        title: "Blood Test Original",
+        type: "LAB_REPORT",
+      } as any);
+
+      // Initial upload
+      const form1 = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "Blood Test Original",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "idem_key_patient_conflict_test",
+      });
+      await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: form1,
+      }));
+
+      // Different payload (different title) with same idempotency key
+      const form2 = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "DIFFERENT TITLE CONFLICT",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "idem_key_patient_conflict_test",
+      });
+      const resConflict = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: form2,
+      }));
+      expect(resConflict.status).toBe(409);
+      const data = await resConflict.json();
+      expect(data.code).toBe("IDEMPOTENCY_CONFLICT");
+      expect(data.error).toContain("previously used with a different request payload");
+    });
+
+    it("isolates idempotency keys across different patients (no cross-patient collision)", async () => {
+      const sharedKey = "idem_shared_key_between_patients";
+
+      // Patient A upload
+      vi.mocked(storageClient.uploadToStorage).mockResolvedValue({
+        storagePath: "medical-documents/pat_rec_001/doc/report.pdf",
+        mimeType: "application/pdf",
+        fileSize: 100,
+      });
+      vi.mocked(prisma.medicalDocument.create).mockResolvedValue({ id: "doc_patient_a" } as any);
+
+      const formA = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        title: "Patient A Report",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: sharedKey,
+      });
+      const resA = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formA,
+      }));
+      expect(resA.status).toBe(201);
+
+      // Switch to Patient B
+      vi.mocked(getAuthenticatedUser).mockResolvedValue({ id: "user_patient_2", role: "PATIENT" } as any);
+      vi.mocked(prisma.patient.findUnique).mockResolvedValue({ id: "pat_rec_002", userId: "user_patient_2" } as any);
+
+      const formB = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        title: "Patient B Report",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: sharedKey,
+      });
+      const resB = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formB,
+      }));
+      // Patient B succeeds independently without false idempotency hit or conflict
+      expect(resB.status).toBe(201);
+    });
+
+    it("rejects invalid or oversized idempotency keys with 400 INVALID_IDEMPOTENCY_KEY", async () => {
+      // Too short (< 8 chars)
+      const formShort = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        title: "Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "short",
+      });
+      const resShort = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formShort,
+      }));
+      expect(resShort.status).toBe(400);
+      expect((await resShort.json()).code).toBe("INVALID_IDEMPOTENCY_KEY");
+
+      // Invalid characters
+      const formInvalidChars = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        title: "Test",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: "key with spaces!@#$%^",
+      });
+      const resInvalidChars = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: formInvalidChars,
+      }));
+      expect(resInvalidChars.status).toBe(400);
+      expect((await resInvalidChars.json()).code).toBe("INVALID_IDEMPOTENCY_KEY");
+    });
+
+    it("guarantees server-generated document ID invariant (never accepts client string as primary key)", async () => {
+      vi.mocked(storageClient.uploadToStorage).mockResolvedValueOnce({
+        storagePath: "medical-documents/pat_rec_001/doc/report.pdf",
+        mimeType: "application/pdf",
+        fileSize: 100,
+      });
+      vi.mocked(prisma.medicalDocument.create).mockImplementationOnce(async ({ data }: any) => {
+        return { ...data, createdAt: new Date(), updatedAt: new Date() };
+      });
+
+      const clientKey = "client_supplied_idem_key_999999";
+      const form = buildUploadForm({
+        fileBytes: createPdfBytes(),
+        fileName: "report.pdf",
+        title: "UUID Verification",
+        type: "LAB_REPORT",
+        reportDate: "2026-10-01",
+        idempotencyKey: clientKey,
+      });
+
+      const res = await POST(new NextRequest("http://localhost:3000/api/patients/me/medical-documents", {
+        method: "POST",
+        body: form,
+      }));
+      expect(res.status).toBe(201);
+      const data = await res.json();
+      // Server generated ID must NOT be the client idempotency key
+      expect(data.document.id).not.toBe(clientKey);
+      // Must be a valid UUID format
+      expect(data.document.id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+      );
     });
   });
 

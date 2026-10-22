@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { checkRateLimit, RateLimitResult } from "@/lib/rate-limiter";
-import { MedicalDocumentType } from "@/generated/prisma";
+import { createHash } from "crypto";
 
 export const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 export const MAX_PATIENT_DOCUMENTS_COUNT = 100;
@@ -225,13 +225,33 @@ export async function checkPatientUploadRateLimit(
   return checkRateLimit(key, 10, 60);
 }
 
+// -----------------------------------------------------------------------------
+// Transactionally-Safe Quota Checking and In-Flight Concurrency Reservation
+// -----------------------------------------------------------------------------
+
+interface QuotaReservation {
+  reservedBytes: number;
+  reservedCount: number;
+  expiresAt: number;
+}
+
+const memoryQuotaReservations = new Map<string, QuotaReservation>();
+
+export interface StorageQuotaCheckResult {
+  allowed: boolean;
+  reason?: string;
+  code?: string;
+  status?: number;
+}
+
 /**
- * Checks patient storage quota: enforces maximum document count and cumulative bytes.
+ * Checks patient storage quota with a strict FAIL-CLOSED policy:
+ * If the database query fails, uploads are safely rejected (503) instead of leaking quota.
  */
 export async function checkPatientStorageQuota(
   patientId: string,
   additionalBytes: number
-): Promise<{ allowed: boolean; reason?: string }> {
+): Promise<StorageQuotaCheckResult> {
   try {
     const existingDocs = await prisma.medicalDocument.findMany({
       where: { patientId },
@@ -240,24 +260,274 @@ export async function checkPatientStorageQuota(
 
     const docs = Array.isArray(existingDocs) ? existingDocs : [];
 
-    if (docs.length >= MAX_PATIENT_DOCUMENTS_COUNT) {
+    // Factor in in-flight reservations for concurrent upload safety
+    const reservation = getActiveQuotaReservation(patientId);
+    const totalCount = docs.length + (reservation?.reservedCount || 0);
+
+    if (totalCount >= MAX_PATIENT_DOCUMENTS_COUNT) {
       return {
         allowed: false,
         reason: `Storage quota exceeded: maximum ${MAX_PATIENT_DOCUMENTS_COUNT} documents allowed per patient account.`,
+        code: "QUOTA_EXCEEDED",
+        status: 403,
       };
     }
 
     const currentTotalBytes = docs.reduce((sum, d) => sum + (d.fileSize || 0), 0);
-    if (currentTotalBytes + additionalBytes > MAX_PATIENT_STORAGE_BYTES) {
+    const totalBytesWithReservation = currentTotalBytes + (reservation?.reservedBytes || 0);
+
+    if (totalBytesWithReservation + additionalBytes > MAX_PATIENT_STORAGE_BYTES) {
       return {
         allowed: false,
         reason: "Storage quota exceeded: account maximum storage limit of 100 MB reached.",
+        code: "QUOTA_EXCEEDED",
+        status: 403,
       };
     }
 
     return { allowed: true };
   } catch {
-    // Fail-open on quota check error if database query fails so upload is not unnecessarily blocked
-    return { allowed: true };
+    // Explicitly FAIL-CLOSED on quota query error to prevent bypass
+    return {
+      allowed: false,
+      reason: "Unable to verify account storage quota at this time. Please retry.",
+      code: "STORAGE_QUOTA_UNAVAILABLE",
+      status: 503,
+    };
   }
+}
+
+function getActiveQuotaReservation(patientId: string): QuotaReservation | null {
+  const now = Date.now();
+  const res = memoryQuotaReservations.get(patientId);
+  if (res && res.expiresAt > now) {
+    return res;
+  }
+  if (res) {
+    memoryQuotaReservations.delete(patientId);
+  }
+  return null;
+}
+
+/**
+ * Reserves quota for an in-flight upload to protect against concurrent quota bypasses.
+ */
+export async function reservePatientStorageQuota(
+  patientId: string,
+  additionalBytes: number
+): Promise<StorageQuotaCheckResult> {
+  const check = await checkPatientStorageQuota(patientId, additionalBytes);
+  if (!check.allowed) {
+    return check;
+  }
+
+  const now = Date.now();
+  const current = getActiveQuotaReservation(patientId) || {
+    reservedBytes: 0,
+    reservedCount: 0,
+    expiresAt: now + 60_000,
+  };
+
+  memoryQuotaReservations.set(patientId, {
+    reservedBytes: current.reservedBytes + additionalBytes,
+    reservedCount: current.reservedCount + 1,
+    expiresAt: now + 60_000, // 60s TTL
+  });
+
+  return { allowed: true };
+}
+
+/**
+ * Releases in-flight storage reservation once upload finishes or fails.
+ */
+export async function releasePatientStorageReservation(
+  patientId: string,
+  bytes: number
+): Promise<void> {
+  const now = Date.now();
+  const current = memoryQuotaReservations.get(patientId);
+  if (!current || current.expiresAt <= now) {
+    memoryQuotaReservations.delete(patientId);
+    return;
+  }
+
+  const remainingBytes = Math.max(0, current.reservedBytes - bytes);
+  const remainingCount = Math.max(0, current.reservedCount - 1);
+
+  if (remainingCount === 0 || remainingBytes === 0) {
+    memoryQuotaReservations.delete(patientId);
+  } else {
+    memoryQuotaReservations.set(patientId, {
+      reservedBytes: remainingBytes,
+      reservedCount: remainingCount,
+      expiresAt: current.expiresAt,
+    });
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Patient-Scoped Idempotency Management with Request Fingerprinting
+// -----------------------------------------------------------------------------
+
+export interface IdempotencyCheckResult {
+  allowed: boolean;
+  isIdempotentHit?: boolean;
+  document?: any;
+  error?: string;
+  code?: string;
+  status?: number;
+}
+
+interface IdempotencyRecord {
+  patientId: string;
+  idempotencyKey: string;
+  fingerprint: string;
+  status: "IN_PROGRESS" | "COMPLETED";
+  document?: any;
+  expiresAt: number;
+}
+
+const memoryIdempotencyStore = new Map<string, IdempotencyRecord>();
+
+/**
+ * Validates that client idempotency key is well-formed (8-128 alphanumeric, hyphen, underscore).
+ */
+export function validateIdempotencyKey(key: string): { isValid: boolean; error?: string } {
+  if (typeof key !== "string" || key.length < 8 || key.length > 128) {
+    return {
+      isValid: false,
+      error: "Idempotency key must be a valid string between 8 and 128 characters.",
+    };
+  }
+
+  if (!/^[a-zA-Z0-9_\-]+$/.test(key)) {
+    return {
+      isValid: false,
+      error: "Idempotency key may only contain alphanumeric characters, hyphens, and underscores.",
+    };
+  }
+
+  return { isValid: true };
+}
+
+/**
+ * Computes deterministic request payload fingerprint using SHA-256.
+ */
+export function computeUploadFingerprint(
+  fileBuffer: Buffer,
+  title: string,
+  type: string,
+  reportDate: string
+): string {
+  const hash = createHash("sha256");
+  hash.update(fileBuffer);
+  hash.update(`:${title.trim()}:${type.trim()}:${reportDate.trim()}`);
+  return hash.digest("hex");
+}
+
+/**
+ * Checks and atomically acquires an idempotency lock for the patient.
+ * Strictly isolates keys per patient and validates payload fingerprint.
+ */
+export async function checkAndAcquireUploadIdempotency(
+  patientId: string,
+  idempotencyKey: string,
+  payloadFingerprint: string
+): Promise<IdempotencyCheckResult> {
+  const keyValidation = validateIdempotencyKey(idempotencyKey);
+  if (!keyValidation.isValid) {
+    return {
+      allowed: false,
+      error: keyValidation.error,
+      code: "INVALID_IDEMPOTENCY_KEY",
+      status: 400,
+    };
+  }
+
+  const compositeKey = `patient:${patientId}:idempotency:${idempotencyKey}`;
+  const now = Date.now();
+
+  const existing = memoryIdempotencyStore.get(compositeKey);
+  if (existing && existing.expiresAt > now) {
+    // Check if the payload is identical
+    if (existing.fingerprint !== payloadFingerprint) {
+      return {
+        allowed: false,
+        error: "Idempotency key was previously used with a different request payload.",
+        code: "IDEMPOTENCY_CONFLICT",
+        status: 409,
+      };
+    }
+
+    if (existing.status === "IN_PROGRESS") {
+      return {
+        allowed: false,
+        error: "Upload with this idempotency key is currently being processed. Please retry shortly.",
+        code: "UPLOAD_IN_PROGRESS",
+        status: 409,
+      };
+    }
+
+    if (existing.status === "COMPLETED" && existing.document) {
+      return {
+        allowed: true,
+        isIdempotentHit: true,
+        document: existing.document,
+        status: 200,
+      };
+    }
+  }
+
+  // Atomically claim in-progress status (120s TTL for in-flight upload)
+  memoryIdempotencyStore.set(compositeKey, {
+    patientId,
+    idempotencyKey,
+    fingerprint: payloadFingerprint,
+    status: "IN_PROGRESS",
+    expiresAt: now + 120_000,
+  });
+
+  return { allowed: true, isIdempotentHit: false };
+}
+
+/**
+ * Marks idempotency record as COMPLETED with the durable document metadata (24h TTL).
+ */
+export async function completeUploadIdempotency(
+  patientId: string,
+  idempotencyKey: string,
+  payloadFingerprint: string,
+  document: any
+): Promise<void> {
+  const compositeKey = `patient:${patientId}:idempotency:${idempotencyKey}`;
+  memoryIdempotencyStore.set(compositeKey, {
+    patientId,
+    idempotencyKey,
+    fingerprint: payloadFingerprint,
+    status: "COMPLETED",
+    document,
+    expiresAt: Date.now() + 24 * 3600 * 1000, // 24 hours
+  });
+}
+
+/**
+ * Clears an in-progress idempotency record if an upload fails with a retryable error.
+ */
+export async function releaseUploadIdempotency(
+  patientId: string,
+  idempotencyKey: string
+): Promise<void> {
+  const compositeKey = `patient:${patientId}:idempotency:${idempotencyKey}`;
+  const record = memoryIdempotencyStore.get(compositeKey);
+  if (record && record.status === "IN_PROGRESS") {
+    memoryIdempotencyStore.delete(compositeKey);
+  }
+}
+
+/**
+ * Resets in-memory stores for isolated test execution.
+ */
+export function clearInMemoryDocumentGuards(): void {
+  memoryQuotaReservations.clear();
+  memoryIdempotencyStore.clear();
 }

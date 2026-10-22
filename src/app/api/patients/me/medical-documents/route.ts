@@ -7,14 +7,18 @@ import {
   uploadToStorage,
   deleteFromStorage,
   queueMedicalDocumentIngestion,
-  SearchSphereUploadError,
   SearchSphereConfigError,
 } from "@/lib/search-sphere-client";
 import {
   validateFileSignature,
   sanitizeFileName,
   checkPatientUploadRateLimit,
-  checkPatientStorageQuota,
+  reservePatientStorageQuota,
+  releasePatientStorageReservation,
+  computeUploadFingerprint,
+  checkAndAcquireUploadIdempotency,
+  completeUploadIdempotency,
+  releaseUploadIdempotency,
   MAX_FILE_SIZE_BYTES,
   ALLOWED_MIME_TYPES,
 } from "@/lib/medical-document-validator";
@@ -235,37 +239,53 @@ export async function POST(req: NextRequest) {
     }
     const verifiedMimeType = signatureCheck.detectedMime;
 
-    // 7. Check Account Storage Quota
-    const quotaCheck = await checkPatientStorageQuota(patient.id, fileBuffer.length);
-    if (!quotaCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: quotaCheck.reason || "Storage quota exceeded",
-          code: "QUOTA_EXCEEDED",
-          requestId,
-          retryable: false,
-        },
-        { status: 403 }
-      );
-    }
-
-    // 8. Idempotency Check: if idempotency key or identical doc exists
+    // 7. Idempotency Check with Fingerprinting & Atomic In-Progress Claim
+    let payloadFingerprint = "";
     if (idempotencyKey) {
-      const existingDoc = await prisma.medicalDocument.findFirst({
-        where: {
-          id: idempotencyKey,
-          patientId: patient.id,
-        },
-      });
-      if (existingDoc) {
+      payloadFingerprint = computeUploadFingerprint(fileBuffer, title, docType, reportDateStr);
+      const idempotencyResult = await checkAndAcquireUploadIdempotency(
+        patient.id,
+        idempotencyKey,
+        payloadFingerprint
+      );
+      if (!idempotencyResult.allowed) {
         return NextResponse.json(
-          { document: existingDoc, idempotencyHit: true, requestId },
+          {
+            error: idempotencyResult.error || "Idempotency conflict",
+            code: idempotencyResult.code || "IDEMPOTENCY_CONFLICT",
+            requestId,
+            retryable: false,
+          },
+          { status: idempotencyResult.status || 409 }
+        );
+      }
+      if (idempotencyResult.isIdempotentHit && idempotencyResult.document) {
+        return NextResponse.json(
+          { document: idempotencyResult.document, idempotencyHit: true, requestId },
           { status: 200 }
         );
       }
     }
 
-    const documentId = idempotencyKey || crypto.randomUUID();
+    // 8. Check Account Storage Quota with Fail-Closed policy and Concurrency Reservation
+    const quotaReservation = await reservePatientStorageQuota(patient.id, fileBuffer.length);
+    if (!quotaReservation.allowed) {
+      if (idempotencyKey) {
+        await releaseUploadIdempotency(patient.id, idempotencyKey);
+      }
+      return NextResponse.json(
+        {
+          error: quotaReservation.reason || "Storage quota exceeded",
+          code: quotaReservation.code || "QUOTA_EXCEEDED",
+          requestId,
+          retryable: quotaReservation.status === 503,
+        },
+        { status: quotaReservation.status || 403 }
+      );
+    }
+
+    // Always server-generate documentId (never accept client strings directly as PK)
+    const documentId = crypto.randomUUID();
     const sanitizedFileName = sanitizeFileName(file.name);
 
     // 9. Call Search Sphere storage API
@@ -279,6 +299,11 @@ export async function POST(req: NextRequest) {
         documentId,
       });
     } catch (storageError: any) {
+      if (idempotencyKey) {
+        await releaseUploadIdempotency(patient.id, idempotencyKey);
+      }
+      await releasePatientStorageReservation(patient.id, fileBuffer.length);
+
       console.error(`[${requestId}] Search Sphere storage upload failed:`, storageError);
       if (storageError instanceof SearchSphereConfigError) {
         return NextResponse.json(
@@ -323,6 +348,11 @@ export async function POST(req: NextRequest) {
         },
       });
     } catch (dbError) {
+      if (idempotencyKey) {
+        await releaseUploadIdempotency(patient.id, idempotencyKey);
+      }
+      await releasePatientStorageReservation(patient.id, fileBuffer.length);
+
       console.error(`[${requestId}] Database metadata insert failed. Compensating storage:`, dbError);
       // Compensation: remove orphaned storage object
       try {
@@ -339,6 +369,13 @@ export async function POST(req: NextRequest) {
         },
         { status: 500 }
       );
+    }
+
+    // Release reservation now that persistent DB metadata records the document
+    await releasePatientStorageReservation(patient.id, fileBuffer.length);
+
+    if (idempotencyKey) {
+      await completeUploadIdempotency(patient.id, idempotencyKey, payloadFingerprint, createdDoc);
     }
 
     // 11. Trigger asynchronous Search Sphere indexing
