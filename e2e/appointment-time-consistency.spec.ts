@@ -412,6 +412,9 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
     await page.addInitScript(() => {
       (window as any).Razorpay = function (options: any) {
         this.options = options;
+        this.on = function (_event: string, _callback: any) {
+          // Event listener stub (e.g. 'payment.failed')
+        };
         this.open = async function () {
           const paymentId = `pay_mock_${Date.now()}`;
           const signature = await (window as any).generateMockSignature(options.order_id, paymentId);
