@@ -116,26 +116,8 @@ export async function GET(
       orderBy: { startTime: "asc" },
     });
 
-    const hasAnyBookedOrHeld = existingSlots.some(
-      (s: any) => (s.appointments && s.appointments.length > 0) || s.status === 'BOOKED' || s.heldByPatientId
-    );
-    const hasAnyLegacySlots = existingSlots.some((s: any) => isLegacySlot(s));
-
     if (existingSlots.length > 0) {
-      if (hasAnyBookedOrHeld || !hasAnyLegacySlots) {
-        return NextResponse.json({ slots: formatSlotsWithAvailability(existingSlots) }, { status: 200 });
-      }
-      // If all existing slots are unbooked legacy slots with zero appointments and zero holds,
-      // refresh them to canonical UTC instants matching the doctor timezone.
-      await prisma.slot.deleteMany({
-        where: {
-          doctorId,
-          date,
-          status: 'AVAILABLE',
-          heldByPatientId: null,
-          appointments: { none: {} },
-        },
-      });
+      return NextResponse.json({ slots: formatSlotsWithAvailability(existingSlots) }, { status: 200 });
     }
 
     // Fetch doctor's schedule
