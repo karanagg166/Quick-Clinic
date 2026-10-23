@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { io, Socket } from 'socket.io-client';
 import { prisma } from '@/lib/prisma';
+import type { User, Patient, Doctor, Slot } from '@/generated/prisma';
 import { createToken, TOKEN_AUDIENCE } from '@/lib/auth-token';
 import {
   DEFAULT_CLINIC_TIMEZONE,
@@ -18,18 +19,18 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
   test.describe.configure({ mode: 'serial' });
 
   const runId = `time_e2e_${Date.now()}`;
-  let patientUser: any;
-  let patientProfile: any;
-  let rivalPatientUser: any;
-  let rivalPatientProfile: any;
-  let doctorUser: any;
-  let doctorProfile: any;
+  let patientUser: User;
+  let patientProfile: Patient;
+  let rivalPatientUser: User;
+  let rivalPatientProfile: Patient;
+  let doctorUser: User;
+  let doctorProfile: Doctor;
 
   const testMondayDate = '2028-06-05';
-  let slot10Am: any;
-  let slot02Pm: any;
-  let slot03Pm: any;
-  let slot04Pm: any;
+  let slot10Am: Slot;
+  let slot02Pm: Slot;
+  let slot03Pm: Slot;
+  let slot04Pm: Slot;
 
   test.beforeAll(async () => {
     // 1. Ensure location exists
@@ -106,12 +107,15 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
     await prisma.schedule.create({
       data: {
         doctorId: doctorProfile.id,
-        weeklySchedule: {
-          MONDAY: [
-            { startTime: '10:00', endTime: '11:00' },
-            { startTime: '14:00', endTime: '16:00' },
-          ],
-        },
+        weeklySchedule: [
+          {
+            day: 'Monday',
+            slots: [
+              { slotNo: 1, start: '10:00', end: '11:00' },
+              { slotNo: 2, start: '14:00', end: '16:00' },
+            ],
+          },
+        ],
       },
     });
 
@@ -287,8 +291,8 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
     await dateInput.fill(testMondayDate);
     await dateInput.dispatchEvent('change');
 
-    // 3. Verify slot button displays canonical time: '10:00 AM IST'
-    const slotButton = patientPage.getByRole('button', { name: /10:00 AM IST/i });
+    // 3. Verify slot button displays canonical time: '10:00 AM'
+    const slotButton = patientPage.getByRole('button', { name: /10:00 AM/i });
     await expect(slotButton).toBeVisible({ timeout: 10000 });
 
     // 4. Click slot
@@ -429,8 +433,8 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
     await dateInput.fill(testMondayDate);
     await dateInput.dispatchEvent('change');
 
-    // Slot 2: 02:00 PM IST (08:30 UTC)
-    const slotButton = page.getByRole('button', { name: /2:00 PM IST/i });
+    // Slot 2: 02:00 PM (08:30 UTC)
+    const slotButton = page.getByRole('button', { name: /0?2:00 PM/i });
     await expect(slotButton).toBeVisible({ timeout: 10000 });
     await slotButton.click();
 

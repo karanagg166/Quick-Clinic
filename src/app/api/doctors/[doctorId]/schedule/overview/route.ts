@@ -80,14 +80,28 @@ export async function GET(
         if (schedule && schedule.weeklySchedule) {
           const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
           const dayName = daysOfWeek[startOfDay.getUTCDay()];
-          const weeklySchedule = schedule.weeklySchedule as Array<{
+          let rawWeekly: any = schedule.weeklySchedule;
+          if (typeof rawWeekly === "string") {
+            try {
+              rawWeekly = JSON.parse(rawWeekly);
+            } catch {
+              rawWeekly = [];
+            }
+          }
+          const weeklySchedule: Array<{
             day: string;
-            slots: Array<{ slotNo: number; start: string; end: string }>;
-          }>;
+            slots: Array<{ slotNo?: number; start: string; end: string }>;
+          }> = Array.isArray(rawWeekly)
+            ? rawWeekly
+            : rawWeekly && typeof rawWeekly === "object" && Array.isArray(rawWeekly.weeklySchedule)
+            ? rawWeekly.weeklySchedule
+            : [];
 
-          const daySchedule = weeklySchedule.find((d) => d.day === dayName);
+          const daySchedule = weeklySchedule.find(
+            (d) => d && typeof d === "object" && typeof d.day === "string" && d.day.toLowerCase() === dayName.toLowerCase()
+          );
 
-          if (daySchedule && daySchedule.slots && daySchedule.slots.length > 0) {
+          if (daySchedule && Array.isArray(daySchedule.slots) && daySchedule.slots.length > 0) {
             const activeLeaves = await prisma.leave.findMany({
               where: {
                 doctorId,

@@ -136,15 +136,29 @@ export async function GET(
     // Get day name based on UTC day
     const dayName = getDayNameUTC(date);
 
-    // Get schedule for this day
-    const weeklySchedule = schedule.weeklySchedule as Array<{
+    // Safely parse and normalize weeklySchedule (defend against non-array or stringified JSON)
+    let rawWeekly: any = schedule.weeklySchedule;
+    if (typeof rawWeekly === "string") {
+      try {
+        rawWeekly = JSON.parse(rawWeekly);
+      } catch {
+        rawWeekly = [];
+      }
+    }
+    const weeklySchedule: Array<{
       day: string;
-      slots: Array<{ slotNo: number; start: string; end: string }>;
-    }>;
+      slots: Array<{ slotNo?: number; start: string; end: string }>;
+    }> = Array.isArray(rawWeekly)
+      ? rawWeekly
+      : rawWeekly && typeof rawWeekly === "object" && Array.isArray(rawWeekly.weeklySchedule)
+      ? rawWeekly.weeklySchedule
+      : [];
 
-    const daySchedule = weeklySchedule.find((d) => d.day === dayName);
+    const daySchedule = weeklySchedule.find(
+      (d) => d && typeof d === "object" && typeof d.day === "string" && d.day.toLowerCase() === dayName.toLowerCase()
+    );
 
-    if (!daySchedule || !daySchedule.slots || daySchedule.slots.length === 0) {
+    if (!daySchedule || !Array.isArray(daySchedule.slots) || daySchedule.slots.length === 0) {
       return NextResponse.json(
         { slots: [] },
         { status: 200 }
