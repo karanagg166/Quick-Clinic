@@ -604,44 +604,346 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
     expect(Array.isArray(sensorWarnings)).toBe(true);
   });
 
-  test('Flow 7: Realtime Socket Server Notification Contract', async () => {
+  test('Flow 7: Realtime Socket Server Notification Contract & Room Isolation', async () => {
     const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
-    const doctorToken = await createToken({
-      id: doctorUser.id,
-      userId: doctorUser.id,
-      email: doctorUser.email,
-      name: doctorUser.name,
-      role: 'DOCTOR',
-      aud: TOKEN_AUDIENCE.SESSION,
-    });
 
-    const socket: Socket = io(socketUrl, {
-      auth: { token: doctorToken },
+    // 1. Authentication failure verification: tokens without SOCKET audience are rejected
+    const sessionToken = await createToken(
+      {
+        id: doctorUser.id,
+        userId: doctorUser.id,
+        email: doctorUser.email,
+        name: doctorUser.name,
+        role: 'DOCTOR',
+      },
+      '1h',
+      TOKEN_AUDIENCE.SESSION
+    );
+
+    const unauthorizedSocket = io(socketUrl, {
+      auth: { token: sessionToken },
       transports: ['websocket', 'polling'],
       reconnection: false,
       timeout: 5000,
     });
 
-    await new Promise<void>((resolve) => {
+    const authRejected = await new Promise<boolean>((resolve) => {
       const timer = setTimeout(() => {
-        socket.disconnect();
-        // Fallback: If socket server port 4000 is not running in background during test, resolve
-        resolve();
-      }, 3000);
+        unauthorizedSocket.disconnect();
+        resolve(false);
+      }, 4000);
 
-      socket.on('connect', () => {
+      unauthorizedSocket.on('connect', () => {
         clearTimeout(timer);
-        expect(socket.connected).toBe(true);
-        socket.disconnect();
-        resolve();
+        unauthorizedSocket.disconnect();
+        resolve(false);
       });
 
-      socket.on('connect_error', () => {
+      unauthorizedSocket.on('connect_error', () => {
         clearTimeout(timer);
-        socket.disconnect();
-        // Standalone socket test runner gracefully resolves if webServer not spun up in unit mode
-        resolve();
+        unauthorizedSocket.disconnect();
+        // Correctly rejected
+        resolve(true);
       });
     });
+
+    expect(authRejected).toBe(true);
+
+    // 2. Legitimate socket connections: correct TOKEN_AUDIENCE.SOCKET and 1h lifespan
+    const doctorSocketToken = await createToken(
+      {
+        id: doctorUser.id,
+        userId: doctorUser.id,
+        email: doctorUser.email,
+        name: doctorUser.name,
+        role: 'DOCTOR',
+      },
+      '1h',
+      TOKEN_AUDIENCE.SOCKET
+    );
+
+    const rivalSocketToken = await createToken(
+      {
+        id: rivalPatientUser.id,
+        userId: rivalPatientUser.id,
+        email: rivalPatientUser.email,
+        name: rivalPatientUser.name,
+        role: 'PATIENT',
+      },
+      '1h',
+      TOKEN_AUDIENCE.SOCKET
+    );
+
+    const doctorSocket: Socket = io(socketUrl, {
+      auth: { token: doctorSocketToken },
+      transports: ['websocket', 'polling'],
+      reconnection: false,
+      timeout: 5000,
+    });
+
+    const rivalSocket: Socket = io(socketUrl, {
+      auth: { token: rivalSocketToken },
+      transports: ['websocket', 'polling'],
+      reconnection: false,
+      timeout: 5000,
+    });
+
+    // Connection failure must fail without graceful-success fallback
+    await Promise.all([
+      new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Doctor socket connection timeout')), 5000);
+        doctorSocket.on('connect', () => {
+          clearTimeout(timer);
+          resolve();
+        });
+        doctorSocket.on('connect_error', (err) => {
+          clearTimeout(timer);
+          reject(new Error(`Doctor socket connect_error: ${err.message}`));
+        });
+      }),
+      new Promise<void>((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Rival socket connection timeout')), 5000);
+        rivalSocket.on('connect', () => {
+          clearTimeout(timer);
+          resolve();
+        });
+        rivalSocket.on('connect_error', (err) => {
+          clearTimeout(timer);
+          reject(new Error(`Rival socket connect_error: ${err.message}`));
+        });
+      }),
+    ]);
+
+    expect(doctorSocket.connected).toBe(true);
+    expect(rivalSocket.connected).toBe(true);
+
+    // 3. Room isolation and verified notification delivery
+    const testNotification = await prisma.notification.create({
+      data: {
+        userId: doctorUser.id,
+        eventId: `socket_e2e_${Date.now()}`,
+        message: 'Dr. Vikram, your appointment at 10:00 AM IST is confirmed.',
+      },
+    });
+
+    let rivalReceivedUnauthorized = false;
+    rivalSocket.on('new_notification', () => {
+      rivalReceivedUnauthorized = true;
+    });
+
+    const doctorDeliveryPromise = new Promise<{ notification: any }>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Doctor notification event timed out')), 5000);
+      doctorSocket.on('new_notification', (data) => {
+        clearTimeout(timer);
+        resolve(data);
+      });
+    });
+
+    const internalSecret =
+      process.env.INTERNAL_API_SECRET ||
+      process.env.INTERNAL_SECRET ||
+      'ci_internal_secret_at_least_32_characters_long_for_security';
+
+    const broadcastRes = await fetch(`${socketUrl}/api/notifications/broadcast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': internalSecret,
+      },
+      body: JSON.stringify({
+        userId: doctorUser.id,
+        notification: {
+          id: testNotification.id,
+          message: testNotification.message,
+          createdAt: testNotification.createdAt.toISOString(),
+          isRead: false,
+        },
+      }),
+    });
+
+    expect(broadcastRes.ok).toBe(true);
+
+    const receivedPayload = await doctorDeliveryPromise;
+    expect(receivedPayload.notification).toBeDefined();
+    expect(receivedPayload.notification.id).toBe(testNotification.id);
+    expect(receivedPayload.notification.message).toBe(testNotification.message);
+    expect(receivedPayload.notification.message).toContain('10:00 AM IST');
+
+    // Confirm rival room isolation: rival user must not receive private doctor notification
+    await new Promise((r) => setTimeout(r, 600));
+    expect(rivalReceivedUnauthorized).toBe(false);
+
+    doctorSocket.disconnect();
+    rivalSocket.disconnect();
+  });
+
+  test('Flow 8: End-to-End Schedule Configuration, Slot Generation & 10-Point Time Invariant Verification', async ({
+    request,
+    browser,
+  }) => {
+    // 1. Doctor's configured local schedule in Asia/Kolkata
+    // Set Tuesday schedule: 11:00 to 12:00
+    const testTuesdayDate = '2028-06-06'; // A Tuesday
+    const weeklyScheduleConfig = [
+      {
+        day: 'Tuesday',
+        slots: [{ slotNo: 1, start: '11:00', end: '12:00' }],
+      },
+    ];
+
+    await prisma.schedule.upsert({
+      where: { doctorId: doctorProfile.id },
+      update: { weeklySchedule: weeklyScheduleConfig },
+      create: { doctorId: doctorProfile.id, weeklySchedule: weeklyScheduleConfig },
+    });
+
+    // 2. Call the actual slot generation API
+    const slotGenRes = await request.get(`/api/doctors/${doctorProfile.id}/slots?date=${testTuesdayDate}`);
+    expect(slotGenRes.ok()).toBe(true);
+    const slotGenData = await slotGenRes.json();
+    expect(Array.isArray(slotGenData.slots)).toBe(true);
+    expect(slotGenData.slots.length).toBeGreaterThan(0);
+
+    // Verify slot UTC start/end in DB matches local schedule configuration exactly
+    const generatedSlot = await prisma.slot.findFirstOrThrow({
+      where: {
+        doctorId: doctorProfile.id,
+        date: new Date(`${testTuesdayDate}T00:00:00.000Z`),
+      },
+      orderBy: { startTime: 'asc' },
+    });
+
+    // 11:00 AM IST on 2028-06-06 is 05:30:00.000Z UTC
+    const expectedUtcIso = localDateAndTimeToUtc(testTuesdayDate, '11:00', DEFAULT_CLINIC_TIMEZONE).toISOString();
+    expect(generatedSlot.startTime.toISOString()).toBe(expectedUtcIso);
+    expect(generatedSlot.startTime.toISOString()).toBe('2028-06-06T05:30:00.000Z');
+    expect(formatAppointmentTime(generatedSlot.startTime, DEFAULT_CLINIC_TIMEZONE)).toBe('11:00 AM IST');
+
+    // 3. Patient selects this generated slot
+    const selectedSlotId = generatedSlot.id;
+
+    // 4. Checkout's reserved slot
+    const checkoutResult = await initiateCheckout({
+      slotId: selectedSlotId,
+      patientUserId: patientUser.id,
+      patientProfileId: patientProfile.id,
+      paymentMethod: 'CASH',
+      appointmentType: 'IN_PERSON',
+    });
+    expect(checkoutResult.status).toBe('CONFIRMED');
+
+    // 5. Persisted appointment verification
+    const persistedAppointment = await prisma.appointment.findUniqueOrThrow({
+      where: { id: checkoutResult.appointment.id },
+      include: { slot: true },
+    });
+    expect(persistedAppointment.slot.startTime.toISOString()).toBe('2028-06-06T05:30:00.000Z');
+    expect(formatAppointmentTime(persistedAppointment.slot.startTime, DEFAULT_CLINIC_TIMEZONE)).toBe('11:00 AM IST');
+
+    // 6. Patient appointment details UI check
+    const patientContext = await browser.newContext();
+    await setupSession(patientContext, patientUser, 'PATIENT', patientProfile.id);
+    const patientPage = await patientContext.newPage();
+    await patientPage.goto(`/patient/appointments/${persistedAppointment.id}`);
+    await patientPage.waitForLoadState('networkidle');
+    await expect(patientPage.getByText(/11:00 AM IST/i).first()).toBeVisible();
+
+    // 7. Doctor appointment details UI check
+    const doctorContext = await browser.newContext();
+    await setupSession(doctorContext, doctorUser, 'DOCTOR', doctorProfile.id);
+    const doctorPage = await doctorContext.newPage();
+    await doctorPage.goto(`/doctor/appointments/${persistedAppointment.id}`);
+    await doctorPage.waitForLoadState('networkidle');
+    await expect(doctorPage.getByText(/11:00 AM IST/i).first()).toBeVisible();
+
+    // 8. Notification text in database
+    const doctorNotification = await prisma.notification.findFirst({
+      where: {
+        userId: doctorUser.id,
+        eventId: `apt:${persistedAppointment.id}:CONFIRMED:doctor`,
+      },
+    });
+    expect(doctorNotification).toBeDefined();
+    expect(doctorNotification?.message).toContain('11:00 AM IST');
+
+    // 9. System chat message in database
+    const chatMsg = await prisma.chatMessages.findFirst({
+      where: {
+        clientMessageId: `chat:appt_confirm:${persistedAppointment.id}`,
+      },
+    });
+    expect(chatMsg).toBeDefined();
+    expect(chatMsg?.text).toContain('⏰ Time: 11:00 AM IST');
+    expect(chatMsg?.text).toContain('📅 Date: Tue, Jun 6, 2028');
+
+    // 10. Socket.IO notification payload representation
+    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+    const doctorSocketToken = await createToken(
+      {
+        id: doctorUser.id,
+        userId: doctorUser.id,
+        email: doctorUser.email,
+        name: doctorUser.name,
+        role: 'DOCTOR',
+      },
+      '1h',
+      TOKEN_AUDIENCE.SOCKET
+    );
+
+    const doctorSocket: Socket = io(socketUrl, {
+      auth: { token: doctorSocketToken },
+      transports: ['websocket', 'polling'],
+      reconnection: false,
+      timeout: 5000,
+    });
+
+    await new Promise<void>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Doctor socket connection timed out')), 5000);
+      doctorSocket.on('connect', () => {
+        clearTimeout(timer);
+        resolve();
+      });
+      doctorSocket.on('connect_error', (err) => {
+        clearTimeout(timer);
+        reject(err);
+      });
+    });
+
+    const receivedPayloadPromise = new Promise<{ notification: any }>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error('Socket notification delivery timed out')), 5000);
+      doctorSocket.on('new_notification', (data) => {
+        clearTimeout(timer);
+        resolve(data);
+      });
+    });
+
+    const internalSecret =
+      process.env.INTERNAL_API_SECRET ||
+      process.env.INTERNAL_SECRET ||
+      'ci_internal_secret_at_least_32_characters_long_for_security';
+
+    await fetch(`${socketUrl}/api/notifications/broadcast`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-internal-secret': internalSecret,
+      },
+      body: JSON.stringify({
+        userId: doctorUser.id,
+        notification: {
+          id: doctorNotification!.id,
+          message: doctorNotification!.message,
+          createdAt: doctorNotification!.createdAt.toISOString(),
+          isRead: false,
+        },
+      }),
+    });
+
+    const socketPayload = await receivedPayloadPromise;
+    expect(socketPayload.notification.message).toContain('11:00 AM IST');
+
+    doctorSocket.disconnect();
+    await patientContext.close();
+    await doctorContext.close();
   });
 });

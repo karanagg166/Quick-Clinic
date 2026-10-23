@@ -97,21 +97,50 @@ describe('Canonical Timezone Matrix & Appointment Invariants (Phase 1.4)', () =>
     expect(formatted).toBe('Mon, Oct 26, 2026 at 2:30 PM IST');
   });
 
-  it('Scenario 12: DST spring-forward transition handles non-existent hour gracefully', () => {
-    // US spring-forward gap: 2026-03-08 at 2:00 AM clocks jump to 3:00 AM
-    // An appointment at 02:30 in America/New_York resolves gracefully to a valid instant
-    const instant = localDateAndTimeToUtc('2026-03-08', '02:30', 'America/New_York');
-    expect(instant).toBeInstanceOf(Date);
-    expect(isNaN(instant.getTime())).toBe(false);
-    expect(instant.toISOString()).toBe('2026-03-08T06:30:00.000Z');
+  it('Scenario 12: DST spring-forward transition explicitly rejects non-existent wall time', () => {
+    // US spring-forward gap: 2026-03-08 at 2:00 AM clocks jump directly to 3:00 AM
+    // An appointment requested at 02:30 in America/New_York does not exist on the clock
+    // Rejects rather than silently accepting an arbitrary instant that represents a different local time
+    expect(() => {
+      localDateAndTimeToUtc('2026-03-08', '02:30', 'America/New_York');
+    }).toThrowError(/Nonexistent local wall time in America\/New_York/);
   });
 
-  it('Scenario 13: DST fall-back transition resolves ambiguous hour deterministically', () => {
-    // US fall-back repeat: 2026-11-01 at 2:00 AM clocks repeat 1:00 AM
-    const instant = localDateAndTimeToUtc('2026-11-01', '01:30', 'America/New_York');
-    expect(instant).toBeInstanceOf(Date);
-    expect(isNaN(instant.getTime())).toBe(false);
-    expect(instant.toISOString()).toBe('2026-11-01T05:30:00.000Z');
+  it('Scenario 13: DST fall-back transition resolves ambiguous hour with documented disambiguation policy', () => {
+    // US fall-back repeat: 2026-11-01 at 2:00 AM clocks jump back to 1:00 AM
+    // 01:30 occurs twice: first in EDT (UTC-4), then in EST (UTC-5)
+    const earlierInstant = localDateAndTimeToUtc('2026-11-01', '01:30', 'America/New_York', {
+      disambiguation: 'earlier',
+    });
+    expect(earlierInstant.toISOString()).toBe('2026-11-01T05:30:00.000Z');
+
+    const laterInstant = localDateAndTimeToUtc('2026-11-01', '01:30', 'America/New_York', {
+      disambiguation: 'later',
+    });
+    expect(laterInstant.toISOString()).toBe('2026-11-01T06:30:00.000Z');
+
+    // Both instants format back to 01:30 in New York
+    expect(formatAppointmentTime(earlierInstant, 'America/New_York')).toBe('1:30 AM EDT');
+    expect(formatAppointmentTime(laterInstant, 'America/New_York')).toBe('1:30 AM EST');
+  });
+
+  it('Scenario 13b: Invalid dates and leap-year boundaries are rejected with informative errors', () => {
+    // Invalid day of month
+    expect(() => localDateAndTimeToUtc('2026-02-30', '10:00', 'Asia/Kolkata')).toThrowError(
+      /Invalid calendar date: day 30 is out of range/
+    );
+    expect(() => localDateAndTimeToUtc('2026-04-31', '10:00', 'Asia/Kolkata')).toThrowError(
+      /Invalid calendar date: day 31 is out of range/
+    );
+
+    // Non-leap year Feb 29
+    expect(() => localDateAndTimeToUtc('2025-02-29', '10:00', 'Asia/Kolkata')).toThrowError(
+      /Invalid calendar date: day 29 is out of range \(1-28\) for 2025-02-29/
+    );
+
+    // Valid leap year Feb 29 succeeds
+    const leapYearUtc = localDateAndTimeToUtc('2024-02-29', '10:00', 'Asia/Kolkata');
+    expect(leapYearUtc.toISOString()).toBe('2024-02-29T04:30:00.000Z');
   });
 
   it('Scenario 14: Leap day handling (2028-02-29) preserves weekday and instant', () => {
@@ -190,5 +219,27 @@ describe('Canonical Timezone Matrix & Appointment Invariants (Phase 1.4)', () =>
       includeTimezone: true,
     });
     expect(time).toBe('10:00 AM IST');
+  });
+
+  it('Scenario 21: Cross-process TZ isolation tests (UTC, Asia/Kolkata, America/New_York, Europe/London)', async () => {
+    const { execSync } = await import('child_process');
+    const timezones = ['UTC', 'Asia/Kolkata', 'America/New_York', 'Europe/London'];
+
+    for (const tz of timezones) {
+      const script = `
+        import { localDateAndTimeToUtc, formatAppointmentTime } from './src/lib/dateUtils';
+        const instant = localDateAndTimeToUtc('2026-10-26', '10:00', 'Asia/Kolkata');
+        const formatted = formatAppointmentTime(instant, 'Asia/Kolkata');
+        process.stdout.write(instant.toISOString() + '|' + formatted);
+      `;
+      const output = execSync(`pnpm exec tsx --eval "${script.replace(/\n/g, ' ')}"`, {
+        cwd: process.cwd(),
+        env: { ...process.env, TZ: tz },
+      }).toString();
+
+      const [iso, formatted] = output.split('|');
+      expect(iso).toBe('2026-10-26T04:30:00.000Z');
+      expect(formatted).toBe('10:00 AM IST');
+    }
   });
 });

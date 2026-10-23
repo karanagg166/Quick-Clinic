@@ -70,3 +70,8 @@ heatmap_repo/
 heatmap_private/
 my_time_log.txt
 implementationplan.md
+
+# Database Migration & Audit Backups (Never commit clinical or customer data)
+scripts/backups/
+backups/
+*.backup.json

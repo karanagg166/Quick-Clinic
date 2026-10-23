@@ -40,17 +40,30 @@ interface AuditItem {
 
 async function runAudit() {
   const isApply = process.argv.includes('--apply');
-  console.log(`\n=== Quick-Clinic Appointment Time Audit ===`);
-  console.log(`Mode: ${isApply ? 'APPLY MIGRATION (APPROVED)' : 'DRY-RUN AUDIT & BACKUP'}`);
-  console.log(`Authoritative Timezone: ${DEFAULT_CLINIC_TIMEZONE}`);
-  console.log(`Canonical Epoch Cutoff: ${CANONICAL_TIMEZONE_EPOCH.toISOString()}\n`);
+  const allowBookedMigration = process.argv.includes('--migrate-booked-appointments-with-approval');
 
+  console.log(`\n=== Quick-Clinic Appointment Time Audit ===`);
+  console.log(`Mode: ${isApply ? 'APPLY MIGRATION' : 'DRY-RUN AUDIT & SECURE BACKUP'}`);
+  console.log(`Authoritative Timezone: ${DEFAULT_CLINIC_TIMEZONE}`);
+  console.log(`Canonical Epoch Cutoff: ${CANONICAL_TIMEZONE_EPOCH.toISOString()}`);
+  console.log(`Booked Appointments Policy: ${allowBookedMigration ? 'EXPLICIT OVERRIDE APPROVED' : 'STRICTLY PROTECTED (Excluded from shift)'}\n`);
+
+  // Strip all PII fields (names, emails, phone numbers) from audit query
   const slots = await prisma.slot.findMany({
-    include: {
+    select: {
+      id: true,
+      doctorId: true,
+      status: true,
+      startTime: true,
+      endTime: true,
+      createdAt: true,
+      updatedAt: true,
       appointments: {
-        include: {
-          doctor: { include: { user: { select: { name: true, email: true } } } },
-          patient: { include: { user: { select: { name: true, email: true } } } },
+        select: {
+          id: true,
+          status: true,
+          doctorId: true,
+          patientId: true,
         },
       },
     },
@@ -102,20 +115,21 @@ async function runAudit() {
   }
 
   console.log(`Audit Summary:`);
-  console.log(`- Legacy Booked Appointments: ${legacyBookedCount}`);
-  console.log(`- Legacy Available/Unbooked Slots: ${legacyAvailableCount}`);
+  console.log(`- Legacy Booked Appointments (Protected): ${legacyBookedCount}`);
+  console.log(`- Legacy Available/Unbooked Slots (Eligible): ${legacyAvailableCount}`);
   console.log(`- Total Records Requiring Attention: ${auditItems.length}\n`);
 
-  // Create backups directory
+  // Create secure backups directory
   const backupDir = path.resolve(__dirname, 'backups');
   if (!fs.existsSync(backupDir)) {
-    fs.mkdirSync(backupDir, { recursive: true });
+    fs.mkdirSync(backupDir, { recursive: true, mode: 0o700 });
   }
 
+  // Backup contains only non-PII audit items and structural slot data
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const backupFile = path.join(backupDir, `appointment_slots_backup_${timestamp}.json`);
-  fs.writeFileSync(backupFile, JSON.stringify({ slots, auditItems }, null, 2));
-  console.log(`✓ Created pre-migration backup at: ${backupFile}`);
+  fs.writeFileSync(backupFile, JSON.stringify({ auditItems, summary: { legacyBookedCount, legacyAvailableCount } }, null, 2), { mode: 0o600 });
+  console.log(`✓ Created secure pre-migration backup (mode 0600, non-PII) at: ${backupFile}`);
 
   if (auditItems.length > 0) {
     console.log(`\nSample Legacy Audit Items (first 5):`);
@@ -125,14 +139,29 @@ async function runAudit() {
   if (!isApply) {
     console.log(`\n[DRY RUN COMPLETE]`);
     console.log(`Authoritative appointments were PRESERVED without silent alteration.`);
-    console.log(`To apply migration after reviewing backups, re-run with: --apply\n`);
+    console.log(`To apply migration to eligible unbooked slots, re-run with: --apply\n`);
     return;
   }
 
-  // If approved apply:
-  console.log(`\nApplying migration to ${auditItems.length} records in a single database transaction...`);
+  // Filter items to migrate: exclude booked appointments unless explicit approval flag is passed
+  const itemsToMigrate = allowBookedMigration
+    ? auditItems
+    : auditItems.filter((item) => !item.appointmentId);
+
+  if (!allowBookedMigration && legacyBookedCount > 0) {
+    console.log(`\n[SAFETY INVARIANT ENFORCED]`);
+    console.log(`Preserving ${legacyBookedCount} booked appointments untouched.`);
+    console.log(`These appointments remain safe and display accurately via isLegacySlot() compatibility.`);
+  }
+
+  if (itemsToMigrate.length === 0) {
+    console.log(`No unbooked slots require migration.`);
+    return;
+  }
+
+  console.log(`\nApplying migration to ${itemsToMigrate.length} unbooked slots in a single database transaction...`);
   await prisma.$transaction(async (tx) => {
-    for (const item of auditItems) {
+    for (const item of itemsToMigrate) {
       await tx.slot.update({
         where: { id: item.slotId },
         data: {
@@ -143,7 +172,7 @@ async function runAudit() {
     }
   });
 
-  console.log(`✓ Migration applied successfully to ${auditItems.length} slots.`);
+  console.log(`✓ Migration applied safely to ${itemsToMigrate.length} unbooked slots. Booked appointments untouched.`);
 }
 
 runAudit()

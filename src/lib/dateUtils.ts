@@ -65,16 +65,23 @@ export function getTimezoneAbbreviation(date: Date, timeZone: string = DEFAULT_C
   return timeZone === 'Asia/Kolkata' ? 'IST' : timeZone;
 }
 
+export interface LocalDateOptions {
+  disambiguation?: 'earlier' | 'later';
+}
+
 /**
  * Converts a local calendar date (YYYY-MM-DD) and local time (HH:mm) in a specified
  * IANA timezone (e.g. 'Asia/Kolkata') into an exact UTC Date object.
  *
  * Handles standard offsets and DST transitions without naive fixed arithmetic.
+ * Validates calendar dates, leap years, rejects nonexistent DST spring-forward times,
+ * and handles ambiguous DST fall-back times with a documented disambiguation policy.
  */
 export function localDateAndTimeToUtc(
   dateStr: string,
   timeStr: string,
-  timeZone: string = DEFAULT_CLINIC_TIMEZONE
+  timeZone: string = DEFAULT_CLINIC_TIMEZONE,
+  options?: LocalDateOptions
 ): Date {
   if (!dateStr || !timeStr) {
     throw new Error('Date and time are required');
@@ -87,12 +94,21 @@ export function localDateAndTimeToUtc(
   const [year, month, day] = dateStr.split('-').map(Number);
   const [hours, minutes] = timeStr.split(':').map(Number);
 
+  if (month < 1 || month > 12) {
+    throw new Error(`Invalid month value: ${month} in date ${dateStr}`);
+  }
+
+  const isLeapYear = (year % 4 === 0 && year % 100 !== 0) || (year % 400 === 0);
+  const daysInMonthTable = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  const maxDay = daysInMonthTable[month - 1];
+
+  if (day < 1 || day > maxDay) {
+    throw new Error(`Invalid calendar date: day ${day} is out of range (1-${maxDay}) for ${dateStr}`);
+  }
+
   if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
     throw new Error(`Invalid time values: ${timeStr}`);
   }
-
-  // Initial estimate in UTC
-  let guess = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
 
   const dtf = new Intl.DateTimeFormat('en-US', {
     timeZone,
@@ -105,9 +121,8 @@ export function localDateAndTimeToUtc(
     hour12: false,
   });
 
-  // Iteratively converge to target local time (handles DST steps & arbitrary offsets)
-  for (let i = 0; i < 4; i++) {
-    const parts = dtf.formatToParts(guess);
+  const getParts = (d: Date): Record<string, number> => {
+    const parts = dtf.formatToParts(d);
     const p: Record<string, number> = {};
     for (const part of parts) {
       if (part.type !== 'literal') {
@@ -115,13 +130,51 @@ export function localDateAndTimeToUtc(
       }
     }
     if (p.hour === 24) p.hour = 0;
+    return p;
+  };
 
+  const matchesTarget = (d: Date): boolean => {
+    const p = getParts(d);
+    return (
+      p.year === year &&
+      p.month === month &&
+      p.day === day &&
+      p.hour === hours &&
+      p.minute === minutes
+    );
+  };
+
+  // Initial estimate in UTC
+  let guess = new Date(Date.UTC(year, month - 1, day, hours, minutes, 0));
+
+  // Iteratively converge to target local time (handles DST steps & arbitrary offsets)
+  for (let i = 0; i < 4; i++) {
+    const p = getParts(guess);
     const targetUtcMs = Date.UTC(year, month - 1, day, hours, minutes, 0);
     const actualUtcMs = Date.UTC(p.year, p.month - 1, p.day, p.hour, p.minute, p.second || 0);
     const diff = targetUtcMs - actualUtcMs;
 
     if (diff === 0) break;
     guess = new Date(guess.getTime() + diff);
+  }
+
+  // Explicitly verify convergence; reject nonexistent local times during DST spring-forward
+  if (!matchesTarget(guess)) {
+    throw new Error(
+      `Nonexistent local wall time in ${timeZone}: ${dateStr} ${timeStr} does not exist due to daylight saving spring-forward transition.`
+    );
+  }
+
+  // Handle ambiguous local times during DST fall-back (repeated hour)
+  const disambiguation = options?.disambiguation ?? 'earlier';
+  const oneHourLater = new Date(guess.getTime() + 3600 * 1000);
+  const oneHourEarlier = new Date(guess.getTime() - 3600 * 1000);
+
+  if (disambiguation === 'later' && matchesTarget(oneHourLater)) {
+    return oneHourLater;
+  }
+  if (disambiguation === 'earlier' && matchesTarget(oneHourEarlier)) {
+    return oneHourEarlier;
   }
 
   return guess;
