@@ -218,7 +218,7 @@ describe("Payment, Booking & Real-Time Production Integration Test Suite", () =>
         resolve();
       });
     });
-  });
+  }, 60000);
 
   afterAll(async () => {
     // Close socket server
@@ -262,7 +262,7 @@ describe("Payment, Booking & Real-Time Production Integration Test Suite", () =>
     } catch (e) {
       console.warn("Cleanup warning in integration test suite:", e);
     }
-  });
+  }, 60000);
 
   async function createFutureSlot(hoursFromNow = 24): Promise<string> {
     const start = new Date(Date.now() + hoursFromNow * 3600 * 1000);

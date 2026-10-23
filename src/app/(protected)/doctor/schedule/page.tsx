@@ -33,6 +33,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { showToast } from "@/lib/toast";
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentTime,
+  isLegacySlot,
+} from "@/lib/dateUtils";
 
 type SlotStatus = "AVAILABLE" | "HELD" | "BOOKED" | "UNAVAILABLE" | "CANCELLED" | "ON_LEAVE";
 
@@ -124,11 +129,13 @@ const statusTone: Record<SlotStatus, { bg: string; text: string; border: string 
 
 function formatTime(dateStr: string) {
   if (!dateStr) return "";
-  return new Intl.DateTimeFormat("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-    timeZone: "UTC",
-  }).format(new Date(dateStr));
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return "";
+  const legacy = isLegacySlot({ startTime: d });
+  return formatAppointmentTime(d, DEFAULT_CLINIC_TIMEZONE, {
+    includeTimezone: false,
+    isLegacy: legacy,
+  });
 }
 
 function formatMinutesToHours(minutes: number): string {

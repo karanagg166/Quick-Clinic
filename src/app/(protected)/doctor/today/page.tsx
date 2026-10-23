@@ -27,6 +27,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentTime,
+  isLegacySlot,
+} from "@/lib/dateUtils";
 
 export default function DoctorTodayAppointmentsPage() {
   const doctorId = useUserStore((s) => s.doctorId);
@@ -349,11 +354,11 @@ export default function DoctorTodayAppointmentsPage() {
           </Card>
         ) : (
           filteredAppointments.map((appt) => {
+            const isLegacy = isLegacySlot({ startTime: appt.appointmentTime });
             const timeString = appt.appointmentTime
-              ? new Date(appt.appointmentTime).toLocaleTimeString("en-US", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  timeZone: "UTC",
+              ? formatAppointmentTime(appt.appointmentTime, DEFAULT_CLINIC_TIMEZONE, {
+                  includeTimezone: !isLegacy,
+                  isLegacy,
                 })
               : "N/A";
 

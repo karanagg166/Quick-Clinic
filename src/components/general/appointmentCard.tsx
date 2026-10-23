@@ -5,6 +5,12 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Avatar from "@/components/general/Avatar";
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentDate,
+  formatAppointmentTime,
+  isLegacySlot,
+} from "@/lib/dateUtils";
 
 export default function AppointmentCard({
   appointment,
@@ -61,7 +67,11 @@ export default function AppointmentCard({
         <div className="flex items-center gap-2 text-sm">
           <Calendar className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">
-            {new Date(appointment.slotDate).toLocaleDateString("en-US", { timeZone: "UTC" })}
+            {formatAppointmentDate(
+              appointment.slotDate || appointment.slotStart,
+              DEFAULT_CLINIC_TIMEZONE,
+              { isLegacy: isLegacySlot({ startTime: appointment.slotStart }) }
+            )}
           </span>
         </div>
 
@@ -69,17 +79,23 @@ export default function AppointmentCard({
         <div className="flex items-center gap-2 text-sm">
           <Clock className="w-4 h-4 text-muted-foreground" />
           <span className="font-medium">
-            {new Date(appointment.slotStart).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: "UTC",
-            })}
+            {formatAppointmentTime(
+              appointment.slotStart,
+              DEFAULT_CLINIC_TIMEZONE,
+              {
+                includeTimezone: true,
+                isLegacy: isLegacySlot({ startTime: appointment.slotStart }),
+              }
+            )}
             {" - "}
-            {new Date(appointment.slotEnd).toLocaleTimeString("en-US", {
-              hour: "2-digit",
-              minute: "2-digit",
-              timeZone: "UTC",
-            })}
+            {formatAppointmentTime(
+              appointment.slotEnd,
+              DEFAULT_CLINIC_TIMEZONE,
+              {
+                includeTimezone: false,
+                isLegacy: isLegacySlot({ startTime: appointment.slotEnd }),
+              }
+            )}
           </span>
         </div>
 

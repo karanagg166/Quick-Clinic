@@ -10,6 +10,12 @@ import { showToast } from '@/lib/toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentDate,
+  formatAppointmentTime,
+  isLegacySlot,
+} from '@/lib/dateUtils';
 
 export default function AppointmentPage() {
     const params = useParams();
@@ -201,9 +207,26 @@ export default function AppointmentPage() {
             <div className="bg-white rounded-lg shadow-md border p-6 mb-6">
                 <h2 className="text-xl font-semibold text-gray-800 mb-4">Appointment Slot</h2>
                 <div className="grid grid-cols-2 gap-4">
-                    <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString("en-US", { timeZone: "UTC" })}</p>
-                    <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
-                    <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
+                    <p>
+                        <span className="font-semibold">Date:</span>{" "}
+                        {formatAppointmentDate(appointment.slot.startTime || appointment.slot.date, DEFAULT_CLINIC_TIMEZONE, {
+                            isLegacy: isLegacySlot(appointment.slot),
+                        })}
+                    </p>
+                    <p>
+                        <span className="font-semibold">Start Time:</span>{" "}
+                        {formatAppointmentTime(appointment.slot.startTime, DEFAULT_CLINIC_TIMEZONE, {
+                            includeTimezone: true,
+                            isLegacy: isLegacySlot(appointment.slot),
+                        })}
+                    </p>
+                    <p>
+                        <span className="font-semibold">End Time:</span>{" "}
+                        {formatAppointmentTime(appointment.slot.endTime, DEFAULT_CLINIC_TIMEZONE, {
+                            includeTimezone: true,
+                            isLegacy: isLegacySlot(appointment.slot),
+                        })}
+                    </p>
                     <p><span className="font-semibold">Slot Status:</span> {appointment.slot.status}</p>
                 </div>
             </div>

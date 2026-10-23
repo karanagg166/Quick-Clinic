@@ -3,6 +3,12 @@ import { confirmSlotHold } from '@/lib/booking';
 import { logAudit } from '@/lib/logger';
 import { prisma } from '@/lib/prisma';
 import { publishToSocketServer } from '@/lib/socket-publisher';
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentDate,
+  formatAppointmentTime,
+  isLegacySlot,
+} from '@/lib/dateUtils';
 
 type ConfirmationInput = {
   slotId: string;
@@ -45,11 +51,12 @@ export async function persistBookingSideEffectsTx(
 
   const patientName = patientUser.name || 'Patient';
   const doctorName = doctor.user.name || 'Doctor';
-  const formattedDate = slot?.date
-    ? new Date(slot.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' })
+  const legacy = isLegacySlot(slot);
+  const formattedDate = slot?.date || slot?.startTime
+    ? formatAppointmentDate(slot.startTime || slot.date, DEFAULT_CLINIC_TIMEZONE, { isLegacy: legacy })
     : 'Scheduled Date';
   const formattedTime = slot?.startTime
-    ? new Date(slot.startTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', timeZone: 'UTC' })
+    ? formatAppointmentTime(slot.startTime, DEFAULT_CLINIC_TIMEZONE, { includeTimezone: !legacy, isLegacy: legacy })
     : 'Scheduled Time';
 
   let relation = await tx.doctorPatientRelation.findUnique({

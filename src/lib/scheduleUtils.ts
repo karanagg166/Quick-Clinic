@@ -1,3 +1,5 @@
+import { DEFAULT_CLINIC_TIMEZONE, isLegacySlot } from "./dateUtils";
+
 export interface ScheduleSlot {
   slotNo?: number;
   start: string;
@@ -194,10 +196,35 @@ function getBlockType(status: SlotStatus): "BUSY" | "FREE" | "BLOCKED" | "ON_LEA
   }
 }
 
+function getLocalMinutes(date: Date, timeZone: string, legacy: boolean): number {
+  if (legacy) {
+    return date.getUTCHours() * 60 + date.getUTCMinutes();
+  }
+  try {
+    const dtf = new Intl.DateTimeFormat('en-US', {
+      timeZone,
+      hour: 'numeric',
+      minute: 'numeric',
+      hour12: false,
+    });
+    const parts = dtf.formatToParts(date);
+    let hour = 0;
+    let minute = 0;
+    for (const p of parts) {
+      if (p.type === 'hour') hour = parseInt(p.value, 10);
+      if (p.type === 'minute') minute = parseInt(p.value, 10);
+    }
+    if (hour === 24) hour = 0;
+    return hour * 60 + minute;
+  } catch {
+    return date.getUTCHours() * 60 + date.getUTCMinutes();
+  }
+}
+
 /**
  * Aggregates sorted slots into human-readable contiguous timeline blocks
  */
-export function calculateTimelineBlocks(slots: RawSlot[]): TimelineBlock[] {
+export function calculateTimelineBlocks(slots: RawSlot[], timeZone: string = DEFAULT_CLINIC_TIMEZONE): TimelineBlock[] {
   if (!slots || slots.length === 0) return [];
 
   // Sort slots chronologically
@@ -220,14 +247,14 @@ export function calculateTimelineBlocks(slots: RawSlot[]): TimelineBlock[] {
       currentBlockSlots.push(slot);
     } else {
       // Finalize current block
-      blocks.push(createTimelineBlock(currentType, currentBlockSlots));
+      blocks.push(createTimelineBlock(currentType, currentBlockSlots, timeZone));
       currentBlockSlots = [slot];
       currentType = slotType;
     }
   }
 
   if (currentBlockSlots.length > 0) {
-    blocks.push(createTimelineBlock(currentType, currentBlockSlots));
+    blocks.push(createTimelineBlock(currentType, currentBlockSlots, timeZone));
   }
 
   return blocks;
@@ -235,16 +262,18 @@ export function calculateTimelineBlocks(slots: RawSlot[]): TimelineBlock[] {
 
 function createTimelineBlock(
   type: "BUSY" | "FREE" | "BLOCKED" | "ON_LEAVE",
-  slots: RawSlot[]
+  slots: RawSlot[],
+  timeZone: string = DEFAULT_CLINIC_TIMEZONE
 ): TimelineBlock {
   const firstSlot = slots[0];
   const lastSlot = slots[slots.length - 1];
 
   const startDate = new Date(firstSlot.startTime);
   const endDate = new Date(lastSlot.endTime);
+  const legacy = isLegacySlot(firstSlot);
 
-  const startMinutes = startDate.getUTCHours() * 60 + startDate.getUTCMinutes();
-  const endMinutes = endDate.getUTCHours() * 60 + endDate.getUTCMinutes();
+  const startMinutes = getLocalMinutes(startDate, timeZone, legacy);
+  const endMinutes = getLocalMinutes(endDate, timeZone, legacy);
   const durationMinutes = Math.max(0, Math.round((endDate.getTime() - startDate.getTime()) / 60000));
 
   const bookedCount = slots.filter((s) => s.status === "BOOKED" || s.status === "HELD").length;

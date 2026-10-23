@@ -2,6 +2,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { expireDoctorHolds } from "@/lib/booking";
+import { DEFAULT_CLINIC_TIMEZONE, localDateAndTimeToUtc, isLegacySlot } from "@/lib/dateUtils";
 
 const SLOT_DURATION_MINUTES = 10;
 
@@ -115,8 +116,26 @@ export async function GET(
       orderBy: { startTime: "asc" },
     });
 
+    const hasAnyBookedOrHeld = existingSlots.some(
+      (s: any) => (s.appointments && s.appointments.length > 0) || s.status === 'BOOKED' || s.heldByPatientId
+    );
+    const hasAnyLegacySlots = existingSlots.some((s: any) => isLegacySlot(s));
+
     if (existingSlots.length > 0) {
-      return NextResponse.json({ slots: formatSlotsWithAvailability(existingSlots) }, { status: 200 });
+      if (hasAnyBookedOrHeld || !hasAnyLegacySlots) {
+        return NextResponse.json({ slots: formatSlotsWithAvailability(existingSlots) }, { status: 200 });
+      }
+      // If all existing slots are unbooked legacy slots with zero appointments and zero holds,
+      // refresh them to canonical UTC instants matching the doctor timezone.
+      await prisma.slot.deleteMany({
+        where: {
+          doctorId,
+          date,
+          status: 'AVAILABLE',
+          heldByPatientId: null,
+          appointments: { none: {} },
+        },
+      });
     }
 
     // Fetch doctor's schedule
@@ -168,6 +187,8 @@ export async function GET(
       status: "ON_LEAVE" | "AVAILABLE";
     }> = [];
 
+    const doctorTimezone = DEFAULT_CLINIC_TIMEZONE;
+
     for (const timeSlot of daySchedule.slots) {
       if (!timeSlot.start || !timeSlot.end) continue;
 
@@ -176,11 +197,13 @@ export async function GET(
 
       // Generate 10-minute slots within this time range
       for (let min = startMin; min < endMin; min += SLOT_DURATION_MINUTES) {
-        const startTime = new Date(date);
-        startTime.setUTCHours(Math.floor(min / 60), min % 60, 0, 0);
+        const hours = Math.floor(min / 60);
+        const minutes = min % 60;
+        const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-        const endTime = new Date(startTime);
-        endTime.setUTCMinutes(endTime.getUTCMinutes() + SLOT_DURATION_MINUTES);
+        // Canonical conversion: local time in doctor's clinic timezone -> exact UTC instant
+        const startTime = localDateAndTimeToUtc(dateStr, timeStr, doctorTimezone);
+        const endTime = new Date(startTime.getTime() + SLOT_DURATION_MINUTES * 60 * 1000);
 
         // Check if this slot overlaps with any active leave
         const isOnLeave = activeLeaves.some(
@@ -373,8 +396,12 @@ export async function POST(
       );
     }
 
-    const start = new Date(`${date}T${startTime}:00.000Z`);
-    const end = new Date(`${date}T${endTime}:00.000Z`);
+    const start = startTime.includes("T")
+      ? new Date(startTime)
+      : localDateAndTimeToUtc(date, startTime, DEFAULT_CLINIC_TIMEZONE);
+    const end = endTime.includes("T")
+      ? new Date(endTime)
+      : localDateAndTimeToUtc(date, endTime, DEFAULT_CLINIC_TIMEZONE);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
       return NextResponse.json({ error: "Invalid time range" }, { status: 400 });
@@ -388,7 +415,13 @@ export async function POST(
       orderBy: { startTime: "asc" },
     });
 
-    const hasOverlap = existing.some((s: any) => start < s.endTime && end > s.startTime);
+    const hasOverlap = existing.some((s: any) => {
+      if (start < s.endTime && end > s.startTime) return true;
+      // Also protect against collision with legacy UTC-wallclock stored slots
+      const legacyStart = new Date(`${date}T${startTime}:00.000Z`);
+      const legacyEnd = new Date(`${date}T${endTime}:00.000Z`);
+      return legacyStart < s.endTime && legacyEnd > s.startTime;
+    });
     if (hasOverlap) {
       return NextResponse.json(
         { error: "New slot overlaps with an existing slot" },

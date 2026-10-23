@@ -7,6 +7,12 @@ import StatusBadge from "@/components/general/StatusBadge";
 import { Button } from "@/components/ui/button";
 import { useUserStore } from "@/store/userStore";
 import { showToast } from "@/lib/toast";
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentDate,
+  formatAppointmentTime,
+  isLegacySlot,
+} from "@/lib/dateUtils";
 
 export default function AppointmentCard({ 
   appointment,
@@ -18,15 +24,26 @@ export default function AppointmentCard({
   const patientId = useUserStore((s) => s.patientId);
   const [cancelling, setCancelling] = useState(false);
 
+  const legacy = isLegacySlot({ startTime: appointment.appointmentTime });
+
   const dateText = (() => {
+    if (!appointment.appointmentDate) return "N/A";
     const d = new Date(appointment.appointmentDate);
-    return isNaN(d.getTime()) ? appointment.appointmentDate : d.toLocaleDateString("en-US", { timeZone: "UTC" });
+    return isNaN(d.getTime())
+      ? appointment.appointmentDate
+      : formatAppointmentDate(d, DEFAULT_CLINIC_TIMEZONE, { isLegacy: legacy });
   })();
 
   const timeText = (() => {
     const t = appointment.appointmentTime;
+    if (!t) return "N/A";
     const asDate = new Date(t);
-    return isNaN(asDate.getTime()) ? t : asDate.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" });
+    return isNaN(asDate.getTime())
+      ? t
+      : formatAppointmentTime(asDate, DEFAULT_CLINIC_TIMEZONE, {
+          includeTimezone: !legacy,
+          isLegacy: legacy,
+        });
   })();
 
   const canCancel = appointment.status === 'PENDING' || appointment.status === 'CONFIRMED';

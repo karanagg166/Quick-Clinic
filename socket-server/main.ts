@@ -5,6 +5,12 @@ import type { PrismaClient as PrismaClientType } from '../src/generated/prisma/c
 import { PrismaPg } from '@prisma/adapter-pg';
 import cors from 'cors';
 import { SocketServer } from './server';
+import {
+  formatAppointmentDate,
+  formatAppointmentTime,
+  DEFAULT_CLINIC_TIMEZONE,
+  isLegacySlot,
+} from './dateUtils';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
@@ -432,9 +438,12 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
     });
 
     if (!notificationRecord) {
-      const slotDate = appointment.slot?.date ? appointment.slot.date.toLocaleDateString() : '';
+      const isLegacy = isLegacySlot(appointment.slot);
+      const slotDate = appointment.slot?.startTime || appointment.slot?.date
+        ? formatAppointmentDate(appointment.slot.startTime || appointment.slot.date, DEFAULT_CLINIC_TIMEZONE, { isLegacy })
+        : '';
       const slotTime = appointment.slot?.startTime
-        ? new Date(appointment.slot.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        ? formatAppointmentTime(appointment.slot.startTime, DEFAULT_CLINIC_TIMEZONE, { includeTimezone: !isLegacy, isLegacy })
         : '';
 
       const message = `New appointment booking from ${patientName} for ${slotDate} at ${slotTime}`;
@@ -482,8 +491,8 @@ app.post('/api/notifications/appointment', requireInternalAuth, async (req: expr
       patientName: patientUser.name || 'Patient',
       patientString: patientUser.email || 'N/A',
       gender: patientUser.gender || 'MALE',
-      appointmentDate: appointment.slot?.date?.toISOString() || new Date().toISOString(),
-      appointmentTime: appointment.slot?.startTime?.toISOString() || new Date().toISOString(),
+      appointmentDate: appointment.slot?.date ? appointment.slot.date.toISOString() : '',
+      appointmentTime: appointment.slot?.startTime ? appointment.slot.startTime.toISOString() : '',
       status: appointment.status,
       city: patientUser.location?.city || 'N/A',
       age: patientUser.age || 0,
