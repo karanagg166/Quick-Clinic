@@ -143,11 +143,11 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
   const userTz = typeof window !== 'undefined' ? getUserTimezone() : null;
 
-  const formatTime = (dateString: string, slot?: Slot) => {
+  const formatTime = (dateString: string, slot?: Slot, includeTimezone = false) => {
     if (!dateString) return '';
     const legacy = isLegacySlot(slot);
     return formatAppointmentTime(dateString, DEFAULT_CLINIC_TIMEZONE, {
-      includeTimezone: true,
+      includeTimezone,
       isLegacy: legacy,
     });
   };
@@ -357,7 +357,8 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                       <p className="text-xl font-semibold">
                         {formatTime(
                           slots.find((slot) => slot.id === selectedSlot)?.startTime || '',
-                          slots.find((slot) => slot.id === selectedSlot)
+                          slots.find((slot) => slot.id === selectedSlot),
+                          true
                         )}
                       </p>
                       {checkoutProgressText && (

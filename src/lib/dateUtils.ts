@@ -213,10 +213,15 @@ export function isLegacySlot(slot?: {
 } | null): boolean {
   if (!slot) return false;
   if (typeof slot.isLegacy === 'boolean') return slot.isLegacy;
-  if (!slot.createdAt) return false;
-
-  const created = new Date(slot.createdAt);
-  return !isNaN(created.getTime()) && created < CANONICAL_TIMEZONE_EPOCH;
+  if (slot.createdAt) {
+    const created = new Date(slot.createdAt);
+    return !isNaN(created.getTime()) && created < CANONICAL_TIMEZONE_EPOCH;
+  }
+  const refDate = slot.startTime ? new Date(slot.startTime) : null;
+  if (refDate && !isNaN(refDate.getTime()) && refDate < CANONICAL_TIMEZONE_EPOCH) {
+    return true;
+  }
+  return false;
 }
 
 /**
