@@ -191,15 +191,34 @@ export async function reconcileUnresolvedOrders(batchSize = 20): Promise<{ recon
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Unresolved order checkout ${checkout.id}: ${msg}`);
-      await prisma.checkout.updateMany({
-        where: { id: checkout.id, leaseOwner: workerId },
-        data: {
-          lastError: msg,
-          leaseOwner: null,
-          leaseExpiresAt: null,
-          nextAttemptAt: new Date(Date.now() + 30_000),
-        },
-      }).catch(() => undefined);
+      const isTerminal404 = msg.includes("status 404") || msg.toLowerCase().includes("not found");
+      const attemptsExhausted = (checkout.attempts + 1) >= 5;
+
+      if (isTerminal404 || attemptsExhausted) {
+        await prisma.checkout.updateMany({
+          where: { id: checkout.id, leaseOwner: workerId },
+          data: {
+            status: "MANUAL_REVIEW",
+            lastError: isTerminal404
+              ? `Terminal provider error: ${msg}`
+              : `Provider order lookup failed after 5 attempts: ${msg}`,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+          },
+        }).catch(() => undefined);
+      } else {
+        const nextAttemptAt = new Date(Date.now() + Math.min(15_000 * Math.pow(2, checkout.attempts + 1), 300_000));
+        await prisma.checkout.updateMany({
+          where: { id: checkout.id, leaseOwner: workerId },
+          data: {
+            lastError: msg,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt,
+          },
+        }).catch(() => undefined);
+      }
     }
   }
 
@@ -223,6 +242,7 @@ export async function reconcileCapturedCheckouts(batchSize = 20): Promise<{ reco
       status: { in: ["READY_FOR_PAYMENT", "UNRESOLVED", "PENDING_ORDER", "EXPIRED"] },
       razorpayOrderId: { not: null },
       appointmentId: null,
+      attempts: { lt: 5 },
       updatedAt: { lt: new Date(now.getTime() - 10_000) },
       OR: [
         { leaseExpiresAt: null },
@@ -341,15 +361,34 @@ export async function reconcileCapturedCheckouts(batchSize = 20): Promise<{ reco
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Checkout ${checkout.id}: ${msg}`);
-      await prisma.checkout.updateMany({
-        where: { id: checkout.id, leaseOwner: workerId },
-        data: {
-          lastError: msg,
-          leaseOwner: null,
-          leaseExpiresAt: null,
-          nextAttemptAt: new Date(Date.now() + 30_000),
-        },
-      }).catch(() => undefined);
+      const isTerminal404 = msg.includes("status 404") || msg.toLowerCase().includes("not found");
+      const attemptsExhausted = (checkout.attempts + 1) >= 5;
+
+      if (isTerminal404 || attemptsExhausted) {
+        await prisma.checkout.updateMany({
+          where: { id: checkout.id, leaseOwner: workerId },
+          data: {
+            status: "MANUAL_REVIEW",
+            lastError: isTerminal404
+              ? `Terminal provider error: ${msg}`
+              : `Provider payment fetch failed after 5 attempts: ${msg}`,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+          },
+        }).catch(() => undefined);
+      } else {
+        const nextAttemptAt = new Date(Date.now() + Math.min(15_000 * Math.pow(2, checkout.attempts + 1), 300_000));
+        await prisma.checkout.updateMany({
+          where: { id: checkout.id, leaseOwner: workerId },
+          data: {
+            lastError: msg,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt,
+          },
+        }).catch(() => undefined);
+      }
     }
   }
 
@@ -359,10 +398,19 @@ export async function reconcileCapturedCheckouts(batchSize = 20): Promise<{ reco
       status: { in: ["CREATED", "PENDING"] },
       razorpayOrderId: { not: "" },
       appointment: null,
+      attempts: { lt: 5 },
       createdAt: { lt: new Date(now.getTime() - 60_000) },
       OR: [
         { leaseExpiresAt: null },
         { leaseExpiresAt: { lte: now } },
+      ],
+      AND: [
+        {
+          OR: [
+            { nextAttemptAt: null },
+            { nextAttemptAt: { lte: now } },
+          ],
+        },
       ],
     },
     include: { refunds: true },
@@ -426,14 +474,30 @@ export async function reconcileCapturedCheckouts(batchSize = 20): Promise<{ reco
     } catch (e: any) {
       const msg = e instanceof Error ? e.message : String(e);
       errors.push(`Pending payment ${payment.id}: ${msg}`);
-      await prisma.payment.updateMany({
-        where: { id: payment.id, leaseOwner: workerId },
-        data: {
-          leaseOwner: null,
-          leaseExpiresAt: null,
-          nextAttemptAt: new Date(Date.now() + 60_000),
-        },
-      }).catch(() => undefined);
+      const isTerminal404 = msg.includes("status 404") || msg.toLowerCase().includes("not found");
+      const attemptsExhausted = (payment.attempts + 1) >= 5;
+
+      if (isTerminal404 || attemptsExhausted) {
+        await prisma.payment.updateMany({
+          where: { id: payment.id, leaseOwner: workerId },
+          data: {
+            status: "FAILED",
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+          },
+        }).catch(() => undefined);
+      } else {
+        const nextAttemptAt = new Date(Date.now() + Math.min(15_000 * Math.pow(2, payment.attempts + 1), 300_000));
+        await prisma.payment.updateMany({
+          where: { id: payment.id, leaseOwner: workerId },
+          data: {
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt,
+          },
+        }).catch(() => undefined);
+      }
     }
   }
 
@@ -453,6 +517,7 @@ export async function reconcilePendingRefunds(batchSize = 20): Promise<{ reconci
   const pendingRefunds = await prisma.refund.findMany({
     where: {
       status: { in: ["PENDING", "PROCESSING"] },
+      attempts: { lt: 5 },
       updatedAt: { lt: new Date(now.getTime() - 30_000) },
       OR: [
         { leaseExpiresAt: null },
@@ -514,13 +579,15 @@ export async function reconcilePendingRefunds(batchSize = 20): Promise<{ reconci
       }
 
       if (!payment.razorpayPaymentId) {
+        const attemptsExhausted = (refund.attempts + 1) >= 5;
         await prisma.refund.updateMany({
           where: { id: refund.id, leaseOwner: workerId },
           data: {
+            status: attemptsExhausted ? "FAILED" : refund.status,
             leaseOwner: null,
             leaseExpiresAt: null,
             failureReason: "Missing provider payment ID for refund reconciliation",
-            nextAttemptAt: new Date(Date.now() + 60_000),
+            nextAttemptAt: attemptsExhausted ? null : new Date(Date.now() + 60_000),
           },
         });
         continue;
@@ -681,15 +748,34 @@ export async function reconcilePendingRefunds(batchSize = 20): Promise<{ reconci
       }
 
       errors.push(`Refund ${refund.id}: ${msg}`);
-      await prisma.refund.updateMany({
-        where: { id: refund.id, leaseOwner: workerId },
-        data: {
-          failureReason: msg,
-          leaseOwner: null,
-          leaseExpiresAt: null,
-          nextAttemptAt: new Date(Date.now() + 60_000),
-        },
-      }).catch(() => undefined);
+      const isTerminal404 = msg.includes("status 404") || msg.toLowerCase().includes("not found");
+      const attemptsExhausted = (refund.attempts + 1) >= 5;
+
+      if (isTerminal404 || attemptsExhausted) {
+        await prisma.refund.updateMany({
+          where: { id: refund.id, leaseOwner: workerId },
+          data: {
+            status: "FAILED",
+            failureReason: isTerminal404
+              ? `Terminal provider error: ${msg}`
+              : `Provider refund failed after 5 attempts: ${msg}`,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+          },
+        }).catch(() => undefined);
+      } else {
+        const nextAttemptAt = new Date(Date.now() + Math.min(15_000 * Math.pow(2, refund.attempts + 1), 300_000));
+        await prisma.refund.updateMany({
+          where: { id: refund.id, leaseOwner: workerId },
+          data: {
+            failureReason: msg,
+            leaseOwner: null,
+            leaseExpiresAt: null,
+            nextAttemptAt,
+          },
+        }).catch(() => undefined);
+      }
     }
   }
 
@@ -708,6 +794,7 @@ export async function replayRetryableWebhookEvents(batchSize = 25): Promise<{ re
 
   const candidates = await prisma.webhookEvent.findMany({
     where: {
+      attempts: { lt: 5 },
       OR: [
         { status: "FAILED" },
         { status: "RECEIVED", receivedAt: { lt: new Date(now.getTime() - 30_000) } },
@@ -778,6 +865,10 @@ export async function replayRetryableWebhookEvents(batchSize = 25): Promise<{ re
           },
         });
       } else {
+        const attemptsExhausted = (event.attempts + 1) >= 5;
+        const nextAttemptAt = attemptsExhausted
+          ? null
+          : new Date(Date.now() + Math.min(15_000 * Math.pow(2, event.attempts + 1), 300_000));
         await prisma.webhookEvent.updateMany({
           where: { id: event.id, leaseOwner: workerId },
           data: {
@@ -785,13 +876,17 @@ export async function replayRetryableWebhookEvents(batchSize = 25): Promise<{ re
             processingError: outcome.error || "Replay processing failed",
             leaseOwner: null,
             leaseExpiresAt: null,
-            nextAttemptAt: new Date(Date.now() + 60_000),
+            nextAttemptAt,
           },
         });
       }
     } catch (err: any) {
       const msg = err instanceof Error ? err.message : String(err);
       errors.push(`Webhook event ${event.id}: ${msg}`);
+      const attemptsExhausted = (event.attempts + 1) >= 5;
+      const nextAttemptAt = attemptsExhausted
+        ? null
+        : new Date(Date.now() + Math.min(15_000 * Math.pow(2, event.attempts + 1), 300_000));
       await prisma.webhookEvent.updateMany({
         where: { id: event.id, leaseOwner: workerId },
         data: {
@@ -799,7 +894,7 @@ export async function replayRetryableWebhookEvents(batchSize = 25): Promise<{ re
           processingError: msg,
           leaseOwner: null,
           leaseExpiresAt: null,
-          nextAttemptAt: new Date(Date.now() + 60_000),
+          nextAttemptAt,
         },
       }).catch(() => undefined);
     }

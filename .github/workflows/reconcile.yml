@@ -94,12 +94,19 @@ jobs:
           echo "Reconciliation payload:"
           echo "$HTTP_BODY" | jq .
 
-          if [ "$IS_OK" != "true" ] || [ "$ERROR_COUNT" -gt 0 ]; then
+          if [ "$IS_OK" != "true" ]; then
             echo "::error::Reconciliation finished with unhealthy state! ok=$IS_OK, errorCount=$ERROR_COUNT"
             echo "::group::Reconciliation Errors"
             echo "$HTTP_BODY" | jq -r '.results.errors[]?'
             echo "::endgroup::"
             exit 1
+          fi
+
+          if [ "$ERROR_COUNT" -gt 0 ]; then
+            echo "::warning::Reconciliation completed with $ERROR_COUNT handled item error(s)."
+            echo "::group::Handled Item Errors"
+            echo "$HTTP_BODY" | jq -r '.results.errors[]?'
+            echo "::endgroup::"
           fi
 
           if [ "$BUDGET_EXCEEDED" = "true" ]; then
