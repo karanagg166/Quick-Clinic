@@ -824,17 +824,19 @@ test.describe('Appointment Time Consistency & Production Reliability E2E Suite (
 
     // 4. Checkout's reserved slot
     const checkoutResult = await initiateCheckout({
+      userId: patientUser.id,
+      patientId: patientProfile.id,
+      doctorId: doctorProfile.id,
       slotId: selectedSlotId,
-      patientUserId: patientUser.id,
-      patientProfileId: patientProfile.id,
-      paymentMethod: 'CASH',
-      appointmentType: 'IN_PERSON',
+      paymentMethod: 'OFFLINE',
+      idempotencyKey: `idem_sched_flow_${runId}`,
     });
     expect(checkoutResult.status).toBe('CONFIRMED');
+    expect(checkoutResult.appointment?.id).toBeDefined();
 
     // 5. Persisted appointment verification
     const persistedAppointment = await prisma.appointment.findUniqueOrThrow({
-      where: { id: checkoutResult.appointment.id },
+      where: { id: checkoutResult.appointment!.id },
       include: { slot: true },
     });
     expect(persistedAppointment.slot.startTime.toISOString()).toBe('2028-06-06T05:30:00.000Z');
