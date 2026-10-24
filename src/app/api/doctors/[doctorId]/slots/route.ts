@@ -2,6 +2,7 @@ import { getAuthenticatedUser } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { expireDoctorHolds } from "@/lib/booking";
+import { DEFAULT_CLINIC_TIMEZONE, localDateAndTimeToUtc, isLegacySlot } from "@/lib/dateUtils";
 
 const SLOT_DURATION_MINUTES = 10;
 
@@ -135,15 +136,29 @@ export async function GET(
     // Get day name based on UTC day
     const dayName = getDayNameUTC(date);
 
-    // Get schedule for this day
-    const weeklySchedule = schedule.weeklySchedule as Array<{
+    // Safely parse and normalize weeklySchedule (defend against non-array or stringified JSON)
+    let rawWeekly: any = schedule.weeklySchedule;
+    if (typeof rawWeekly === "string") {
+      try {
+        rawWeekly = JSON.parse(rawWeekly);
+      } catch {
+        rawWeekly = [];
+      }
+    }
+    const weeklySchedule: Array<{
       day: string;
-      slots: Array<{ slotNo: number; start: string; end: string }>;
-    }>;
+      slots: Array<{ slotNo?: number; start: string; end: string }>;
+    }> = Array.isArray(rawWeekly)
+      ? rawWeekly
+      : rawWeekly && typeof rawWeekly === "object" && Array.isArray(rawWeekly.weeklySchedule)
+      ? rawWeekly.weeklySchedule
+      : [];
 
-    const daySchedule = weeklySchedule.find((d) => d.day === dayName);
+    const daySchedule = weeklySchedule.find(
+      (d) => d && typeof d === "object" && typeof d.day === "string" && d.day.toLowerCase() === dayName.toLowerCase()
+    );
 
-    if (!daySchedule || !daySchedule.slots || daySchedule.slots.length === 0) {
+    if (!daySchedule || !Array.isArray(daySchedule.slots) || daySchedule.slots.length === 0) {
       return NextResponse.json(
         { slots: [] },
         { status: 200 }
@@ -168,6 +183,8 @@ export async function GET(
       status: "ON_LEAVE" | "AVAILABLE";
     }> = [];
 
+    const doctorTimezone = DEFAULT_CLINIC_TIMEZONE;
+
     for (const timeSlot of daySchedule.slots) {
       if (!timeSlot.start || !timeSlot.end) continue;
 
@@ -176,11 +193,13 @@ export async function GET(
 
       // Generate 10-minute slots within this time range
       for (let min = startMin; min < endMin; min += SLOT_DURATION_MINUTES) {
-        const startTime = new Date(date);
-        startTime.setUTCHours(Math.floor(min / 60), min % 60, 0, 0);
+        const hours = Math.floor(min / 60);
+        const minutes = min % 60;
+        const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-        const endTime = new Date(startTime);
-        endTime.setUTCMinutes(endTime.getUTCMinutes() + SLOT_DURATION_MINUTES);
+        // Canonical conversion: local time in doctor's clinic timezone -> exact UTC instant
+        const startTime = localDateAndTimeToUtc(dateStr, timeStr, doctorTimezone);
+        const endTime = new Date(startTime.getTime() + SLOT_DURATION_MINUTES * 60 * 1000);
 
         // Check if this slot overlaps with any active leave
         const isOnLeave = activeLeaves.some(
@@ -373,8 +392,12 @@ export async function POST(
       );
     }
 
-    const start = new Date(`${date}T${startTime}:00.000Z`);
-    const end = new Date(`${date}T${endTime}:00.000Z`);
+    const start = startTime.includes("T")
+      ? new Date(startTime)
+      : localDateAndTimeToUtc(date, startTime, DEFAULT_CLINIC_TIMEZONE);
+    const end = endTime.includes("T")
+      ? new Date(endTime)
+      : localDateAndTimeToUtc(date, endTime, DEFAULT_CLINIC_TIMEZONE);
 
     if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) {
       return NextResponse.json({ error: "Invalid time range" }, { status: 400 });
@@ -388,7 +411,13 @@ export async function POST(
       orderBy: { startTime: "asc" },
     });
 
-    const hasOverlap = existing.some((s: any) => start < s.endTime && end > s.startTime);
+    const hasOverlap = existing.some((s: any) => {
+      if (start < s.endTime && end > s.startTime) return true;
+      // Also protect against collision with legacy UTC-wallclock stored slots
+      const legacyStart = new Date(`${date}T${startTime}:00.000Z`);
+      const legacyEnd = new Date(`${date}T${endTime}:00.000Z`);
+      return legacyStart < s.endTime && legacyEnd > s.startTime;
+    });
     if (hasOverlap) {
       return NextResponse.json(
         { error: "New slot overlaps with an existing slot" },

@@ -11,6 +11,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { showToast } from '@/lib/toast';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import {
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentDate,
+  formatAppointmentTime,
+  isLegacySlot,
+} from '@/lib/dateUtils';
 
 export default function DoctorAppointmentDetailPage() {
   const params = useParams();
@@ -277,9 +283,26 @@ export default function DoctorAppointmentDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
-            <p><span className="font-semibold">Date:</span> {new Date(appointment.slot.date).toLocaleDateString("en-US", { timeZone: "UTC" })}</p>
-            <p><span className="font-semibold">Start Time:</span> {new Date(appointment.slot.startTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
-            <p><span className="font-semibold">End Time:</span> {new Date(appointment.slot.endTime).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: "UTC" })}</p>
+            <p>
+              <span className="font-semibold">Date:</span>{" "}
+              {formatAppointmentDate(appointment.slot.startTime || appointment.slot.date, DEFAULT_CLINIC_TIMEZONE, {
+                isLegacy: isLegacySlot(appointment.slot),
+              })}
+            </p>
+            <p>
+              <span className="font-semibold">Start Time:</span>{" "}
+              {formatAppointmentTime(appointment.slot.startTime, DEFAULT_CLINIC_TIMEZONE, {
+                includeTimezone: true,
+                isLegacy: isLegacySlot(appointment.slot),
+              })}
+            </p>
+            <p>
+              <span className="font-semibold">End Time:</span>{" "}
+              {formatAppointmentTime(appointment.slot.endTime, DEFAULT_CLINIC_TIMEZONE, {
+                includeTimezone: true,
+                isLegacy: isLegacySlot(appointment.slot),
+              })}
+            </p>
             <p><span className="font-semibold">Slot Status:</span> {appointment.slot.status}</p>
           </div>
         </CardContent>

@@ -201,7 +201,7 @@ jobs:
           cd ..
 
       - name: Run Playwright E2E Tests
-        run: pnpm exec playwright test e2e/unified-checkout.spec.ts e2e/chat-reliability.spec.ts
+        run: pnpm exec playwright test e2e/unified-checkout.spec.ts e2e/chat-reliability.spec.ts e2e/appointment-time-consistency.spec.ts
 
       - name: Upload Playwright Artifacts on Failure
         if: failure()

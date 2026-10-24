@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showToast } from '@/lib/toast';
-import { getTodayInUserTimezone } from '@/lib/dateUtils';
+import {
+  getTodayInUserTimezone,
+  DEFAULT_CLINIC_TIMEZONE,
+  formatAppointmentTime,
+  isLegacySlot,
+  getUserTimezone,
+} from '@/lib/dateUtils';
 
 interface BookTimeSlotProps {
   doctorId: string;
@@ -135,9 +141,16 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
     void fetchSlots();
   }, [doctorId, date]);
 
-  const formatTime = (dateString: string) => new Date(dateString).toLocaleTimeString('en-US', {
-    hour: '2-digit', minute: '2-digit', hour12: true, timeZone: 'UTC',
-  });
+  const userTz = typeof window !== 'undefined' ? getUserTimezone() : null;
+
+  const formatTime = (dateString: string, slot?: Slot, includeTimezone = false) => {
+    if (!dateString) return '';
+    const legacy = isLegacySlot(slot);
+    return formatAppointmentTime(dateString, DEFAULT_CLINIC_TIMEZONE, {
+      includeTimezone,
+      isLegacy: legacy,
+    });
+  };
 
   const getOrGenerateIdempotencyKey = useCallback((slotId: string, method: 'ONLINE' | 'OFFLINE') => {
     if (typeof window === 'undefined') return `ord_${userId || 'anon'}_${slotId}_${method}_${Date.now()}`;
@@ -331,7 +344,7 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                             : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-500'
                         }
                       >
-                        {formatTime(slot.startTime)}
+                        {formatTime(slot.startTime, slot)}
                       </Button>
                     ))}
                 </div>
@@ -342,7 +355,11 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
                     <div>
                       <p className="text-muted-foreground">Selected Time:</p>
                       <p className="text-xl font-semibold">
-                        {formatTime(slots.find((slot) => slot.id === selectedSlot)?.startTime || '')}
+                        {formatTime(
+                          slots.find((slot) => slot.id === selectedSlot)?.startTime || '',
+                          slots.find((slot) => slot.id === selectedSlot),
+                          true
+                        )}
                       </p>
                       {checkoutProgressText && (
                         <p className="text-sm font-medium text-blue-600 animate-pulse mt-1">

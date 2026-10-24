@@ -93,8 +93,9 @@ describe('Phase 13: Slot Generation & Ad-Hoc Management Test Suite', () => {
     const firstSlot = body.slots[0];
     expect(firstSlot.status).toBe('AVAILABLE');
     expect(firstSlot.doctorId).toBe(doctorId);
-    expect(new Date(firstSlot.startTime).toISOString()).toContain('T09:00:00.000Z');
-    expect(new Date(firstSlot.endTime).toISOString()).toContain('T09:10:00.000Z');
+    // Canonical instant: 09:00 IST is 03:30 UTC
+    expect(new Date(firstSlot.startTime).toISOString()).toContain('T03:30:00.000Z');
+    expect(new Date(firstSlot.endTime).toISOString()).toContain('T03:40:00.000Z');
   });
 
   it('13.2 prevents duplicate slot generation on repeated requests for the same date', async () => {

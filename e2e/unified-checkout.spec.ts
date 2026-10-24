@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { prisma } from '@/lib/prisma';
 import { createToken } from '@/lib/auth-token';
+import { DEFAULT_CLINIC_TIMEZONE, localDateAndTimeToUtc } from '@/lib/dateUtils';
 
 dotenv.config();
 
@@ -84,8 +85,8 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
       data: {
         doctorId: doctorRecord.id,
         date: slotDate,
-        startTime: new Date(`${tomorrowDateStr}T10:00:00.000Z`),
-        endTime: new Date(`${tomorrowDateStr}T10:30:00.000Z`),
+        startTime: localDateAndTimeToUtc(tomorrowDateStr, '10:00', DEFAULT_CLINIC_TIMEZONE),
+        endTime: localDateAndTimeToUtc(tomorrowDateStr, '10:30', DEFAULT_CLINIC_TIMEZONE),
         status: 'AVAILABLE',
       },
     });
@@ -94,8 +95,8 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
       data: {
         doctorId: doctorRecord.id,
         date: slotDate,
-        startTime: new Date(`${tomorrowDateStr}T10:30:00.000Z`),
-        endTime: new Date(`${tomorrowDateStr}T11:00:00.000Z`),
+        startTime: localDateAndTimeToUtc(tomorrowDateStr, '10:30', DEFAULT_CLINIC_TIMEZONE),
+        endTime: localDateAndTimeToUtc(tomorrowDateStr, '11:00', DEFAULT_CLINIC_TIMEZONE),
         status: 'AVAILABLE',
       },
     });
@@ -104,8 +105,8 @@ test.describe('Unified Checkout & Slot Booking E2E Browser Flows', () => {
       data: {
         doctorId: doctorRecord.id,
         date: slotDate,
-        startTime: new Date(`${tomorrowDateStr}T11:00:00.000Z`),
-        endTime: new Date(`${tomorrowDateStr}T11:30:00.000Z`),
+        startTime: localDateAndTimeToUtc(tomorrowDateStr, '11:00', DEFAULT_CLINIC_TIMEZONE),
+        endTime: localDateAndTimeToUtc(tomorrowDateStr, '11:30', DEFAULT_CLINIC_TIMEZONE),
         status: 'AVAILABLE',
       },
     });

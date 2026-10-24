@@ -5,7 +5,10 @@ import { NextRequest } from 'next/server';
 const inMemoryRedis = new Map<string, any>();
 vi.mock('@upstash/redis', () => ({
   Redis: class MockRedis {
-    set(key: string, value: any) {
+    set(key: string, value: any, options?: { nx?: boolean }) {
+      if (options?.nx && inMemoryRedis.has(key)) {
+        return Promise.resolve(null);
+      }
       inMemoryRedis.set(key, value);
       return Promise.resolve('OK');
     }
@@ -274,7 +277,7 @@ describe('Phase 16: Slot Hold, Expiration & Concurrency Engine Test Suite', () =
     const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000);
     await prisma.slot.update({
       where: { id: slotId1 },
-      data: { status: 'HELD', heldByPatientId: patient1Id, heldAt: twentyMinAgo },
+      data: { status: 'HELD', heldByPatientId: patient1Id, heldAt: twentyMinAgo, holdExpiresAt: twentyMinAgo },
     });
 
     // Run expiration cleanup

@@ -6,6 +6,7 @@ import {
   calculateDayMetrics,
   RawSlot,
 } from "@/lib/scheduleUtils";
+import { DEFAULT_CLINIC_TIMEZONE, localDateAndTimeToUtc } from "@/lib/dateUtils";
 
 export async function GET(
   req: NextRequest,
@@ -79,14 +80,28 @@ export async function GET(
         if (schedule && schedule.weeklySchedule) {
           const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
           const dayName = daysOfWeek[startOfDay.getUTCDay()];
-          const weeklySchedule = schedule.weeklySchedule as Array<{
+          let rawWeekly: any = schedule.weeklySchedule;
+          if (typeof rawWeekly === "string") {
+            try {
+              rawWeekly = JSON.parse(rawWeekly);
+            } catch {
+              rawWeekly = [];
+            }
+          }
+          const weeklySchedule: Array<{
             day: string;
-            slots: Array<{ slotNo: number; start: string; end: string }>;
-          }>;
+            slots: Array<{ slotNo?: number; start: string; end: string }>;
+          }> = Array.isArray(rawWeekly)
+            ? rawWeekly
+            : rawWeekly && typeof rawWeekly === "object" && Array.isArray(rawWeekly.weeklySchedule)
+            ? rawWeekly.weeklySchedule
+            : [];
 
-          const daySchedule = weeklySchedule.find((d) => d.day === dayName);
+          const daySchedule = weeklySchedule.find(
+            (d) => d && typeof d === "object" && typeof d.day === "string" && d.day.toLowerCase() === dayName.toLowerCase()
+          );
 
-          if (daySchedule && daySchedule.slots && daySchedule.slots.length > 0) {
+          if (daySchedule && Array.isArray(daySchedule.slots) && daySchedule.slots.length > 0) {
             const activeLeaves = await prisma.leave.findMany({
               where: {
                 doctorId,
@@ -111,11 +126,12 @@ export async function GET(
               const endMin = eH * 60 + eM;
 
               for (let min = startMin; min < endMin; min += 10) {
-                const startTime = new Date(startOfDay);
-                startTime.setUTCHours(Math.floor(min / 60), min % 60, 0, 0);
+                const hours = Math.floor(min / 60);
+                const minutes = min % 60;
+                const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
 
-                const endTime = new Date(startTime);
-                endTime.setUTCMinutes(endTime.getUTCMinutes() + 10);
+                const startTime = localDateAndTimeToUtc(dateStr, timeStr, DEFAULT_CLINIC_TIMEZONE);
+                const endTime = new Date(startTime.getTime() + 10 * 60 * 1000);
 
                 const isOnLeave = activeLeaves.some(
                   (leave: { startDate: Date; endDate: Date }) =>
@@ -196,7 +212,7 @@ export async function GET(
         };
       });
 
-      const timelineBlocks = calculateTimelineBlocks(rawSlots);
+      const timelineBlocks = calculateTimelineBlocks(rawSlots, DEFAULT_CLINIC_TIMEZONE);
       const metrics = calculateDayMetrics(rawSlots);
 
       return NextResponse.json(
@@ -300,7 +316,7 @@ export async function GET(
         });
 
         const dayMetrics = calculateDayMetrics(rawSlots);
-        const timelineBlocks = calculateTimelineBlocks(rawSlots);
+        const timelineBlocks = calculateTimelineBlocks(rawSlots, DEFAULT_CLINIC_TIMEZONE);
 
         days.push({
           date: curDateStr,
