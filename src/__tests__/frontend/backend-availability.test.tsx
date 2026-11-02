@@ -3,7 +3,7 @@
  */
 import React from "react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act, waitFor } from "@testing-library/react";
+import { render, screen, act } from "@testing-library/react";
 import {
   BackendAvailabilityProvider,
   useBackendAvailability,
@@ -27,7 +27,7 @@ function TestConsumer() {
 
 describe("Quick-Clinic BackendAvailabilityProvider & Banner", () => {
   beforeEach(() => {
-    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval"] });
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout", "setInterval", "clearInterval", "Date"] });
     vi.restoreAllMocks();
   });
 
@@ -123,5 +123,54 @@ describe("Quick-Clinic BackendAvailabilityProvider & Banner", () => {
     });
 
     expect(screen.getByTestId("status").textContent).toBe("ready");
+  });
+
+  it("forces revalidation when tab resumes after inactivity (visibilitychange)", async () => {
+    let callCount = 0;
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      callCount++;
+      if (url.includes("/api/ready")) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ status: "ready", database: "connected" }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ status: "ok" }),
+      });
+    });
+    global.fetch = fetchMock;
+
+    render(
+      <BackendAvailabilityProvider>
+        <TestConsumer />
+      </BackendAvailabilityProvider>
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId("status").textContent).toBe("ready");
+    const initialCalls = fetchMock.mock.calls.length;
+
+    // Simulate 65 seconds elapsed and tab coming into focus
+    vi.advanceTimersByTime(65000);
+
+    Object.defineProperty(document, "visibilityState", {
+      configurable: true,
+      value: "visible",
+    });
+
+    await act(async () => {
+      document.dispatchEvent(new Event("visibilitychange"));
+      await Promise.resolve();
+    });
+
+    // An additional probe must be executed on tab resume because cache was stale (>60s)
+    expect(fetchMock.mock.calls.length).toBeGreaterThan(initialCalls);
   });
 });

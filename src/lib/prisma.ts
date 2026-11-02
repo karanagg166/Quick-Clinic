@@ -33,17 +33,32 @@ globalForPrisma.prisma = prisma;
  * Validates active database connectivity with bounded timeout.
  * Tolerates Neon scale-to-zero wake-up latency (up to 7s).
  */
-export async function checkDatabaseReadiness(timeoutMs = 7000): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
+export async function checkDatabaseReadiness(
+  timeoutMs = 7000
+): Promise<{ ok: boolean; latencyMs: number; error?: string }> {
   const start = Date.now();
+  let timer: NodeJS.Timeout | null = null;
   try {
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Database check timed out after ${timeoutMs}ms`)),
+        timeoutMs
+      );
+    });
     const queryPromise = (prisma as any).$queryRaw`SELECT 1`;
-    const timeoutPromise = new Promise((_, reject) =>
-      setTimeout(() => reject(new Error(`Database check timed out after ${timeoutMs}ms`)), timeoutMs)
-    );
+    queryPromise.catch(() => {});
     await Promise.race([queryPromise, timeoutPromise]);
     return { ok: true, latencyMs: Date.now() - start };
   } catch (err: any) {
-    return { ok: false, latencyMs: Date.now() - start, error: err?.message || String(err) };
+    return {
+      ok: false,
+      latencyMs: Date.now() - start,
+      error: err?.message || String(err),
+    };
+  } finally {
+    if (timer) {
+      clearTimeout(timer);
+    }
   }
 }
 

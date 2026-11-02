@@ -23,11 +23,11 @@ describe("Quick-Clinic /api/ready & /api/health/ready endpoints", () => {
     expect(data.latencyMs).toBe(12);
   });
 
-  it("returns 503 with status unready when database is unreachable or times out", async () => {
+  it("returns 503 with generic error code and no raw exception leaks when database is unreachable", async () => {
     vi.spyOn(prismaModule, "checkDatabaseReadiness").mockResolvedValue({
       ok: false,
       latencyMs: 7001,
-      error: "Database check timed out after 7000ms",
+      error: "password authentication failed for user 'neondb_owner' at host 'ep-summer-paper.neon.tech'",
     });
 
     const res = await readyGet();
@@ -35,7 +35,11 @@ describe("Quick-Clinic /api/ready & /api/health/ready endpoints", () => {
     const data = await res.json();
     expect(data.status).toBe("unready");
     expect(data.database).toBe("disconnected");
-    expect(data.error).toContain("timed out");
+    expect(data.error).toBe("DATABASE_UNAVAILABLE");
+    expect(data.requestId).toBeDefined();
+    // Verify no secret or internal host leakage
+    expect(JSON.stringify(data)).not.toContain("neondb_owner");
+    expect(JSON.stringify(data)).not.toContain("neon.tech");
   });
 
   it("/api/health/ready alias produces identical readiness contract", async () => {

@@ -329,8 +329,11 @@ export function BackendAvailabilityProvider({ children }: { children: ReactNode 
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        const isStale = lastChecked && Date.now() - lastChecked > AVAILABILITY_CONFIG.STALE_THRESHOLD_MS;
-        if (isStale || statusRef.current !== "ready") {
+        const isStale = !lastChecked || (Date.now() - lastChecked > AVAILABILITY_CONFIG.STALE_THRESHOLD_MS);
+        if (isStale) {
+          // Tab became visible after inactivity: force a fresh verification
+          checkAvailability(true);
+        } else if (statusRef.current !== "ready") {
           checkAvailability(false);
         }
       }

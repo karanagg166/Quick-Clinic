@@ -7,13 +7,16 @@ export async function GET() {
   const dbCheck = await checkDatabaseReadiness(7000);
 
   if (!dbCheck.ok) {
+    const requestId = crypto.randomUUID();
+    console.error(`[/api/ready][${requestId}] Database readiness check failed:`, dbCheck.error);
     return NextResponse.json(
       {
         status: "unready",
         service: "quick-clinic-web",
         database: "disconnected",
         latencyMs: dbCheck.latencyMs,
-        error: dbCheck.error,
+        error: "DATABASE_UNAVAILABLE",
+        requestId,
         environment: process.env.NODE_ENV || "development",
         timestamp: new Date().toISOString(),
       },
