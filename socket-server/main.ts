@@ -47,7 +47,12 @@ const prismaClientPath = prismaCandidatePaths.find(
 
 const { PrismaClient } = prismaClientPath ? require(prismaClientPath) : require('@prisma/client');
 
-const adapter = new PrismaPg({ connectionString });
+const adapter = new PrismaPg({
+  connectionString,
+  max: 5,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 15000,
+});
 const prisma = new PrismaClient({
   adapter,
   log: ['error', 'warn'],
@@ -134,7 +139,11 @@ app.get('/health', (req: express.Request, res: express.Response) => {
 
 app.get('/ready', async (req: express.Request, res: express.Response) => {
   try {
-    await (prisma as any).$queryRaw`SELECT 1`;
+    const queryPromise = (prisma as any).$queryRaw`SELECT 1`;
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Database readiness check timed out after 7000ms')), 7000)
+    );
+    await Promise.race([queryPromise, timeoutPromise]);
     res.json({
       status: 'ready',
       database: 'connected',

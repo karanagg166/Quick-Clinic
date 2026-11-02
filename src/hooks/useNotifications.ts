@@ -139,8 +139,8 @@ async function initNotificationSocket(userId: string) {
     reconnection: true,
     reconnectionDelay: 1000,
     reconnectionDelayMax: 5000,
-    reconnectionAttempts: 10,
-    timeout: 10000,
+    reconnectionAttempts: 30,
+    timeout: 15000,
   });
 
   sharedSocket = socket;
