@@ -223,8 +223,20 @@ describe("Doctor Discovery and Patient Access Reliability Integration Tests", ()
     });
 
     it("GET /api/doctors/[doctorId]/slots generates and returns available appointment slots", async () => {
-      // Choose Monday 2026-10-26 (guaranteed working weekday)
-      const testDate = "2026-10-26";
+      // Choose a future Monday past seeded test range to verify slot generation
+      const targetDate = new Date();
+      targetDate.setDate(targetDate.getDate() + 45);
+      while (targetDate.getUTCDay() !== 1) {
+        targetDate.setUTCDate(targetDate.getUTCDate() + 1);
+      }
+      const testDate = targetDate.toISOString().split("T")[0];
+      await prisma.slot.deleteMany({
+        where: {
+          doctorId: seededDoctorRecord.id,
+          date: new Date(`${testDate}T00:00:00.000Z`),
+        },
+      });
+
       const req = new NextRequest(
         `http://localhost:3000/api/doctors/${seededDoctorRecord.id}/slots?date=${testDate}`
       );
