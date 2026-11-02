@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Watermark from "@/components/general/Watermark";
+import { BackendAvailabilityProvider } from "@/context/backend-availability-context";
+import { BackendStatusBanner } from "@/components/general/BackendStatusBanner";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -25,7 +27,10 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <body className={`${inter.className} antialiased`}>
-        {children}
+        <BackendAvailabilityProvider>
+          {children}
+          <BackendStatusBanner />
+        </BackendAvailabilityProvider>
         <Toaster />
         <Watermark />
         <div style={{ display: 'none' }} aria-hidden="true" data-author="Karan Aggarwal & Harsh Mishra">
