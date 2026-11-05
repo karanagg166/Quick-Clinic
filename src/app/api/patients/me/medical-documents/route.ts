@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAudit, logAccess } from "@/lib/logger";
 import { getOrCreateRequestId } from "@/lib/correlation-id";
+import { searchSphereProcessingState } from "@/lib/search-sphere-status";
 import {
   uploadToStorage,
   deleteFromStorage,
@@ -386,7 +387,7 @@ export async function POST(req: NextRequest) {
 
     // 11. Trigger asynchronous Search Sphere indexing
     try {
-      await queueMedicalDocumentIngestion({
+      const ingestion = await queueMedicalDocumentIngestion({
         documentId: createdDoc.id,
         patientId: patient.id,
         storagePath: createdDoc.storagePath,
@@ -400,10 +401,7 @@ export async function POST(req: NextRequest) {
 
       const updated = await prisma.medicalDocument.update({
         where: { id: createdDoc.id },
-        data: {
-          processingStatus: "QUEUED",
-          processingError: null,
-        },
+        data: searchSphereProcessingState(ingestion.status),
       });
       if (updated) {
         createdDoc = updated;
