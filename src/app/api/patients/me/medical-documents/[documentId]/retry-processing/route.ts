@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAudit } from "@/lib/logger";
 import { retryMedicalDocumentIngestion } from "@/lib/search-sphere-client";
+import { searchSphereProcessingState } from "@/lib/search-sphere-status";
 
 export const maxDuration = 60;
 
@@ -70,7 +71,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
     // Call Search Sphere ingestion endpoint to re-enqueue
     try {
-      await retryMedicalDocumentIngestion({
+      const ingestion = await retryMedicalDocumentIngestion({
         documentId: doc.id,
         patientId: patient.id,
         storagePath: doc.storagePath,
@@ -81,13 +82,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         reportDate: doc.reportDate,
       });
 
-      // Update local state to QUEUED
       const updatedDoc = await prisma.medicalDocument.update({
         where: { id: doc.id },
-        data: {
-          processingStatus: "QUEUED",
-          processingError: null,
-        },
+        data: searchSphereProcessingState(ingestion.status),
       });
 
       // Audit Log
@@ -105,7 +102,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         {
           documentId: updatedDoc.id,
           status: updatedDoc.processingStatus,
-          message: "Document processing re-enqueued successfully",
+          message: updatedDoc.processingStatus === "FAILED"
+            ? "Document processing failed. Please retry later."
+            : "Document processing state refreshed",
         },
         { status: 200 }
       );

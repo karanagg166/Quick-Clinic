@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { getMedicalDocumentProcessingStatus } from "@/lib/search-sphere-client";
-import { MedicalDocumentProcessingStatus } from "@/generated/prisma";
+import { searchSphereProcessingState } from "@/lib/search-sphere-status";
 
 export const maxDuration = 60;
 
@@ -72,16 +72,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     try {
       const statusResult = await getMedicalDocumentProcessingStatus(documentId, { subjectId: patient.id });
 
-      const normalizedStatus = statusResult.status.toUpperCase() as MedicalDocumentProcessingStatus;
-      const validStatuses = Object.values(MedicalDocumentProcessingStatus);
-
-      const newStatus = validStatuses.includes(normalizedStatus)
-        ? normalizedStatus
-        : doc.processingStatus;
+      const upstreamState = searchSphereProcessingState(statusResult.status);
+      const newStatus = upstreamState.processingStatus;
       const newProcessedAt = statusResult.processedAt
         ? new Date(statusResult.processedAt)
         : doc.processedAt;
-      const newError = statusResult.error ?? null;
+      const newError = upstreamState.processingError;
 
       // Update lightweight local status in Neon if changed
       if (
@@ -105,19 +101,21 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           status: newStatus,
           processedAt: newProcessedAt?.toISOString() ?? null,
           error: newError,
+          upstreamAvailable: true,
         },
         { status: 200 }
       );
     } catch {
-      // If Search Sphere is unreachable or hasn't recorded it, return local DB status safely
+      // Preserve local state, but distinguish an outage from a successful refresh.
       return NextResponse.json(
         {
           documentId,
           status: doc.processingStatus,
           processedAt: doc.processedAt?.toISOString() ?? null,
           error: doc.processingError,
+          upstreamAvailable: false,
         },
-        { status: 200 }
+        { status: 503 }
       );
     }
   } catch (error: any) {

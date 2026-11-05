@@ -451,7 +451,7 @@ export async function queueMedicalDocumentIngestion(
   const data = await response.json();
   return {
     documentId: data.documentId || params.documentId,
-    status: data.status || "QUEUED",
+    status: data.status,
   };
 }
 

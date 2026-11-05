@@ -74,7 +74,7 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
   });
 
   describe("1. Upload and Ingestion Trigger Flow", () => {
-    it("successfully uploads to storage, saves metadata, and enqueues ingestion to QUEUED status", async () => {
+    it.each(["QUEUED", "PROCESSING", "READY", "FAILED"])("preserves upload registration status %s", async (upstreamStatus) => {
       vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(mockUserPatientA as any);
       vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce(mockPatientRecordA as any);
 
@@ -87,10 +87,10 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
       vi.mocked(prisma.medicalDocument.create).mockResolvedValueOnce(sampleDocA as any);
       vi.mocked(searchSphereClient.queueMedicalDocumentIngestion).mockResolvedValueOnce({
         documentId: "doc_123",
-        status: "QUEUED",
+        status: upstreamStatus,
       });
 
-      const queuedDoc = { ...sampleDocA, processingStatus: "QUEUED" };
+      const queuedDoc = { ...sampleDocA, processingStatus: upstreamStatus };
       vi.mocked(prisma.medicalDocument.update).mockResolvedValueOnce(queuedDoc as any);
 
       const formData = new FormData();
@@ -109,7 +109,7 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
       expect(res.status).toBe(201);
       const data = await res.json();
 
-      expect(data.document.processingStatus).toBe("QUEUED");
+      expect(data.document.processingStatus).toBe(upstreamStatus);
       expect(searchSphereClient.queueMedicalDocumentIngestion).toHaveBeenCalledWith(
         expect.objectContaining({
           documentId: expect.any(String),
@@ -231,6 +231,17 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
     });
   });
 
+  it("returns 503 with explicit stale state when upstream status is unavailable", async () => {
+    vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(mockUserPatientA as any);
+    vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce(mockPatientRecordA as any);
+    vi.mocked(prisma.medicalDocument.findUnique).mockResolvedValueOnce(sampleDocA as any);
+    vi.mocked(searchSphereClient.getMedicalDocumentProcessingStatus).mockRejectedValueOnce(new Error("timeout"));
+    const response = await GET_STATUS(new NextRequest("http://localhost/api/patients/me/medical-documents/doc_123/processing-status"), { params: Promise.resolve({ documentId: "doc_123" }) });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ status: "PENDING", upstreamAvailable: false });
+    expect(prisma.medicalDocument.update).not.toHaveBeenCalled();
+  });
+
   describe("3. Retry Processing Endpoint (POST .../retry-processing)", () => {
     it("returns 401 when unauthenticated", async () => {
       vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(null);
@@ -257,7 +268,7 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
       expect(searchSphereClient.retryMedicalDocumentIngestion).not.toHaveBeenCalled();
     });
 
-    it("allows owning patient to retry processing: calls Search Sphere and updates status to QUEUED", async () => {
+    it.each(["QUEUED", "PROCESSING", "READY", "FAILED"])("preserves retry registration status %s", async (upstreamStatus) => {
       vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(mockUserPatientA as any);
       vi.mocked(prisma.patient.findUnique).mockResolvedValueOnce(mockPatientRecordA as any);
       vi.mocked(prisma.medicalDocument.findUnique).mockResolvedValueOnce({
@@ -268,13 +279,13 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
 
       vi.mocked(searchSphereClient.retryMedicalDocumentIngestion).mockResolvedValueOnce({
         documentId: "doc_123",
-        status: "QUEUED",
+        status: upstreamStatus,
       });
 
       vi.mocked(prisma.medicalDocument.update).mockResolvedValueOnce({
         ...sampleDocA,
-        processingStatus: "QUEUED",
-        processingError: null,
+        processingStatus: upstreamStatus,
+        processingError: upstreamStatus === "FAILED" ? "Search Sphere could not process this document. Retry processing." : null,
       } as any);
 
       const req = new NextRequest("http://localhost:3000/api/patients/me/medical-documents/doc_123/retry-processing", {
@@ -284,7 +295,7 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
 
       expect(res.status).toBe(200);
       const data = await res.json();
-      expect(data.status).toBe("QUEUED");
+      expect(data.status).toBe(upstreamStatus);
 
       expect(searchSphereClient.retryMedicalDocumentIngestion).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -295,8 +306,8 @@ describe("Patient Medical Document Ingestion & Status API Suite", () => {
       expect(prisma.medicalDocument.update).toHaveBeenCalledWith({
         where: { id: "doc_123" },
         data: {
-          processingStatus: "QUEUED",
-          processingError: null,
+          processingStatus: upstreamStatus,
+          processingError: upstreamStatus === "FAILED" ? "Search Sphere could not process this document. Retry processing." : null,
         },
       });
     });

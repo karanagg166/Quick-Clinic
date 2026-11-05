@@ -56,3 +56,11 @@ Only generated synthetic patients and documents are used. The test checks both r
 4. Repeat the verified backend lifecycle against the target environment and complete browser E2E before cutover.
 5. Keep compatibility endpoints temporarily. Next migrate upload/register/status/delete/search toward /api/v1 and the shared SDK once SDK scope/correlation/retry behavior is ready.
 6. Retain medical structured/hybrid routing and safety constraints in adapters. Do not replace exact numeric observations with LLM inference or turn medical-record retrieval into diagnosis/treatment generation.
+
+## Processing-state contract
+
+Upload and retry responses preserve Search Sphere's validated PENDING, QUEUED,
+PROCESSING, READY or FAILED state. A successful HTTP registration can still report
+FAILED; it is never converted to QUEUED. Status refresh returns HTTP 503 with
+`upstreamAvailable: false` and the last known local state when Search Sphere is
+unavailable or returns an unsupported state. The local record is retained for retry.
