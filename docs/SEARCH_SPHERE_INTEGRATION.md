@@ -74,3 +74,14 @@ PROCESSING, READY or FAILED state. A successful HTTP registration can still repo
 FAILED; it is never converted to QUEUED. Status refresh returns HTTP 503 with
 `upstreamAvailable: false` and the last known local state when Search Sphere is
 unavailable or returns an unsupported state. The local record is retained for retry.
+
+
+## Deployment contract gate
+
+The post-deploy workflow runs only by trusted `main` dispatch after deployment, with
+a required full `expected_sha`. The `search-sphere-release` environment permits only
+`main`. `/api/health` exposes the web commit without a database or provider call; the
+contract gate requires an exact match and bounds HTTP timeouts. Pre-deploy CI remains
+separate. These health/API checks do not establish the authenticated upload, indexing,
+retrieval, grounded-answer, patient-isolation, or physical-cleanup journey. That
+required Search Sphere release journey remains a separate open rollout phase.
