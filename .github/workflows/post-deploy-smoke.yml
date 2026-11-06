@@ -1,33 +1,46 @@
 name: Quick-Clinic Post-Deployment Live Smoke
 
+# Dispatch after Vercel deployment succeeds; CI completion can precede deployment.
 on:
-  workflow_run:
-    workflows: ["CI"]
-    types: [completed]
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Full main revision already deployed to the web API
+        type: string
+        required: true
 
 permissions:
   contents: read
 
 concurrency:
   group: quick-clinic-production-smoke
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   production-smoke:
-    name: Real Vercel + Render + Database API Contracts
-    if: >-
-      (github.event_name == 'workflow_run' &&
-       github.event.workflow_run.head_branch == 'main' &&
-       github.event.workflow_run.conclusion == 'success') ||
-      (github.event_name == 'workflow_dispatch' &&
-       github.ref == 'refs/heads/main')
+    name: Deployment contracts (authenticated Search Sphere journey is separate)
+    if: github.ref == 'refs/heads/main'
+    environment: search-sphere-release
     runs-on: ubuntu-latest
     timeout-minutes: 10
 
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Validate main deployment revision
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          python3 - <<'PY'
+          import os, re, subprocess
+          sha = os.environ['EXPECTED_SHA']
+          assert re.fullmatch(r'[0-9a-f]{40}', sha), 'Full lowercase SHA required'
+          subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'], check=True)
+          PY
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -45,6 +58,7 @@ jobs:
 
       - name: Run Safe Production Smoke Suite
         env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
           PROD_WEB_URL: "https://quick-clinic-nine.vercel.app"
           PROD_SOCKET_URL: "https://quickclinic-socket-server.onrender.com"
           SMOKE_TIMEOUT_MS: "30000"

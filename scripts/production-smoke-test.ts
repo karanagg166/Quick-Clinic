@@ -32,6 +32,8 @@ const config: SmokeTestConfig = {
   timeoutMs: Number(process.env.SMOKE_TIMEOUT_MS) || 25000,
 };
 
+const expectedSha = (process.env.EXPECTED_SHA || '').trim().toLowerCase();
+
 const results: { name: string; status: 'PASS' | 'FAIL' | 'BLOCKED'; detail: string }[] = [];
 
 function recordPass(name: string, detail: string) {
@@ -52,6 +54,7 @@ async function httpGet(url: string, headers: Record<string, string> = {}): Promi
       Accept: 'application/json, text/html',
       ...headers,
     },
+    signal: AbortSignal.timeout(config.timeoutMs),
   });
   const elapsedMs = Date.now() - start;
   const contentType = resp.headers.get('content-type') || '';
@@ -62,6 +65,17 @@ async function httpGet(url: string, headers: Record<string, string> = {}): Promi
     data = await resp.text().catch(() => null);
   }
   return { status: resp.status, data, elapsedMs };
+}
+
+async function verifyWebRevision(): Promise<void> {
+  if (!/^[0-9a-f]{40}$/.test(expectedSha)) {
+    throw new Error('EXPECTED_SHA must be the full deployed main revision');
+  }
+  const health = await httpGet(`${config.webUrl}/api/health`);
+  if (health.status !== 200 || health.data?.gitCommit !== expectedSha) {
+    throw new Error('Web health does not report the exact intended revision');
+  }
+  recordPass('Exact Web Revision', expectedSha);
 }
 
 async function verifyFrontendAccessibility(): Promise<void> {
@@ -238,6 +252,7 @@ export async function main(): Promise<number> {
   console.log(`Socket URL: ${config.socketUrl}\n`);
 
   try {
+    await verifyWebRevision();
     await verifyFrontendAccessibility();
     await verifyWebBackendReadiness();
     await verifySocketServerReadiness();
@@ -247,7 +262,7 @@ export async function main(): Promise<number> {
     verifyCanonicalTimeCalculations();
 
     console.log('\n\x1b[32m======================================================\x1b[0m');
-    console.log('\x1b[32m🎉 ALL QUICK-CLINIC PRODUCTION TESTS PASSED\x1b[0m');
+    console.log('\x1b[32m🎉 QUICK-CLINIC DEPLOYMENT CONTRACTS PASSED; SEARCH JOURNEY IS SEPARATE\x1b[0m');
     console.log('\x1b[32m======================================================\x1b[0m');
     return 0;
   } catch (err: any) {
