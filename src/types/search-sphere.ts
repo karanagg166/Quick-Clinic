@@ -36,6 +36,7 @@ export interface IngestionQueueParams {
   documentType: string;
   reportDate?: string | Date | null;
   requestId?: string;
+  forceReindex?: boolean;
 }
 
 export interface MedicalRetrievalChunk {

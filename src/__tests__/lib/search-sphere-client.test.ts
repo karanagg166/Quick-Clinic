@@ -4,6 +4,7 @@ import {
   getSignedStorageUrl,
   deleteFromStorage,
   queueMedicalDocumentIngestion,
+  retryMedicalDocumentIngestion,
   getMedicalDocumentProcessingStatus,
   deleteMedicalDocumentIndex,
   searchPatientMedicalRecords,
@@ -283,6 +284,8 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
       });
 
       expect(res.status).toBe("QUEUED");
+      const sent = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]?.body as string);
+      expect(sent.forceReindex).toBe(false);
       expect(global.fetch).toHaveBeenCalledWith(
         "http://localhost:8000/internal/medical-documents/doc_1/ingest",
         expect.objectContaining({
@@ -294,6 +297,31 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
           }),
         })
       );
+    });
+
+    it("marks an explicit retry and preserves the actual returned failure state", async () => {
+      global.fetch = vi.fn().mockResolvedValue(new Response(
+        JSON.stringify({ documentId: "synthetic-doc", status: "FAILED" }), { status: 202 }
+      ));
+      const result = await retryMedicalDocumentIngestion({
+        documentId: "synthetic-doc", patientId: "synthetic-patient",
+        storagePath: "synthetic/path.pdf", fileName: "public-fixture.pdf",
+        mimeType: "application/pdf", fileSize: 500, documentType: "LAB_REPORT",
+      });
+      const sent = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]?.body as string);
+      expect(sent.forceReindex).toBe(true);
+      expect(result.status).toBe("FAILED");
+      expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not repeat a reindex action automatically on an upstream outage", async () => {
+      global.fetch = vi.fn().mockResolvedValue(new Response("Synthetic upstream outage", { status: 503 }));
+      await expect(retryMedicalDocumentIngestion({
+        documentId: "synthetic-doc", patientId: "synthetic-patient",
+        storagePath: "synthetic/path.pdf", fileName: "public-fixture.pdf",
+        mimeType: "application/pdf", fileSize: 500, documentType: "LAB_REPORT",
+      })).rejects.toThrow();
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
     it("getMedicalDocumentProcessingStatus gets /status", async () => {
