@@ -1,5 +1,15 @@
 # Search-Sphere integration follow-up
 
+## Durable ingestion retry contract (2026-11-06)
+
+Initial ingestion sends `forceReindex: false`, so duplicate registration preserves
+the upstream job and actual status. The patient-authorized retry route sends
+`forceReindex: true` to start a new durable job generation. It makes one HTTP attempt;
+an upstream outage cannot automatically repeat the reindex action. Upstream `FAILED`
+continues to be returned as failure. Older Search Sphere releases ignore this optional
+field, so this consumer change can deploy before the PostgreSQL worker repair.
+The RabbitMQ result below is historical evidence, not the current rollout gate.
+
 ## Status
 
 The synthetic backend lifecycle passed on 2026-10-06: upload → RabbitMQ → worker → READY → legacy and generic retrieval → observations → real Cohere answers/citations → chat/SSE → deletion. The same indexed document serves both retrieval contracts. Browser E2E and production cutover remain unverified. The [active compatibility report](https://github.com/karanagg166/search-sphere/blob/fix/quick-clinic-generic-rag-compat/docs/QUICK_CLINIC_COMPATIBILITY_REPORT.md) tracks migration prerequisites; remove it after the deployed migration is finished and its lasting conclusions are incorporated into permanent docs.

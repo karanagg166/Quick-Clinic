@@ -431,6 +431,7 @@ export async function queueMedicalDocumentIngestion(
         fileSize: params.fileSize,
         documentType: params.documentType,
         reportDate: reportDateStr,
+        forceReindex: params.forceReindex ?? false,
       }),
     },
     { ...options, requestId: params.requestId || options?.requestId }
@@ -542,7 +543,10 @@ export async function retryMedicalDocumentIngestion(
   params: IngestionQueueParams,
   options?: ClientRequestOptions
 ): Promise<IngestionQueueResult> {
-  return queueMedicalDocumentIngestion(params, options);
+  return queueMedicalDocumentIngestion(
+    { ...params, forceReindex: true },
+    { ...options, retries: 0 }
+  );
 }
 
 /**
