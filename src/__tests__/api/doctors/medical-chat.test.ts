@@ -10,6 +10,7 @@ import { logAccess, logAudit } from "@/lib/logger";
 import {
   generatePatientMedicalChat,
   openPatientMedicalChatStream,
+  medicalChatFailure,
 } from "@/lib/search-sphere-client";
 import { AppointmentStatus } from "@/generated/prisma";
 
@@ -56,6 +57,7 @@ vi.mock("@/lib/logger", () => ({
 vi.mock("@/lib/search-sphere-client", () => ({
   generatePatientMedicalChat: vi.fn(),
   openPatientMedicalChatStream: vi.fn(),
+  medicalChatFailure: vi.fn(),
 }));
 
 describe("Doctor Medical AI Chat API Test Suite", () => {
@@ -81,6 +83,7 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.mocked(medicalChatFailure).mockReturnValue({status:503,code:"provider_quota"});
   });
 
   describe("PART 35: Create Conversation Authorization", () => {
@@ -682,8 +685,23 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
   });
 
+  it.each([false, true])("preserves an upstream provider failure before content (stream=%s)", async (stream) => {
+    vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
+    vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
+    vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+    vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({ id: conversationIdA, doctorId: doctorProfileA.id, patientId: patientIdA, title: "Synthetic thread" } as any);
+    vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({id:"synthetic-question",role:"USER"} as any);
+    vi.mocked(generatePatientMedicalChat).mockRejectedValueOnce(new Error("Safe unavailable"));
+    vi.mocked(openPatientMedicalChatStream).mockRejectedValueOnce(new Error("Safe unavailable"));
+    const req = new NextRequest(`http://localhost:3000/api/medical/${stream ? "stream" : "messages"}`, {method:"POST", body:JSON.stringify({message:"Public question"})});
+    const result = await (stream ? streamMessage : sendMessage)(req, {params:Promise.resolve({patientId:patientIdA,conversationId:conversationIdA})});
+    expect(result.status).toBe(503);
+    expect(await result.json()).toMatchObject({code:"provider_quota"});
+    expect(prisma.medicalAiMessage.create).toHaveBeenCalledTimes(1);
+  });
+
   describe("PART 38: Conversation History Limit", () => {
-    it("Sends only bounded recent history (<= 8 messages) even when 30+ exist", async () => {
+    it("Delegates the verified doctor and thread without copying any history", async () => {
       vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
       vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
       vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
@@ -736,16 +754,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
         params: Promise.resolve({ patientId: patientIdA, conversationId: conversationIdA }),
       });
 
-      // Verify Search Sphere received only bounded history
-      expect(generatePatientMedicalChat).toHaveBeenCalledWith(
-        expect.objectContaining({
-          history: expect.arrayContaining([
-            expect.objectContaining({ content: expect.any(String) }),
-          ]),
-        })
-      );
-      const callArgs = vi.mocked(generatePatientMedicalChat).mock.calls[0][0];
-      expect(callArgs.history?.length).toBe(8);
+      expect(generatePatientMedicalChat).toHaveBeenCalledWith(expect.objectContaining({
+        actorId: doctorProfileA.id, conversationId: conversationIdA, patientId: patientIdA,
+      }));
+      expect(vi.mocked(generatePatientMedicalChat).mock.calls[0][0]).not.toHaveProperty("history");
+      expect(prisma.medicalAiMessage.findMany).not.toHaveBeenCalled();
     });
   });
 

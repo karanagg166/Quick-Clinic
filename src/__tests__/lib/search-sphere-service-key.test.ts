@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { generatePatientMedicalAnswer, searchPatientMedicalRecords, openPatientMedicalChatStream, patientCollectionId } from "@/lib/search-sphere-client";
+import { generatePatientMedicalAnswer, generatePatientMedicalChat, medicalChatFailure, SearchSphereServiceError, searchPatientMedicalRecords, openPatientMedicalChatStream, patientCollectionId } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId } from "@/lib/correlation-id";
 
 describe("Search-Sphere service key and scope contract", () => {
@@ -41,7 +41,7 @@ describe("Search-Sphere service key and scope contract", () => {
     const stream = new ReadableStream({ start(controller) { controller.enqueue(encoder.encode('data: {"type":"token","text":"7.4"}\n\n')); controller.enqueue(encoder.encode('data: {"type":"citations","citations":[]}\n\ndata: [DONE]\n\n')); controller.close(); } });
     const fetch = vi.fn().mockResolvedValue(new Response(stream, { headers: { "Content-Type": "text/event-stream" } }));
     vi.stubGlobal("fetch", fetch);
-    const response = await openPatientMedicalChatStream({ patientId: "synthetic-a", message: "HbA1c?" });
+    const response = await openPatientMedicalChatStream({ actorId: "synthetic-doctor", patientId: "synthetic-a", message: "HbA1c?" });
     const reader = response.body!.getReader();
     expect(new TextDecoder().decode((await reader.read()).value)).toContain("token");
     expect(new TextDecoder().decode((await reader.read()).value)).toContain("citations");
@@ -54,8 +54,39 @@ describe("Search-Sphere service key and scope contract", () => {
     const fetch = vi.fn().mockRejectedValue(new DOMException("Aborted", "AbortError"));
     vi.stubGlobal("fetch", fetch);
     controller.abort();
-    await expect(openPatientMedicalChatStream({ patientId: "synthetic-a", message: "glucose?" }, { signal: controller.signal })).rejects.toThrow("Aborted");
+    await expect(openPatientMedicalChatStream({ actorId: "synthetic-doctor", patientId: "synthetic-a", message: "glucose?" }, { signal: controller.signal })).rejects.toThrow("Aborted");
     expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
+  });
+
+  it("delegates the doctor and thread without forwarding copied history", async () => {
+    const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ answer: "Synthetic answer", citations: [] })));
+    vi.stubGlobal("fetch", fetch);
+    await generatePatientMedicalChat({ patientId: "synthetic-a", actorId: "doctor-a", conversationId: "thread-a", message: "Public question", history: [{ role: "assistant", content: "PRIVATE LEGACY HISTORY" }] });
+    const init = fetch.mock.calls[0][1];
+    expect(new Headers(init.headers).get("X-Actor-ID")).toBe("doctor-a");
+    expect(JSON.parse(init.body)).toMatchObject({ patientId: "synthetic-a", conversationId: "thread-a" });
+    expect(init.body).not.toContain("PRIVATE LEGACY HISTORY");
+    expect(JSON.parse(init.body)).not.toHaveProperty("history");
+  });
+
+  it("rejects a missing doctor before sending a request", async () => {
+    const fetch = vi.fn(); vi.stubGlobal("fetch", fetch);
+    await expect(generatePatientMedicalChat({ patientId: "synthetic-a", actorId: "", message: "Public" })).rejects.toThrow("doctor identity");
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("never retries a failed generation and returns only safe provider codes", async () => {
+    const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ error_code: "provider_quota", detail: "PRIVATE TOKEN" }), { status: 503 })));
+    vi.stubGlobal("fetch", fetch);
+    try {
+      await generatePatientMedicalChat({ patientId: "synthetic-a", actorId: "doctor-a", message: "Public" });
+      throw new Error("Failure required");
+    } catch (error) {
+      expect(error).toBeInstanceOf(SearchSphereServiceError);
+      expect(medicalChatFailure(error)).toEqual({ status: 503, code: "provider_quota" });
+      expect(String(error)).not.toContain("PRIVATE TOKEN");
+    }
+    expect(fetch).toHaveBeenCalledTimes(1);
   });
 
   it("replaces patient-like correlation IDs with random UUIDs", () => {

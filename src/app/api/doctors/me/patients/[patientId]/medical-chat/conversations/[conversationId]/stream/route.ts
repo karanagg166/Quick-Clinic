@@ -6,7 +6,7 @@ import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
 import {
   openPatientMedicalChatStream,
-  MedicalChatMessage,
+  medicalChatFailure,
   MedicalRagCitation,
   sanitizeCitations,
 } from "@/lib/search-sphere-client";
@@ -202,40 +202,25 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         });
       }
 
-      // 2. Build bounded conversation history (take up to 8 messages before this one)
-      const recentMessages = await prisma.medicalAiMessage.findMany({
-        where: {
-          conversationId: cleanConversationId,
-          id: { not: userMessage.id },
-          status: "COMPLETE",
-        },
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: { role: true, content: true },
-      });
-
-      const historyPayload: MedicalChatMessage[] = recentMessages.reverse().map((m) => ({
-        role: m.role === "USER" ? "user" : "assistant",
-        content: m.content,
-      }));
-
       // 3. Open connection to Search Sphere stream
       let ssStreamResponse: Response;
       try {
         ssStreamResponse = await openPatientMedicalChatStream({
           patientId: cleanPatientId,
           message: userText,
-          history: historyPayload,
+          actorId: doctor.id,
+          conversationId: cleanConversationId,
           limit,
         }, { signal: req.signal });
       } catch (streamInitErr) {
         await releaseConversationLock(cleanConversationId);
         lockAcquired = false;
+        const failure = medicalChatFailure(streamInitErr);
         const sanitized = sanitizeErrorMessage(
           streamInitErr,
           "Medical AI chat is temporarily unavailable."
         );
-        return NextResponse.json({ error: sanitized }, { status: 500 });
+        return NextResponse.json({ error: sanitized, code: failure.code }, { status: failure.status });
       }
 
       if (!ssStreamResponse.body) {

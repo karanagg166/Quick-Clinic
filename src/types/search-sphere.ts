@@ -102,7 +102,10 @@ export interface MedicalChatMessage {
 
 export interface MedicalChatParams {
   patientId: string;
+  actorId: string;
+  conversationId?: string;
   message: string;
+  /** @deprecated Search Sphere loads authorized history by conversationId. */
   history?: MedicalChatMessage[];
   limit?: number;
   documentType?: string;
@@ -117,7 +120,10 @@ export interface MedicalChatResult {
   resultCount: number;
   retrievalQuery?: string | null;
   rewritten?: boolean;
-  answerMode?: "STRUCTURED" | "RAG" | "HYBRID";
+  answerMode?: "STRUCTURED" | "RAG" | "HYBRID" | "CLARIFICATION";
+  requiresHistory?: boolean;
+  contextMessageIds?: string[];
+  messageId?: string | null;
 }
 
 export interface MedicalObservationItem {

@@ -85,3 +85,19 @@ contract gate requires an exact match and bounds HTTP timeouts. Pre-deploy CI re
 separate. These health/API checks do not establish the authenticated upload, indexing,
 retrieval, grounded-answer, patient-isolation, or physical-cleanup journey. That
 required Search Sphere release journey remains a separate open rollout phase.
+
+## Doctor-scoped conversation delegation
+
+Medical chat forwards the verified doctor profile ID in `X-Actor-ID`, the authorized
+patient in the subject/collection headers, and the locally owned thread ID as
+`conversationId`. Search Sphere maps the reference within those scopes and selects
+its own authorized PostgreSQL history. Quick-Clinic no longer reads or copies old
+message text into model requests. Browser-supplied actor/history fields are ignored by
+the route; doctor/patient/thread authorization still runs before delegation.
+
+Generation uses one upstream HTTP attempt. JSON and streaming initiation allow at
+most 55 seconds under the existing 60-second route limit, forward disconnects, and
+preserve safe provider timeout/quota/approval codes. No provider diagnostic contents
+leave the service boundary. Existing stateless calls must also identify their verified
+doctor. The backend medical-history repair must be deployed for complete multi-turn
+behavior; this change alone does not establish the production Search Sphere journey.
