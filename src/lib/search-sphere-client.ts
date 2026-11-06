@@ -108,7 +108,31 @@ function delay(ms: number): Promise<void> {
 }
 
 export class SearchSphereServiceError extends Error {
-  constructor(public readonly status: number, message: string) { super(message); }
+  constructor(public readonly status: number, message: string, public readonly code = "upstream_unavailable") { super(message); }
+}
+
+const PROVIDER_ERROR_CODES = new Set(["provider_timeout", "provider_quota", "provider_rate_limit", "provider_not_approved", "provider_invalid_response", "provider_unavailable"]);
+
+export function medicalChatFailure(error: unknown): { status: number; code: string } {
+  if (error instanceof SearchSphereTimeoutError) return { status: 504, code: "provider_timeout" };
+  if (error instanceof SearchSphereServiceError) return { status: [429, 503, 504].includes(error.status) ? error.status : 502, code: error.code };
+  return { status: 502, code: "upstream_unavailable" };
+}
+
+function medicalActor(params: MedicalChatParams): string {
+  const actor = params.actorId?.trim();
+  if (!actor || actor.length > 255 || /[\r\n\0]/.test(actor)) throw new SearchSphereConfigError("Authenticated doctor identity is required.");
+  if (params.conversationId !== undefined && (!params.conversationId.trim() || params.conversationId.length > 255)) throw new SearchSphereConfigError("Invalid conversation reference.");
+  return actor;
+}
+
+async function medicalProviderFailure(response: Response): Promise<SearchSphereServiceError> {
+  let code = "upstream_unavailable";
+  try {
+    const payload = await response.json();
+    if (typeof payload?.error_code === "string" && PROVIDER_ERROR_CODES.has(payload.error_code)) code = payload.error_code;
+  } catch { /* Only allowlisted codes leave the upstream boundary. */ }
+  return new SearchSphereServiceError(response.status, "Medical AI chat is temporarily unavailable.", code);
 }
 
 export function sanitizeCitations(
@@ -174,7 +198,7 @@ async function fetchWithRetry(
       const response = await fetch(url, {
         ...init,
         headers: rawHeaders,
-        signal: controller.signal,
+        signal: options?.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
       });
 
       clearTimeout(timer);
@@ -657,6 +681,7 @@ export async function generatePatientMedicalChat(
   params: MedicalChatParams,
   options?: ClientRequestOptions
 ): Promise<MedicalChatResult> {
+  const actorId = medicalActor(params);
   const { baseUrl, secret } = getServiceConfig();
 
   const response = await fetchWithRetry(
@@ -665,31 +690,24 @@ export async function generatePatientMedicalChat(
       method: "POST",
       headers: {
         Authorization: `Bearer ${secret}`,
+        "X-Actor-ID": actorId,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         patientId: params.patientId,
         message: params.message,
-        history: params.history || [],
+        conversationId: params.conversationId,
         limit: params.limit ?? 8,
         documentType: params.documentType,
         fromDate: params.fromDate,
         toDate: params.toDate,
       }),
     },
-    { ...options, requestId: params.requestId || options?.requestId }
+    { ...options, retries: 0, timeoutMs: Math.min(options?.timeoutMs ?? 55000, 55000), requestId: params.requestId || options?.requestId }
   );
 
   if (!response.ok) {
-    const errorText = await response.text();
-    let detail = "Failed to generate medical chat answer";
-    try {
-      const parsed = JSON.parse(errorText);
-      void parsed; // Upstream details may contain infrastructure or credentials.
-    } catch {
-      // ignore
-    }
-    throw new Error(`Medical chat generation failed (${response.status}): ${detail}`);
+    throw await medicalProviderFailure(response);
   }
 
   const data = await response.json();
@@ -701,17 +719,21 @@ export async function generatePatientMedicalChat(
     retrievalQuery: data.retrievalQuery ?? null,
     rewritten: data.rewritten ?? false,
     answerMode: data.answerMode,
+    requiresHistory: data.requiresHistory ?? false,
+    contextMessageIds: data.contextMessageIds ?? [],
+    messageId: data.messageId ?? null,
   };
 }
 
 /**
  * Initiates a streaming connection with Search Sphere internal medical chat endpoint.
- * Configured with 30s timeout and passes through X-Request-ID.
+ * Bounded to 55 seconds under the existing 60-second route limit; forwards caller disconnects.
  */
 export async function openPatientMedicalChatStream(
   params: MedicalChatParams,
   options?: ClientRequestOptions
 ): Promise<Response> {
+  const actorId = medicalActor(params);
   const { baseUrl, secret } = getServiceConfig();
   const requestId = params.requestId || options?.requestId || getCurrentRequestId() || randomUUID();
 
@@ -721,13 +743,14 @@ export async function openPatientMedicalChatStream(
   headers.set("X-Client-ID", config.clientId);
   headers.set("X-Tenant-ID", config.tenantId);
   headers.set("X-Subject-ID", params.patientId);
+  headers.set("X-Actor-ID", actorId);
   headers.set("X-Collection-ID", patientCollectionId(params.patientId));
   headers.set("Content-Type", "application/json");
   headers.set("Accept", "text/event-stream");
   headers.set("X-Request-ID", requestId);
 
   const controller = new AbortController();
-  const timeoutMs = options?.timeoutMs ?? 30000;
+  const timeoutMs = Math.min(options?.timeoutMs ?? 55000, 55000);
   const timer = setTimeout(() => controller.abort(new Error("Stream timeout")), timeoutMs);
 
   try {
@@ -738,7 +761,7 @@ export async function openPatientMedicalChatStream(
       body: JSON.stringify({
         patientId: params.patientId,
         message: params.message,
-        history: params.history || [],
+        conversationId: params.conversationId,
         limit: params.limit ?? 8,
         documentType: params.documentType,
         fromDate: params.fromDate,
@@ -747,15 +770,7 @@ export async function openPatientMedicalChatStream(
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      let detail = "Failed to initiate medical chat stream";
-      try {
-        const parsed = JSON.parse(errorText);
-        void parsed; // Upstream details may contain infrastructure or credentials.
-      } catch {
-        // ignore
-      }
-      throw new Error(`Medical chat streaming failed (${response.status}): ${detail}`);
+      throw await medicalProviderFailure(response);
     }
 
     if (!response.body || !response.headers.get("content-type")?.includes("text/event-stream")) {
@@ -786,6 +801,7 @@ export async function openPatientMedicalChatStream(
     return new Response(body, { status: response.status, headers: response.headers });
   } catch (err) {
     clearTimeout(timer);
+    if (controller.signal.aborted && !options?.signal?.aborted) throw new SearchSphereTimeoutError();
     throw err;
   }
 }

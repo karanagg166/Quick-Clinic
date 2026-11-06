@@ -6,7 +6,7 @@ import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
 import {
   generatePatientMedicalChat,
-  MedicalChatMessage,
+  medicalChatFailure,
 } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
@@ -200,39 +200,23 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         });
       }
 
-      // 2. Build limited conversation history (bounded to last 6-10 messages before current)
-      const recentMessages = await prisma.medicalAiMessage.findMany({
-        where: {
-          conversationId: cleanConversationId,
-          id: { not: userMessage.id },
-          status: "COMPLETE",
-        },
-        orderBy: { createdAt: "desc" },
-        take: 8,
-        select: { role: true, content: true },
-      });
-
-      // Chronological order for history
-      const historyPayload: MedicalChatMessage[] = recentMessages.reverse().map((m) => ({
-        role: m.role === "USER" ? "user" : "assistant",
-        content: m.content,
-      }));
-
       // 3. Call Search Sphere internal multi-turn chat endpoint
       let chatResponse;
       try {
         chatResponse = await generatePatientMedicalChat({
           patientId: cleanPatientId,
           message: userText,
-          history: historyPayload,
+          actorId: doctor.id,
+          conversationId: cleanConversationId,
           limit,
         });
       } catch (err: any) {
-        console.error(`[RequestId: ${requestId}] Search Sphere chat generation error:`, err);
+        const failure = medicalChatFailure(err);
+        console.error(`[RequestId: ${requestId}] Search Sphere chat failure`, failure);
         const sanitized = sanitizeErrorMessage(err, "Medical AI chat is temporarily unavailable.");
         return NextResponse.json(
-          { error: sanitized },
-          { status: 500 }
+          { error: sanitized, code: failure.code },
+          { status: failure.status }
         );
       }
 
