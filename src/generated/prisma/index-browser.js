@@ -153,6 +153,7 @@ exports.Prisma.AdminScalarFieldEnum = {
 };
 
 exports.Prisma.DoctorScalarFieldEnum = {
+  isReleaseFixture: 'isReleaseFixture',
   id: 'id',
   userId: 'userId',
   specialty: 'specialty',

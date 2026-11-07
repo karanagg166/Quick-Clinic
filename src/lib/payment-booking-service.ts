@@ -133,7 +133,7 @@ export async function createOrReusePaymentOrder(params: CreateOrderParams): Prom
 
   // 3. Authoritatively validate slot hold and doctor fee
   const [doctor, slot, ownsHold] = await Promise.all([
-    prisma.doctor.findUnique({ where: { id: doctorId }, select: { fees: true } }),
+    prisma.doctor.findUnique({ where: { id: doctorId, isReleaseFixture: false }, select: { fees: true } }),
     prisma.slot.findFirst({
       where: { id: slotId, doctorId, status: "HELD", heldByPatientId: patientId },
       select: { id: true, startTime: true },

@@ -195,6 +195,7 @@ model Admin {
 }
 
 model Doctor {
+  isReleaseFixture Boolean @default(false)
   id         String    @id @default(cuid())
   userId     String    @unique
   specialty  Specialty

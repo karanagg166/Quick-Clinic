@@ -155,7 +155,7 @@ export async function createSlotHold(slotId: string, doctorId: string, patientId
 
   const now = new Date();
   const slot = await prisma.slot.findUnique({
-    where: { id: slotId },
+    where: { id: slotId, doctorId, doctor: { isReleaseFixture: false } },
     select: { startTime: true },
   });
   if (!slot || slot.startTime <= now) {
@@ -226,7 +226,7 @@ export async function confirmSlotHold(input: {
 }) {
   const now = new Date();
   const slot = await prisma.slot.findUnique({
-    where: { id: input.slotId },
+    where: { id: input.slotId, doctorId: input.doctorId, doctor: { isReleaseFixture: false } },
     select: { startTime: true, status: true },
   });
 

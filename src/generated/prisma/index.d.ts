@@ -7856,6 +7856,7 @@ export namespace Prisma {
   }
 
   export type DoctorMinAggregateOutputType = {
+    isReleaseFixture: boolean | null
     id: string | null
     userId: string | null
     specialty: $Enums.Specialty | null
@@ -7870,6 +7871,7 @@ export namespace Prisma {
   }
 
   export type DoctorMaxAggregateOutputType = {
+    isReleaseFixture: boolean | null
     id: string | null
     userId: string | null
     specialty: $Enums.Specialty | null
@@ -7884,6 +7886,7 @@ export namespace Prisma {
   }
 
   export type DoctorCountAggregateOutputType = {
+    isReleaseFixture: number
     id: number
     userId: number
     specialty: number
@@ -7916,6 +7919,7 @@ export namespace Prisma {
   }
 
   export type DoctorMinAggregateInputType = {
+    isReleaseFixture?: true
     id?: true
     userId?: true
     specialty?: true
@@ -7930,6 +7934,7 @@ export namespace Prisma {
   }
 
   export type DoctorMaxAggregateInputType = {
+    isReleaseFixture?: true
     id?: true
     userId?: true
     specialty?: true
@@ -7944,6 +7949,7 @@ export namespace Prisma {
   }
 
   export type DoctorCountAggregateInputType = {
+    isReleaseFixture?: true
     id?: true
     userId?: true
     specialty?: true
@@ -8045,6 +8051,7 @@ export namespace Prisma {
   }
 
   export type DoctorGroupByOutputType = {
+    isReleaseFixture: boolean
     id: string
     userId: string
     specialty: $Enums.Specialty
@@ -8078,6 +8085,7 @@ export namespace Prisma {
 
 
   export type DoctorSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    isReleaseFixture?: boolean
     id?: boolean
     userId?: boolean
     specialty?: boolean
@@ -8105,6 +8113,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["doctor"]>
 
   export type DoctorSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    isReleaseFixture?: boolean
     id?: boolean
     userId?: boolean
     specialty?: boolean
@@ -8120,6 +8129,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["doctor"]>
 
   export type DoctorSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    isReleaseFixture?: boolean
     id?: boolean
     userId?: boolean
     specialty?: boolean
@@ -8135,6 +8145,7 @@ export namespace Prisma {
   }, ExtArgs["result"]["doctor"]>
 
   export type DoctorSelectScalar = {
+    isReleaseFixture?: boolean
     id?: boolean
     userId?: boolean
     specialty?: boolean
@@ -8148,7 +8159,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "userId" | "specialty" | "experience" | "fees" | "doctorBio" | "balance" | "latitude" | "longitude" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
+  export type DoctorOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"isReleaseFixture" | "id" | "userId" | "specialty" | "experience" | "fees" | "doctorBio" | "balance" | "latitude" | "longitude" | "createdAt" | "updatedAt", ExtArgs["result"]["doctor"]>
   export type DoctorInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     user?: boolean | UserDefaultArgs<ExtArgs>
     leaves?: boolean | Doctor$leavesArgs<ExtArgs>
@@ -8188,6 +8199,7 @@ export namespace Prisma {
       medicalAiConversations: Prisma.$MedicalAiConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
+      isReleaseFixture: boolean
       id: string
       userId: string
       specialty: $Enums.Specialty
@@ -8282,8 +8294,8 @@ export namespace Prisma {
      * // Get first 10 Doctors
      * const doctors = await prisma.doctor.findMany({ take: 10 })
      * 
-     * // Only select the `id`
-     * const doctorWithIdOnly = await prisma.doctor.findMany({ select: { id: true } })
+     * // Only select the `isReleaseFixture`
+     * const doctorWithIsReleaseFixtureOnly = await prisma.doctor.findMany({ select: { isReleaseFixture: true } })
      * 
      */
     findMany<T extends DoctorFindManyArgs>(args?: SelectSubset<T, DoctorFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
@@ -8327,9 +8339,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Create many Doctors and only return the `id`
-     * const doctorWithIdOnly = await prisma.doctor.createManyAndReturn({
-     *   select: { id: true },
+     * // Create many Doctors and only return the `isReleaseFixture`
+     * const doctorWithIsReleaseFixtureOnly = await prisma.doctor.createManyAndReturn({
+     *   select: { isReleaseFixture: true },
      *   data: [
      *     // ... provide data here
      *   ]
@@ -8418,9 +8430,9 @@ export namespace Prisma {
      *   ]
      * })
      * 
-     * // Update zero or more Doctors and only return the `id`
-     * const doctorWithIdOnly = await prisma.doctor.updateManyAndReturn({
-     *   select: { id: true },
+     * // Update zero or more Doctors and only return the `isReleaseFixture`
+     * const doctorWithIsReleaseFixtureOnly = await prisma.doctor.updateManyAndReturn({
+     *   select: { isReleaseFixture: true },
      *   where: {
      *     // ... provide filter here
      *   },
@@ -8634,6 +8646,7 @@ export namespace Prisma {
    * Fields of the Doctor model
    */
   interface DoctorFieldRefs {
+    readonly isReleaseFixture: FieldRef<"Doctor", 'Boolean'>
     readonly id: FieldRef<"Doctor", 'String'>
     readonly userId: FieldRef<"Doctor", 'String'>
     readonly specialty: FieldRef<"Doctor", 'Specialty'>
@@ -37261,6 +37274,7 @@ export namespace Prisma {
 
 
   export const DoctorScalarFieldEnum: {
+    isReleaseFixture: 'isReleaseFixture',
     id: 'id',
     userId: 'userId',
     specialty: 'specialty',
@@ -38266,6 +38280,7 @@ export namespace Prisma {
     AND?: DoctorWhereInput | DoctorWhereInput[]
     OR?: DoctorWhereInput[]
     NOT?: DoctorWhereInput | DoctorWhereInput[]
+    isReleaseFixture?: BoolFilter<"Doctor"> | boolean
     id?: StringFilter<"Doctor"> | string
     userId?: StringFilter<"Doctor"> | string
     specialty?: EnumSpecialtyFilter<"Doctor"> | $Enums.Specialty
@@ -38292,6 +38307,7 @@ export namespace Prisma {
   }
 
   export type DoctorOrderByWithRelationInput = {
+    isReleaseFixture?: SortOrder
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
@@ -38323,6 +38339,7 @@ export namespace Prisma {
     AND?: DoctorWhereInput | DoctorWhereInput[]
     OR?: DoctorWhereInput[]
     NOT?: DoctorWhereInput | DoctorWhereInput[]
+    isReleaseFixture?: BoolFilter<"Doctor"> | boolean
     specialty?: EnumSpecialtyFilter<"Doctor"> | $Enums.Specialty
     experience?: IntFilter<"Doctor"> | number
     fees?: IntFilter<"Doctor"> | number
@@ -38347,6 +38364,7 @@ export namespace Prisma {
   }, "id" | "userId">
 
   export type DoctorOrderByWithAggregationInput = {
+    isReleaseFixture?: SortOrder
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
@@ -38369,6 +38387,7 @@ export namespace Prisma {
     AND?: DoctorScalarWhereWithAggregatesInput | DoctorScalarWhereWithAggregatesInput[]
     OR?: DoctorScalarWhereWithAggregatesInput[]
     NOT?: DoctorScalarWhereWithAggregatesInput | DoctorScalarWhereWithAggregatesInput[]
+    isReleaseFixture?: BoolWithAggregatesFilter<"Doctor"> | boolean
     id?: StringWithAggregatesFilter<"Doctor"> | string
     userId?: StringWithAggregatesFilter<"Doctor"> | string
     specialty?: EnumSpecialtyWithAggregatesFilter<"Doctor"> | $Enums.Specialty
@@ -40662,6 +40681,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -40687,6 +40707,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -40712,6 +40733,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -40737,6 +40759,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -40762,6 +40785,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateManyInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -40776,6 +40800,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateManyMutationInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -40789,6 +40814,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateManyInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -43509,6 +43535,7 @@ export namespace Prisma {
   }
 
   export type DoctorCountOrderByAggregateInput = {
+    isReleaseFixture?: SortOrder
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
@@ -43531,6 +43558,7 @@ export namespace Prisma {
   }
 
   export type DoctorMaxOrderByAggregateInput = {
+    isReleaseFixture?: SortOrder
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
@@ -43545,6 +43573,7 @@ export namespace Prisma {
   }
 
   export type DoctorMinOrderByAggregateInput = {
+    isReleaseFixture?: SortOrder
     id?: SortOrder
     userId?: SortOrder
     specialty?: SortOrder
@@ -47867,6 +47896,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutUserInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -47891,6 +47921,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutUserInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -48306,6 +48337,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutUserInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -48330,6 +48362,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutUserInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -49807,6 +49840,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutDoctorQualificationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -49831,6 +49865,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutDoctorQualificationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -49871,6 +49906,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutDoctorQualificationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -49895,6 +49931,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutDoctorQualificationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -50651,6 +50688,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutLeavesInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -50675,6 +50713,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutLeavesInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -50715,6 +50754,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutLeavesInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -50739,6 +50779,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutLeavesInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -50763,6 +50804,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutScheduleInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -50787,6 +50829,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutScheduleInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -50827,6 +50870,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutScheduleInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -50851,6 +50895,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutScheduleInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -50981,6 +51026,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutSlotsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -51005,6 +51051,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutSlotsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -51077,6 +51124,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutSlotsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -51101,6 +51149,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutSlotsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -51276,6 +51325,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutAppointmentsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -51300,6 +51350,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutAppointmentsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -51546,6 +51597,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutAppointmentsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -51570,6 +51622,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutAppointmentsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -51669,6 +51722,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutPatientRelationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -51693,6 +51747,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutPatientRelationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -51786,6 +51841,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutPatientRelationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -51810,6 +51866,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutPatientRelationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -52656,6 +52713,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutCheckoutsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -52680,6 +52738,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutCheckoutsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -52955,6 +53014,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutCheckoutsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -52979,6 +53039,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutCheckoutsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -53370,6 +53431,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutWithdrawalsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -53394,6 +53456,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutWithdrawalsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -53434,6 +53497,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutWithdrawalsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -53458,6 +53522,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutWithdrawalsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -53994,6 +54059,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutRatingsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -54018,6 +54084,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutRatingsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -54095,6 +54162,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutRatingsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -54119,6 +54187,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutRatingsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -54186,6 +54255,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutCommentsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -54210,6 +54280,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutCommentsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -54287,6 +54358,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutCommentsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -54311,6 +54383,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutCommentsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
@@ -54378,6 +54451,7 @@ export namespace Prisma {
   }
 
   export type DoctorCreateWithoutMedicalAiConversationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     specialty: $Enums.Specialty
     experience?: number
@@ -54402,6 +54476,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedCreateWithoutMedicalAiConversationsInput = {
+    isReleaseFixture?: boolean
     id?: string
     userId: string
     specialty: $Enums.Specialty
@@ -54507,6 +54582,7 @@ export namespace Prisma {
   }
 
   export type DoctorUpdateWithoutMedicalAiConversationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
     experience?: IntFieldUpdateOperationsInput | number
@@ -54531,6 +54607,7 @@ export namespace Prisma {
   }
 
   export type DoctorUncheckedUpdateWithoutMedicalAiConversationsInput = {
+    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
     id?: StringFieldUpdateOperationsInput | string
     userId?: StringFieldUpdateOperationsInput | string
     specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty

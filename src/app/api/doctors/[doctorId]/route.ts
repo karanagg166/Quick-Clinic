@@ -24,6 +24,7 @@ export const GET = async (
       select: {
         id: true,
         userId: true,
+        isReleaseFixture: true,
         specialty: true,
         doctorQualifications: { select: { qualification: true } },
         fees: true,
@@ -82,7 +83,7 @@ export const GET = async (
       commentsPromise,
     ]);
 
-    if (!d) {
+    if (!d || d.isReleaseFixture) {
       return NextResponse.json({ error: "Doctor not found" }, { status: 404 });
     }
 

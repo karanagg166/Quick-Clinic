@@ -86,9 +86,9 @@ export async function initiateCheckout(params: InitiateCheckoutParams): Promise<
       // 2b. Authoritatively validate doctor availability & fee
       const doctor = await tx.doctor.findUnique({
         where: { id: doctorId },
-        select: { fees: true },
+        select: { fees: true, isReleaseFixture: true },
       });
-      if (!doctor) {
+      if (!doctor || doctor.isReleaseFixture) {
         const err = new Error("Doctor not found");
         (err as any).statusCode = 404;
         throw err;

@@ -194,16 +194,17 @@ model Admin {
 }
 
 model Doctor {
-  id         String    @id @default(cuid())
-  userId     String    @unique
-  specialty  Specialty
-  experience Int       @default(0)
-  fees       Int       @default(0)
-  doctorBio  String?
-  balance    Int       @default(0)
+  isReleaseFixture Boolean   @default(false)
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  specialty        Specialty
+  experience       Int       @default(0)
+  fees             Int       @default(0)
+  doctorBio        String?
+  balance          Int       @default(0)
   // A one-time saved practice location. Patient locations are never stored.
-  latitude   Float?    @db.DoublePrecision
-  longitude  Float?    @db.DoublePrecision
+  latitude         Float?    @db.DoublePrecision
+  longitude        Float?    @db.DoublePrecision
 
   user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
   leaves           Leave[]
