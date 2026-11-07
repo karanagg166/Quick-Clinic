@@ -26,6 +26,14 @@ export interface ProcessingStatusResult {
   error: string | null;
 }
 
+export interface DocumentCleanupReceipt {
+  documentId: string;
+  status: "pending" | "complete";
+  vectorsRemaining: number;
+  derivedObjectsRemaining: number;
+  objectDeleted: boolean;
+}
+
 export interface IngestionQueueParams {
   documentId: string;
   patientId: string;

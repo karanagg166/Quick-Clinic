@@ -1,5 +1,37 @@
 # Search-Sphere integration follow-up
 
+## Current production stack and cleanup verification
+
+Search Sphere now uses its PostgreSQL durable worker, pgvector, private Supabase
+Storage and approved hosted Cohere APIs. The RabbitMQ/Qdrant/local-model rollout
+notes below are historical; use the current
+[versioned client guide](https://github.com/karanagg166/search-sphere/blob/main/docs/VERSIONED_CLIENT_GUIDE.md)
+and [acceptance matrix](https://github.com/karanagg166/search-sphere/blob/main/docs/ACCEPTANCE_MATRIX.md).
+Search Sphere's standalone and persistent-conversation production journeys passed;
+Quick-Clinic's full authenticated consumer journey is still required.
+
+Before this follow-up, patient deletion already revokes upstream evidence and
+removes local metadata, while Search Sphere durably retries physical cleanup.
+Quick-Clinic has no authenticated way to poll the scoped physical receipt after
+that local metadata disappears. Plan: add a patient-only cleanup read that derives
+the patient from the verified session/profile and calls the versioned receipt API
+with that subject and hashed collection. It must work after local deletion, fail
+closed on missing scope or invalid receipts, reject 503 as unverified, expose only
+validated counts/status, and never return service credentials or upstream details.
+No database migration, new service or model call is required.
+
+`GET /api/patients/me/medical-documents/{documentId}/cleanup` now follows that
+contract and returns `cleanup` with `status`, `vectorsRemaining`,
+`derivedObjectsRemaining` and `objectDeleted`. Complete requires both counts to be
+zero and the private object deleted. The patient identity comes from the verified
+session/profile even after local document deletion; browser scope headers/parameters
+are ignored. Another subject's scoped upstream denial becomes 404; unavailable or
+malformed receipts return 503 `cleanup_unverified`. Responses are private/no-store.
+The upstream GET uses one bounded attempt and no inference. New wrapper/route tests
+cover forged delegation, absent identities, malformed/contradictory receipts,
+pending status, denied scope and 503 failures. Full authenticated production proof
+remains pending; a local test pass does not establish physical production cleanup.
+
 ## Durable ingestion retry contract (2026-11-06)
 
 Initial ingestion sends `forceReindex: false`, so duplicate registration preserves
