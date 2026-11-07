@@ -23,7 +23,7 @@ let fixtureDoctor: string, regularDoctor: string, patientId: string, patientUser
 beforeAll(async () => {
   const url = new URL(process.env.DATABASE_URL || "");
   expect(["localhost", "127.0.0.1", "host.docker.internal", "postgres"]).toContain(url.hostname);
-  expect(url.pathname).toMatch(/\/(?:quick_clinic_test|test_db)$/);
+  expect(url.pathname).toMatch(/\/(?:quick_clinic_test|quickclinic_test|test_db)$/);
   const hiddenUser = await createTestUser({ name: "Synthetic release fixture " + run, role: "DOCTOR" }); accounts.push(hiddenUser.id);
   const visibleUser = await createTestUser({ name: "Synthetic ordinary profile " + run, role: "DOCTOR" }); accounts.push(visibleUser.id);
   const patient = await createTestUser({ name: "Synthetic checkout patient " + run }); accounts.push(patient.id); patientUserId = patient.id;
