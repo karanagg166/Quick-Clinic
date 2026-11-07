@@ -16,6 +16,7 @@ import type {
   MedicalRagAnswerParams,
   MedicalChatParams,
   MedicalChatResult,
+  MedicalConversationDeleteParams,
   PatientMedicalObservationsResponse,
   QueryPatientMedicalObservationsParams,
   ClientRequestOptions,
@@ -120,11 +121,59 @@ export function medicalChatFailure(error: unknown): { status: number; code: stri
   return { status: 502, code: "upstream_unavailable" };
 }
 
-function medicalActor(params: MedicalChatParams): string {
+function medicalActor(params: Pick<MedicalChatParams, "actorId" | "conversationId">): string {
   const actor = params.actorId?.trim();
   if (!actor || actor.length > 255 || /[\r\n\0]/.test(actor)) throw new SearchSphereConfigError("Authenticated doctor identity is required.");
   if (params.conversationId !== undefined && (!params.conversationId.trim() || params.conversationId.length > 255)) throw new SearchSphereConfigError("Invalid conversation reference.");
   return actor;
+}
+
+/** Require committed, scoped upstream memory deletion before local thread removal. */
+export async function deletePatientMedicalConversation(
+  params: MedicalConversationDeleteParams,
+  options?: ClientRequestOptions
+): Promise<void> {
+  const actor = medicalActor(params);
+  if (!params.patientId.trim() || params.patientId.length > 255 || /[\r\n\0]/.test(params.patientId)) {
+    throw new SearchSphereConfigError("Invalid patient scope.");
+  }
+  const { baseUrl } = getServiceConfig();
+  const response = await fetchWithRetry(
+    `${baseUrl}/internal/medical-rag/conversations/${encodeURIComponent(params.conversationId)}`,
+    { method: "DELETE", redirect: "error", headers: { "X-Actor-ID": actor } },
+    { ...options, subjectId: params.patientId, timeoutMs: Math.min(options?.timeoutMs ?? 10000, 10000), retries: 0 }
+  );
+  if (!response.ok || !response.body) {
+    throw new SearchSphereServiceError(response.status, "Conversation cleanup is not verified.");
+  }
+  // Headers and receipt body each have a bounded deadline; never accept a partial
+  // body or a purported success with a missing/false deletion assertion.
+  const reader = response.body.getReader();
+  let expired = false;
+  const timer = setTimeout(() => { expired = true; void reader.cancel().catch(() => undefined); }, 2000);
+  let bytes = 0;
+  let body = "";
+  const decoder = new TextDecoder("utf-8", { fatal: true });
+  try {
+    while (true) {
+      const part = await reader.read();
+      if (expired) throw new SearchSphereTimeoutError();
+      if (part.done) break;
+      bytes += part.value.byteLength;
+      if (bytes > 1024) throw new Error("Oversized deletion receipt.");
+      body += decoder.decode(part.value, { stream: true });
+    }
+    body += decoder.decode();
+    const receipt: unknown = JSON.parse(body);
+    if (!receipt || typeof receipt !== "object" || Array.isArray(receipt) || !("deleted" in receipt) || receipt.deleted !== true) {
+      throw new Error("Invalid deletion receipt.");
+    }
+  } catch {
+    throw new SearchSphereServiceError(503, "Conversation cleanup is not verified.");
+  } finally {
+    clearTimeout(timer);
+    void reader.cancel().catch(() => undefined);
+  }
 }
 
 async function medicalProviderFailure(response: Response): Promise<SearchSphereServiceError> {
