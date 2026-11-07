@@ -56,3 +56,22 @@ production for this step. Do not flag any real profile as a release fixture.
 Fixture bootstrap, logins and the complete authenticated medical journey remain
 open; this change creates no production identity, appointment, provider approval,
 notification or payment.
+
+## Bootstrap contract before implementation
+
+Provision exactly three synthetic users (doctor, patient A, patient B), one hidden
+fixture doctor, two patient profiles, one past BOOKED slot and one COMPLETED
+appointment from the fixture doctor to patient A. Patient B has no qualifying
+appointment. Use an existing immutable canonical Location reference; no synthetic
+location should enter public discovery. Create no relation, payment, schedule,
+notification, future slot or real clinical note.
+
+Derive all eight owned record IDs, three reserved `example.com` emails and strong
+login values from a private ownership key. A read-only plan binds the target
+connection and exact expected grant/profile state for at most fifteen minutes.
+Apply must re-read under a shared identity lock, verify bcrypt ownership, refuse
+partial/colliding/changed records and insert all records atomically. Repeated apply
+must not reset a password, role, appointment grant or fixture flag. Keep logins and
+ownership key outside Git and protected in the release environment; no email/SMS
+or model request belongs in bootstrap. Deployed verification still goes through
+real application login and user-authorized routes.
