@@ -7,6 +7,7 @@ import type {
   StorageDeleteResult,
   IngestionQueueResult,
   ProcessingStatusResult,
+  DocumentCleanupReceipt,
   IngestionQueueParams,
   MedicalRetrievalResponse,
   MedicalRetrievalSearchParams,
@@ -518,6 +519,48 @@ export async function getMedicalDocumentProcessingStatus(
     status: data.status,
     processedAt: data.processedAt ?? null,
     error: data.error ?? null,
+  };
+}
+
+/** Read physical cleanup using a verified patient scope, including after local deletion. */
+export async function getMedicalDocumentCleanupReceipt(
+  documentId: string,
+  options: ClientRequestOptions
+): Promise<DocumentCleanupReceipt> {
+  const patientId = options.subjectId?.trim();
+  if (!patientId || /[\r\n\0]/.test(patientId) || patientId.length > 255) {
+    throw new SearchSphereConfigError("Authorized patient scope is required for cleanup verification.");
+  }
+  if (!documentId.trim() || documentId.length > 255) {
+    throw new SearchSphereConfigError("Invalid document identity.");
+  }
+  const { baseUrl } = getServiceConfig();
+  const response = await fetchWithRetry(
+    `${baseUrl}/api/v1/documents/${encodeURIComponent(documentId)}/cleanup`,
+    { method: "GET", cache: "no-store" },
+    { ...options, subjectId: patientId, retries: 0, timeoutMs: Math.min(options.timeoutMs ?? 10000, 10000) }
+  );
+  if (!response.ok) {
+    throw new SearchSphereServiceError(response.status, "Document cleanup is not verified.");
+  }
+  let value: unknown;
+  try { value = await response.json(); } catch {
+    throw new SearchSphereServiceError(502, "Invalid document cleanup receipt.");
+  }
+  const receipt = value as Record<string, unknown> | null;
+  if (!receipt || typeof receipt !== "object" || receipt.document_id !== documentId ||
+      (receipt.status !== "pending" && receipt.status !== "complete") ||
+      !Number.isSafeInteger(receipt.vectors_remaining) || Number(receipt.vectors_remaining) < 0 ||
+      !Number.isSafeInteger(receipt.derived_objects_remaining) || Number(receipt.derived_objects_remaining) < 0 ||
+      typeof receipt.object_deleted !== "boolean" ||
+      (receipt.status === "complete" && (receipt.vectors_remaining !== 0 || receipt.derived_objects_remaining !== 0 || !receipt.object_deleted))) {
+    throw new SearchSphereServiceError(502, "Invalid document cleanup receipt.");
+  }
+  return {
+    documentId, status: receipt.status as "pending" | "complete",
+    vectorsRemaining: Number(receipt.vectors_remaining),
+    derivedObjectsRemaining: Number(receipt.derived_objects_remaining),
+    objectDeleted: receipt.object_deleted,
   };
 }
 
