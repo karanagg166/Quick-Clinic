@@ -70,7 +70,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
 
   describe("Authentication & Role Verification", () => {
     it("returns 401 when doctor is unauthenticated", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(null);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(null);
 
       const req = new NextRequest(`http://localhost:3000/api/doctors/me/patients/${patientId}/medical-search`, {
         method: "POST",
@@ -85,7 +85,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     });
 
     it("returns 403 when user is not a DOCTOR (e.g. PATIENT role)", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(patientUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(patientUser as any);
 
       const req = new NextRequest(`http://localhost:3000/api/doctors/me/patients/${patientId}/medical-search`, {
         method: "POST",
@@ -100,8 +100,8 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     });
 
     it("returns 404 when doctor profile does not exist", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUser as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(null);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUser as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(null);
 
       const req = new NextRequest(`http://localhost:3000/api/doctors/me/patients/${patientId}/medical-search`, {
         method: "POST",
@@ -165,7 +165,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     });
 
     it("allows retrieval when doctor has a CONFIRMED appointment", async () => {
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         id: "apt_confirmed",
         doctorId: doctorProfile.id,
         patientId,
@@ -197,7 +197,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     });
 
     it("allows retrieval when doctor has a COMPLETED appointment", async () => {
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         id: "apt_completed",
         doctorId: doctorProfile.id,
         patientId,
@@ -231,7 +231,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     for (const status of disallowedStatuses) {
       it(`denies retrieval and logs audit when appointment is ${status}`, async () => {
         // prisma.appointment.findFirst with CONFIRMED/COMPLETED returns null
-        vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
+        vi.mocked(prisma.appointment.findFirst).mockResolvedValue(null);
 
         const req = new NextRequest(`http://localhost:3000/api/doctors/me/patients/${patientId}/medical-search`, {
           method: "POST",
@@ -260,7 +260,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
     }
 
     it("denies access when doctor has no appointments with patient (Cross-Doctor IDOR protection)", async () => {
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(null);
 
       const req = new NextRequest(`http://localhost:3000/api/doctors/me/patients/${patientId}/medical-search`, {
         method: "POST",

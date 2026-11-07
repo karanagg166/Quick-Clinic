@@ -271,7 +271,7 @@ describe("Medical AI Hardening Suite", () => {
   });
 
   describe("PART 13: Streaming Disconnect Handling", () => {
-    it("marks partial answer as FAILED and releases conversation lock when client disconnects midway", async () => {
+    it("withholds unvalidated partial text and releases the lock when the client disconnects", async () => {
       // Create mock stream body
       const streamBody = new ReadableStream({
         start(controller) {
