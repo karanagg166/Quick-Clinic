@@ -194,3 +194,29 @@ stalled receipt, missing/false assertion, upstream failure, lost-response retry,
 foreign thread and mid-request role/appointment/thread revocation. TypeScript
 passes; focused lint has zero errors and only existing warnings. Production
 consumer proof and cached-history source reauthorization remain open separately.
+
+
+## Reading saved medical answers
+
+The conversation GET previously returned cached assistant content/citations after
+thread authorization without validating the current evidence. It now requires
+every cited document to remain owned by the patient, READY upstream and on the
+exact published `versionId` saved with the answer. Local ownership is refreshed
+after metadata reads, then account/doctor/appointment/thread grants are refreshed
+before returning the history. New `versionId` and `chunkId` citation types preserve
+the already-returned upstream identities; no Prisma schema migration is needed.
+
+Unverifiable, deleted, changed, failed or legacy unversioned evidence is replaced
+with an unavailable-answer message, empty citations and response-only FAILED
+status. Stored historical rows are preserved. Older assistant messages without
+verifiable citations are also withheld conservatively, including old greetings;
+start a new conversation when current evidence is required. User questions are
+retained inside the authorized thread and are never sent to a provider by this GET.
+
+Metadata verification deduplicates at most 20 document IDs, uses three concurrent
+reads with no retries and an eight-second shared abort deadline. Larger source
+sets fail closed. Twenty-two new helper/route cases verify stale/deleted/foreign/
+missing evidence, mid-request grant revocation, deduplication, concurrency and the
+response-body deadline. The focused six-file group passes 76 checks; TypeScript
+and focused lint pass (existing lint warnings only). This is code verification,
+not the required complete deployed medical journey.

@@ -20,6 +20,7 @@ export interface IngestionQueueResult {
 }
 
 export interface ProcessingStatusResult {
+  currentVersionId?: string | null;
   documentId: string;
   status: string;
   processedAt: string | null;
@@ -74,6 +75,8 @@ export interface MedicalRetrievalSearchParams {
 }
 
 export interface MedicalRagCitation {
+  versionId?: string | null;
+  chunkId?: string | null;
   citationId: number;
   documentId: string;
   fileName: string;
