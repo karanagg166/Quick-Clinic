@@ -75,3 +75,26 @@ must not reset a password, role, appointment grant or fixture flag. Keep logins 
 ownership key outside Git and protected in the release environment; no email/SMS
 or model request belongs in bootstrap. Deployed verification still goes through
 real application login and user-authorized routes.
+
+## Bootstrap engine and migration deployment
+
+The additive fixture flag migration was applied to the verified production target
+after PR #168 CI passed, before code deployment. Its Boolean/non-null/default-false
+contract was checked inside a bounded transaction and its exact SHA-256 migration
+checksum recorded atomically in the existing Prisma history. No fixture or real
+profile was flagged or created. Older migrations were not replayed.
+
+`src/lib/medical-release-bootstrap.ts` implements the read-only signed plan and
+atomic apply contract. Plans expire after fifteen minutes and bind the ownership
+key and target fingerprint. Apply takes a nonblocking PostgreSQL identity lock,
+rechecks complete ownership and grant state, and inserts all eight records in one
+transaction. A repeated create plan recovers a lost response by verifying existing
+records; a reuse plan cannot recreate missing identities. Passwords and grants
+are never reset. Clinical fields are checked for emptiness through predicates,
+without fetching their contents. The engine sends no notifications or inference.
+
+The PostgreSQL suite covers read-only planning, exact patient-A authorization and
+patient-B denial, safe reuse, plan tampering/expiry/wrong target/key, partial and
+changed records, rollback on a final-insert database failure, lock contention and
+restart reuse. The private operator CLI and deployed medical journey remain open;
+this module is not a public provisioning endpoint.
