@@ -165,3 +165,32 @@ preserve safe provider timeout/quota/approval codes. No provider diagnostic cont
 leave the service boundary. Existing stateless calls must also identify their verified
 doctor. The backend medical-history repair must be deployed for complete multi-turn
 behavior; this change alone does not establish the production Search Sphere journey.
+
+
+## Conversation deletion and upstream memory
+
+Previously, deleting a doctor-owned local conversation removed only Prisma rows;
+Search Sphere's delegated messages and compact memory remained. The DELETE route
+now verifies account/doctor/appointment/patient/thread access, delegates
+`DELETE /internal/medical-rag/conversations/{local_thread_id}` with the verified
+doctor actor and patient subject/collection, requires the upstream committed
+`{"deleted":true}` receipt, refreshes consumer-owned grants and then removes the
+local conversation.
+
+Search Sphere PRs #72/#73 provide the corresponding reference fence and medical
+compatibility endpoint. Deploy that backend before this consumer repair. A late
+request with the deleted reference receives 409; use a new local conversation for
+a new consultation thread.
+
+The upstream request makes one attempt, refuses redirects, caps header time at
+10 seconds and receipt-body time at 2 seconds/1 KiB. A timeout, denial, malformed
+receipt or upstream outage returns 503 and retains the local thread for an explicit
+retry; raw upstream diagnostics are neither returned nor logged. A lost response
+can be retried safely because the backend deletion is idempotent. The receipt is
+checked before any local deletion or success audit.
+
+Verification: 66 focused client/chat/deletion cases pass in Docker, including a
+stalled receipt, missing/false assertion, upstream failure, lost-response retry,
+foreign thread and mid-request role/appointment/thread revocation. TypeScript
+passes; focused lint has zero errors and only existing warnings. Production
+consumer proof and cached-history source reauthorization remain open separately.

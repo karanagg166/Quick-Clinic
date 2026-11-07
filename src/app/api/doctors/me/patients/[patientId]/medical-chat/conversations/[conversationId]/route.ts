@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
+import { deletePatientMedicalConversation } from "@/lib/search-sphere-client";
+import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
 interface RouteParams {
   params: Promise<{
@@ -229,6 +231,19 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    try {
+      await deletePatientMedicalConversation(
+        { patientId: cleanPatientId, actorId: doctor.id, conversationId: cleanConversationId },
+        { signal: req.signal }
+      );
+    } catch {
+      console.warn("Medical conversation cleanup unavailable", { code: "upstream_cleanup_unavailable" });
+      return NextResponse.json(
+        { error: "Conversation cleanup is unavailable. Please retry.", code: "upstream_cleanup_unavailable" },
+        { status: 503 }
+      );
+    }
+    await assertMedicalResponseAccess(req, authUser.id, doctor.id, cleanPatientId, cleanConversationId);
     await prisma.medicalAiConversation.delete({
       where: { id: cleanConversationId },
     });
@@ -244,10 +259,13 @@ export async function DELETE(req: NextRequest, { params }: RouteParams) {
     );
 
     return NextResponse.json({ success: true }, { status: 200 });
-  } catch (error: any) {
-    console.error("Delete medical chat conversation error:", error);
+  } catch (error: unknown) {
+    if (error instanceof MedicalResponseAccessError) {
+      return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
+    }
+    console.error("Delete medical chat conversation failed", { code: "local_cleanup_failed" });
     return NextResponse.json(
-      { error: error?.message || "Failed to delete conversation" },
+      { error: "Failed to delete conversation" },
       { status: 500 }
     );
   }

@@ -122,6 +122,12 @@ export interface MedicalChatParams {
   requestId?: string;
 }
 
+export interface MedicalConversationDeleteParams {
+  patientId: string;
+  actorId: string;
+  conversationId: string;
+}
+
 export interface MedicalChatResult {
   answer: string;
   citations: MedicalRagCitation[];
