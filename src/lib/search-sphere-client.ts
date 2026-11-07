@@ -565,6 +565,7 @@ export async function getMedicalDocumentProcessingStatus(
   const data = await response.json();
   return {
     documentId: data.documentId || documentId,
+    currentVersionId: typeof data.currentVersionId === "string" ? data.currentVersionId : null,
     status: data.status,
     processedAt: data.processedAt ?? null,
     error: data.error ?? null,

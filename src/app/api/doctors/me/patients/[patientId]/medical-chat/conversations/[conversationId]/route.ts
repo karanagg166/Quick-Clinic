@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
+import { authorizedMedicalHistory } from "@/lib/medical-history-access";
 import { deletePatientMedicalConversation } from "@/lib/search-sphere-client";
 import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
@@ -114,6 +115,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       );
     }
 
+    const messages = await authorizedMedicalHistory(cleanPatientId, conversation.messages, req.signal);
+    await assertMedicalResponseAccess(req, authUser.id, doctor.id, cleanPatientId, cleanConversationId);
+
     // Safe access logging
     await logAccess(
       authUser.id,
@@ -132,14 +136,15 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
           createdAt: conversation.createdAt,
           updatedAt: conversation.updatedAt,
         },
-        messages: conversation.messages,
+        messages,
       },
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("Get medical chat conversation error:", error);
+  } catch (error: unknown) {
+    if (error instanceof MedicalResponseAccessError) return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
+    console.error("Get medical conversation failed", { code: "history_unavailable" });
     return NextResponse.json(
-      { error: error?.message || "Failed to retrieve conversation" },
+      { error: "Failed to retrieve conversation" },
       { status: 500 }
     );
   }
