@@ -8,6 +8,7 @@ import { generatePatientMedicalAnswer, sanitizeCitations } from "@/lib/search-sp
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
+import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
 interface RouteParams {
   params: Promise<{
@@ -198,6 +199,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
 
       // Access and Audit logging (Strict PHI protection: never log raw query or generated answer)
+      await assertMedicalResponseAccess(req, authUser.id, doctor.id, cleanPatientId);
       await logAccess(
         authUser.id,
         cleanPatientId,
@@ -225,6 +227,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         { status: 200 }
       );
     } catch (error: any) {
+      if (error instanceof MedicalResponseAccessError) return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
       console.error(`[RequestId: ${requestId}] Doctor medical answer endpoint error:`, error);
 
       if (authUserId && cleanPatientId) {

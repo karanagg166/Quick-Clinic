@@ -88,9 +88,9 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 35: Create Conversation Authorization", () => {
     it("CONFIRMED appointment -> allowed (201)", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         ...qualifyingAppointment,
         status: AppointmentStatus.CONFIRMED,
       } as any);
@@ -130,9 +130,9 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("COMPLETED appointment -> allowed (201)", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         ...qualifyingAppointment,
         status: AppointmentStatus.COMPLETED,
       } as any);
@@ -165,9 +165,9 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("PENDING/CANCELLED/NO_SHOW -> denied (403)", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(null); // No CONFIRMED/COMPLETED
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(null); // No CONFIRMED/COMPLETED
 
       const req = new NextRequest(
         `http://localhost:3000/api/doctors/me/patients/${patientIdA}/medical-chat/conversations`,
@@ -192,7 +192,7 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Non-doctor role -> denied (403)", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(patientUser as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(patientUser as any);
 
       const req = new NextRequest(
         `http://localhost:3000/api/doctors/me/patients/${patientIdA}/medical-chat/conversations`,
@@ -212,15 +212,15 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 35 & 23: Doctor Ownership & Isolation", () => {
     it("Doctor B cannot read Doctor A's conversation", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserB as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileB as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserB as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileB as any);
       // Doctor B happens to have an appointment with Patient A, but does NOT own the conversation
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         ...qualifyingAppointment,
         doctorId: doctorProfileB.id,
       } as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id, // Owned by Doctor A!
         patientId: patientIdA,
@@ -242,11 +242,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Doctor B cannot send message to Doctor A's conversation", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserB as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileB as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserB as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileB as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id, // Doctor A
         patientId: patientIdA,
@@ -270,11 +270,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Doctor B cannot delete Doctor A's conversation", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserB as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileB as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserB as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileB as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id, // Doctor A
         patientId: patientIdA,
@@ -296,15 +296,15 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 35 & 22: Patient Binding", () => {
     it("Conversation for Patient A cannot be accessed under Patient B route", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce({
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue({
         ...qualifyingAppointment,
         patientId: patientIdB,
       } as any);
 
       // Conversation belongs to Patient A
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA, // Patient A
@@ -329,11 +329,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 35: Message Persistence & Citation Verification", () => {
     it("Stores user message, verifies citations, and stores assistant message", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -434,11 +434,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Cross-patient citation triggers MEDICAL_CHAT_SECURITY_ANOMALY and does not persist assistant response", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -503,11 +503,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Structured query chat response persists observation citations and logs MEDICAL_STRUCTURED_QUERY", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -597,11 +597,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
     });
 
     it("Hybrid query chat response logs MEDICAL_HYBRID_QUERY", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -686,10 +686,10 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
   });
 
   it.each([false, true])("preserves an upstream provider failure before content (stream=%s)", async (stream) => {
-    vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-    vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-    vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
-    vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({ id: conversationIdA, doctorId: doctorProfileA.id, patientId: patientIdA, title: "Synthetic thread" } as any);
+    vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+    vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+    vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
+    vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({ id: conversationIdA, doctorId: doctorProfileA.id, patientId: patientIdA, title: "Synthetic thread" } as any);
     vi.mocked(prisma.medicalAiMessage.create).mockResolvedValueOnce({id:"synthetic-question",role:"USER"} as any);
     vi.mocked(generatePatientMedicalChat).mockRejectedValueOnce(new Error("Safe unavailable"));
     vi.mocked(openPatientMedicalChatStream).mockRejectedValueOnce(new Error("Safe unavailable"));
@@ -702,11 +702,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 38: Conversation History Limit", () => {
     it("Delegates the verified doctor and thread without copying any history", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -764,11 +764,11 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
 
   describe("PART 35: Streaming Failure Handling", () => {
     it("User message remains persisted, incomplete assistant message is not saved as complete", async () => {
-      vi.mocked(getAuthenticatedUser).mockResolvedValueOnce(doctorUserA as any);
-      vi.mocked(prisma.doctor.findUnique).mockResolvedValueOnce(doctorProfileA as any);
-      vi.mocked(prisma.appointment.findFirst).mockResolvedValueOnce(qualifyingAppointment as any);
+      vi.mocked(getAuthenticatedUser).mockResolvedValue(doctorUserA as any);
+      vi.mocked(prisma.doctor.findUnique).mockResolvedValue(doctorProfileA as any);
+      vi.mocked(prisma.appointment.findFirst).mockResolvedValue(qualifyingAppointment as any);
 
-      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValueOnce({
+      vi.mocked(prisma.medicalAiConversation.findUnique).mockResolvedValue({
         id: conversationIdA,
         doctorId: doctorProfileA.id,
         patientId: patientIdA,
@@ -818,7 +818,8 @@ describe("Doctor Medical AI Chat API Test Suite", () => {
       expect(res.headers.get("Content-Type")).toContain("text/event-stream");
 
       const text = await res.text();
-      expect(text).toContain("event: token");
+      expect(text).not.toContain("event: token");
+      expect(text).not.toContain("The heart");
       expect(text).toContain("event: error");
 
       // Verify that no assistant message was saved with status: "COMPLETE"

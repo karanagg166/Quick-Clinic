@@ -18,6 +18,8 @@ import {
   checkAndSetMessageIdempotency,
 } from "@/lib/medical-chat-guard";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
+import { collectMedicalStreamResult, MedicalStreamFailure } from "@/lib/medical-stream-result";
+import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
 interface RouteParams {
   params: Promise<{
@@ -239,12 +241,11 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
 
       // 4. Create transform stream to proxy SSE to client, parse citations, and persist assistant response
       const encoder = new TextEncoder();
-      const decoder = new TextDecoder();
 
       let accumulatedAnswer = "";
       let extractedCitations: MedicalRagCitation[] = [];
       let streamMode: string | null = null;
-      let isPersisted = false;
+      let cancelled = false;
       let reader: ReadableStreamDefaultReader<Uint8Array> | null = null;
 
       const stream = new ReadableStream({
@@ -260,78 +261,13 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           );
 
           reader = ssStreamResponse.body!.getReader();
-          let buffer = "";
 
           try {
-            while (true) {
-              const { done, value } = await reader.read();
-              if (done) break;
-
-              buffer += decoder.decode(value, { stream: true });
-              const parts = buffer.split("\n\n");
-              buffer = parts.pop() || "";
-
-              for (const part of parts) {
-                const trimmed = part.trim();
-                if (!trimmed) continue;
-
-                const lines = trimmed.split("\n");
-                let eventType = "message";
-                let dataStr = "";
-
-                for (const line of lines) {
-                  if (line.startsWith("event: ")) {
-                    eventType = line.slice(7).trim();
-                  } else if (line.startsWith("data: ")) {
-                    dataStr = line.slice(6).trim();
-                  }
-                }
-
-                if (eventType === "token") {
-                  try {
-                    const parsed = JSON.parse(dataStr);
-                    const tokenText = parsed.text || "";
-                    accumulatedAnswer += tokenText;
-                    // Forward token to browser
-                    controller.enqueue(encoder.encode(`event: token\ndata: ${JSON.stringify({ text: tokenText })}\n\n`));
-                  } catch {
-                    // ignore json parse error
-                  }
-                } else if (eventType === "citations") {
-                  try {
-                    const parsed = JSON.parse(dataStr);
-                    extractedCitations = sanitizeCitations(parsed.citations || []);
-                  } catch {
-                    // ignore
-                  }
-                } else if (eventType === "done") {
-                  try {
-                    const parsed = JSON.parse(dataStr);
-                    if (parsed.answer && !accumulatedAnswer) {
-                      accumulatedAnswer = parsed.answer;
-                    }
-                    if (parsed.citations && extractedCitations.length === 0) {
-                      extractedCitations = sanitizeCitations(parsed.citations);
-                    }
-                    if (parsed.mode) {
-                      streamMode = parsed.mode;
-                    }
-                  } catch {
-                    // ignore
-                  }
-                } else if (eventType === "error") {
-                  controller.enqueue(
-                    encoder.encode(
-                      `event: error\ndata: ${JSON.stringify({
-                        message: "Medical AI stream encountered an error.",
-                      })}\n\n`
-                    )
-                  );
-                  controller.close();
-                  return;
-                }
-              }
-            }
+            const result = await collectMedicalStreamResult(reader);
+            accumulatedAnswer = result.answer;
+            extractedCitations = sanitizeCitations(result.citations);
+            streamMode = result.mode;
+            if (cancelled || req.signal.aborted) throw new Error("Stream cancelled.");
 
             // Search Sphere finished streaming tokens and citations
             // Defense-in-depth: Validate citations against database
@@ -380,6 +316,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             }
 
             // Citations valid. Persist ASSISTANT message now!
+            await assertMedicalResponseAccess(req, targetUserId, targetDoctorId, targetPatientId, targetConversationId);
             const assistantMessage = await prisma.medicalAiMessage.create({
               data: {
                 conversationId: targetConversationId,
@@ -389,7 +326,6 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
                 status: "COMPLETE",
               },
             });
-            isPersisted = true;
 
             await prisma.medicalAiConversation.update({
               where: { id: targetConversationId },
@@ -438,6 +374,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
               );
             }
 
+            if (cancelled || req.signal.aborted) return;
+            await assertMedicalResponseAccess(req, targetUserId, targetDoctorId, targetPatientId, targetConversationId);
+            controller.enqueue(encoder.encode(`event: token\ndata: ${JSON.stringify({ text: accumulatedAnswer })}\n\n`));
             // Emit sanitized citations and done events with DB assistant message id
             controller.enqueue(
               encoder.encode(
@@ -451,58 +390,30 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
             );
             controller.close();
           } catch (streamErr: any) {
-            console.error(`[RequestId: ${requestId}] Error reading or processing stream:`, streamErr);
-            if (!isPersisted) {
-              // Streaming failed mid-way: do NOT persist incomplete assistant message as complete.
-              // Persist as FAILED so user message remains and retry is permitted
-              try {
-                if (accumulatedAnswer) {
-                  await prisma.medicalAiMessage.create({
-                    data: {
-                      conversationId: targetConversationId,
-                      role: "ASSISTANT",
-                      content: accumulatedAnswer,
-                      status: "FAILED",
-                    },
-                  });
-                }
-              } catch {
-                // ignore
-              }
-            }
+            console.error(`[RequestId: ${requestId}] Medical stream validation failed`, { category: streamErr instanceof Error ? streamErr.name : "unknown" });
+            if (cancelled || req.signal.aborted) return;
             controller.enqueue(
               encoder.encode(
                 `event: error\ndata: ${JSON.stringify({
                   message: "Unable to generate answer",
+                  code: streamErr instanceof MedicalStreamFailure ? streamErr.code : streamErr instanceof MedicalResponseAccessError ? "access_revoked" : "invalid_stream",
                 })}\n\n`
               )
             );
             controller.close();
           } finally {
+            try { await reader?.cancel(); } catch { /* Already closed. */ }
             await releaseConversationLock(targetConversationId);
           }
         },
         async cancel(reason) {
+          cancelled = true;
           // Client disconnected midway!
           if (reader) {
             try {
               await reader.cancel(reason);
             } catch {
               // ignore
-            }
-          }
-          if (!isPersisted && accumulatedAnswer) {
-            try {
-              await prisma.medicalAiMessage.create({
-                data: {
-                  conversationId: targetConversationId,
-                  role: "ASSISTANT",
-                  content: accumulatedAnswer,
-                  status: "FAILED",
-                },
-              });
-            } catch (e) {
-              console.error("Failed to save disconnected assistant message:", e);
             }
           }
           await releaseConversationLock(targetConversationId);
@@ -518,7 +429,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         },
       });
     } catch (error: any) {
-      console.error(`[RequestId: ${requestId}] Medical chat stream route error:`, error);
+      console.error(`[RequestId: ${requestId}] Medical chat stream route error:`, { category: error instanceof Error ? error.name : "unknown" });
       if (lockAcquired && cleanConversationId) {
         await releaseConversationLock(cleanConversationId);
       }

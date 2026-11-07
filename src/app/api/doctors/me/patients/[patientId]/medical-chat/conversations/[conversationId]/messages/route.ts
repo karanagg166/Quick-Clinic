@@ -16,6 +16,7 @@ import {
   checkAndSetMessageIdempotency,
 } from "@/lib/medical-chat-guard";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
+import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
 interface RouteParams {
   params: Promise<{
@@ -261,6 +262,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
 
       // 5. Persist ASSISTANT message only after successful validation
+      await assertMedicalResponseAccess(req, authUser.id, doctor.id, cleanPatientId, cleanConversationId);
       const assistantMessage = await prisma.medicalAiMessage.create({
         data: {
           conversationId: cleanConversationId,
@@ -327,6 +329,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         { status: 200 }
       );
     } catch (error: any) {
+      if (error instanceof MedicalResponseAccessError) return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
       console.error(`[RequestId: ${requestId}] Medical chat message endpoint error:`, error);
       const sanitized = sanitizeErrorMessage(error, "Medical AI chat is temporarily unavailable.");
       return NextResponse.json(

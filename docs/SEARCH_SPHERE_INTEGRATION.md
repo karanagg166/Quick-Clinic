@@ -32,6 +32,38 @@ cover forged delegation, absent identities, malformed/contradictory receipts,
 pending status, denied scope and 503 failures. Full authenticated production proof
 remains pending; a local test pass does not establish physical production cleanup.
 
+## Validate completed medical responses before emission
+
+Inventory before this repair: JSON chat verifies cited local patient document IDs
+before saving an assistant response. Its streaming route forwards upstream token
+text immediately, validates citations only after EOF, and does not require a done
+event. Doctor appointment access is checked at initiation but is not rechecked after
+hosted generation. A later invalid citation, truncated stream or access revocation
+can therefore occur after text was already exposed.
+
+Repair plan: collect a bounded upstream SSE answer, require one complete matching
+done event, validate citations and refresh doctor/patient/thread authorization before
+persisting or emitting answer content. Keep cancellation and the existing upstream
+deadline active. Never save unvalidated partial text as a failed assistant message.
+Retain native SSE start/token/citations/done contracts and one model attempt. Add
+regressions for partial-token errors, missing/duplicate done, cross-patient evidence
+and appointment revocation during generation. No schema or provider change.
+
+The repair buffers at most 128 KiB of upstream SSE and 16,000 answer characters,
+requires one matching done event, rejects malformed/duplicate/truncated completion,
+and preserves allowlisted provider failure codes. Citations are checked against
+the local patient catalog before text emission. Account, doctor profile, eligible
+appointment and thread ownership are re-read after inference; JSON search/answer
+also refresh the consumer-owned access grant. The stream refreshes access again
+before emitting the completed token/citations/done sequence. Cancellation releases
+the lock, and unvalidated partial text is neither emitted nor retained as a failed
+assistant message. Existing one-time auth mocks now represent persistent authorized
+database rows; the old partial-token exposure assertion now requires withholding.
+The focused collector/API suite passes 82 tests, including new permission-revocation
+and interrupted-stream regressions. TypeScript passes; focused lint has zero errors
+and only pre-existing warnings in the touched routes. Production recovery is not
+claimed until this repair is reviewed, deployed and exercised with synthetic data.
+
 ## Durable ingestion retry contract (2026-11-06)
 
 Initial ingestion sends `forceReindex: false`, so duplicate registration preserves

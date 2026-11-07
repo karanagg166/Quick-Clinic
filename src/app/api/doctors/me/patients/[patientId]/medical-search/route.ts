@@ -8,6 +8,7 @@ import { searchPatientMedicalRecords } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
+import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
 interface RouteParams {
   params: Promise<{
@@ -149,6 +150,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
 
       // Audit and access logging (Strict PHI protection: never log raw query or medical chunk excerpts)
+      await assertMedicalResponseAccess(req, authUser.id, doctor.id, cleanPatientId);
       await logAccess(
         authUser.id,
         cleanPatientId,
@@ -173,7 +175,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
         { status: 200 }
       );
     } catch (error: any) {
-      console.error(`[RequestId: ${requestId}] Doctor medical search error:`, error);
+      if (error instanceof MedicalResponseAccessError) return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
+      console.error(`[RequestId: ${requestId}] Doctor medical search error:`, { category: error instanceof Error ? error.name : "unknown" });
       const sanitizedError = sanitizeErrorMessage(
         error,
         "Medical record search is temporarily unavailable."
