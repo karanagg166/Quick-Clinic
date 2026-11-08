@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
-import { generatePatientMedicalAnswer, sanitizeCitations } from "@/lib/search-sphere-client";
+import { generatePatientMedicalAnswer, sanitizeCitations, medicalChatFailure } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
@@ -15,6 +15,8 @@ interface RouteParams {
     patientId: string;
   }>;
 }
+
+export const maxDuration = 60;
 
 const answerSchema = z.object({
   query: z
@@ -137,7 +139,8 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           toDate,
         });
       } catch (ragError: any) {
-        console.error(`[RequestId: ${requestId}] Medical RAG generation failed:`, ragError);
+        const failure = medicalChatFailure(ragError);
+        console.error(`[RequestId: ${requestId}] Medical RAG generation failed:`, {code: failure.code});
         await logAudit(
           authUser.id,
           "MEDICAL_RAG_GENERATION_FAILED",
@@ -149,13 +152,9 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
           "MEDICAL_RECORD"
         );
 
-        const sanitizedError = sanitizeErrorMessage(
-          ragError,
-          "AI answer generation is temporarily unavailable."
-        );
         return NextResponse.json(
-          { error: sanitizedError },
-          { status: 500 }
+          { error: "AI answer generation is temporarily unavailable.", code: failure.code, requestId },
+          { status: failure.status }
         );
       }
 
@@ -228,7 +227,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       );
     } catch (error: any) {
       if (error instanceof MedicalResponseAccessError) return NextResponse.json({ error: "Medical response access changed." }, { status: 403 });
-      console.error(`[RequestId: ${requestId}] Doctor medical answer endpoint error:`, error);
+      console.error(`[RequestId: ${requestId}] Doctor medical answer endpoint error:`, {category: error instanceof Error ? error.name : "unknown"});
 
       if (authUserId && cleanPatientId) {
         await logAudit(

@@ -10,7 +10,34 @@ describe("Search-Sphere service key and scope contract", () => {
     vi.stubEnv("SEARCH_SPHERE_CLIENT_ID", "quick_clinic");
     vi.stubEnv("SEARCH_SPHERE_TENANT_ID", "quick_clinic_default");
   });
-  afterEach(() => { vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+  afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); });
+
+  it.each([
+    ["retrieval", false], ["answer", false], ["chat", false],
+    ["retrieval", true], ["answer", true], ["chat", true],
+  ] as const)("bounds the entire %s request including a stalled JSON body (error=%s)", async (kind, failed) => {
+    vi.useFakeTimers();
+    const fetch = vi.fn().mockResolvedValue({ok:!failed,status:failed?503:200,json:()=>new Promise(()=>{})});
+    vi.stubGlobal("fetch",fetch);
+    const options = {timeoutMs:500};
+    const pending = kind === "chat"
+      ? generatePatientMedicalChat({patientId:"synthetic-a",actorId:"synthetic-doctor",message:"Public question"},options)
+      : kind === "answer"
+        ? generatePatientMedicalAnswer({patientId:"synthetic-a",query:"Public question"},options)
+        : searchPatientMedicalRecords({patientId:"synthetic-a",query:"Public question"},options);
+    const rejected = expect(pending).rejects.toThrow("timed out");
+    await vi.advanceTimersByTimeAsync(500);
+    await rejected;
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch.mock.calls[0][1].signal.aborted).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each([0,-1,NaN,Infinity])("rejects invalid deadline %s before a model request", async timeoutMs => {
+    const fetch=vi.fn();vi.stubGlobal("fetch",fetch);
+    await expect(generatePatientMedicalAnswer({patientId:"synthetic-a",query:"Public"},{timeoutMs})).rejects.toThrow("deadline");
+    expect(fetch).not.toHaveBeenCalled();
+  });
 
   it("prefers the service key and derives scope from the authorized patient", async () => {
     const fetch = vi.fn().mockResolvedValue(new Response(JSON.stringify({ results: [] })));
@@ -29,11 +56,26 @@ describe("Search-Sphere service key and scope contract", () => {
     try { await generatePatientMedicalAnswer({ patientId: "synthetic-a", query: "glucose" }); } catch (error) { expect(String(error)).not.toMatch(/private-host|private-token/); }
   });
 
-  it("bounds transient retries", async () => {
+  it("does not replay retrieval after a provider failure", async () => {
     const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response("unavailable", { status: 503 })));
     vi.stubGlobal("fetch", fetch);
     await expect(searchPatientMedicalRecords({ patientId: "synthetic-a", query: "glucose" })).rejects.toThrow("503");
-    expect(fetch).toHaveBeenCalledTimes(3);
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([searchPatientMedicalRecords, generatePatientMedicalAnswer])("preserves provider status/code without replay or secret diagnostics", async request => {
+    const fetch = vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({error_code:"provider_quota",detail:"SYNTHETIC PRIVATE TOKEN"}), {status:503})));
+    vi.stubGlobal("fetch",fetch);
+    let failure: unknown;
+    try { await request({patientId:"synthetic-a",query:"Public synthetic question"}); } catch(error) { failure=error; }
+    expect(failure).toBeInstanceOf(SearchSphereServiceError);
+    expect(medicalChatFailure(failure)).toEqual({status:503,code:"provider_quota"});
+    expect(String(failure)).not.toContain("PRIVATE TOKEN");
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not expose arbitrary service error codes", () => {
+    expect(medicalChatFailure(new SearchSphereServiceError(503,"synthetic","UNTRUSTED PRIVATE CODE"))).toEqual({status:503,code:"upstream_unavailable"});
   });
 
   it("forwards incremental SSE bytes and closes the response", async () => {

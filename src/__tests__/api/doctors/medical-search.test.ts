@@ -4,7 +4,7 @@ import { POST } from "@/app/api/doctors/me/patients/[patientId]/medical-search/r
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
-import { searchPatientMedicalRecords } from "@/lib/search-sphere-client";
+import { searchPatientMedicalRecords, SearchSphereServiceError } from "@/lib/search-sphere-client";
 import { AppointmentStatus } from "@/generated/prisma";
 
 vi.mock("@/lib/prisma", () => ({
@@ -27,7 +27,8 @@ vi.mock("@/lib/logger", () => ({
   logAudit: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/search-sphere-client", () => ({
+vi.mock("@/lib/search-sphere-client", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/search-sphere-client")>(),
   searchPatientMedicalRecords: vi.fn(),
 }));
 
@@ -393,7 +394,7 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
       }
     });
 
-    it("returns 500 cleanly if Search Sphere service fails", async () => {
+    it("returns a safe gateway failure if Search Sphere service fails", async () => {
       vi.mocked(searchPatientMedicalRecords).mockRejectedValueOnce(
         new Error("Medical retrieval failed (502): Bad Gateway")
       );
@@ -404,9 +405,21 @@ describe("Doctor Medical Record Search API (POST /api/doctors/me/patients/[patie
       });
 
       const res = await POST(req, { params: Promise.resolve({ patientId }) });
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(502);
       const data = await res.json();
-      expect(data.error).toContain("Medical retrieval failed");
+      expect(data.error).toBe("Medical record search is temporarily unavailable.");
+      expect(data.code).toBe("upstream_unavailable");
+    });
+
+    it.each([429, 503, 504])("propagates upstream %s with only allowlisted codes", async status => {
+      vi.mocked(searchPatientMedicalRecords).mockRejectedValueOnce(new SearchSphereServiceError(status, "SYNTHETIC PRIVATE TOKEN", "provider_quota"));
+      const request = new NextRequest("http://localhost:3000/api/medical-search", {method:"POST",body:JSON.stringify({query:"Public synthetic question"})});
+      const response = await POST(request, {params:Promise.resolve({patientId})});
+      expect(response.status).toBe(status);
+      const body = await response.json();
+      expect(body.code).toBe("provider_quota");
+      expect(JSON.stringify(body)).not.toContain("PRIVATE TOKEN");
+      expect(searchPatientMedicalRecords).toHaveBeenCalledTimes(1);
     });
   });
 });

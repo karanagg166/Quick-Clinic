@@ -111,7 +111,7 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
       expect(result.resultCount).toBe(1);
     });
 
-    it("retries on retryable 503 response and succeeds on second attempt", async () => {
+    it("does not replay generation after a 503 even if a later request could succeed", async () => {
       global.fetch = vi
         .fn()
         .mockResolvedValueOnce({
@@ -124,13 +124,12 @@ describe("Search Sphere Client (src/lib/search-sphere-client.ts)", () => {
           json: async () => ({ answer: "Recovered answer", citations: [] }),
         } as any);
 
-      const res = await generatePatientMedicalAnswer({
+      await expect(generatePatientMedicalAnswer({
         patientId: "pat_123",
         query: "What is the BP?",
-      });
+      })).rejects.toThrow("Medical RAG generation failed (503)");
 
-      expect(res.answer).toBe("Recovered answer");
-      expect(global.fetch).toHaveBeenCalledTimes(2);
+      expect(global.fetch).toHaveBeenCalledTimes(1);
     });
 
     it("does not retry non-retryable 401 client/auth errors", async () => {

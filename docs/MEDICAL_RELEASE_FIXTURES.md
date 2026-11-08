@@ -121,3 +121,30 @@ them. Never delete or recreate identities just to recover a lost response.
 The CLI has been tested using synthetic keys and local PostgreSQL only. Production
 provisioning requires the hidden-doctor migration and deployment to be verified
 first; it does not approve any patient collection for hosted inference.
+
+## Verified production fixture bootstrap
+
+After #168–#171 passed CI and revision
+`9267d56b5a94f3b5954e024d44ce750e1fbf9cd5` was verified serving, the reviewed
+private plan was applied to its verified database target. It created exactly eight
+owned synthetic records. The ownership key, signed plan and credential recovery
+file are private operator files. Only derived synthetic logins/key were installed
+in the existing protected release environment; no database or upstream service key
+was added there.
+
+Live application login passed for the fixture doctor and both patients with exact
+role/profile checks. The doctor's public profile returned 404. Its legacy search
+and answer requests for ungranted patient B both returned 403 before inference.
+These checks made zero model calls. They are bootstrap/authorization evidence,
+not the required complete upload/index/retrieval/answer/SSE/cleanup journey.
+
+The legacy search and answer routes also need the same safe upstream failure
+contract as chat: preserve 429/503/504 and allowlisted provider codes, use static
+client messages, and do not replay model requests. A single bounded deadline now
+covers transport and JSON/error-body parsing for search, answer and nonstreaming
+chat. Answer's deadline is capped at 55 seconds within the existing 60-second
+serverless envelope; the hosted provider's own inference timeout is unchanged.
+Seventy-eight focused client/legacy-route cases and fifty existing chat, response
+authorization and conversation-deletion cases pass. Timeout cases include stalled
+success/error bodies across all three nonstreaming operations and invalid deadlines.
+TypeScript passes and focused lint has no errors (existing warnings only).
