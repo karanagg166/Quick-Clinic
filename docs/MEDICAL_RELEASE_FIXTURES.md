@@ -282,3 +282,33 @@ wrong document IDs and 503 responses. Physical assertions and provider deadlines
 were preserved. The failed run's signed receipts remain retained for independent
 reverification and the next trusted run. This repair does not turn that failed
 journey into a pass; complete live medical acceptance remains open.
+
+## Content-free failure diagnostics
+
+After #177, exact main CI
+[42469336359](https://github.com/karanagg166/Quick-Clinic/actions/runs/42469336359)
+and Vercel `dpl_HizfaqwKCAdSYoaJBTfN2GipC9aq` verified
+`4bf10616387be9d8a298a59f97251263ebcf7db0` against Search Sphere `9b3c137`.
+Protected runs [42469836296](https://github.com/karanagg166/Quick-Clinic/actions/runs/42469836296)
+and [42471363646](https://github.com/karanagg166/Quick-Clinic/actions/runs/42471363646)
+passed receipt restoration, two fresh PDF uploads/indexes, marker retrieval,
+patient isolation, legacy cited answers and physical cleanup, then failed the
+combined conversation JSON/SSE stage. The second run recorded three completed
+chat requests; that telemetry alone does not explain which downstream assertion
+failed. Neither run is treated as a pass.
+
+An independent direct deployed diagnostic on the same revisions passed fresh
+PDFs, cited legacy/JSON answers, contextual SSE start/token/citations/done with a
+saved message ID, persisted turns and all physical cleanup. It logged only
+statuses, event types and assertion booleans, with no response contents or secrets.
+This direct result does not replace the required successful GitHub Actions run.
+
+The release controller now separates thread creation, JSON response validation,
+SSE framing and SSE fact/citation validation. Failures report only fixed assertion
+codes, bounded HTTP status and allowlisted provider/stream categories. Transport
+deadlines receive a typed static diagnostic. Unknown errors, invalid JSON and
+untrusted category values never print upstream messages or raw response bodies.
+Seventy-four focused controller/evidence/transport cases pass with TypeScript and
+lint. Deadlines, model configuration, factual/citation assertions, authorization
+and cleanup requirements remain unchanged. Complete protected medical acceptance
+is still open pending the finer diagnosed run.

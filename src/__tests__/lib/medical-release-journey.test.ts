@@ -131,6 +131,16 @@ describe("complete authenticated medical release controller", () => {
     const again = journey();
     await expect(again.run(async () => {})).rejects.toThrow();
   });
+  it("identifies HTTP versus SSE completion failures without raw response text", async () => {
+    fake.fault = "answer-503";
+    await expect(journey().run(exerciseMedicalRelease)).rejects.toThrow();
+    expect(logs).toContain("FAIL upstream http=503 code=upstream_unavailable");
+    expect(logs.join("\n")).not.toContain("SYNTHETIC_PRIVATE_ERROR");
+    fake.fault = "sse-incomplete";
+    await expect(journey().run(exerciseMedicalRelease)).rejects.toThrow();
+    expect(logs).toContain("FAIL contextual SSE response and completion frames");
+    expect(logs).toContain("FAIL reason=sse_incomplete");
+  });
   it("reconciles signed fixtures that predate the current process before creating new documents", async () => {
     fake.addDocument("patient-a", medicalReleaseTitle(medicalTestKey, "a".repeat(32), "patient-a"));
     const run = journey();

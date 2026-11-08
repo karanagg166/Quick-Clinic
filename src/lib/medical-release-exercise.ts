@@ -9,6 +9,7 @@ import {
   medicalReleasePdf,
   verifyMedicalReleaseAnswer,
   parseMedicalReleaseStream,
+  requireMedicalReleaseStatus,
 } from "./medical-release-evidence";
 
 export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
@@ -141,7 +142,7 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     { query: question, limit: 5 },
     65000,
   );
-  check(answer.status === 200, "Grounded medical answer failed.");
+  requireMedicalReleaseStatus(answer, 200, "Grounded medical answer failed.");
   const answered = object(answer.value);
   verifyMedicalReleaseAnswer(
     answered.answer,
@@ -151,7 +152,7 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     "teal",
   );
 
-  journey.step("owned conversation JSON answer and grounded SSE completion");
+  journey.step("create owned medical conversation");
   const title = medicalReleaseTitle(journey.configuration.key, run, "conversation-a");
   const created = await journey.doctor.request("POST", journey.threadPath(), { title });
   check(created.status === 201, "Owned medical thread creation failed.");
@@ -164,13 +165,14 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     "Medical thread identity/scope mismatch.",
   );
   journey.journal.add("conversation", thread.id, "conversation-a", title);
+  journey.step("owned conversation JSON answer and page citations");
   const conversation = await journey.doctor.request(
     "POST",
     journey.threadPath(thread.id) + "/messages",
     { message: question, clientMessageId: randomUUID(), limit: 5 },
     65000,
   );
-  check(conversation.status === 200, "Conversation JSON answer failed.");
+  requireMedicalReleaseStatus(conversation, 200, "Conversation JSON answer failed.");
   const message = object(object(conversation.value).message);
   verifyMedicalReleaseAnswer(
     message.content,
@@ -179,6 +181,7 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     markers["patient-a"],
     "teal",
   );
+  journey.step("contextual SSE response and completion frames");
   const streamed = await journey.doctor.request(
     "POST",
     journey.threadPath(thread.id) + "/stream",
@@ -189,11 +192,13 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     },
     65000,
   );
+  requireMedicalReleaseStatus(streamed, 200, "Medical SSE response unavailable.");
   check(
-    streamed.status === 200 && streamed.contentType.includes("text/event-stream"),
+    streamed.contentType.includes("text/event-stream"),
     "Medical SSE response unavailable.",
   );
   const complete = parseMedicalReleaseStream(streamed.text, thread.id);
+  journey.step("expected grounded SSE answer and page citations");
   verifyMedicalReleaseAnswer(
     complete.answer,
     complete.citations,

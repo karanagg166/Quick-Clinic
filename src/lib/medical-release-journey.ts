@@ -5,8 +5,10 @@ import { medicalReleaseConfiguration } from "./medical-release-config";
 import {
   requireMedicalRelease as check,
   medicalReleaseObject as object,
+  MedicalReleaseAssertion,
+  MedicalReleaseUpstreamFailure,
 } from "./medical-release-evidence";
-import { MedicalReleaseSession } from "./medical-release-http";
+import { MedicalReleaseSession, MedicalReleaseDeadlineError } from "./medical-release-http";
 import { MedicalReleaseJournal, ownedMedicalReleaseTitle } from "./medical-release-journal";
 
 export const MEDICAL_RELEASE_ROOT = "/api/patients/me/medical-documents";
@@ -260,9 +262,14 @@ export class MedicalReleaseJourney {
           created.filter((entry) => entry.kind === "conversation").length === 1,
         "A fresh two-patient document and conversation journey is required.",
       );
-    } catch {
+    } catch (error) {
       primary = true;
       this.log("FAIL " + this.stage);
+      if (error instanceof MedicalReleaseUpstreamFailure)
+        this.log(`FAIL upstream http=${error.status || "unknown"} code=${error.code}`);
+      else this.log("FAIL reason=" + (error instanceof MedicalReleaseAssertion ? error.code :
+        error instanceof MedicalReleaseDeadlineError ? "transport_timeout" :
+        error instanceof SyntaxError ? "invalid_response_json" : "transport_or_response_failure"));
     }
     if (this.authenticated) {
       try {

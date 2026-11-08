@@ -1,7 +1,51 @@
 /** Independent expected-answer and downstream SSE assertions for public fixtures. */
 type Color = "teal" | "amber";
+const ASSERTION_CODES = new Map([
+  ["Invalid release response object.", "response_object"],
+  ["Missing bounded grounded answer.", "answer_missing"],
+  ["Expected positive synthetic answer missing.", "answer_expected_fact"],
+  ["Foreign fixture answer returned.", "answer_foreign_fact"],
+  ["Supporting citations required.", "citations_missing"],
+  ["Unauthorized or invalid page citation.", "citation_identity"],
+  ["Citation does not support the unique fixture fact.", "citation_support"],
+  ["Duplicate or internal citation metadata.", "citation_metadata"],
+  ["Fabricated or unused citation reference.", "citation_reference"],
+  ["Incomplete or oversized SSE response.", "sse_incomplete_or_oversized"],
+  ["Unexpected event after SSE completion.", "sse_after_completion"],
+  ["Missing unambiguous SSE event.", "sse_event_missing"],
+  ["SSE thread identity mismatch.", "sse_thread_identity"],
+  ["Invalid SSE token order.", "sse_token_order"],
+  ["Invalid SSE citation order.", "sse_citation_order"],
+  ["Missing saved SSE completion.", "sse_saved_identity"],
+  ["SSE did not complete.", "sse_incomplete"],
+  ["Failed or unknown SSE event.", "sse_unknown_event"],
+  ["Medical SSE response unavailable.", "sse_response_type"],
+]);
+export class MedicalReleaseAssertion extends Error {
+  readonly code: string;
+  constructor(message: string) {
+    super(message);
+    this.code = ASSERTION_CODES.get(message) || "assertion_failed";
+  }
+}
+export class MedicalReleaseUpstreamFailure extends Error {
+  readonly code: string;
+  readonly status: number;
+  constructor(status: number, code: unknown, message = "Release upstream request failed.") {
+    super(message);
+    this.status = Number.isInteger(status) && status >= 100 && status <= 599 ? status : 0;
+    this.code = typeof code === "string" && ["provider_timeout", "provider_quota", "provider_rate_limit",
+      "provider_not_approved", "provider_invalid_response", "provider_unavailable", "access_revoked", "invalid_stream"].includes(code)
+      ? code : "upstream_unavailable";
+  }
+}
+export function requireMedicalReleaseStatus(response: { status: number; value: unknown }, expected: number, message: string) {
+  if (response.status === expected) return;
+  const value = response.value && typeof response.value === "object" ? response.value as Record<string, unknown> : {};
+  throw new MedicalReleaseUpstreamFailure(response.status, value.code, message);
+}
 export function requireMedicalRelease(condition: unknown, message: string): asserts condition {
-  if (!condition) throw new Error(message);
+  if (!condition) throw new MedicalReleaseAssertion(message);
 }
 export function medicalReleaseObject(value: unknown): Record<string, unknown> {
   requireMedicalRelease(
@@ -124,7 +168,8 @@ export function parseMedicalReleaseStream(text: string, conversationId: string) 
       );
       messageId = value.messageId;
       completed = true;
-    } else throw new Error("Failed or unknown SSE event.");
+    } else if (kind === "error") throw new MedicalReleaseUpstreamFailure(200, value.code);
+    else throw new MedicalReleaseAssertion("Failed or unknown SSE event.");
   }
   requireMedicalRelease(completed, "SSE did not complete.");
   return { answer, citations, messageId };
