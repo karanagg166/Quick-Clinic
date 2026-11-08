@@ -170,7 +170,7 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
     "POST",
     journey.threadPath(thread.id) + "/messages",
     { message: question, clientMessageId: randomUUID(), limit: 5 },
-    65000,
+    95000,
   );
   requireMedicalReleaseStatus(conversation, 200, "Conversation JSON answer failed.");
   const message = object(object(conversation.value).message);
@@ -190,7 +190,7 @@ export async function exerciseMedicalRelease(journey: MedicalReleaseJourney) {
       clientMessageId: randomUUID(),
       limit: 5,
     },
-    65000,
+    95000,
   );
   requireMedicalReleaseStatus(streamed, 200, "Medical SSE response unavailable.");
   check(

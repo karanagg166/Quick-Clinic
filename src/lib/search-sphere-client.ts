@@ -841,7 +841,8 @@ export async function generatePatientMedicalChat(
 
 /**
  * Initiates a streaming connection with Search Sphere internal medical chat endpoint.
- * Bounded to 55 seconds under the existing 60-second route limit; forwards caller disconnects.
+ * Bounded to 55 seconds, leaving the 90-second route time for local access checks
+ * and persistence; forwards caller disconnects.
  */
 export async function openPatientMedicalChatStream(
   params: MedicalChatParams,

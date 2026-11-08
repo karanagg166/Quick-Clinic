@@ -312,3 +312,24 @@ Seventy-four focused controller/evidence/transport cases pass with TypeScript an
 lint. Deadlines, model configuration, factual/citation assertions, authorization
 and cleanup requirements remain unchanged. Complete protected medical acceptance
 is still open pending the finer diagnosed run.
+
+## Conversation runtime margin
+
+The finer protected run
+[42489722050](https://github.com/karanagg166/Quick-Clinic/actions/runs/42489722050)
+on `3d6d63d` passed fresh PDFs, indexed marker retrieval, patient isolation and
+cited legacy/conversation JSON answers, then failed `sse_incomplete`. Physical
+cleanup passed. SSE started at 14:30:23 UTC and ended at 14:31:23 UTC. Vercel's
+production runtime log independently reported `Task timed out after 60 seconds`
+for that invocation; this establishes the platform termination, rather than a
+successful stream completion. No raw logs or response content are committed.
+
+The conversation JSON/SSE routes now reserve 90 seconds for local authorization,
+the existing bounded 55-second upstream call, persistence and final access checks.
+Their conversation lease also lasts 90 seconds. The protected release transport
+allows 95 seconds only for those two clinic routes; other paths retain their
+65-second ceiling. Provider deadlines, model choice, data eligibility, citation
+validation and access rechecks remain unchanged. The bounded margin fits the
+[documented Hobby fluid-compute maximum](https://vercel.com/docs/functions/configuring-functions/duration)
+without a plan upgrade. This change still requires exact CI, deployment and a
+successful fresh-PDF medical workflow; the failed run remains a failure.
