@@ -98,3 +98,26 @@ patient-B denial, safe reuse, plan tampering/expiry/wrong target/key, partial an
 changed records, rollback on a final-insert database failure, lock contention and
 restart reuse. The private operator CLI and deployed medical journey remain open;
 this module is not a public provisioning endpoint.
+
+## Private operator CLI
+
+Run `pnpm exec tsx scripts/medical-release-bootstrap.ts plan` inside the operator
+container with absolute `--database-env-file`, `--key-file` and `--plan-file`
+paths. The explicitly selected environment file must contain the verified target's
+`DATABASE_URL`; shell defaults and the application's implicit `.env` are ignored.
+Review the printed target fingerprint and mode against the intended deployment.
+Then run the same command with `apply` and an additional `--credentials-file` path.
+Apply accepts only the unexpired signed plan and rechecks ownership and grants.
+
+Keep these inputs/outputs outside Git in an owner-only private directory. All
+input files must be regular, owner-only files; output paths must be absent, in a
+private directory. The CLI refuses symlinks, FIFOs, oversized files and existing
+outputs. Values, connection strings and login credentials are never printed.
+Both the plan and credential output are created exclusively with mode `0600`.
+If apply succeeds but credential-file persistence fails, keep the ownership key:
+another apply to a fresh output path verifies the same records without resetting
+them. Never delete or recreate identities just to recover a lost response.
+
+The CLI has been tested using synthetic keys and local PostgreSQL only. Production
+provisioning requires the hidden-doctor migration and deployment to be verified
+first; it does not approve any patient collection for hosted inference.
