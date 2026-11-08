@@ -82,7 +82,7 @@ describe("complete authenticated medical release controller", () => {
       expect(run.journal.entries.every((row) => row.complete)).toBe(true);
     },
   );
-  it.each(["delete-503", "receipt-503", "vectors-remain"])(
+  it.each(["delete-503", "receipt-503", "vectors-remain", "derived-remains", "object-remains", "wrong-receipt-id"])(
     "fails cleanup on %s and retains incomplete signed receipts for retry",
     async (fault) => {
       fake.fault = fault;
