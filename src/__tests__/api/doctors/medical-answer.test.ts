@@ -4,7 +4,7 @@ import { POST } from "@/app/api/doctors/me/patients/[patientId]/medical-answer/r
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
-import { generatePatientMedicalAnswer } from "@/lib/search-sphere-client";
+import { generatePatientMedicalAnswer, SearchSphereServiceError } from "@/lib/search-sphere-client";
 import { AppointmentStatus } from "@/generated/prisma";
 
 vi.mock("@/lib/prisma", () => ({
@@ -417,6 +417,17 @@ describe("Doctor Medical Grounded RAG Answer API (POST /api/doctors/me/patients/
       }
     });
 
+    it.each([429, 503, 504])("propagates upstream %s without exposing error diagnostics", async status => {
+      vi.mocked(generatePatientMedicalAnswer).mockRejectedValueOnce(new SearchSphereServiceError(status, "SYNTHETIC PRIVATE TOKEN", "provider_quota"));
+      const request = new NextRequest("http://localhost:3000/api/medical-answer", {method:"POST",body:JSON.stringify({query:"Public synthetic question"})});
+      const response = await POST(request, {params:Promise.resolve({patientId})});
+      expect(response.status).toBe(status);
+      const body = await response.json();
+      expect(body.code).toBe("provider_quota");
+      expect(JSON.stringify(body)).not.toContain("PRIVATE TOKEN");
+      expect(generatePatientMedicalAnswer).toHaveBeenCalledTimes(1);
+    });
+
     it("handles service failures cleanly with MEDICAL_RAG_GENERATION_FAILED and zero PHI", async () => {
       vi.mocked(generatePatientMedicalAnswer).mockRejectedValueOnce(
         new Error("Cohere rate limit exceeded")
@@ -428,7 +439,7 @@ describe("Doctor Medical Grounded RAG Answer API (POST /api/doctors/me/patients/
       });
 
       const res = await POST(req, { params: Promise.resolve({ patientId }) });
-      expect(res.status).toBe(500);
+      expect(res.status).toBe(502);
 
       expect(logAudit).toHaveBeenCalledWith(
         doctorUser.id,

@@ -116,8 +116,9 @@ export class SearchSphereServiceError extends Error {
 const PROVIDER_ERROR_CODES = new Set(["provider_timeout", "provider_quota", "provider_rate_limit", "provider_not_approved", "provider_invalid_response", "provider_unavailable"]);
 
 export function medicalChatFailure(error: unknown): { status: number; code: string } {
+  if (error instanceof SearchSphereConfigError) return { status: 503, code: "upstream_unavailable" };
   if (error instanceof SearchSphereTimeoutError) return { status: 504, code: "provider_timeout" };
-  if (error instanceof SearchSphereServiceError) return { status: [429, 503, 504].includes(error.status) ? error.status : 502, code: error.code };
+  if (error instanceof SearchSphereServiceError) return { status: [429, 503, 504].includes(error.status) ? error.status : 502, code: PROVIDER_ERROR_CODES.has(error.code) ? error.code : "upstream_unavailable" };
   return { status: 502, code: "upstream_unavailable" };
 }
 
@@ -176,13 +177,43 @@ export async function deletePatientMedicalConversation(
   }
 }
 
-async function medicalProviderFailure(response: Response): Promise<SearchSphereServiceError> {
+async function medicalProviderFailure(response: Response, message = "Medical AI chat is temporarily unavailable."): Promise<SearchSphereServiceError> {
   let code = "upstream_unavailable";
   try {
     const payload = await response.json();
     if (typeof payload?.error_code === "string" && PROVIDER_ERROR_CODES.has(payload.error_code)) code = payload.error_code;
   } catch { /* Only allowlisted codes leave the upstream boundary. */ }
-  return new SearchSphereServiceError(response.status, "Medical AI chat is temporarily unavailable.", code);
+  return new SearchSphereServiceError(response.status, message, code);
+}
+
+/** One budget covers transport and JSON/error-body parsing; model requests never replay. */
+async function withMedicalQueryDeadline<T>(
+  options: ClientRequestOptions | undefined,
+  operation: (bounded: ClientRequestOptions) => Promise<T>,
+  defaultTimeout = 15000,
+): Promise<T> {
+  const requested = options?.timeoutMs ?? defaultTimeout;
+  if (!Number.isFinite(requested) || requested <= 0) throw new SearchSphereConfigError("Invalid medical query deadline.");
+  const timeoutMs = Math.min(requested, 55000);
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => {
+      controller.abort();
+      reject(new SearchSphereTimeoutError());
+    }, timeoutMs);
+  });
+  try {
+    return await Promise.race([
+      operation({
+        ...options, retries: 0, timeoutMs,
+        signal: options?.signal ? AbortSignal.any([controller.signal, options.signal]) : controller.signal,
+      }),
+      expired,
+    ]);
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 export function sanitizeCitations(
@@ -673,48 +704,42 @@ export async function searchPatientMedicalRecords(
   params: MedicalRetrievalSearchParams,
   options?: ClientRequestOptions
 ): Promise<MedicalRetrievalResponse> {
-  const { baseUrl, secret } = getServiceConfig();
+  return withMedicalQueryDeadline(options, async options => {
+    const { baseUrl, secret } = getServiceConfig();
 
-  const response = await fetchWithRetry(
-    `${baseUrl}/internal/medical-retrieval/search`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithRetry(
+      `${baseUrl}/internal/medical-retrieval/search`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secret}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientId: params.patientId,
+          query: params.query,
+          limit: params.limit ?? 8,
+          documentType: params.documentType,
+          fromDate: params.fromDate,
+          toDate: params.toDate,
+        }),
       },
-      body: JSON.stringify({
-        patientId: params.patientId,
-        query: params.query,
-        limit: params.limit ?? 8,
-        documentType: params.documentType,
-        fromDate: params.fromDate,
-        toDate: params.toDate,
-      }),
-    },
-    { ...options, requestId: params.requestId || options?.requestId }
-  );
+      { ...options, retries: 0, requestId: params.requestId || options?.requestId }
+    );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    let detail = "Failed to search patient medical records";
-    try {
-      const parsed = JSON.parse(errorText);
-      void parsed; // Upstream details may contain infrastructure or credentials.
-    } catch {
-      // ignore
+    if (!response.ok) {
+      throw await medicalProviderFailure(response, `Medical retrieval failed (${response.status}): Failed to search patient medical records`);
     }
-    throw new Error(`Medical retrieval failed (${response.status}): ${detail}`);
-  }
 
-  const data = await response.json();
-  return {
-    results: (data.results || []).map((r: any) => {
-      const { score: _, ...rest } = r;
-      void _;
-      return rest;
-    }),
-  };
+    const data = await response.json();
+    return {
+      results: (data.results || []).map((r: any) => {
+        const { score: _, ...rest } = r;
+        void _;
+        return rest;
+      }),
+    };
+  });
 }
 
 /**
@@ -724,47 +749,41 @@ export async function generatePatientMedicalAnswer(
   params: MedicalRagAnswerParams,
   options?: ClientRequestOptions
 ): Promise<MedicalRagAnswerResult> {
-  const { baseUrl, secret } = getServiceConfig();
+  return withMedicalQueryDeadline(options, async options => {
+    const { baseUrl, secret } = getServiceConfig();
 
-  const response = await fetchWithRetry(
-    `${baseUrl}/internal/medical-rag/answer`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        "Content-Type": "application/json",
+    const response = await fetchWithRetry(
+      `${baseUrl}/internal/medical-rag/answer`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secret}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientId: params.patientId,
+          query: params.query,
+          limit: params.limit ?? 8,
+          documentType: params.documentType,
+          fromDate: params.fromDate,
+          toDate: params.toDate,
+        }),
       },
-      body: JSON.stringify({
-        patientId: params.patientId,
-        query: params.query,
-        limit: params.limit ?? 8,
-        documentType: params.documentType,
-        fromDate: params.fromDate,
-        toDate: params.toDate,
-      }),
-    },
-    { ...options, requestId: params.requestId || options?.requestId }
-  );
+      { ...options, retries: 0, timeoutMs: Math.min(options?.timeoutMs ?? 55000, 55000), requestId: params.requestId || options?.requestId }
+    );
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    let detail = "Failed to generate grounded medical answer";
-    try {
-      const parsed = JSON.parse(errorText);
-      void parsed; // Upstream details may contain infrastructure or credentials.
-    } catch {
-      // ignore
+    if (!response.ok) {
+      throw await medicalProviderFailure(response, `Medical RAG generation failed (${response.status}): Failed to generate grounded medical answer`);
     }
-    throw new Error(`Medical RAG generation failed (${response.status}): ${detail}`);
-  }
 
-  const data = await response.json();
-  const rawCitations = data.citations || [];
-  return {
-    answer: data.answer || "",
-    citations: sanitizeCitations(rawCitations),
-    resultCount: data.resultCount ?? rawCitations.length,
-  };
+    const data = await response.json();
+    const rawCitations = data.citations || [];
+    return {
+      answer: data.answer || "",
+      citations: sanitizeCitations(rawCitations),
+      resultCount: data.resultCount ?? rawCitations.length,
+    };
+  }, 55000);
 }
 
 /**
@@ -774,48 +793,50 @@ export async function generatePatientMedicalChat(
   params: MedicalChatParams,
   options?: ClientRequestOptions
 ): Promise<MedicalChatResult> {
-  const actorId = medicalActor(params);
-  const { baseUrl, secret } = getServiceConfig();
+  return withMedicalQueryDeadline(options, async options => {
+    const actorId = medicalActor(params);
+    const { baseUrl, secret } = getServiceConfig();
 
-  const response = await fetchWithRetry(
-    `${baseUrl}/internal/medical-rag/chat`,
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${secret}`,
-        "X-Actor-ID": actorId,
-        "Content-Type": "application/json",
+    const response = await fetchWithRetry(
+      `${baseUrl}/internal/medical-rag/chat`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${secret}`,
+          "X-Actor-ID": actorId,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          patientId: params.patientId,
+          message: params.message,
+          conversationId: params.conversationId,
+          limit: params.limit ?? 8,
+          documentType: params.documentType,
+          fromDate: params.fromDate,
+          toDate: params.toDate,
+        }),
       },
-      body: JSON.stringify({
-        patientId: params.patientId,
-        message: params.message,
-        conversationId: params.conversationId,
-        limit: params.limit ?? 8,
-        documentType: params.documentType,
-        fromDate: params.fromDate,
-        toDate: params.toDate,
-      }),
-    },
-    { ...options, retries: 0, timeoutMs: Math.min(options?.timeoutMs ?? 55000, 55000), requestId: params.requestId || options?.requestId }
-  );
+      { ...options, retries: 0, timeoutMs: Math.min(options?.timeoutMs ?? 55000, 55000), requestId: params.requestId || options?.requestId }
+    );
 
-  if (!response.ok) {
-    throw await medicalProviderFailure(response);
-  }
+    if (!response.ok) {
+      throw await medicalProviderFailure(response);
+    }
 
-  const data = await response.json();
-  const rawCitations = data.citations || [];
-  return {
-    answer: data.answer || "",
-    citations: sanitizeCitations(rawCitations),
-    resultCount: data.resultCount ?? rawCitations.length,
-    retrievalQuery: data.retrievalQuery ?? null,
-    rewritten: data.rewritten ?? false,
-    answerMode: data.answerMode,
-    requiresHistory: data.requiresHistory ?? false,
-    contextMessageIds: data.contextMessageIds ?? [],
-    messageId: data.messageId ?? null,
-  };
+    const data = await response.json();
+    const rawCitations = data.citations || [];
+    return {
+      answer: data.answer || "",
+      citations: sanitizeCitations(rawCitations),
+      resultCount: data.resultCount ?? rawCitations.length,
+      retrievalQuery: data.retrievalQuery ?? null,
+      rewritten: data.rewritten ?? false,
+      answerMode: data.answerMode,
+      requiresHistory: data.requiresHistory ?? false,
+      contextMessageIds: data.contextMessageIds ?? [],
+      messageId: data.messageId ?? null,
+    };
+  }, 55000);
 }
 
 /**

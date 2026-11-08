@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
 import { logAccess, logAudit } from "@/lib/logger";
 import { verifyDoctorPatientMedicalAccess } from "@/lib/medical-record-access";
-import { searchPatientMedicalRecords } from "@/lib/search-sphere-client";
+import { searchPatientMedicalRecords, medicalChatFailure } from "@/lib/search-sphere-client";
 import { getOrCreateRequestId, runWithRequestId } from "@/lib/correlation-id";
 import { checkDoctorMedicalRateLimit } from "@/lib/rate-limiter";
 import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
@@ -117,11 +117,17 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       const { query, limit = 8 } = parsed.data;
 
       // Call Search Sphere internal retrieval API
-      const searchResponse = await searchPatientMedicalRecords({
-        patientId: cleanPatientId,
-        query,
-        limit,
-      });
+      let searchResponse;
+      try {
+        searchResponse = await searchPatientMedicalRecords({patientId: cleanPatientId, query, limit});
+      } catch (error) {
+        const failure = medicalChatFailure(error);
+        console.error(`[RequestId: ${requestId}] Medical search upstream failed:`, {code: failure.code});
+        return NextResponse.json(
+          {error: "Medical record search is temporarily unavailable.", code: failure.code, requestId},
+          {status: failure.status},
+        );
+      }
 
       // Defense-in-depth: Validate returned chunk metadata patient isolation
       let detectedAnomaly = false;
