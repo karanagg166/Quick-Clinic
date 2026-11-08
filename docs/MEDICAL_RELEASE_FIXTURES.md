@@ -197,3 +197,34 @@ Thirty-two configuration/evidence cases pass, with TypeScript and focused lint
 passing. The generated PDF was also opened with PyMuPDF: one page and both its
 unique marker and expected fact extracted successfully. The complete protected
 medical journey still requires the controller and live verification.
+
+## Complete journey controller
+
+`scripts/medical-release-journey.ts --preflight` validates protected inputs without
+using an application account or provider. Its normal mode verifies both exact
+serving revisions and database readiness, signs into the three owned accounts,
+recovers signed catalog/receipt provenance and reconciles previous fixtures before
+creating two fresh patient PDFs and one fresh doctor/patient-A conversation.
+
+The controller requires actual upstream READY states, retrieval of the new unique
+marker, patient-B evidence isolation, explicit ungranted-doctor denial and patient
+source denial. It checks legacy grounded JSON, conversation JSON and a contextual
+SSE follow-up against independent expected-answer/citation assertions, then checks
+the four saved complete turns. It never retries uploads or generation and never
+logs credentials, excerpts, queries, answers or raw upstream errors.
+
+Cleanup attempts every owned fixture even after a primary failure. Logical 404
+alone is insufficient: document receipts must prove zero vectors/derived objects
+and absent originals; patient-A retrieval must exclude the deleted source. Any
+delete/receipt 503 or unverified cleanup fails the run and preserves its signed
+pending receipt. Lost upload/thread responses recover through signed metadata.
+Unknown content in a fixture catalog blocks inference and is left untouched.
+Old completed receipts cannot substitute for a new journey.
+
+Twenty-two controller tests against an isolated synthetic HTTP peer pass, including
+terminal/stuck indexing, access leakage, provider failure, wrong answers/citations,
+incomplete SSE/saved turns, cold health recovery, lost responses, strict cleanup
+failures and restart reconciliation. These are controller regression tests, not
+live acceptance. TypeScript and focused lint pass. The protected workflow, trusted
+artifact restoration, exact synthetic provider policies and deployed medical run
+remain open.
