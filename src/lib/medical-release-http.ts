@@ -5,6 +5,10 @@ const ORIGINS = {
 } as const;
 type Method = "GET" | "POST" | "DELETE";
 
+export class MedicalReleaseDeadlineError extends Error {
+  constructor() { super("Release request deadline exceeded."); }
+}
+
 export class MedicalReleaseSession {
   private cookie = "";
   constructor(
@@ -38,7 +42,7 @@ export class MedicalReleaseSession {
     const expiry = new Promise<never>((_, reject) => {
       timer = setTimeout(() => {
         controller.abort();
-        reject(new Error("Release request deadline exceeded."));
+        reject(new MedicalReleaseDeadlineError());
       }, timeoutMs);
     });
     try {
@@ -107,6 +111,9 @@ export class MedicalReleaseSession {
         })(),
         expiry,
       ]);
+    } catch (error) {
+      if (controller.signal.aborted) throw new MedicalReleaseDeadlineError();
+      throw error;
     } finally {
       clearTimeout(timer);
       controller.abort();

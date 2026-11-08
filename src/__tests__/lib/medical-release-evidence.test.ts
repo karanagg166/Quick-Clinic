@@ -3,6 +3,10 @@ import {
   medicalReleasePdf,
   parseMedicalReleaseStream,
   verifyMedicalReleaseAnswer,
+  MedicalReleaseAssertion,
+  MedicalReleaseUpstreamFailure,
+  requireMedicalRelease,
+  requireMedicalReleaseStatus,
 } from "@/lib/medical-release-evidence";
 
 const doc = "a".repeat(8) + "-aaaa-aaaa-aaaa-" + "a".repeat(12);
@@ -89,6 +93,39 @@ describe("independent medical synthetic evidence assertions", () => {
   ])("rejects failed, incomplete, foreign or malformed SSE", (text) => {
     expect(() => parseMedicalReleaseStream(text, thread)).toThrow();
   });
+  it("keeps assertion diagnostics within a fixed vocabulary", () => {
+    expect.assertions(3);
+    try { requireMedicalRelease(false, "Citation does not support the unique fixture fact."); }
+    catch (error) {
+      expect(error).toBeInstanceOf(MedicalReleaseAssertion);
+      expect((error as MedicalReleaseAssertion).code).toBe("citation_support");
+    }
+    try { requireMedicalRelease(false, "SYNTHETIC_PRIVATE_ERROR"); }
+    catch (error) { expect((error as MedicalReleaseAssertion).code).toBe("assertion_failed"); }
+  });
+  it.each(["provider_timeout", "provider_quota", "provider_not_approved", "invalid_stream", "access_revoked"])(
+    "preserves only allowlisted HTTP/SSE failure category %s", (code) => {
+      for (const action of [
+        () => requireMedicalReleaseStatus({ status: 503, value: { code, error: "SYNTHETIC_PRIVATE_ERROR" } }, 200, "Expected answer failed."),
+        () => parseMedicalReleaseStream(event("start", { conversationId: thread }) + event("error", { code }), thread),
+      ]) {
+        try { action(); throw new Error("Expected failure"); }
+        catch (error) {
+          expect(error).toBeInstanceOf(MedicalReleaseUpstreamFailure);
+          expect((error as MedicalReleaseUpstreamFailure).code).toBe(code);
+          expect((error as Error).message).not.toContain("SYNTHETIC_PRIVATE_ERROR");
+        }
+      }
+    },
+  );
+  it.each(["SYNTHETIC_PRIVATE_ERROR", { token: "SYNTHETIC_PRIVATE_ERROR" }, null])(
+    "never exposes unknown provider category values", (code) => {
+      const error = new MedicalReleaseUpstreamFailure(Number.NaN, code);
+      expect(error.code).toBe("upstream_unavailable");
+      expect(error.status).toBe(0);
+      expect(JSON.stringify(error)).not.toContain("SYNTHETIC_PRIVATE_ERROR");
+    },
+  );
   it("builds a bounded native PDF containing only the public synthetic fact", () => {
     const pdf = Buffer.from(medicalReleasePdf(marker, "teal"));
     expect(pdf.toString("ascii")).toMatch(/^%PDF-1.4/);
