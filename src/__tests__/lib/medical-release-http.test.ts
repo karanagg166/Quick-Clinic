@@ -71,6 +71,22 @@ describe("bounded synthetic medical release HTTP", () => {
     expect(transport.mock.calls[0][1].signal.aborted).toBe(true);
     expect(vi.getTimerCount()).toBe(0);
   });
+  it.each(["messages", "stream"])("allows platform margin only for owned conversation %s requests", async (kind) => {
+    vi.useFakeTimers();
+    const transport = vi.fn().mockImplementation(() => new Promise<Response>((resolve) => {
+      setTimeout(() => resolve(new Response("synthetic-complete")), 70000);
+    }));
+    const session = new MedicalReleaseSession("clinic", transport);
+    const path = `/api/doctors/me/patients/synthetic-patient/medical-chat/conversations/synthetic-thread/${kind}`;
+    const pending = session.request("POST", path, {}, 95000);
+    await vi.advanceTimersByTimeAsync(70000);
+    expect((await pending).text).toBe("synthetic-complete");
+    expect(vi.getTimerCount()).toBe(0);
+    await expect(session.request("POST", path, {}, 95001)).rejects.toThrow();
+    await expect(session.request("POST", "/api/synthetic", {}, 95000)).rejects.toThrow();
+    await expect(new MedicalReleaseSession("search", transport).request("POST", path, {}, 95000)).rejects.toThrow();
+    expect(transport).toHaveBeenCalledTimes(1);
+  });
   it("retains HTTP failure codes for strict assertions and caps response bytes", async () => {
     const transport = vi
       .fn()

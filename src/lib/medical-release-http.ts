@@ -24,10 +24,12 @@ export class MedicalReleaseSession {
     body?: unknown,
     timeoutMs = method === "POST" ? 45000 : 15000,
   ) {
+    const conversationAnswer = method === "POST" && this.target === "clinic" &&
+      /^\/api\/doctors\/me\/patients\/[^/]+\/medical-chat\/conversations\/[^/]+\/(messages|stream)$/.test(path);
     if (
       !Number.isFinite(timeoutMs) ||
       timeoutMs <= 0 ||
-      timeoutMs > 65000 ||
+      timeoutMs > (conversationAnswer ? 95000 : 65000) ||
       !/^\/(?!\/)/.test(path) ||
       /[\r\n\0]/.test(path)
     ) {

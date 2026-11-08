@@ -21,6 +21,10 @@ import { sanitizeErrorMessage } from "@/lib/error-sanitizer";
 import { collectMedicalStreamResult, MedicalStreamFailure } from "@/lib/medical-stream-result";
 import { assertMedicalResponseAccess, MedicalResponseAccessError } from "@/lib/medical-response-access";
 
+// Allow the bounded 55s upstream request plus authorization, persistence and
+// final access validation to finish before the platform terminates the stream.
+export const maxDuration = 90;
+
 interface RouteParams {
   params: Promise<{
     patientId: string;
@@ -177,7 +181,7 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
       }
 
       // Concurrency lock: prevent simultaneous streaming on same conversation
-      lockAcquired = await acquireConversationLock(cleanConversationId, 60);
+      lockAcquired = await acquireConversationLock(cleanConversationId, 90);
       if (!lockAcquired) {
         return NextResponse.json(
           { error: "A response is already being generated for this conversation. Please wait for it to complete." },
