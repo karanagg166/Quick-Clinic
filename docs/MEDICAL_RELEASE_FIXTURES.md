@@ -148,3 +148,31 @@ Seventy-eight focused client/legacy-route cases and fifty existing chat, respons
 authorization and conversation-deletion cases pass. Timeout cases include stalled
 success/error bodies across all three nonstreaming operations and invalid deadlines.
 TypeScript passes and focused lint has no errors (existing warnings only).
+
+## Authenticated journey transport and cleanup provenance
+
+`src/lib/medical-release-http.ts` confines release requests to the fixed deployed
+Quick-Clinic/Search Sphere origins. It keeps each login cookie in its own session,
+rejects redirects and unsafe paths, never retries requests, and bounds transport
+and response-body reads together. Default reads/deletes remain fifteen seconds;
+POST defaults to forty-five, with an explicit maximum sixty-five for completed
+answer/SSE checks. Responses are capped at 256 KiB. HTTP errors, including cleanup
+503, remain failures for the controller to assert. HTTP 200 alone does not prove
+an SSE stream completed.
+
+`src/lib/medical-release-journal.ts` signs both fixture titles and content-free
+document/conversation receipts using the protected fixture ownership key. Receipts
+bind kind, ID, patient/thread label, title and completion. Imports validate every
+entry before accepting any; forged, conflicting or foreign-owner entries fail.
+Private atomic saves survive interrupted runs, verified completion takes precedence
+over older pending copies, and rediscovered live metadata requires verification
+again. The bounded journal preserves unresolved entries and fails for operator
+reconciliation at capacity; the controller must check remaining capacity before
+creating fixtures. It contains no credentials, passages, medical values or answers.
+
+Twenty-six HTTP/journal cases pass, including stalled transport/body, unsafe URLs,
+cookie isolation, strict failure status, output bounds, SSE bytes, restart recovery,
+tampering, wrong owner, conflicting provenance and capacity. TypeScript and focused
+lint pass. The full journey controller, trusted artifact restoration and protected
+workflow remain the next separate repair; these libraries do not claim live
+medical acceptance.
