@@ -176,3 +176,24 @@ tampering, wrong owner, conflicting provenance and capacity. TypeScript and focu
 lint pass. The full journey controller, trusted artifact restoration and protected
 workflow remain the next separate repair; these libraries do not claim live
 medical acceptance.
+
+## Required inputs and independent evidence assertions
+
+`medical-release-config.ts` requires the exact derived three-account credential
+manifest, both full serving revisions and an explicit private journal path. In
+Actions it also requires this repository's main-branch dispatch, a run identity,
+artifact read access and the fixed private runner receipt path. Missing or changed
+inputs fail before fixture mutation; no real-account or implicit-config fallback
+is available.
+
+`medical-release-evidence.ts` generates a one-page public synthetic verification
+note and independently checks its expected color against the unique marker and
+authorized page citation. Negated/wrong answers, wrong documents/pages, unsupported
+excerpts, fabricated IDs and leaked scores fail. Its downstream SSE parser requires
+the correct thread, token/citation order, explicit done event and saved message ID;
+HTTP 200 or a token alone is insufficient. It uses no provider as an answer judge.
+
+Thirty-two configuration/evidence cases pass, with TypeScript and focused lint
+passing. The generated PDF was also opened with PyMuPDF: one page and both its
+unique marker and expected fact extracted successfully. The complete protected
+medical journey still requires the controller and live verification.
