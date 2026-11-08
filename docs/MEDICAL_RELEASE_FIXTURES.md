@@ -253,3 +253,32 @@ Seventeen admission/artifact recovery cases, TypeScript and focused lint pass. Y
 protected environment and required-artifact contracts were checked. Deployment and
 the first live medical journey still require the exact synthetic provider policies
 and successful final-main CI; no live acceptance is claimed by these local checks.
+
+## First deployed evaluation and cleanup-contract repair
+
+Exact main CI [42467599857](https://github.com/karanagg166/Quick-Clinic/actions/runs/42467599857)
+passed for `9e24d3e5813df63d644ec50805e4256b6649a6ed`. Vercel redeployment
+`dpl_FmfyHn2ehjDq8PSZdqc5i9NYdNxW` serves that revision with the production-only
+registered Quick-Clinic tenant key. It has only documents read/write/delete,
+search and answer scopes. Live foreign-tenant and collection-administration probes
+deny access with 403. Only the two owned synthetic patients and their deterministic
+collections have short-lived synthetic provider policies; real medical records
+remain ineligible for trial inference.
+
+The first protected journey
+[42468180296](https://github.com/karanagg166/Quick-Clinic/actions/runs/42468180296)
+passed exact revision/readiness/login admission, two fresh PDF uploads/indexes,
+unique-marker retrieval, patient isolation and the legacy grounded/page-cited
+answer. It failed during the conversation JSON/SSE stage; safe backend telemetry
+recorded a bounded chat provider timeout at 26,241 ms. It also rejected two HTTP-200
+cleanup receipts because the controller incorrectly expected Search Sphere's
+snake_case fields. Quick-Clinic's established route returns camelCase fields.
+
+The release controller and typed test peer now use the actual Quick-Clinic receipt
+contract. The corrected peer reproduced nineteen failing cases before the checker
+fix. Fifty controller/route/client cases now pass with TypeScript and focused lint,
+including rejection of remaining vectors, derived objects, undeleted originals,
+wrong document IDs and 503 responses. Physical assertions and provider deadlines
+were preserved. The failed run's signed receipts remain retained for independent
+reverification and the next trusted run. This repair does not turn that failed
+journey into a pass; complete live medical acceptance remains open.

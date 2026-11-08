@@ -197,15 +197,15 @@ export class MedicalReleaseJourney {
             check(status === 200, "Scoped physical cleanup receipt unavailable.");
             const receipt = object(object(response.value).cleanup);
             check(
-              receipt.document_id === entry.id &&
+              receipt.documentId === entry.id &&
                 ["pending", "complete"].includes(String(receipt.status)),
               "Invalid physical cleanup receipt identity/state.",
             );
             if (receipt.status === "complete") {
               check(
-                receipt.vectors_remaining === 0 &&
-                  receipt.derived_objects_remaining === 0 &&
-                  receipt.object_deleted === true,
+                receipt.vectorsRemaining === 0 &&
+                  receipt.derivedObjectsRemaining === 0 &&
+                  receipt.objectDeleted === true,
                 "Physical vector or object cleanup incomplete.",
               );
               break;

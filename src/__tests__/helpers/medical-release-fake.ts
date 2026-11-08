@@ -2,6 +2,7 @@
 import { randomUUID } from "node:crypto";
 import { medicalReleaseIdentity } from "@/lib/medical-release-identity";
 import { MEDICAL_RELEASE_ROOT } from "@/lib/medical-release-journey";
+import type { DocumentCleanupReceipt } from "@/types/search-sphere";
 
 export const medicalTestKey = "synthetic-medical-release-controller-test-ownership-key";
 export const medicalTestIdentity = medicalReleaseIdentity(medicalTestKey);
@@ -133,12 +134,12 @@ export class MedicalReleaseFake {
         if (!this.deleted.has(id)) return reply(404, {});
         return reply(200, {
           cleanup: {
-            document_id: id,
+            documentId: this.fault === "wrong-receipt-id" ? randomUUID() : id,
             status: "complete",
-            vectors_remaining: this.fault === "vectors-remain" ? 1 : 0,
-            derived_objects_remaining: 0,
-            object_deleted: true,
-          },
+            vectorsRemaining: this.fault === "vectors-remain" ? 1 : 0,
+            derivedObjectsRemaining: this.fault === "derived-remains" ? 1 : 0,
+            objectDeleted: this.fault !== "object-remains",
+          } satisfies DocumentCleanupReceipt,
         });
       }
       if (!doc || (doc.patientId !== account?.profileId && this.fault !== "patient-source-bypass"))
