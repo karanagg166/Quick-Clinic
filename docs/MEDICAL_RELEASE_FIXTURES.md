@@ -228,3 +228,28 @@ failures and restart reconciliation. These are controller regression tests, not
 live acceptance. TypeScript and focused lint pass. The protected workflow, trusted
 artifact restoration, exact synthetic provider policies and deployed medical run
 remain open.
+
+## Protected workflow and artifact recovery
+
+`.github/workflows/medical-release-journey.yml` is a separate post-deployment main
+dispatch. It uses the existing `search-sphere-release` environment, which was
+verified to allow only `main`; only derived synthetic logins and the ownership key
+were installed. The job has read-only repository/Actions permissions and serialized
+execution. Exact successful main CI and main history for both serving revisions
+are required before restoration or mutation. Missing protected inputs fail rather
+than skip acceptance.
+
+`medical-release-restore.ts` restores only bounded, signed receipts from this
+repository's prior completed main-dispatch workflow. Later queued runs are ignored;
+still-active predecessors, expired/altered/missing receipts and untrusted history
+fail closed. A missing artifact is skipped only with explicit proof that its
+mutating step never ran. Recovery validates archive metadata, a regular bounded
+receipt file and every signature before accepting it. The latest journal is
+uploaded with `always()` and missing-file errors enabled, retaining content-free
+cleanup provenance for thirty days. Missing provenance requires explicit operator
+reconciliation; it never means cleanup succeeded.
+
+Seventeen admission/artifact recovery cases, TypeScript and focused lint pass. YAML,
+protected environment and required-artifact contracts were checked. Deployment and
+the first live medical journey still require the exact synthetic provider policies
+and successful final-main CI; no live acceptance is claimed by these local checks.

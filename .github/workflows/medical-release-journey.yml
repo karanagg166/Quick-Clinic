@@ -1,0 +1,65 @@
+name: Authenticated Medical Release Journey
+
+# Dispatch after both exact revisions deploy; this never gates its prerequisite deployment.
+on:
+  workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Full main revision already serving Quick-Clinic
+        type: string
+        required: true
+      expected_search_sphere_sha:
+        description: Full main revision already serving Search Sphere
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: quick-clinic-authenticated-medical-release
+  cancel-in-progress: false
+
+jobs:
+  authenticated-journey:
+    if: github.ref == 'refs/heads/main' && github.repository == 'karanagg166/Quick-Clinic'
+    environment: search-sphere-release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    env:
+      GH_TOKEN: ${{ github.token }}
+      EXPECTED_SHA: ${{ inputs.expected_sha }}
+      EXPECTED_SEARCH_SPHERE_SHA: ${{ inputs.expected_search_sphere_sha }}
+      QC_RELEASE_FIXTURE_KEY: ${{ secrets.QC_RELEASE_FIXTURE_KEY }}
+      QC_RELEASE_FIXTURE_CREDENTIALS: ${{ secrets.QC_RELEASE_FIXTURE_CREDENTIALS }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - name: Select private runner receipt path
+        run: printf 'QC_RELEASE_JOURNAL_PATH=%s/qc-medical-release/receipts.json\n' "$RUNNER_TEMP" >> "$GITHUB_ENV"
+      - name: Install the pinned release runtime
+        run: pnpm install --frozen-lockfile
+      - name: Require protected fixtures and exact successful main CI
+        run: pnpm exec tsx scripts/medical-release-restore.ts --preflight
+      - name: Restore prior signed cleanup provenance
+        run: pnpm exec tsx scripts/medical-release-restore.ts
+      - name: Run authenticated synthetic medical journey
+        run: pnpm exec tsx scripts/medical-release-journey.ts
+      - name: Preserve content-free signed synthetic cleanup receipts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: medical-release-fixture-receipts-${{ github.run_id }}
+          path: ${{ runner.temp }}/qc-medical-release/receipts.json
+          if-no-files-found: error
+          retention-days: 30
