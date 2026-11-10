@@ -13,7 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "src/generated/**",
-    "socket-server/**",
+    "backend/**",
+    "playwright-report/**",
+    "test-results/**",
+    "coverage/**",
   ]),
   {
     rules: {

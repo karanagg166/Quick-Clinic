@@ -28,20 +28,20 @@ async function getAvailablePort(preferredPort, label = "Port") {
 
 async function main() {
   const appPort = await getAvailablePort(Number(process.env.APP_PORT || 3000), "Frontend Port");
-  const socketPort = await getAvailablePort(Number(process.env.SOCKET_PORT || 4000), "Socket Server Port");
+  const backendPort = await getAvailablePort(Number(process.env.BACKEND_PORT || 4000), "Unified Backend Port");
 
   console.log("==========================================");
   console.log("  🚀 Launching Quick-Clinic in Docker");
   console.log(`  🌐 Frontend:      http://localhost:${appPort}`);
-  console.log(`  🔌 Socket Server: http://localhost:${socketPort}`);
+  console.log(`  🔌 Unified Backend: http://localhost:${backendPort}`);
   console.log("==========================================\n");
 
   const env = {
     ...process.env,
     APP_PORT: String(appPort),
-    SOCKET_PORT: String(socketPort),
+    BACKEND_PORT: String(backendPort),
     FRONTEND_URL: `http://localhost:${appPort}`,
-    NEXT_PUBLIC_SOCKET_URL: `http://localhost:${socketPort}`,
+    NEXT_PUBLIC_SOCKET_URL: `http://localhost:${backendPort}`,
   };
 
   const child = spawn("docker", ["compose", "up", ...process.argv.slice(2)], {

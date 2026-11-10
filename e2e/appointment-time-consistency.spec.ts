@@ -2,7 +2,7 @@ import { test, expect, BrowserContext } from '@playwright/test';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
 import { io, Socket } from 'socket.io-client';
-import { prisma } from '@/lib/prisma';
+import { prisma } from './helpers/db';
 import type { User, Patient, Doctor, Slot } from '@/generated/prisma';
 import { createToken, TOKEN_AUDIENCE } from '@/lib/auth-token';
 import {
@@ -10,8 +10,8 @@ import {
   localDateAndTimeToUtc,
   formatAppointmentTime,
 } from '@/lib/dateUtils';
-import { initiateCheckout } from '@/lib/checkout-service';
-import { expireDoctorHolds } from '@/lib/booking';
+import { initiateCheckout } from './helpers/backend';
+import { expireDoctorHolds } from './helpers/backend';
 
 dotenv.config();
 

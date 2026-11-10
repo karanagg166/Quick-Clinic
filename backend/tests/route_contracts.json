@@ -1,0 +1,342 @@
+[
+  {
+    "path": "/api/ready",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctorpatientrelations",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctorpatientrelations",
+    "method": "POST"
+  },
+  {
+    "path": "/api/health",
+    "method": "GET"
+  },
+  {
+    "path": "/api/checkout",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors",
+    "method": "GET"
+  },
+  {
+    "path": "/api/socket/token",
+    "method": "POST"
+  },
+  {
+    "path": "/api/socket/token",
+    "method": "GET"
+  },
+  {
+    "path": "/api/cron/expire-appointments",
+    "method": "GET"
+  },
+  {
+    "path": "/api/cron/reconcile-payments",
+    "method": "POST"
+  },
+  {
+    "path": "/api/cron/reconcile-payments",
+    "method": "GET"
+  },
+  {
+    "path": "/api/webhooks/razorpay",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/specializations",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/qualifications",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/comments",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/comments",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/schedule",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/schedule",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/rating",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/rating",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/appointments",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/balance",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/bank-details",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/bank-details",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/earnings",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/withdrawals",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/withdrawals",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/slots",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/slots",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/slots",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/slots",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/stats",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/leave",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/leave",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/leave",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/leave",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/appointments/[appointmentId]",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/appointments/[appointmentId]",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/doctors/[doctorId]/schedule/overview",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/me/medical-record-patients",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/me/patients/[patientId]/medical-documents",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctors/me/patients/[patientId]/medical-documents/[documentId]/access",
+    "method": "GET"
+  },
+  {
+    "path": "/api/checkout/[checkoutId]/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/user/logout",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/reset-password",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/[userId]",
+    "method": "GET"
+  },
+  {
+    "path": "/api/user/[userId]",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/user/change-password",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/login",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/[userId]/notification",
+    "method": "GET"
+  },
+  {
+    "path": "/api/user/[userId]/bank-details",
+    "method": "GET"
+  },
+  {
+    "path": "/api/user/[userId]/bank-details",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/user/[userId]/avatar",
+    "method": "GET"
+  },
+  {
+    "path": "/api/user/[userId]/avatar",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/[userId]/avatar/upload",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/[userId]/notification/[id]",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/user/[userId]/notification/[id]",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/user/[userId]/payments/createOrder",
+    "method": "POST"
+  },
+  {
+    "path": "/api/user/[userId]/payments/[orderId]/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/logs",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/users",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/withdrawals",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/withdrawals",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/admin/onboarding",
+    "method": "POST"
+  },
+  {
+    "path": "/api/admin/analytics",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/users/[userId]",
+    "method": "GET"
+  },
+  {
+    "path": "/api/admin/users/[userId]",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/admin/users/[userId]",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/health/ready",
+    "method": "GET"
+  },
+  {
+    "path": "/api/appointments/confirm",
+    "method": "POST"
+  },
+  {
+    "path": "/api/appointments/cancel-hold",
+    "method": "POST"
+  },
+  {
+    "path": "/api/appointments/hold",
+    "method": "POST"
+  },
+  {
+    "path": "/api/doctorpatientrelations/[relationId]/chats",
+    "method": "GET"
+  },
+  {
+    "path": "/api/doctorpatientrelations/[relationId]/chats",
+    "method": "POST"
+  },
+  {
+    "path": "/api/patients/me/medical-documents",
+    "method": "POST"
+  },
+  {
+    "path": "/api/patients/me/medical-documents",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/me/medical-documents/[documentId]",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/me/medical-documents/[documentId]",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/patients/me/medical-documents/[documentId]",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/patients/me/medical-documents/[documentId]/access",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/[patientId]/appointments",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/[patientId]/appointments",
+    "method": "POST"
+  },
+  {
+    "path": "/api/patients/[patientId]/stats",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/[patientId]/appointments/[appointmentId]",
+    "method": "GET"
+  },
+  {
+    "path": "/api/patients/[patientId]/appointments/[appointmentId]",
+    "method": "PATCH"
+  }
+]

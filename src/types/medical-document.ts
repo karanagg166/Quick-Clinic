@@ -67,22 +67,6 @@ export const DOCUMENT_TYPE_BADGE_CLASSES: Record<MedicalDocumentType, string> = 
   OTHER: "bg-slate-500/10 text-slate-700 dark:text-slate-400 border-slate-200 dark:border-slate-800",
 };
 
-export const PROCESSING_STATUS_LABELS: Record<MedicalDocumentProcessingStatus, string> = {
-  PENDING: "Processing",
-  QUEUED: "Processing",
-  PROCESSING: "Processing",
-  READY: "Ready for AI",
-  FAILED: "Processing failed",
-};
-
-export const PROCESSING_STATUS_BADGE_CLASSES: Record<MedicalDocumentProcessingStatus, string> = {
-  PENDING: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-800",
-  QUEUED: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-800",
-  PROCESSING: "bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 border-indigo-200 dark:border-indigo-800",
-  READY: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800",
-  FAILED: "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-800",
-};
-
 export function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   const kb = bytes / 1024;

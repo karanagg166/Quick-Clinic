@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Avatar from "@/components/general/Avatar";
-import { ArrowLeft, ShieldCheck, CalendarCheck, FileText, MessageSquare } from "lucide-react";
+import { ArrowLeft, ShieldCheck, CalendarCheck, FileText } from "lucide-react";
 
 export interface PatientSummary {
   id: string;
@@ -37,7 +37,6 @@ interface DoctorMedicalDocumentHeaderProps {
   labCount?: number;
   scanCount?: number;
   rxCount?: number;
-  activeTab?: "documents" | "chat";
 }
 
 export function DoctorMedicalDocumentHeader({
@@ -48,7 +47,6 @@ export function DoctorMedicalDocumentHeader({
   labCount = 0,
   scanCount = 0,
   rxCount = 0,
-  activeTab = "documents",
 }: DoctorMedicalDocumentHeaderProps) {
   return (
     <div className="space-y-4">
@@ -78,7 +76,7 @@ export function DoctorMedicalDocumentHeader({
 
           <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border">
             <Button
-              variant={activeTab === "documents" ? "secondary" : "ghost"}
+              variant="secondary"
               size="sm"
               asChild
               className="text-xs h-7 gap-1 px-2.5"
@@ -88,17 +86,7 @@ export function DoctorMedicalDocumentHeader({
                 <span>Documents</span>
               </Link>
             </Button>
-            <Button
-              variant={activeTab === "chat" ? "secondary" : "ghost"}
-              size="sm"
-              asChild
-              className="text-xs h-7 gap-1 px-2.5"
-            >
-              <Link href={`/doctor/patients/${currentPatientId}/medical-chat`}>
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>AI Chat</span>
-              </Link>
-            </Button>
+
           </div>
         </div>
 

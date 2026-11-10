@@ -4,4 +4,10 @@ node_modules
 .env
 .env.local
 *.log
-socket-server/node_modules
+backend/.venv
+backend/data
+backend/__pycache__
+
+playwright-report
+test-results
+coverage

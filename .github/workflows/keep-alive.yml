@@ -1,0 +1,28 @@
+name: Quick-Clinic 30-day backend health monitor
+on:
+  schedule:
+    # Offset from the top of the hour to reduce scheduler congestion.
+    - cron: '2-57/5 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: quick-clinic-keep-alive
+  cancel-in-progress: false
+jobs:
+  ping:
+    if: vars.QUICK_CLINIC_BACKEND_URL != '' && vars.KEEPALIVE_UNTIL != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.13.7'
+      - name: Probe backend only within the configured 30-day window
+        env:
+          QUICK_CLINIC_BACKEND_URL: ${{ vars.QUICK_CLINIC_BACKEND_URL }}
+          KEEPALIVE_UNTIL: ${{ vars.KEEPALIVE_UNTIL }}
+        run: uv run --no-project python backend/scripts/deployment/keep_alive.py

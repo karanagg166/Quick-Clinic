@@ -2,7 +2,7 @@
 FROM node:24-slim AS base
 WORKDIR /app
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@10.33.0 --activate
 
 # 1. Install dependencies
 FROM base AS deps
@@ -11,9 +11,12 @@ RUN pnpm install --frozen-lockfile
 
 # 2. Build the app
 FROM base AS builder
+ARG BACKEND_URL=http://backend:4000
+ARG NEXT_PUBLIC_SOCKET_URL=http://localhost:4000
+ENV BACKEND_URL=${BACKEND_URL}
+ENV NEXT_PUBLIC_SOCKET_URL=${NEXT_PUBLIC_SOCKET_URL}
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN pnpm dlx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 RUN pnpm run build
@@ -29,8 +32,6 @@ COPY --from=builder /app/package.json ./package.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
-COPY --from=builder /app/src/generated ./src/generated
-COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 

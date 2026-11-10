@@ -1,7 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  async rewrites() {
+    const backend = (process.env.BACKEND_URL || "http://localhost:4000").replace(/\/$/, "");
+    return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
+  },
   reactCompiler: true,
   images: {
     remotePatterns: [
@@ -13,7 +16,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  // Exclude socket-server from build (handled by tsconfig.json exclude)
   // Add empty turbopack config to silence warning
   turbopack: {},
 };

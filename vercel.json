@@ -1,12 +1,4 @@
 {
-  "functions": {
-    "src/app/api/doctors/me/patients/*/medical-chat/conversations/*/{messages,stream}/route.ts": {
-      "maxDuration": 90
-    },
-    "src/app/api/**": {
-      "maxDuration": 60
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/expire-appointments",

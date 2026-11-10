@@ -10,12 +10,8 @@ import {
   Building2,
   Eye,
   Download,
-  FileCheck2,
-  Clock,
-  AlertCircle,
   Loader2,
   FileSpreadsheet,
-  FileCode,
 } from "lucide-react";
 
 export interface DoctorMedicalDocument {
@@ -72,36 +68,6 @@ export function DoctorMedicalDocumentCard({
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "READY":
-        return (
-          <Badge variant="outline" className="bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-300 text-[10px] gap-1">
-            <FileCheck2 className="w-3 h-3" /> Indexed
-          </Badge>
-        );
-      case "PROCESSING":
-      case "QUEUED":
-        return (
-          <Badge variant="outline" className="bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-400 border-amber-300 text-[10px] gap-1">
-            <Clock className="w-3 h-3 animate-spin" /> Processing
-          </Badge>
-        );
-      case "FAILED":
-        return (
-          <Badge variant="outline" className="bg-rose-50 dark:bg-rose-950/30 text-rose-700 dark:text-rose-400 border-rose-300 text-[10px] gap-1">
-            <AlertCircle className="w-3 h-3" /> Raw Only
-          </Badge>
-        );
-      default:
-        return (
-          <Badge variant="outline" className="text-[10px] gap-1 text-muted-foreground">
-            <Clock className="w-3 h-3" /> Pending
-          </Badge>
-        );
-    }
-  };
-
   const isPdf = document.mimeType.includes("pdf");
 
   return (
@@ -129,7 +95,6 @@ export function DoctorMedicalDocumentCard({
             <Badge variant="outline" className={`text-[10px] font-medium border ${getTypeBadgeVariant(document.type)}`}>
               {document.type.replace(/_/g, " ")}
             </Badge>
-            {getStatusBadge(document.processingStatus)}
           </div>
         </div>
       </CardHeader>

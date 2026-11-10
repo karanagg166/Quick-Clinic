@@ -75,3 +75,14 @@ implementationplan.md
 scripts/backups/
 backups/
 *.backup.json
+
+# Python backend and private document storage
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+backend/data/
+*.pyc
+.vercel
+.env*
+!.env.example
