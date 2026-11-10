@@ -42,10 +42,6 @@ async def daily_slots(db, doctor_id, day, generate=True):
     rows = (await db.execute(stmt)).mappings().all()
     generated = False
     if not rows and generate:
-        # Bounded materialization to prevent unbounded slot table growth
-        today = now.date()
-        if day < today - timedelta(days=1) or day > today + timedelta(days=365):
-            return ([], False)
         # Lock doctor row during explicit materialization to prevent concurrent race
         await db.execute(select(doctors_table.c.id).where(doctors_table.c.id == doctor_id).with_for_update())
         # Recheck after acquiring lock

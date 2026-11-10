@@ -52,14 +52,10 @@ async def request_guards(request: Request, call_next):
             from redis.asyncio import Redis
 
             try:
-                async with Redis.from_url(
-                    get_settings().redis_url,
-                    socket_timeout=1.0,
-                    socket_connect_timeout=1.0,
-                ) as redis:
-                    count = await asyncio.wait_for(redis.incr(key), timeout=1.5)
+                async with Redis.from_url(get_settings().redis_url) as redis:
+                    count = await asyncio.wait_for(redis.incr(key), timeout=2.0)
                     if count == 1:
-                        await asyncio.wait_for(redis.expire(key, 61), timeout=1.0)
+                        await asyncio.wait_for(redis.expire(key, 61), timeout=2.0)
             except Exception:
                 return JSONResponse(
                     {"error": "Authentication service temporarily unavailable"}, status_code=503

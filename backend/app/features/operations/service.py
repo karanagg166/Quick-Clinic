@@ -171,24 +171,18 @@ async def reconcile(db):
         except Exception as exc:
             logger.warning("Checkout reconciliation retry for %s: %s", row["id"], type(exc).__name__)
             await db.rollback()
-            attempts = (row.get("attempts") or 0) + 1
-            delay_minutes = min(2 ** min(attempts, 6), 60)
-            is_exhausted = attempts >= 10
             await db.execute(
                 update(checkout_table)
                 .where(checkout_table.c.id == row["id"])
                 .values(
-                    attempts=attempts,
-                    status="MANUAL_REVIEW" if is_exhausted else row["status"],
-                    nextAttemptAt=utcnow() + timedelta(minutes=delay_minutes),
+                    nextAttemptAt=utcnow() + timedelta(minutes=2),
                     leaseOwner=None,
                     leaseExpiresAt=None,
-                    lastError=f"Reconciliation error (attempt {attempts}): {type(exc).__name__}",
+                    lastError=f"Checkout {row['id']} requires retry",
                 )
             )
             await db.commit()
-            if is_exhausted:
-                results["errors"].append(f"Checkout {row['id']} exceeded retry limit and marked MANUAL_REVIEW")
+            results["errors"].append(f"Checkout {row['id']} requires retry")
     # Pre-migration Payment rows may have no canonical Checkout. Recover them too.
     payment_table, appointment_table = tables["Payment"], tables["Appointment"]
     legacy = (
@@ -237,20 +231,7 @@ async def reconcile(db):
         except Exception as exc:
             await db.rollback()
             logger.warning("Legacy payment reconciliation retry for %s: %s", row["id"], type(exc).__name__)
-            attempts = (row.get("attempts") or 0) + 1
-            delay_minutes = min(2 ** min(attempts, 6), 60)
-            await db.execute(
-                update(payment_table)
-                .where(payment_table.c.id == row["id"])
-                .values(
-                    attempts=attempts,
-                    nextAttemptAt=utcnow() + timedelta(minutes=delay_minutes),
-                    lastError=f"Reconciliation error (attempt {attempts}): {type(exc).__name__}",
-                )
-            )
-            await db.commit()
-            if attempts >= 10:
-                results["errors"].append(f"Payment {row['id']} requires review")
+            results["errors"].append(f"Payment {row['id']} requires retry")
     rows = (
         (
             await db.execute(

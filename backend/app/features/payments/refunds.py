@@ -110,12 +110,11 @@ async def execute_refund(db, refund_id):
                 f"payments/{provider_payment_id}/refunds/{quote(refund_record['razorpayRefundId'], safe='')}",
             )
         else:
-            safe_key = re.sub(r"[^a-zA-Z0-9_-]", "_", refund_record["idempotencyKey"])[:40]
             outcome = await provider(
                 "POST",
                 f"payments/{provider_payment_id}/refund",
                 payload=dict(amount=refund_record["amount"], notes=dict(reason=refund_record["reason"])),
-                headers={"X-Refund-Idempotency": safe_key},
+                headers={"X-Refund-Idempotency": refund_record["idempotencyKey"]},
             )
         complete = outcome and outcome.get("status") == "processed"
         failed = outcome and outcome.get("status") == "failed"
