@@ -25,7 +25,7 @@ def include_object(object, name, type_, reflected, compare_to):
         if name in UNMANAGED_TABLES:
             return False
         # Do not alter supabase internal schemas if reflected
-        if getattr(object, "schema", None) not in (None, "public"):
+        if getattr(object, "schema", None) not in (None, "public", "testing"):
             return False
     return True
 

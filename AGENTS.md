@@ -37,4 +37,4 @@
 
 - Use free instances only, always. Use only the dedicated Supabase project `yrrcjcddrmkercetjfhl` for the migrated database and object storage; retain Neon as the read-only rollback source. Do not provision paid Render plans, persistent disks, or Render cron jobs.
 - Render production documents must use the private Supabase medical bucket; never its ephemeral filesystem or a public medical bucket. Avatars use the separate public avatar bucket.
-- `.codex/config.toml` contains project-scoped Render and Supabase MCP aliases; `.vscode/mcp.json` and `.agents/mcp_config.json` configure VS Code and Antigravity. Supabase is server-scoped to `yrrcjcddrmkercetjfhl`. Credentials are stored outside Git. Restrict actions to Quick-Clinic resources.
+- `.codex/config.toml`, `.vscode/mcp.json`, `.agents/mcp_config.json`, and `.mcp.json` configure Render and Supabase MCP servers for all AI agents. Render MCP is globally available at `https://mcp.render.com/mcp`. Supabase is server-scoped to `atsicusbhiujthlshszg`. Restrict actions to Quick-Clinic resources.

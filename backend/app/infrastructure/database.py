@@ -119,12 +119,16 @@ def _make_engine():
     is_sqlite = url.startswith("sqlite")
     kwargs = {"pool_pre_ping": True}
     if not is_sqlite:
+        server_settings = {
+            "application_name": "quick-clinic-api",
+            "search_path": f"{settings.db_schema},public" if settings.db_schema != "public" else "public",
+        }
         kwargs.update(
             pool_size=settings.db_pool_size,
             max_overflow=settings.db_max_overflow,
             pool_timeout=settings.db_pool_timeout,
             pool_recycle=settings.db_pool_recycle,
-            connect_args={"server_settings": {"application_name": "quick-clinic-api"}},
+            connect_args={"server_settings": server_settings},
         )
     return create_async_engine(url, **kwargs)
 

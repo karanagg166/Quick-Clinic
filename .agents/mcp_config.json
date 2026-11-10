@@ -2,6 +2,12 @@
   "mcpServers": {
     "supabase-quick-clinic": {
       "serverUrl": "https://mcp.supabase.com/mcp?project_ref=atsicusbhiujthlshszg&features=docs%2Cdatabase%2Cdebugging%2Cdevelopment%2Cstorage"
+    },
+    "render": {
+      "serverUrl": "https://mcp.render.com/mcp",
+      "headers": {
+        "Authorization": "Bearer rnd_Krsxfh8EdIokn5VsOsBJhRzDlUGH"
+      }
     }
   }
 }
