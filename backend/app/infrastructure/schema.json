@@ -1,0 +1,3035 @@
+{
+  "enums": {
+    "Gender": [
+      "MALE",
+      "FEMALE",
+      "BINARY"
+    ],
+    "Role": [
+      "PATIENT",
+      "DOCTOR",
+      "ADMIN"
+    ],
+    "Specialty": [
+      "CARDIOLOGIST",
+      "DERMATOLOGIST",
+      "PEDIATRICIAN",
+      "NEUROLOGIST",
+      "NEPHROLOGIST",
+      "GASTROENTEROLOGIST",
+      "ENDOCRINOLOGIST",
+      "PULMONOLOGIST",
+      "ONCOLOGIST",
+      "ORTHOPEDIC",
+      "OPHTHALMOLOGIST",
+      "OTOLARYNGOLOGIST",
+      "UROLOGIST",
+      "RHEUMATOLOGIST",
+      "PSYCHIATRIST",
+      "PSYCHOLOGIST",
+      "GENERAL_PHYSICIAN",
+      "GENERAL_SURGEON",
+      "RADIOLOGIST",
+      "PATHOLOGIST",
+      "HEMATOLOGIST",
+      "DENTIST",
+      "GYNECOLOGIST",
+      "OBSTETRICIAN",
+      "PLASTIC_SURGEON",
+      "VASCULAR_SURGEON",
+      "CARDIOTHORACIC_SURGEON",
+      "DERMATOSURGEON",
+      "INFECTIOUS_DISEASE_SPECIALIST",
+      "IMMUNOLOGIST",
+      "ANESTHESIOLOGIST",
+      "EMERGENCY_MEDICINE",
+      "SPORTS_MEDICINE",
+      "PAIN_MEDICINE",
+      "CRITICAL_CARE",
+      "PHYSIOTHERAPIST",
+      "NUTRITIONIST"
+    ],
+    "Qualification": [
+      "MBBS",
+      "BDS",
+      "BPT",
+      "BHMS",
+      "BAMS",
+      "MD",
+      "MS",
+      "DNB",
+      "MDS",
+      "DM",
+      "MCH",
+      "MPH",
+      "MBA_HM",
+      "PHD",
+      "DO",
+      "FELLOWSHIP",
+      "PGD"
+    ],
+    "SlotStatus": [
+      "AVAILABLE",
+      "HELD",
+      "BOOKED",
+      "UNAVAILABLE",
+      "CANCELLED",
+      "ON_LEAVE"
+    ],
+    "AppointmentStatus": [
+      "PENDING",
+      "CONFIRMED",
+      "COMPLETED",
+      "CANCELLED",
+      "NO_SHOW",
+      "RESCHEDULED",
+      "EXPIRED"
+    ],
+    "PaymentMethod": [
+      "OFFLINE",
+      "ONLINE"
+    ],
+    "MedicalDocumentType": [
+      "LAB_REPORT",
+      "PRESCRIPTION",
+      "RADIOLOGY_SCAN",
+      "DISCHARGE_SUMMARY",
+      "MEDICAL_CERTIFICATE",
+      "VACCINATION_RECORD",
+      "OTHER"
+    ],
+    "MedicalDocumentProcessingStatus": [
+      "PENDING",
+      "QUEUED",
+      "PROCESSING",
+      "READY",
+      "FAILED"
+    ],
+    "CheckoutStatus": [
+      "PENDING_ORDER",
+      "READY_FOR_PAYMENT",
+      "CONFIRMED",
+      "EXPIRED",
+      "FAILED",
+      "UNRESOLVED",
+      "MANUAL_REVIEW"
+    ],
+    "RefundStatus": [
+      "PENDING",
+      "PROCESSING",
+      "PROCESSED",
+      "FAILED"
+    ],
+    "WebhookEventStatus": [
+      "RECEIVED",
+      "PROCESSING",
+      "PROCESSED",
+      "FAILED",
+      "IGNORED"
+    ],
+    "OutboxStatus": [
+      "PENDING",
+      "PROCESSING",
+      "DELIVERED",
+      "FAILED"
+    ],
+    "WithdrawalStatus": [
+      "PENDING",
+      "PROCESSING",
+      "COMPLETED",
+      "FAILED",
+      "CANCELLED"
+    ]
+  },
+  "models": {
+    "User": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "phoneNo",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "password",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "age",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "gender",
+          "type": "Gender",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "MALE"
+        },
+        {
+          "name": "role",
+          "type": "Role",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PATIENT"
+        },
+        {
+          "name": "address",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pinCode",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Location.pincode",
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "profileImageUrl",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "emailVerified",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "isActive",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": true
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": []
+    },
+    "Location": {
+      "fields": [
+        {
+          "name": "pincode",
+          "type": "Int",
+          "nullable": false,
+          "primary": true,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "city",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "state",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": []
+    },
+    "Admin": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "managerId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Admin.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "userId"
+        ],
+        [
+          "managerId"
+        ]
+      ]
+    },
+    "Doctor": {
+      "fields": [
+        {
+          "name": "isReleaseFixture",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "specialty",
+          "type": "Specialty",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "experience",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "fees",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "doctorBio",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "balance",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "latitude",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "longitude",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "latitude",
+          "longitude"
+        ]
+      ]
+    },
+    "DoctorQualification": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "qualification",
+          "type": "Qualification",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "doctorId",
+          "qualification"
+        ]
+      ],
+      "indexes": []
+    },
+    "Patient": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "medicalHistory",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": ""
+        },
+        {
+          "name": "allergies",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": ""
+        },
+        {
+          "name": "currentMedications",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": ""
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": []
+    },
+    "MedicalDocument": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "type",
+          "type": "MedicalDocumentType",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "fileName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "mimeType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "fileSize",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "storagePath",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "reportDate",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "hospitalOrDoctor",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "processingStatus",
+          "type": "MedicalDocumentProcessingStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "processingError",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "processedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "patientId"
+        ],
+        [
+          "patientId",
+          "reportDate"
+        ],
+        [
+          "patientId",
+          "type"
+        ],
+        [
+          "patientId",
+          "processingStatus"
+        ]
+      ]
+    },
+    "Notification": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "actionHref",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "actionLabel",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "isRead",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "UNREAD"
+        },
+        {
+          "name": "readAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "eventId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "userId",
+          "eventId"
+        ]
+      ],
+      "indexes": [
+        [
+          "userId"
+        ]
+      ]
+    },
+    "Leave": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "reason",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "startDate",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "endDate",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "applyAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "doctorId",
+          "startDate",
+          "endDate"
+        ]
+      ],
+      "indexes": [
+        [
+          "doctorId"
+        ],
+        [
+          "startDate",
+          "endDate"
+        ]
+      ]
+    },
+    "Schedule": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "weeklySchedule",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorId"
+        ]
+      ]
+    },
+    "Slot": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "date",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": true,
+          "updated": false
+        },
+        {
+          "name": "startTime",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "endTime",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "SlotStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "AVAILABLE"
+        },
+        {
+          "name": "heldByPatientId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "heldAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "holdToken",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "holdExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [
+        [
+          "doctorId",
+          "date",
+          "startTime"
+        ]
+      ],
+      "indexes": [
+        [
+          "doctorId",
+          "date",
+          "status"
+        ],
+        [
+          "startTime",
+          "status"
+        ],
+        [
+          "heldByPatientId"
+        ],
+        [
+          "holdExpiresAt"
+        ]
+      ]
+    },
+    "Appointment": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "slotId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Slot.id",
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "paymentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Payment.id",
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "status",
+          "type": "AppointmentStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "paymentMethod",
+          "type": "PaymentMethod",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "OFFLINE"
+        },
+        {
+          "name": "transactionId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "notes",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "bookedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "isAppointmentOffline",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorId",
+          "patientId"
+        ],
+        [
+          "slotId"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    "DoctorPatientRelation": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorsUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.userId",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientsUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.userId",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "doctorLastReadAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "patientLastReadAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [
+        [
+          "doctorsUserId",
+          "patientsUserId"
+        ]
+      ],
+      "indexes": [
+        [
+          "patientsUserId"
+        ],
+        [
+          "doctorsUserId"
+        ]
+      ]
+    },
+    "ChatMessages": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorPatientRelationId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "DoctorPatientRelation.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "text",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "senderId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "clientMessageId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "isRead",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "readAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorPatientRelationId",
+          "createdAt"
+        ],
+        [
+          "doctorPatientRelationId",
+          "isRead"
+        ],
+        [
+          "senderId"
+        ]
+      ]
+    },
+    "Payment": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "idempotencyKey",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "amount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "INR"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "slotId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "holdToken",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "razorpayOrderId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "razorpayPaymentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "capturedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "nextAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "userId",
+          "status"
+        ],
+        [
+          "slotId"
+        ],
+        [
+          "razorpayPaymentId"
+        ],
+        [
+          "status",
+          "nextAttemptAt"
+        ]
+      ]
+    },
+    "Checkout": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "idempotencyKey",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "slotId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Slot.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "holdToken",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "paymentMethod",
+          "type": "PaymentMethod",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "ONLINE"
+        },
+        {
+          "name": "amount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "INR"
+        },
+        {
+          "name": "status",
+          "type": "CheckoutStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING_ORDER"
+        },
+        {
+          "name": "razorpayOrderId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "providerReference",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "paymentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Payment.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "appointmentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Appointment.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "processingStartedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "lastAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "nextAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "lastError",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "confirmedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "userId",
+          "status"
+        ],
+        [
+          "doctorId",
+          "slotId"
+        ],
+        [
+          "expiresAt",
+          "status"
+        ],
+        [
+          "razorpayOrderId"
+        ],
+        [
+          "providerReference"
+        ],
+        [
+          "status",
+          "nextAttemptAt"
+        ]
+      ]
+    },
+    "Refund": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "paymentId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Payment.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "amount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "INR"
+        },
+        {
+          "name": "reason",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "RefundStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "idempotencyKey",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "razorpayRefundId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "failureReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "lastAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "nextAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "processedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "paymentId"
+        ],
+        [
+          "status"
+        ],
+        [
+          "status",
+          "nextAttemptAt"
+        ]
+      ]
+    },
+    "WebhookEvent": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "providerEventId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "eventType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "paymentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Payment.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "status",
+          "type": "WebhookEventStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "RECEIVED"
+        },
+        {
+          "name": "payload",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "processingError",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "processingStartedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "nextAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "receivedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "processedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "status"
+        ],
+        [
+          "eventType"
+        ],
+        [
+          "paymentId"
+        ],
+        [
+          "status",
+          "nextAttemptAt"
+        ]
+      ]
+    },
+    "NotificationOutbox": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "eventId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "channel",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "targetUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "payload",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "OutboxStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "lastError",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "lastAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "processingStartedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "nextAttemptAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "deliveredAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "status",
+          "createdAt"
+        ],
+        [
+          "targetUserId"
+        ],
+        [
+          "status",
+          "nextAttemptAt"
+        ]
+      ]
+    },
+    "Withdrawal": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "amount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "currency",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "INR"
+        },
+        {
+          "name": "status",
+          "type": "WithdrawalStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "razorpayPayoutId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "failureReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "processedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorId"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    "BankAccount": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "bankAccountNumber",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "bankIFSC",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "bankAccountHolderName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "bankName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": []
+    },
+    "Otp": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "email",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "code",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "expiresAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": []
+    },
+    "AccessLog": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "targetId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "action",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tag",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "SYSTEM"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "userId"
+        ],
+        [
+          "targetId"
+        ],
+        [
+          "tag"
+        ],
+        [
+          "createdAt"
+        ],
+        [
+          "userId",
+          "createdAt"
+        ]
+      ]
+    },
+    "AuditLog": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "userId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "action",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tag",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "SYSTEM"
+        },
+        {
+          "name": "metadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "userId"
+        ],
+        [
+          "tag"
+        ],
+        [
+          "createdAt"
+        ],
+        [
+          "userId",
+          "createdAt"
+        ]
+      ]
+    },
+    "Rating": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "rating",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [
+        [
+          "doctorId",
+          "patientId"
+        ]
+      ],
+      "indexes": [
+        [
+          "doctorId"
+        ],
+        [
+          "patientId"
+        ]
+      ]
+    },
+    "Comment": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "text",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorId"
+        ],
+        [
+          "patientId"
+        ],
+        [
+          "createdAt"
+        ]
+      ]
+    }
+  }
+}

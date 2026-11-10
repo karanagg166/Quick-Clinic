@@ -37,7 +37,7 @@ export default defineConfig({
       },
     },
     {
-      command: 'cd socket-server && node dist/main.js',
+      command: 'uv run --directory backend uvicorn app.main:app --host 0.0.0.0 --port 4000',
       url: 'http://localhost:4000/health',
       reuseExistingServer: !process.env.CI,
       timeout: 60000,

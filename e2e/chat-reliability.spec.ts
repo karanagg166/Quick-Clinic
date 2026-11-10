@@ -1,6 +1,6 @@
 import { test, expect, BrowserContext } from '@playwright/test';
 import dotenv from 'dotenv';
-import { prisma } from '@/lib/prisma';
+import { prisma } from './helpers/db';
 import { createToken, TOKEN_AUDIENCE } from '@/lib/auth-token';
 
 dotenv.config();

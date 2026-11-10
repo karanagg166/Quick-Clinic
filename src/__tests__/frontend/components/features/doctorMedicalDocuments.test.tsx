@@ -46,7 +46,7 @@ describe("Doctor Medical Documents Frontend Components", () => {
     expect(screen.getByText("LAB REPORT")).toBeDefined();
     expect(screen.getByText("Apollo Health")).toBeDefined();
     expect(screen.getByText("Fasting blood test results")).toBeDefined();
-    expect(screen.getByText("Indexed")).toBeDefined();
+    expect(screen.queryByText("Indexed")).toBeNull();
 
     // Verify Read-Only buttons: View and Download exist, Edit/Delete do NOT exist
     const viewBtn = screen.getByRole("button", { name: /view/i });

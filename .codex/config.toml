@@ -1,0 +1,6 @@
+# Project-scoped connection. Authenticate with Quick-Clinic's dedicated Render account.
+# OAuth tokens are stored by Codex outside this repository; never put credentials here.
+[mcp_servers.render-quick-clinic]
+url = "https://mcp.render.com/mcp"
+oauth = { client_id = "codex" }
+startup_timeout_sec = 30

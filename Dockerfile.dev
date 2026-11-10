@@ -23,8 +23,6 @@ RUN pnpm install --frozen-lockfile --ignore-scripts
 # Copy project files
 COPY . .
 
-# Generate Prisma Client
-RUN pnpm exec prisma generate
 
 # 👉 Run build ONLY in production
 RUN if [ "$NODE_ENV" = "production" ] ; then pnpm run build ; fi

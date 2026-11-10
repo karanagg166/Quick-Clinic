@@ -1,7 +1,7 @@
 import { test, expect, BrowserContext } from '@playwright/test';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
-import { prisma } from '@/lib/prisma';
+import { prisma } from './helpers/db';
 import { createToken } from '@/lib/auth-token';
 import { DEFAULT_CLINIC_TIMEZONE, localDateAndTimeToUtc } from '@/lib/dateUtils';
 

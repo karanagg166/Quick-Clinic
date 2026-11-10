@@ -1,0 +1,14 @@
+backend/
+.codex/
+.git/
+.env*
+!/.env.example
+src/__tests__/
+e2e/
+tests/
+prisma/
+scripts/
+docs/
+playwright-report/
+test-results/
+coverage/

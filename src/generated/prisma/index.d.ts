@@ -143,16 +143,6 @@ export type Rating = $Result.DefaultSelection<Prisma.$RatingPayload>
  * 
  */
 export type Comment = $Result.DefaultSelection<Prisma.$CommentPayload>
-/**
- * Model MedicalAiConversation
- * 
- */
-export type MedicalAiConversation = $Result.DefaultSelection<Prisma.$MedicalAiConversationPayload>
-/**
- * Model MedicalAiMessage
- * 
- */
-export type MedicalAiMessage = $Result.DefaultSelection<Prisma.$MedicalAiMessagePayload>
 
 /**
  * Enums
@@ -353,22 +343,6 @@ export const WithdrawalStatus: {
 
 export type WithdrawalStatus = (typeof WithdrawalStatus)[keyof typeof WithdrawalStatus]
 
-
-export const MedicalAiMessageRole: {
-  USER: 'USER',
-  ASSISTANT: 'ASSISTANT'
-};
-
-export type MedicalAiMessageRole = (typeof MedicalAiMessageRole)[keyof typeof MedicalAiMessageRole]
-
-
-export const MedicalAiMessageStatus: {
-  COMPLETE: 'COMPLETE',
-  FAILED: 'FAILED'
-};
-
-export type MedicalAiMessageStatus = (typeof MedicalAiMessageStatus)[keyof typeof MedicalAiMessageStatus]
-
 }
 
 export type Gender = $Enums.Gender
@@ -426,14 +400,6 @@ export const OutboxStatus: typeof $Enums.OutboxStatus
 export type WithdrawalStatus = $Enums.WithdrawalStatus
 
 export const WithdrawalStatus: typeof $Enums.WithdrawalStatus
-
-export type MedicalAiMessageRole = $Enums.MedicalAiMessageRole
-
-export const MedicalAiMessageRole: typeof $Enums.MedicalAiMessageRole
-
-export type MedicalAiMessageStatus = $Enums.MedicalAiMessageStatus
-
-export const MedicalAiMessageStatus: typeof $Enums.MedicalAiMessageStatus
 
 /**
  * ##  Prisma Client ʲˢ
@@ -815,26 +781,6 @@ export class PrismaClient<
     * ```
     */
   get comment(): Prisma.CommentDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.medicalAiConversation`: Exposes CRUD operations for the **MedicalAiConversation** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more MedicalAiConversations
-    * const medicalAiConversations = await prisma.medicalAiConversation.findMany()
-    * ```
-    */
-  get medicalAiConversation(): Prisma.MedicalAiConversationDelegate<ExtArgs, ClientOptions>;
-
-  /**
-   * `prisma.medicalAiMessage`: Exposes CRUD operations for the **MedicalAiMessage** model.
-    * Example usage:
-    * ```ts
-    * // Fetch zero or more MedicalAiMessages
-    * const medicalAiMessages = await prisma.medicalAiMessage.findMany()
-    * ```
-    */
-  get medicalAiMessage(): Prisma.MedicalAiMessageDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -1294,9 +1240,7 @@ export namespace Prisma {
     AccessLog: 'AccessLog',
     AuditLog: 'AuditLog',
     Rating: 'Rating',
-    Comment: 'Comment',
-    MedicalAiConversation: 'MedicalAiConversation',
-    MedicalAiMessage: 'MedicalAiMessage'
+    Comment: 'Comment'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -1312,7 +1256,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "medicalDocument" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "checkout" | "refund" | "webhookEvent" | "notificationOutbox" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment" | "medicalAiConversation" | "medicalAiMessage"
+      modelProps: "user" | "location" | "admin" | "doctor" | "doctorQualification" | "patient" | "medicalDocument" | "notification" | "leave" | "schedule" | "slot" | "appointment" | "doctorPatientRelation" | "chatMessages" | "payment" | "checkout" | "refund" | "webhookEvent" | "notificationOutbox" | "withdrawal" | "bankAccount" | "otp" | "accessLog" | "auditLog" | "rating" | "comment"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -3240,154 +3184,6 @@ export namespace Prisma {
           }
         }
       }
-      MedicalAiConversation: {
-        payload: Prisma.$MedicalAiConversationPayload<ExtArgs>
-        fields: Prisma.MedicalAiConversationFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.MedicalAiConversationFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.MedicalAiConversationFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          findFirst: {
-            args: Prisma.MedicalAiConversationFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.MedicalAiConversationFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          findMany: {
-            args: Prisma.MedicalAiConversationFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>[]
-          }
-          create: {
-            args: Prisma.MedicalAiConversationCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          createMany: {
-            args: Prisma.MedicalAiConversationCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.MedicalAiConversationCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>[]
-          }
-          delete: {
-            args: Prisma.MedicalAiConversationDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          update: {
-            args: Prisma.MedicalAiConversationUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          deleteMany: {
-            args: Prisma.MedicalAiConversationDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.MedicalAiConversationUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.MedicalAiConversationUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>[]
-          }
-          upsert: {
-            args: Prisma.MedicalAiConversationUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiConversationPayload>
-          }
-          aggregate: {
-            args: Prisma.MedicalAiConversationAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateMedicalAiConversation>
-          }
-          groupBy: {
-            args: Prisma.MedicalAiConversationGroupByArgs<ExtArgs>
-            result: $Utils.Optional<MedicalAiConversationGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.MedicalAiConversationCountArgs<ExtArgs>
-            result: $Utils.Optional<MedicalAiConversationCountAggregateOutputType> | number
-          }
-        }
-      }
-      MedicalAiMessage: {
-        payload: Prisma.$MedicalAiMessagePayload<ExtArgs>
-        fields: Prisma.MedicalAiMessageFieldRefs
-        operations: {
-          findUnique: {
-            args: Prisma.MedicalAiMessageFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload> | null
-          }
-          findUniqueOrThrow: {
-            args: Prisma.MedicalAiMessageFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          findFirst: {
-            args: Prisma.MedicalAiMessageFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload> | null
-          }
-          findFirstOrThrow: {
-            args: Prisma.MedicalAiMessageFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          findMany: {
-            args: Prisma.MedicalAiMessageFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>[]
-          }
-          create: {
-            args: Prisma.MedicalAiMessageCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          createMany: {
-            args: Prisma.MedicalAiMessageCreateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          createManyAndReturn: {
-            args: Prisma.MedicalAiMessageCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>[]
-          }
-          delete: {
-            args: Prisma.MedicalAiMessageDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          update: {
-            args: Prisma.MedicalAiMessageUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          deleteMany: {
-            args: Prisma.MedicalAiMessageDeleteManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateMany: {
-            args: Prisma.MedicalAiMessageUpdateManyArgs<ExtArgs>
-            result: BatchPayload
-          }
-          updateManyAndReturn: {
-            args: Prisma.MedicalAiMessageUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>[]
-          }
-          upsert: {
-            args: Prisma.MedicalAiMessageUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$MedicalAiMessagePayload>
-          }
-          aggregate: {
-            args: Prisma.MedicalAiMessageAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateMedicalAiMessage>
-          }
-          groupBy: {
-            args: Prisma.MedicalAiMessageGroupByArgs<ExtArgs>
-            result: $Utils.Optional<MedicalAiMessageGroupByOutputType>[]
-          }
-          count: {
-            args: Prisma.MedicalAiMessageCountArgs<ExtArgs>
-            result: $Utils.Optional<MedicalAiMessageCountAggregateOutputType> | number
-          }
-        }
-      }
     }
   } & {
     other: {
@@ -3522,8 +3318,6 @@ export namespace Prisma {
     auditLog?: AuditLogOmit
     rating?: RatingOmit
     comment?: CommentOmit
-    medicalAiConversation?: MedicalAiConversationOmit
-    medicalAiMessage?: MedicalAiMessageOmit
   }
 
   /* Types for Logging */
@@ -3769,7 +3563,6 @@ export namespace Prisma {
     ratings: number
     withdrawals: number
     doctorQualifications: number
-    medicalAiConversations: number
   }
 
   export type DoctorCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3782,7 +3575,6 @@ export namespace Prisma {
     ratings?: boolean | DoctorCountOutputTypeCountRatingsArgs
     withdrawals?: boolean | DoctorCountOutputTypeCountWithdrawalsArgs
     doctorQualifications?: boolean | DoctorCountOutputTypeCountDoctorQualificationsArgs
-    medicalAiConversations?: boolean | DoctorCountOutputTypeCountMedicalAiConversationsArgs
   }
 
   // Custom InputTypes
@@ -3859,13 +3651,6 @@ export namespace Prisma {
     where?: DoctorQualificationWhereInput
   }
 
-  /**
-   * DoctorCountOutputType without action
-   */
-  export type DoctorCountOutputTypeCountMedicalAiConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicalAiConversationWhereInput
-  }
-
 
   /**
    * Count Type PatientCountOutputType
@@ -3878,7 +3663,6 @@ export namespace Prisma {
     comments: number
     ratings: number
     medicalDocuments: number
-    medicalAiConversations: number
   }
 
   export type PatientCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -3888,7 +3672,6 @@ export namespace Prisma {
     comments?: boolean | PatientCountOutputTypeCountCommentsArgs
     ratings?: boolean | PatientCountOutputTypeCountRatingsArgs
     medicalDocuments?: boolean | PatientCountOutputTypeCountMedicalDocumentsArgs
-    medicalAiConversations?: boolean | PatientCountOutputTypeCountMedicalAiConversationsArgs
   }
 
   // Custom InputTypes
@@ -3942,13 +3725,6 @@ export namespace Prisma {
    */
   export type PatientCountOutputTypeCountMedicalDocumentsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: MedicalDocumentWhereInput
-  }
-
-  /**
-   * PatientCountOutputType without action
-   */
-  export type PatientCountOutputTypeCountMedicalAiConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicalAiConversationWhereInput
   }
 
 
@@ -4060,37 +3836,6 @@ export namespace Prisma {
    */
   export type PaymentCountOutputTypeCountWebhookEventsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: WebhookEventWhereInput
-  }
-
-
-  /**
-   * Count Type MedicalAiConversationCountOutputType
-   */
-
-  export type MedicalAiConversationCountOutputType = {
-    messages: number
-  }
-
-  export type MedicalAiConversationCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    messages?: boolean | MedicalAiConversationCountOutputTypeCountMessagesArgs
-  }
-
-  // Custom InputTypes
-  /**
-   * MedicalAiConversationCountOutputType without action
-   */
-  export type MedicalAiConversationCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversationCountOutputType
-     */
-    select?: MedicalAiConversationCountOutputTypeSelect<ExtArgs> | null
-  }
-
-  /**
-   * MedicalAiConversationCountOutputType without action
-   */
-  export type MedicalAiConversationCountOutputTypeCountMessagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicalAiMessageWhereInput
   }
 
 
@@ -8108,7 +7853,6 @@ export namespace Prisma {
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
     withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
     doctorQualifications?: boolean | Doctor$doctorQualificationsArgs<ExtArgs>
-    medicalAiConversations?: boolean | Doctor$medicalAiConversationsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["doctor"]>
 
@@ -8172,7 +7916,6 @@ export namespace Prisma {
     ratings?: boolean | Doctor$ratingsArgs<ExtArgs>
     withdrawals?: boolean | Doctor$withdrawalsArgs<ExtArgs>
     doctorQualifications?: boolean | Doctor$doctorQualificationsArgs<ExtArgs>
-    medicalAiConversations?: boolean | Doctor$medicalAiConversationsArgs<ExtArgs>
     _count?: boolean | DoctorCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type DoctorIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -8196,7 +7939,6 @@ export namespace Prisma {
       ratings: Prisma.$RatingPayload<ExtArgs>[]
       withdrawals: Prisma.$WithdrawalPayload<ExtArgs>[]
       doctorQualifications: Prisma.$DoctorQualificationPayload<ExtArgs>[]
-      medicalAiConversations: Prisma.$MedicalAiConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       isReleaseFixture: boolean
@@ -8616,7 +8358,6 @@ export namespace Prisma {
     ratings<T extends Doctor$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     withdrawals<T extends Doctor$withdrawalsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$withdrawalsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$WithdrawalPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     doctorQualifications<T extends Doctor$doctorQualificationsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$doctorQualificationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DoctorQualificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    medicalAiConversations<T extends Doctor$medicalAiConversationsArgs<ExtArgs> = {}>(args?: Subset<T, Doctor$medicalAiConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -9291,30 +9032,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: DoctorQualificationScalarFieldEnum | DoctorQualificationScalarFieldEnum[]
-  }
-
-  /**
-   * Doctor.medicalAiConversations
-   */
-  export type Doctor$medicalAiConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    where?: MedicalAiConversationWhereInput
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    cursor?: MedicalAiConversationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MedicalAiConversationScalarFieldEnum | MedicalAiConversationScalarFieldEnum[]
   }
 
   /**
@@ -10560,7 +10277,6 @@ export namespace Prisma {
     comments?: boolean | Patient$commentsArgs<ExtArgs>
     ratings?: boolean | Patient$ratingsArgs<ExtArgs>
     medicalDocuments?: boolean | Patient$medicalDocumentsArgs<ExtArgs>
-    medicalAiConversations?: boolean | Patient$medicalAiConversationsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["patient"]>
 
@@ -10605,7 +10321,6 @@ export namespace Prisma {
     comments?: boolean | Patient$commentsArgs<ExtArgs>
     ratings?: boolean | Patient$ratingsArgs<ExtArgs>
     medicalDocuments?: boolean | Patient$medicalDocumentsArgs<ExtArgs>
-    medicalAiConversations?: boolean | Patient$medicalAiConversationsArgs<ExtArgs>
     _count?: boolean | PatientCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type PatientIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -10625,7 +10340,6 @@ export namespace Prisma {
       comments: Prisma.$CommentPayload<ExtArgs>[]
       ratings: Prisma.$RatingPayload<ExtArgs>[]
       medicalDocuments: Prisma.$MedicalDocumentPayload<ExtArgs>[]
-      medicalAiConversations: Prisma.$MedicalAiConversationPayload<ExtArgs>[]
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
@@ -11036,7 +10750,6 @@ export namespace Prisma {
     comments<T extends Patient$commentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$commentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$CommentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     ratings<T extends Patient$ratingsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$ratingsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RatingPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     medicalDocuments<T extends Patient$medicalDocumentsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$medicalDocumentsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalDocumentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    medicalAiConversations<T extends Patient$medicalAiConversationsArgs<ExtArgs> = {}>(args?: Subset<T, Patient$medicalAiConversationsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -11615,30 +11328,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     distinct?: MedicalDocumentScalarFieldEnum | MedicalDocumentScalarFieldEnum[]
-  }
-
-  /**
-   * Patient.medicalAiConversations
-   */
-  export type Patient$medicalAiConversationsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    where?: MedicalAiConversationWhereInput
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    cursor?: MedicalAiConversationWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MedicalAiConversationScalarFieldEnum | MedicalAiConversationScalarFieldEnum[]
   }
 
   /**
@@ -35020,2205 +34709,6 @@ export namespace Prisma {
 
 
   /**
-   * Model MedicalAiConversation
-   */
-
-  export type AggregateMedicalAiConversation = {
-    _count: MedicalAiConversationCountAggregateOutputType | null
-    _min: MedicalAiConversationMinAggregateOutputType | null
-    _max: MedicalAiConversationMaxAggregateOutputType | null
-  }
-
-  export type MedicalAiConversationMinAggregateOutputType = {
-    id: string | null
-    doctorId: string | null
-    patientId: string | null
-    title: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type MedicalAiConversationMaxAggregateOutputType = {
-    id: string | null
-    doctorId: string | null
-    patientId: string | null
-    title: string | null
-    createdAt: Date | null
-    updatedAt: Date | null
-  }
-
-  export type MedicalAiConversationCountAggregateOutputType = {
-    id: number
-    doctorId: number
-    patientId: number
-    title: number
-    createdAt: number
-    updatedAt: number
-    _all: number
-  }
-
-
-  export type MedicalAiConversationMinAggregateInputType = {
-    id?: true
-    doctorId?: true
-    patientId?: true
-    title?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type MedicalAiConversationMaxAggregateInputType = {
-    id?: true
-    doctorId?: true
-    patientId?: true
-    title?: true
-    createdAt?: true
-    updatedAt?: true
-  }
-
-  export type MedicalAiConversationCountAggregateInputType = {
-    id?: true
-    doctorId?: true
-    patientId?: true
-    title?: true
-    createdAt?: true
-    updatedAt?: true
-    _all?: true
-  }
-
-  export type MedicalAiConversationAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which MedicalAiConversation to aggregate.
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiConversations to fetch.
-     */
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: MedicalAiConversationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiConversations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiConversations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned MedicalAiConversations
-    **/
-    _count?: true | MedicalAiConversationCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: MedicalAiConversationMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: MedicalAiConversationMaxAggregateInputType
-  }
-
-  export type GetMedicalAiConversationAggregateType<T extends MedicalAiConversationAggregateArgs> = {
-        [P in keyof T & keyof AggregateMedicalAiConversation]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateMedicalAiConversation[P]>
-      : GetScalarType<T[P], AggregateMedicalAiConversation[P]>
-  }
-
-
-
-
-  export type MedicalAiConversationGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicalAiConversationWhereInput
-    orderBy?: MedicalAiConversationOrderByWithAggregationInput | MedicalAiConversationOrderByWithAggregationInput[]
-    by: MedicalAiConversationScalarFieldEnum[] | MedicalAiConversationScalarFieldEnum
-    having?: MedicalAiConversationScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: MedicalAiConversationCountAggregateInputType | true
-    _min?: MedicalAiConversationMinAggregateInputType
-    _max?: MedicalAiConversationMaxAggregateInputType
-  }
-
-  export type MedicalAiConversationGroupByOutputType = {
-    id: string
-    doctorId: string
-    patientId: string
-    title: string | null
-    createdAt: Date
-    updatedAt: Date
-    _count: MedicalAiConversationCountAggregateOutputType | null
-    _min: MedicalAiConversationMinAggregateOutputType | null
-    _max: MedicalAiConversationMaxAggregateOutputType | null
-  }
-
-  type GetMedicalAiConversationGroupByPayload<T extends MedicalAiConversationGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<MedicalAiConversationGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof MedicalAiConversationGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], MedicalAiConversationGroupByOutputType[P]>
-            : GetScalarType<T[P], MedicalAiConversationGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type MedicalAiConversationSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
-    title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-    messages?: boolean | MedicalAiConversation$messagesArgs<ExtArgs>
-    _count?: boolean | MedicalAiConversationCountOutputTypeDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiConversation"]>
-
-  export type MedicalAiConversationSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
-    title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiConversation"]>
-
-  export type MedicalAiConversationSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
-    title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiConversation"]>
-
-  export type MedicalAiConversationSelectScalar = {
-    id?: boolean
-    doctorId?: boolean
-    patientId?: boolean
-    title?: boolean
-    createdAt?: boolean
-    updatedAt?: boolean
-  }
-
-  export type MedicalAiConversationOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "doctorId" | "patientId" | "title" | "createdAt" | "updatedAt", ExtArgs["result"]["medicalAiConversation"]>
-  export type MedicalAiConversationInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-    messages?: boolean | MedicalAiConversation$messagesArgs<ExtArgs>
-    _count?: boolean | MedicalAiConversationCountOutputTypeDefaultArgs<ExtArgs>
-  }
-  export type MedicalAiConversationIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-  }
-  export type MedicalAiConversationIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    doctor?: boolean | DoctorDefaultArgs<ExtArgs>
-    patient?: boolean | PatientDefaultArgs<ExtArgs>
-  }
-
-  export type $MedicalAiConversationPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "MedicalAiConversation"
-    objects: {
-      doctor: Prisma.$DoctorPayload<ExtArgs>
-      patient: Prisma.$PatientPayload<ExtArgs>
-      messages: Prisma.$MedicalAiMessagePayload<ExtArgs>[]
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      doctorId: string
-      patientId: string
-      title: string | null
-      createdAt: Date
-      updatedAt: Date
-    }, ExtArgs["result"]["medicalAiConversation"]>
-    composites: {}
-  }
-
-  type MedicalAiConversationGetPayload<S extends boolean | null | undefined | MedicalAiConversationDefaultArgs> = $Result.GetResult<Prisma.$MedicalAiConversationPayload, S>
-
-  type MedicalAiConversationCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<MedicalAiConversationFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: MedicalAiConversationCountAggregateInputType | true
-    }
-
-  export interface MedicalAiConversationDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MedicalAiConversation'], meta: { name: 'MedicalAiConversation' } }
-    /**
-     * Find zero or one MedicalAiConversation that matches the filter.
-     * @param {MedicalAiConversationFindUniqueArgs} args - Arguments to find a MedicalAiConversation
-     * @example
-     * // Get one MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends MedicalAiConversationFindUniqueArgs>(args: SelectSubset<T, MedicalAiConversationFindUniqueArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one MedicalAiConversation that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {MedicalAiConversationFindUniqueOrThrowArgs} args - Arguments to find a MedicalAiConversation
-     * @example
-     * // Get one MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends MedicalAiConversationFindUniqueOrThrowArgs>(args: SelectSubset<T, MedicalAiConversationFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first MedicalAiConversation that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationFindFirstArgs} args - Arguments to find a MedicalAiConversation
-     * @example
-     * // Get one MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends MedicalAiConversationFindFirstArgs>(args?: SelectSubset<T, MedicalAiConversationFindFirstArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first MedicalAiConversation that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationFindFirstOrThrowArgs} args - Arguments to find a MedicalAiConversation
-     * @example
-     * // Get one MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends MedicalAiConversationFindFirstOrThrowArgs>(args?: SelectSubset<T, MedicalAiConversationFindFirstOrThrowArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more MedicalAiConversations that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all MedicalAiConversations
-     * const medicalAiConversations = await prisma.medicalAiConversation.findMany()
-     * 
-     * // Get first 10 MedicalAiConversations
-     * const medicalAiConversations = await prisma.medicalAiConversation.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const medicalAiConversationWithIdOnly = await prisma.medicalAiConversation.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends MedicalAiConversationFindManyArgs>(args?: SelectSubset<T, MedicalAiConversationFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a MedicalAiConversation.
-     * @param {MedicalAiConversationCreateArgs} args - Arguments to create a MedicalAiConversation.
-     * @example
-     * // Create one MedicalAiConversation
-     * const MedicalAiConversation = await prisma.medicalAiConversation.create({
-     *   data: {
-     *     // ... data to create a MedicalAiConversation
-     *   }
-     * })
-     * 
-     */
-    create<T extends MedicalAiConversationCreateArgs>(args: SelectSubset<T, MedicalAiConversationCreateArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many MedicalAiConversations.
-     * @param {MedicalAiConversationCreateManyArgs} args - Arguments to create many MedicalAiConversations.
-     * @example
-     * // Create many MedicalAiConversations
-     * const medicalAiConversation = await prisma.medicalAiConversation.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends MedicalAiConversationCreateManyArgs>(args?: SelectSubset<T, MedicalAiConversationCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many MedicalAiConversations and returns the data saved in the database.
-     * @param {MedicalAiConversationCreateManyAndReturnArgs} args - Arguments to create many MedicalAiConversations.
-     * @example
-     * // Create many MedicalAiConversations
-     * const medicalAiConversation = await prisma.medicalAiConversation.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many MedicalAiConversations and only return the `id`
-     * const medicalAiConversationWithIdOnly = await prisma.medicalAiConversation.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends MedicalAiConversationCreateManyAndReturnArgs>(args?: SelectSubset<T, MedicalAiConversationCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a MedicalAiConversation.
-     * @param {MedicalAiConversationDeleteArgs} args - Arguments to delete one MedicalAiConversation.
-     * @example
-     * // Delete one MedicalAiConversation
-     * const MedicalAiConversation = await prisma.medicalAiConversation.delete({
-     *   where: {
-     *     // ... filter to delete one MedicalAiConversation
-     *   }
-     * })
-     * 
-     */
-    delete<T extends MedicalAiConversationDeleteArgs>(args: SelectSubset<T, MedicalAiConversationDeleteArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one MedicalAiConversation.
-     * @param {MedicalAiConversationUpdateArgs} args - Arguments to update one MedicalAiConversation.
-     * @example
-     * // Update one MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends MedicalAiConversationUpdateArgs>(args: SelectSubset<T, MedicalAiConversationUpdateArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more MedicalAiConversations.
-     * @param {MedicalAiConversationDeleteManyArgs} args - Arguments to filter MedicalAiConversations to delete.
-     * @example
-     * // Delete a few MedicalAiConversations
-     * const { count } = await prisma.medicalAiConversation.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends MedicalAiConversationDeleteManyArgs>(args?: SelectSubset<T, MedicalAiConversationDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more MedicalAiConversations.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many MedicalAiConversations
-     * const medicalAiConversation = await prisma.medicalAiConversation.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends MedicalAiConversationUpdateManyArgs>(args: SelectSubset<T, MedicalAiConversationUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more MedicalAiConversations and returns the data updated in the database.
-     * @param {MedicalAiConversationUpdateManyAndReturnArgs} args - Arguments to update many MedicalAiConversations.
-     * @example
-     * // Update many MedicalAiConversations
-     * const medicalAiConversation = await prisma.medicalAiConversation.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more MedicalAiConversations and only return the `id`
-     * const medicalAiConversationWithIdOnly = await prisma.medicalAiConversation.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends MedicalAiConversationUpdateManyAndReturnArgs>(args: SelectSubset<T, MedicalAiConversationUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one MedicalAiConversation.
-     * @param {MedicalAiConversationUpsertArgs} args - Arguments to update or create a MedicalAiConversation.
-     * @example
-     * // Update or create a MedicalAiConversation
-     * const medicalAiConversation = await prisma.medicalAiConversation.upsert({
-     *   create: {
-     *     // ... data to create a MedicalAiConversation
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the MedicalAiConversation we want to update
-     *   }
-     * })
-     */
-    upsert<T extends MedicalAiConversationUpsertArgs>(args: SelectSubset<T, MedicalAiConversationUpsertArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of MedicalAiConversations.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationCountArgs} args - Arguments to filter MedicalAiConversations to count.
-     * @example
-     * // Count the number of MedicalAiConversations
-     * const count = await prisma.medicalAiConversation.count({
-     *   where: {
-     *     // ... the filter for the MedicalAiConversations we want to count
-     *   }
-     * })
-    **/
-    count<T extends MedicalAiConversationCountArgs>(
-      args?: Subset<T, MedicalAiConversationCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], MedicalAiConversationCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a MedicalAiConversation.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends MedicalAiConversationAggregateArgs>(args: Subset<T, MedicalAiConversationAggregateArgs>): Prisma.PrismaPromise<GetMedicalAiConversationAggregateType<T>>
-
-    /**
-     * Group by MedicalAiConversation.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiConversationGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends MedicalAiConversationGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: MedicalAiConversationGroupByArgs['orderBy'] }
-        : { orderBy?: MedicalAiConversationGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, MedicalAiConversationGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMedicalAiConversationGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the MedicalAiConversation model
-   */
-  readonly fields: MedicalAiConversationFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for MedicalAiConversation.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__MedicalAiConversationClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    doctor<T extends DoctorDefaultArgs<ExtArgs> = {}>(args?: Subset<T, DoctorDefaultArgs<ExtArgs>>): Prisma__DoctorClient<$Result.GetResult<Prisma.$DoctorPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    patient<T extends PatientDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PatientDefaultArgs<ExtArgs>>): Prisma__PatientClient<$Result.GetResult<Prisma.$PatientPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    messages<T extends MedicalAiConversation$messagesArgs<ExtArgs> = {}>(args?: Subset<T, MedicalAiConversation$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the MedicalAiConversation model
-   */
-  interface MedicalAiConversationFieldRefs {
-    readonly id: FieldRef<"MedicalAiConversation", 'String'>
-    readonly doctorId: FieldRef<"MedicalAiConversation", 'String'>
-    readonly patientId: FieldRef<"MedicalAiConversation", 'String'>
-    readonly title: FieldRef<"MedicalAiConversation", 'String'>
-    readonly createdAt: FieldRef<"MedicalAiConversation", 'DateTime'>
-    readonly updatedAt: FieldRef<"MedicalAiConversation", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * MedicalAiConversation findUnique
-   */
-  export type MedicalAiConversationFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiConversation to fetch.
-     */
-    where: MedicalAiConversationWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiConversation findUniqueOrThrow
-   */
-  export type MedicalAiConversationFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiConversation to fetch.
-     */
-    where: MedicalAiConversationWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiConversation findFirst
-   */
-  export type MedicalAiConversationFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiConversation to fetch.
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiConversations to fetch.
-     */
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for MedicalAiConversations.
-     */
-    cursor?: MedicalAiConversationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiConversations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiConversations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiConversations.
-     */
-    distinct?: MedicalAiConversationScalarFieldEnum | MedicalAiConversationScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiConversation findFirstOrThrow
-   */
-  export type MedicalAiConversationFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiConversation to fetch.
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiConversations to fetch.
-     */
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for MedicalAiConversations.
-     */
-    cursor?: MedicalAiConversationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiConversations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiConversations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiConversations.
-     */
-    distinct?: MedicalAiConversationScalarFieldEnum | MedicalAiConversationScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiConversation findMany
-   */
-  export type MedicalAiConversationFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiConversations to fetch.
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiConversations to fetch.
-     */
-    orderBy?: MedicalAiConversationOrderByWithRelationInput | MedicalAiConversationOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing MedicalAiConversations.
-     */
-    cursor?: MedicalAiConversationWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiConversations from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiConversations.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiConversations.
-     */
-    distinct?: MedicalAiConversationScalarFieldEnum | MedicalAiConversationScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiConversation create
-   */
-  export type MedicalAiConversationCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * The data needed to create a MedicalAiConversation.
-     */
-    data: XOR<MedicalAiConversationCreateInput, MedicalAiConversationUncheckedCreateInput>
-  }
-
-  /**
-   * MedicalAiConversation createMany
-   */
-  export type MedicalAiConversationCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many MedicalAiConversations.
-     */
-    data: MedicalAiConversationCreateManyInput | MedicalAiConversationCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * MedicalAiConversation createManyAndReturn
-   */
-  export type MedicalAiConversationCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * The data used to create many MedicalAiConversations.
-     */
-    data: MedicalAiConversationCreateManyInput | MedicalAiConversationCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * MedicalAiConversation update
-   */
-  export type MedicalAiConversationUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * The data needed to update a MedicalAiConversation.
-     */
-    data: XOR<MedicalAiConversationUpdateInput, MedicalAiConversationUncheckedUpdateInput>
-    /**
-     * Choose, which MedicalAiConversation to update.
-     */
-    where: MedicalAiConversationWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiConversation updateMany
-   */
-  export type MedicalAiConversationUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update MedicalAiConversations.
-     */
-    data: XOR<MedicalAiConversationUpdateManyMutationInput, MedicalAiConversationUncheckedUpdateManyInput>
-    /**
-     * Filter which MedicalAiConversations to update
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * Limit how many MedicalAiConversations to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * MedicalAiConversation updateManyAndReturn
-   */
-  export type MedicalAiConversationUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * The data used to update MedicalAiConversations.
-     */
-    data: XOR<MedicalAiConversationUpdateManyMutationInput, MedicalAiConversationUncheckedUpdateManyInput>
-    /**
-     * Filter which MedicalAiConversations to update
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * Limit how many MedicalAiConversations to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * MedicalAiConversation upsert
-   */
-  export type MedicalAiConversationUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * The filter to search for the MedicalAiConversation to update in case it exists.
-     */
-    where: MedicalAiConversationWhereUniqueInput
-    /**
-     * In case the MedicalAiConversation found by the `where` argument doesn't exist, create a new MedicalAiConversation with this data.
-     */
-    create: XOR<MedicalAiConversationCreateInput, MedicalAiConversationUncheckedCreateInput>
-    /**
-     * In case the MedicalAiConversation was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<MedicalAiConversationUpdateInput, MedicalAiConversationUncheckedUpdateInput>
-  }
-
-  /**
-   * MedicalAiConversation delete
-   */
-  export type MedicalAiConversationDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-    /**
-     * Filter which MedicalAiConversation to delete.
-     */
-    where: MedicalAiConversationWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiConversation deleteMany
-   */
-  export type MedicalAiConversationDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which MedicalAiConversations to delete
-     */
-    where?: MedicalAiConversationWhereInput
-    /**
-     * Limit how many MedicalAiConversations to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * MedicalAiConversation.messages
-   */
-  export type MedicalAiConversation$messagesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    where?: MedicalAiMessageWhereInput
-    orderBy?: MedicalAiMessageOrderByWithRelationInput | MedicalAiMessageOrderByWithRelationInput[]
-    cursor?: MedicalAiMessageWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: MedicalAiMessageScalarFieldEnum | MedicalAiMessageScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiConversation without action
-   */
-  export type MedicalAiConversationDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiConversation
-     */
-    select?: MedicalAiConversationSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiConversation
-     */
-    omit?: MedicalAiConversationOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiConversationInclude<ExtArgs> | null
-  }
-
-
-  /**
-   * Model MedicalAiMessage
-   */
-
-  export type AggregateMedicalAiMessage = {
-    _count: MedicalAiMessageCountAggregateOutputType | null
-    _min: MedicalAiMessageMinAggregateOutputType | null
-    _max: MedicalAiMessageMaxAggregateOutputType | null
-  }
-
-  export type MedicalAiMessageMinAggregateOutputType = {
-    id: string | null
-    conversationId: string | null
-    role: $Enums.MedicalAiMessageRole | null
-    content: string | null
-    status: $Enums.MedicalAiMessageStatus | null
-    createdAt: Date | null
-  }
-
-  export type MedicalAiMessageMaxAggregateOutputType = {
-    id: string | null
-    conversationId: string | null
-    role: $Enums.MedicalAiMessageRole | null
-    content: string | null
-    status: $Enums.MedicalAiMessageStatus | null
-    createdAt: Date | null
-  }
-
-  export type MedicalAiMessageCountAggregateOutputType = {
-    id: number
-    conversationId: number
-    role: number
-    content: number
-    citations: number
-    status: number
-    createdAt: number
-    _all: number
-  }
-
-
-  export type MedicalAiMessageMinAggregateInputType = {
-    id?: true
-    conversationId?: true
-    role?: true
-    content?: true
-    status?: true
-    createdAt?: true
-  }
-
-  export type MedicalAiMessageMaxAggregateInputType = {
-    id?: true
-    conversationId?: true
-    role?: true
-    content?: true
-    status?: true
-    createdAt?: true
-  }
-
-  export type MedicalAiMessageCountAggregateInputType = {
-    id?: true
-    conversationId?: true
-    role?: true
-    content?: true
-    citations?: true
-    status?: true
-    createdAt?: true
-    _all?: true
-  }
-
-  export type MedicalAiMessageAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which MedicalAiMessage to aggregate.
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiMessages to fetch.
-     */
-    orderBy?: MedicalAiMessageOrderByWithRelationInput | MedicalAiMessageOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the start position
-     */
-    cursor?: MedicalAiMessageWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiMessages from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiMessages.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Count returned MedicalAiMessages
-    **/
-    _count?: true | MedicalAiMessageCountAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the minimum value
-    **/
-    _min?: MedicalAiMessageMinAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to find the maximum value
-    **/
-    _max?: MedicalAiMessageMaxAggregateInputType
-  }
-
-  export type GetMedicalAiMessageAggregateType<T extends MedicalAiMessageAggregateArgs> = {
-        [P in keyof T & keyof AggregateMedicalAiMessage]: P extends '_count' | 'count'
-      ? T[P] extends true
-        ? number
-        : GetScalarType<T[P], AggregateMedicalAiMessage[P]>
-      : GetScalarType<T[P], AggregateMedicalAiMessage[P]>
-  }
-
-
-
-
-  export type MedicalAiMessageGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    where?: MedicalAiMessageWhereInput
-    orderBy?: MedicalAiMessageOrderByWithAggregationInput | MedicalAiMessageOrderByWithAggregationInput[]
-    by: MedicalAiMessageScalarFieldEnum[] | MedicalAiMessageScalarFieldEnum
-    having?: MedicalAiMessageScalarWhereWithAggregatesInput
-    take?: number
-    skip?: number
-    _count?: MedicalAiMessageCountAggregateInputType | true
-    _min?: MedicalAiMessageMinAggregateInputType
-    _max?: MedicalAiMessageMaxAggregateInputType
-  }
-
-  export type MedicalAiMessageGroupByOutputType = {
-    id: string
-    conversationId: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations: JsonValue | null
-    status: $Enums.MedicalAiMessageStatus
-    createdAt: Date
-    _count: MedicalAiMessageCountAggregateOutputType | null
-    _min: MedicalAiMessageMinAggregateOutputType | null
-    _max: MedicalAiMessageMaxAggregateOutputType | null
-  }
-
-  type GetMedicalAiMessageGroupByPayload<T extends MedicalAiMessageGroupByArgs> = Prisma.PrismaPromise<
-    Array<
-      PickEnumerable<MedicalAiMessageGroupByOutputType, T['by']> &
-        {
-          [P in ((keyof T) & (keyof MedicalAiMessageGroupByOutputType))]: P extends '_count'
-            ? T[P] extends boolean
-              ? number
-              : GetScalarType<T[P], MedicalAiMessageGroupByOutputType[P]>
-            : GetScalarType<T[P], MedicalAiMessageGroupByOutputType[P]>
-        }
-      >
-    >
-
-
-  export type MedicalAiMessageSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    conversationId?: boolean
-    role?: boolean
-    content?: boolean
-    citations?: boolean
-    status?: boolean
-    createdAt?: boolean
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiMessage"]>
-
-  export type MedicalAiMessageSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    conversationId?: boolean
-    role?: boolean
-    content?: boolean
-    citations?: boolean
-    status?: boolean
-    createdAt?: boolean
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiMessage"]>
-
-  export type MedicalAiMessageSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
-    id?: boolean
-    conversationId?: boolean
-    role?: boolean
-    content?: boolean
-    citations?: boolean
-    status?: boolean
-    createdAt?: boolean
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }, ExtArgs["result"]["medicalAiMessage"]>
-
-  export type MedicalAiMessageSelectScalar = {
-    id?: boolean
-    conversationId?: boolean
-    role?: boolean
-    content?: boolean
-    citations?: boolean
-    status?: boolean
-    createdAt?: boolean
-  }
-
-  export type MedicalAiMessageOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "conversationId" | "role" | "content" | "citations" | "status" | "createdAt", ExtArgs["result"]["medicalAiMessage"]>
-  export type MedicalAiMessageInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }
-  export type MedicalAiMessageIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }
-  export type MedicalAiMessageIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    conversation?: boolean | MedicalAiConversationDefaultArgs<ExtArgs>
-  }
-
-  export type $MedicalAiMessagePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    name: "MedicalAiMessage"
-    objects: {
-      conversation: Prisma.$MedicalAiConversationPayload<ExtArgs>
-    }
-    scalars: $Extensions.GetPayloadResult<{
-      id: string
-      conversationId: string
-      role: $Enums.MedicalAiMessageRole
-      content: string
-      citations: Prisma.JsonValue | null
-      status: $Enums.MedicalAiMessageStatus
-      createdAt: Date
-    }, ExtArgs["result"]["medicalAiMessage"]>
-    composites: {}
-  }
-
-  type MedicalAiMessageGetPayload<S extends boolean | null | undefined | MedicalAiMessageDefaultArgs> = $Result.GetResult<Prisma.$MedicalAiMessagePayload, S>
-
-  type MedicalAiMessageCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    Omit<MedicalAiMessageFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
-      select?: MedicalAiMessageCountAggregateInputType | true
-    }
-
-  export interface MedicalAiMessageDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['MedicalAiMessage'], meta: { name: 'MedicalAiMessage' } }
-    /**
-     * Find zero or one MedicalAiMessage that matches the filter.
-     * @param {MedicalAiMessageFindUniqueArgs} args - Arguments to find a MedicalAiMessage
-     * @example
-     * // Get one MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.findUnique({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUnique<T extends MedicalAiMessageFindUniqueArgs>(args: SelectSubset<T, MedicalAiMessageFindUniqueArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find one MedicalAiMessage that matches the filter or throw an error with `error.code='P2025'`
-     * if no matches were found.
-     * @param {MedicalAiMessageFindUniqueOrThrowArgs} args - Arguments to find a MedicalAiMessage
-     * @example
-     * // Get one MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.findUniqueOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findUniqueOrThrow<T extends MedicalAiMessageFindUniqueOrThrowArgs>(args: SelectSubset<T, MedicalAiMessageFindUniqueOrThrowArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first MedicalAiMessage that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageFindFirstArgs} args - Arguments to find a MedicalAiMessage
-     * @example
-     * // Get one MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.findFirst({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirst<T extends MedicalAiMessageFindFirstArgs>(args?: SelectSubset<T, MedicalAiMessageFindFirstArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find the first MedicalAiMessage that matches the filter or
-     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageFindFirstOrThrowArgs} args - Arguments to find a MedicalAiMessage
-     * @example
-     * // Get one MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.findFirstOrThrow({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     */
-    findFirstOrThrow<T extends MedicalAiMessageFindFirstOrThrowArgs>(args?: SelectSubset<T, MedicalAiMessageFindFirstOrThrowArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Find zero or more MedicalAiMessages that matches the filter.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageFindManyArgs} args - Arguments to filter and select certain fields only.
-     * @example
-     * // Get all MedicalAiMessages
-     * const medicalAiMessages = await prisma.medicalAiMessage.findMany()
-     * 
-     * // Get first 10 MedicalAiMessages
-     * const medicalAiMessages = await prisma.medicalAiMessage.findMany({ take: 10 })
-     * 
-     * // Only select the `id`
-     * const medicalAiMessageWithIdOnly = await prisma.medicalAiMessage.findMany({ select: { id: true } })
-     * 
-     */
-    findMany<T extends MedicalAiMessageFindManyArgs>(args?: SelectSubset<T, MedicalAiMessageFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
-
-    /**
-     * Create a MedicalAiMessage.
-     * @param {MedicalAiMessageCreateArgs} args - Arguments to create a MedicalAiMessage.
-     * @example
-     * // Create one MedicalAiMessage
-     * const MedicalAiMessage = await prisma.medicalAiMessage.create({
-     *   data: {
-     *     // ... data to create a MedicalAiMessage
-     *   }
-     * })
-     * 
-     */
-    create<T extends MedicalAiMessageCreateArgs>(args: SelectSubset<T, MedicalAiMessageCreateArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Create many MedicalAiMessages.
-     * @param {MedicalAiMessageCreateManyArgs} args - Arguments to create many MedicalAiMessages.
-     * @example
-     * // Create many MedicalAiMessages
-     * const medicalAiMessage = await prisma.medicalAiMessage.createMany({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     *     
-     */
-    createMany<T extends MedicalAiMessageCreateManyArgs>(args?: SelectSubset<T, MedicalAiMessageCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Create many MedicalAiMessages and returns the data saved in the database.
-     * @param {MedicalAiMessageCreateManyAndReturnArgs} args - Arguments to create many MedicalAiMessages.
-     * @example
-     * // Create many MedicalAiMessages
-     * const medicalAiMessage = await prisma.medicalAiMessage.createManyAndReturn({
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Create many MedicalAiMessages and only return the `id`
-     * const medicalAiMessageWithIdOnly = await prisma.medicalAiMessage.createManyAndReturn({
-     *   select: { id: true },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    createManyAndReturn<T extends MedicalAiMessageCreateManyAndReturnArgs>(args?: SelectSubset<T, MedicalAiMessageCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Delete a MedicalAiMessage.
-     * @param {MedicalAiMessageDeleteArgs} args - Arguments to delete one MedicalAiMessage.
-     * @example
-     * // Delete one MedicalAiMessage
-     * const MedicalAiMessage = await prisma.medicalAiMessage.delete({
-     *   where: {
-     *     // ... filter to delete one MedicalAiMessage
-     *   }
-     * })
-     * 
-     */
-    delete<T extends MedicalAiMessageDeleteArgs>(args: SelectSubset<T, MedicalAiMessageDeleteArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Update one MedicalAiMessage.
-     * @param {MedicalAiMessageUpdateArgs} args - Arguments to update one MedicalAiMessage.
-     * @example
-     * // Update one MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.update({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    update<T extends MedicalAiMessageUpdateArgs>(args: SelectSubset<T, MedicalAiMessageUpdateArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-    /**
-     * Delete zero or more MedicalAiMessages.
-     * @param {MedicalAiMessageDeleteManyArgs} args - Arguments to filter MedicalAiMessages to delete.
-     * @example
-     * // Delete a few MedicalAiMessages
-     * const { count } = await prisma.medicalAiMessage.deleteMany({
-     *   where: {
-     *     // ... provide filter here
-     *   }
-     * })
-     * 
-     */
-    deleteMany<T extends MedicalAiMessageDeleteManyArgs>(args?: SelectSubset<T, MedicalAiMessageDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more MedicalAiMessages.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageUpdateManyArgs} args - Arguments to update one or more rows.
-     * @example
-     * // Update many MedicalAiMessages
-     * const medicalAiMessage = await prisma.medicalAiMessage.updateMany({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: {
-     *     // ... provide data here
-     *   }
-     * })
-     * 
-     */
-    updateMany<T extends MedicalAiMessageUpdateManyArgs>(args: SelectSubset<T, MedicalAiMessageUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
-
-    /**
-     * Update zero or more MedicalAiMessages and returns the data updated in the database.
-     * @param {MedicalAiMessageUpdateManyAndReturnArgs} args - Arguments to update many MedicalAiMessages.
-     * @example
-     * // Update many MedicalAiMessages
-     * const medicalAiMessage = await prisma.medicalAiMessage.updateManyAndReturn({
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * 
-     * // Update zero or more MedicalAiMessages and only return the `id`
-     * const medicalAiMessageWithIdOnly = await prisma.medicalAiMessage.updateManyAndReturn({
-     *   select: { id: true },
-     *   where: {
-     *     // ... provide filter here
-     *   },
-     *   data: [
-     *     // ... provide data here
-     *   ]
-     * })
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * 
-     */
-    updateManyAndReturn<T extends MedicalAiMessageUpdateManyAndReturnArgs>(args: SelectSubset<T, MedicalAiMessageUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
-
-    /**
-     * Create or update one MedicalAiMessage.
-     * @param {MedicalAiMessageUpsertArgs} args - Arguments to update or create a MedicalAiMessage.
-     * @example
-     * // Update or create a MedicalAiMessage
-     * const medicalAiMessage = await prisma.medicalAiMessage.upsert({
-     *   create: {
-     *     // ... data to create a MedicalAiMessage
-     *   },
-     *   update: {
-     *     // ... in case it already exists, update
-     *   },
-     *   where: {
-     *     // ... the filter for the MedicalAiMessage we want to update
-     *   }
-     * })
-     */
-    upsert<T extends MedicalAiMessageUpsertArgs>(args: SelectSubset<T, MedicalAiMessageUpsertArgs<ExtArgs>>): Prisma__MedicalAiMessageClient<$Result.GetResult<Prisma.$MedicalAiMessagePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
-
-
-    /**
-     * Count the number of MedicalAiMessages.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageCountArgs} args - Arguments to filter MedicalAiMessages to count.
-     * @example
-     * // Count the number of MedicalAiMessages
-     * const count = await prisma.medicalAiMessage.count({
-     *   where: {
-     *     // ... the filter for the MedicalAiMessages we want to count
-     *   }
-     * })
-    **/
-    count<T extends MedicalAiMessageCountArgs>(
-      args?: Subset<T, MedicalAiMessageCountArgs>,
-    ): Prisma.PrismaPromise<
-      T extends $Utils.Record<'select', any>
-        ? T['select'] extends true
-          ? number
-          : GetScalarType<T['select'], MedicalAiMessageCountAggregateOutputType>
-        : number
-    >
-
-    /**
-     * Allows you to perform aggregations operations on a MedicalAiMessage.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
-     * @example
-     * // Ordered by age ascending
-     * // Where email contains prisma.io
-     * // Limited to the 10 users
-     * const aggregations = await prisma.user.aggregate({
-     *   _avg: {
-     *     age: true,
-     *   },
-     *   where: {
-     *     email: {
-     *       contains: "prisma.io",
-     *     },
-     *   },
-     *   orderBy: {
-     *     age: "asc",
-     *   },
-     *   take: 10,
-     * })
-    **/
-    aggregate<T extends MedicalAiMessageAggregateArgs>(args: Subset<T, MedicalAiMessageAggregateArgs>): Prisma.PrismaPromise<GetMedicalAiMessageAggregateType<T>>
-
-    /**
-     * Group by MedicalAiMessage.
-     * Note, that providing `undefined` is treated as the value not being there.
-     * Read more here: https://pris.ly/d/null-undefined
-     * @param {MedicalAiMessageGroupByArgs} args - Group by arguments.
-     * @example
-     * // Group by city, order by createdAt, get count
-     * const result = await prisma.user.groupBy({
-     *   by: ['city', 'createdAt'],
-     *   orderBy: {
-     *     createdAt: true
-     *   },
-     *   _count: {
-     *     _all: true
-     *   },
-     * })
-     * 
-    **/
-    groupBy<
-      T extends MedicalAiMessageGroupByArgs,
-      HasSelectOrTake extends Or<
-        Extends<'skip', Keys<T>>,
-        Extends<'take', Keys<T>>
-      >,
-      OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: MedicalAiMessageGroupByArgs['orderBy'] }
-        : { orderBy?: MedicalAiMessageGroupByArgs['orderBy'] },
-      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
-      ByFields extends MaybeTupleToUnion<T['by']>,
-      ByValid extends Has<ByFields, OrderFields>,
-      HavingFields extends GetHavingFields<T['having']>,
-      HavingValid extends Has<ByFields, HavingFields>,
-      ByEmpty extends T['by'] extends never[] ? True : False,
-      InputErrors extends ByEmpty extends True
-      ? `Error: "by" must not be empty.`
-      : HavingValid extends False
-      ? {
-          [P in HavingFields]: P extends ByFields
-            ? never
-            : P extends string
-            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-            : [
-                Error,
-                'Field ',
-                P,
-                ` in "having" needs to be provided in "by"`,
-              ]
-        }[HavingFields]
-      : 'take' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "take", you also need to provide "orderBy"'
-      : 'skip' extends Keys<T>
-      ? 'orderBy' extends Keys<T>
-        ? ByValid extends True
-          ? {}
-          : {
-              [P in OrderFields]: P extends ByFields
-                ? never
-                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-            }[OrderFields]
-        : 'Error: If you provide "skip", you also need to provide "orderBy"'
-      : ByValid extends True
-      ? {}
-      : {
-          [P in OrderFields]: P extends ByFields
-            ? never
-            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-        }[OrderFields]
-    >(args: SubsetIntersection<T, MedicalAiMessageGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetMedicalAiMessageGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-  /**
-   * Fields of the MedicalAiMessage model
-   */
-  readonly fields: MedicalAiMessageFieldRefs;
-  }
-
-  /**
-   * The delegate class that acts as a "Promise-like" for MedicalAiMessage.
-   * Why is this prefixed with `Prisma__`?
-   * Because we want to prevent naming conflicts as mentioned in
-   * https://github.com/prisma/prisma-client-js/issues/707
-   */
-  export interface Prisma__MedicalAiMessageClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: "PrismaPromise"
-    conversation<T extends MedicalAiConversationDefaultArgs<ExtArgs> = {}>(args?: Subset<T, MedicalAiConversationDefaultArgs<ExtArgs>>): Prisma__MedicalAiConversationClient<$Result.GetResult<Prisma.$MedicalAiConversationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-    /**
-     * Attaches callbacks for the resolution and/or rejection of the Promise.
-     * @param onfulfilled The callback to execute when the Promise is resolved.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of which ever callback is executed.
-     */
-    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
-    /**
-     * Attaches a callback for only the rejection of the Promise.
-     * @param onrejected The callback to execute when the Promise is rejected.
-     * @returns A Promise for the completion of the callback.
-     */
-    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
-    /**
-     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
-     * resolved value cannot be modified from the callback.
-     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
-     * @returns A Promise for the completion of the callback.
-     */
-    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
-  }
-
-
-
-
-  /**
-   * Fields of the MedicalAiMessage model
-   */
-  interface MedicalAiMessageFieldRefs {
-    readonly id: FieldRef<"MedicalAiMessage", 'String'>
-    readonly conversationId: FieldRef<"MedicalAiMessage", 'String'>
-    readonly role: FieldRef<"MedicalAiMessage", 'MedicalAiMessageRole'>
-    readonly content: FieldRef<"MedicalAiMessage", 'String'>
-    readonly citations: FieldRef<"MedicalAiMessage", 'Json'>
-    readonly status: FieldRef<"MedicalAiMessage", 'MedicalAiMessageStatus'>
-    readonly createdAt: FieldRef<"MedicalAiMessage", 'DateTime'>
-  }
-    
-
-  // Custom InputTypes
-  /**
-   * MedicalAiMessage findUnique
-   */
-  export type MedicalAiMessageFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiMessage to fetch.
-     */
-    where: MedicalAiMessageWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiMessage findUniqueOrThrow
-   */
-  export type MedicalAiMessageFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiMessage to fetch.
-     */
-    where: MedicalAiMessageWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiMessage findFirst
-   */
-  export type MedicalAiMessageFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiMessage to fetch.
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiMessages to fetch.
-     */
-    orderBy?: MedicalAiMessageOrderByWithRelationInput | MedicalAiMessageOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for MedicalAiMessages.
-     */
-    cursor?: MedicalAiMessageWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiMessages from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiMessages.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiMessages.
-     */
-    distinct?: MedicalAiMessageScalarFieldEnum | MedicalAiMessageScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiMessage findFirstOrThrow
-   */
-  export type MedicalAiMessageFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiMessage to fetch.
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiMessages to fetch.
-     */
-    orderBy?: MedicalAiMessageOrderByWithRelationInput | MedicalAiMessageOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for searching for MedicalAiMessages.
-     */
-    cursor?: MedicalAiMessageWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiMessages from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiMessages.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiMessages.
-     */
-    distinct?: MedicalAiMessageScalarFieldEnum | MedicalAiMessageScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiMessage findMany
-   */
-  export type MedicalAiMessageFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter, which MedicalAiMessages to fetch.
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     * 
-     * Determine the order of MedicalAiMessages to fetch.
-     */
-    orderBy?: MedicalAiMessageOrderByWithRelationInput | MedicalAiMessageOrderByWithRelationInput[]
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     * 
-     * Sets the position for listing MedicalAiMessages.
-     */
-    cursor?: MedicalAiMessageWhereUniqueInput
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Take `±n` MedicalAiMessages from the position of the cursor.
-     */
-    take?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     * 
-     * Skip the first `n` MedicalAiMessages.
-     */
-    skip?: number
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     * 
-     * Filter by unique combinations of MedicalAiMessages.
-     */
-    distinct?: MedicalAiMessageScalarFieldEnum | MedicalAiMessageScalarFieldEnum[]
-  }
-
-  /**
-   * MedicalAiMessage create
-   */
-  export type MedicalAiMessageCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * The data needed to create a MedicalAiMessage.
-     */
-    data: XOR<MedicalAiMessageCreateInput, MedicalAiMessageUncheckedCreateInput>
-  }
-
-  /**
-   * MedicalAiMessage createMany
-   */
-  export type MedicalAiMessageCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to create many MedicalAiMessages.
-     */
-    data: MedicalAiMessageCreateManyInput | MedicalAiMessageCreateManyInput[]
-    skipDuplicates?: boolean
-  }
-
-  /**
-   * MedicalAiMessage createManyAndReturn
-   */
-  export type MedicalAiMessageCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelectCreateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * The data used to create many MedicalAiMessages.
-     */
-    data: MedicalAiMessageCreateManyInput | MedicalAiMessageCreateManyInput[]
-    skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageIncludeCreateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * MedicalAiMessage update
-   */
-  export type MedicalAiMessageUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * The data needed to update a MedicalAiMessage.
-     */
-    data: XOR<MedicalAiMessageUpdateInput, MedicalAiMessageUncheckedUpdateInput>
-    /**
-     * Choose, which MedicalAiMessage to update.
-     */
-    where: MedicalAiMessageWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiMessage updateMany
-   */
-  export type MedicalAiMessageUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * The data used to update MedicalAiMessages.
-     */
-    data: XOR<MedicalAiMessageUpdateManyMutationInput, MedicalAiMessageUncheckedUpdateManyInput>
-    /**
-     * Filter which MedicalAiMessages to update
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * Limit how many MedicalAiMessages to update.
-     */
-    limit?: number
-  }
-
-  /**
-   * MedicalAiMessage updateManyAndReturn
-   */
-  export type MedicalAiMessageUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelectUpdateManyAndReturn<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * The data used to update MedicalAiMessages.
-     */
-    data: XOR<MedicalAiMessageUpdateManyMutationInput, MedicalAiMessageUncheckedUpdateManyInput>
-    /**
-     * Filter which MedicalAiMessages to update
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * Limit how many MedicalAiMessages to update.
-     */
-    limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageIncludeUpdateManyAndReturn<ExtArgs> | null
-  }
-
-  /**
-   * MedicalAiMessage upsert
-   */
-  export type MedicalAiMessageUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * The filter to search for the MedicalAiMessage to update in case it exists.
-     */
-    where: MedicalAiMessageWhereUniqueInput
-    /**
-     * In case the MedicalAiMessage found by the `where` argument doesn't exist, create a new MedicalAiMessage with this data.
-     */
-    create: XOR<MedicalAiMessageCreateInput, MedicalAiMessageUncheckedCreateInput>
-    /**
-     * In case the MedicalAiMessage was found with the provided `where` argument, update it with this data.
-     */
-    update: XOR<MedicalAiMessageUpdateInput, MedicalAiMessageUncheckedUpdateInput>
-  }
-
-  /**
-   * MedicalAiMessage delete
-   */
-  export type MedicalAiMessageDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-    /**
-     * Filter which MedicalAiMessage to delete.
-     */
-    where: MedicalAiMessageWhereUniqueInput
-  }
-
-  /**
-   * MedicalAiMessage deleteMany
-   */
-  export type MedicalAiMessageDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Filter which MedicalAiMessages to delete
-     */
-    where?: MedicalAiMessageWhereInput
-    /**
-     * Limit how many MedicalAiMessages to delete.
-     */
-    limit?: number
-  }
-
-  /**
-   * MedicalAiMessage without action
-   */
-  export type MedicalAiMessageDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
-    /**
-     * Select specific fields to fetch from the MedicalAiMessage
-     */
-    select?: MedicalAiMessageSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the MedicalAiMessage
-     */
-    omit?: MedicalAiMessageOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: MedicalAiMessageInclude<ExtArgs> | null
-  }
-
-
-  /**
    * Enums
    */
 
@@ -37646,31 +35136,6 @@ export namespace Prisma {
   export type CommentScalarFieldEnum = (typeof CommentScalarFieldEnum)[keyof typeof CommentScalarFieldEnum]
 
 
-  export const MedicalAiConversationScalarFieldEnum: {
-    id: 'id',
-    doctorId: 'doctorId',
-    patientId: 'patientId',
-    title: 'title',
-    createdAt: 'createdAt',
-    updatedAt: 'updatedAt'
-  };
-
-  export type MedicalAiConversationScalarFieldEnum = (typeof MedicalAiConversationScalarFieldEnum)[keyof typeof MedicalAiConversationScalarFieldEnum]
-
-
-  export const MedicalAiMessageScalarFieldEnum: {
-    id: 'id',
-    conversationId: 'conversationId',
-    role: 'role',
-    content: 'content',
-    citations: 'citations',
-    status: 'status',
-    createdAt: 'createdAt'
-  };
-
-  export type MedicalAiMessageScalarFieldEnum = (typeof MedicalAiMessageScalarFieldEnum)[keyof typeof MedicalAiMessageScalarFieldEnum]
-
-
   export const SortOrder: {
     asc: 'asc',
     desc: 'desc'
@@ -37995,34 +35460,6 @@ export namespace Prisma {
    */
   export type ListEnumWithdrawalStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'WithdrawalStatus[]'>
     
-
-
-  /**
-   * Reference to a field of type 'MedicalAiMessageRole'
-   */
-  export type EnumMedicalAiMessageRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalAiMessageRole'>
-    
-
-
-  /**
-   * Reference to a field of type 'MedicalAiMessageRole[]'
-   */
-  export type ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalAiMessageRole[]'>
-    
-
-
-  /**
-   * Reference to a field of type 'MedicalAiMessageStatus'
-   */
-  export type EnumMedicalAiMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalAiMessageStatus'>
-    
-
-
-  /**
-   * Reference to a field of type 'MedicalAiMessageStatus[]'
-   */
-  export type ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'MedicalAiMessageStatus[]'>
-    
   /**
    * Deep Input Types
    */
@@ -38303,7 +35740,6 @@ export namespace Prisma {
     ratings?: RatingListRelationFilter
     withdrawals?: WithdrawalListRelationFilter
     doctorQualifications?: DoctorQualificationListRelationFilter
-    medicalAiConversations?: MedicalAiConversationListRelationFilter
   }
 
   export type DoctorOrderByWithRelationInput = {
@@ -38330,7 +35766,6 @@ export namespace Prisma {
     ratings?: RatingOrderByRelationAggregateInput
     withdrawals?: WithdrawalOrderByRelationAggregateInput
     doctorQualifications?: DoctorQualificationOrderByRelationAggregateInput
-    medicalAiConversations?: MedicalAiConversationOrderByRelationAggregateInput
   }
 
   export type DoctorWhereUniqueInput = Prisma.AtLeast<{
@@ -38360,7 +35795,6 @@ export namespace Prisma {
     ratings?: RatingListRelationFilter
     withdrawals?: WithdrawalListRelationFilter
     doctorQualifications?: DoctorQualificationListRelationFilter
-    medicalAiConversations?: MedicalAiConversationListRelationFilter
   }, "id" | "userId">
 
   export type DoctorOrderByWithAggregationInput = {
@@ -38465,7 +35899,6 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
     medicalDocuments?: MedicalDocumentListRelationFilter
-    medicalAiConversations?: MedicalAiConversationListRelationFilter
   }
 
   export type PatientOrderByWithRelationInput = {
@@ -38483,7 +35916,6 @@ export namespace Prisma {
     comments?: CommentOrderByRelationAggregateInput
     ratings?: RatingOrderByRelationAggregateInput
     medicalDocuments?: MedicalDocumentOrderByRelationAggregateInput
-    medicalAiConversations?: MedicalAiConversationOrderByRelationAggregateInput
   }
 
   export type PatientWhereUniqueInput = Prisma.AtLeast<{
@@ -38504,7 +35936,6 @@ export namespace Prisma {
     comments?: CommentListRelationFilter
     ratings?: RatingListRelationFilter
     medicalDocuments?: MedicalDocumentListRelationFilter
-    medicalAiConversations?: MedicalAiConversationListRelationFilter
   }, "id" | "userId">
 
   export type PatientOrderByWithAggregationInput = {
@@ -40276,137 +37707,6 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Comment"> | Date | string
   }
 
-  export type MedicalAiConversationWhereInput = {
-    AND?: MedicalAiConversationWhereInput | MedicalAiConversationWhereInput[]
-    OR?: MedicalAiConversationWhereInput[]
-    NOT?: MedicalAiConversationWhereInput | MedicalAiConversationWhereInput[]
-    id?: StringFilter<"MedicalAiConversation"> | string
-    doctorId?: StringFilter<"MedicalAiConversation"> | string
-    patientId?: StringFilter<"MedicalAiConversation"> | string
-    title?: StringNullableFilter<"MedicalAiConversation"> | string | null
-    createdAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-    updatedAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
-    messages?: MedicalAiMessageListRelationFilter
-  }
-
-  export type MedicalAiConversationOrderByWithRelationInput = {
-    id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
-    title?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    doctor?: DoctorOrderByWithRelationInput
-    patient?: PatientOrderByWithRelationInput
-    messages?: MedicalAiMessageOrderByRelationAggregateInput
-  }
-
-  export type MedicalAiConversationWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: MedicalAiConversationWhereInput | MedicalAiConversationWhereInput[]
-    OR?: MedicalAiConversationWhereInput[]
-    NOT?: MedicalAiConversationWhereInput | MedicalAiConversationWhereInput[]
-    doctorId?: StringFilter<"MedicalAiConversation"> | string
-    patientId?: StringFilter<"MedicalAiConversation"> | string
-    title?: StringNullableFilter<"MedicalAiConversation"> | string | null
-    createdAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-    updatedAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-    doctor?: XOR<DoctorScalarRelationFilter, DoctorWhereInput>
-    patient?: XOR<PatientScalarRelationFilter, PatientWhereInput>
-    messages?: MedicalAiMessageListRelationFilter
-  }, "id">
-
-  export type MedicalAiConversationOrderByWithAggregationInput = {
-    id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
-    title?: SortOrderInput | SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-    _count?: MedicalAiConversationCountOrderByAggregateInput
-    _max?: MedicalAiConversationMaxOrderByAggregateInput
-    _min?: MedicalAiConversationMinOrderByAggregateInput
-  }
-
-  export type MedicalAiConversationScalarWhereWithAggregatesInput = {
-    AND?: MedicalAiConversationScalarWhereWithAggregatesInput | MedicalAiConversationScalarWhereWithAggregatesInput[]
-    OR?: MedicalAiConversationScalarWhereWithAggregatesInput[]
-    NOT?: MedicalAiConversationScalarWhereWithAggregatesInput | MedicalAiConversationScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"MedicalAiConversation"> | string
-    doctorId?: StringWithAggregatesFilter<"MedicalAiConversation"> | string
-    patientId?: StringWithAggregatesFilter<"MedicalAiConversation"> | string
-    title?: StringNullableWithAggregatesFilter<"MedicalAiConversation"> | string | null
-    createdAt?: DateTimeWithAggregatesFilter<"MedicalAiConversation"> | Date | string
-    updatedAt?: DateTimeWithAggregatesFilter<"MedicalAiConversation"> | Date | string
-  }
-
-  export type MedicalAiMessageWhereInput = {
-    AND?: MedicalAiMessageWhereInput | MedicalAiMessageWhereInput[]
-    OR?: MedicalAiMessageWhereInput[]
-    NOT?: MedicalAiMessageWhereInput | MedicalAiMessageWhereInput[]
-    id?: StringFilter<"MedicalAiMessage"> | string
-    conversationId?: StringFilter<"MedicalAiMessage"> | string
-    role?: EnumMedicalAiMessageRoleFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageRole
-    content?: StringFilter<"MedicalAiMessage"> | string
-    citations?: JsonNullableFilter<"MedicalAiMessage">
-    status?: EnumMedicalAiMessageStatusFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFilter<"MedicalAiMessage"> | Date | string
-    conversation?: XOR<MedicalAiConversationScalarRelationFilter, MedicalAiConversationWhereInput>
-  }
-
-  export type MedicalAiMessageOrderByWithRelationInput = {
-    id?: SortOrder
-    conversationId?: SortOrder
-    role?: SortOrder
-    content?: SortOrder
-    citations?: SortOrderInput | SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    conversation?: MedicalAiConversationOrderByWithRelationInput
-  }
-
-  export type MedicalAiMessageWhereUniqueInput = Prisma.AtLeast<{
-    id?: string
-    AND?: MedicalAiMessageWhereInput | MedicalAiMessageWhereInput[]
-    OR?: MedicalAiMessageWhereInput[]
-    NOT?: MedicalAiMessageWhereInput | MedicalAiMessageWhereInput[]
-    conversationId?: StringFilter<"MedicalAiMessage"> | string
-    role?: EnumMedicalAiMessageRoleFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageRole
-    content?: StringFilter<"MedicalAiMessage"> | string
-    citations?: JsonNullableFilter<"MedicalAiMessage">
-    status?: EnumMedicalAiMessageStatusFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFilter<"MedicalAiMessage"> | Date | string
-    conversation?: XOR<MedicalAiConversationScalarRelationFilter, MedicalAiConversationWhereInput>
-  }, "id">
-
-  export type MedicalAiMessageOrderByWithAggregationInput = {
-    id?: SortOrder
-    conversationId?: SortOrder
-    role?: SortOrder
-    content?: SortOrder
-    citations?: SortOrderInput | SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-    _count?: MedicalAiMessageCountOrderByAggregateInput
-    _max?: MedicalAiMessageMaxOrderByAggregateInput
-    _min?: MedicalAiMessageMinOrderByAggregateInput
-  }
-
-  export type MedicalAiMessageScalarWhereWithAggregatesInput = {
-    AND?: MedicalAiMessageScalarWhereWithAggregatesInput | MedicalAiMessageScalarWhereWithAggregatesInput[]
-    OR?: MedicalAiMessageScalarWhereWithAggregatesInput[]
-    NOT?: MedicalAiMessageScalarWhereWithAggregatesInput | MedicalAiMessageScalarWhereWithAggregatesInput[]
-    id?: StringWithAggregatesFilter<"MedicalAiMessage"> | string
-    conversationId?: StringWithAggregatesFilter<"MedicalAiMessage"> | string
-    role?: EnumMedicalAiMessageRoleWithAggregatesFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageRole
-    content?: StringWithAggregatesFilter<"MedicalAiMessage"> | string
-    citations?: JsonNullableWithAggregatesFilter<"MedicalAiMessage">
-    status?: EnumMedicalAiMessageStatusWithAggregatesFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeWithAggregatesFilter<"MedicalAiMessage"> | Date | string
-  }
-
   export type UserCreateInput = {
     id?: string
     email: string
@@ -40703,7 +38003,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateInput = {
@@ -40729,7 +38028,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUpdateInput = {
@@ -40755,7 +38053,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateInput = {
@@ -40781,7 +38078,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateManyInput = {
@@ -40883,7 +38179,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateInput = {
@@ -40900,7 +38195,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUpdateInput = {
@@ -40917,7 +38211,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateInput = {
@@ -40934,7 +38227,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientCreateManyInput = {
@@ -42878,140 +40170,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type MedicalAiConversationCreateInput = {
-    id?: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctor: DoctorCreateNestedOneWithoutMedicalAiConversationsInput
-    patient: PatientCreateNestedOneWithoutMedicalAiConversationsInput
-    messages?: MedicalAiMessageCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationUncheckedCreateInput = {
-    id?: string
-    doctorId: string
-    patientId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    messages?: MedicalAiMessageUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctor?: DoctorUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-    patient?: PatientUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-    messages?: MedicalAiMessageUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    messages?: MedicalAiMessageUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationCreateManyInput = {
-    id?: string
-    doctorId: string
-    patientId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type MedicalAiConversationUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiConversationUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiMessageCreateInput = {
-    id?: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-    conversation: MedicalAiConversationCreateNestedOneWithoutMessagesInput
-  }
-
-  export type MedicalAiMessageUncheckedCreateInput = {
-    id?: string
-    conversationId: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-  }
-
-  export type MedicalAiMessageUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    conversation?: MedicalAiConversationUpdateOneRequiredWithoutMessagesNestedInput
-  }
-
-  export type MedicalAiMessageUncheckedUpdateInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiMessageCreateManyInput = {
-    id?: string
-    conversationId: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-  }
-
-  export type MedicalAiMessageUpdateManyMutationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiMessageUncheckedUpdateManyInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    conversationId?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type StringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -43492,12 +40650,6 @@ export namespace Prisma {
     none?: DoctorQualificationWhereInput
   }
 
-  export type MedicalAiConversationListRelationFilter = {
-    every?: MedicalAiConversationWhereInput
-    some?: MedicalAiConversationWhereInput
-    none?: MedicalAiConversationWhereInput
-  }
-
   export type LeaveOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
@@ -43527,10 +40679,6 @@ export namespace Prisma {
   }
 
   export type DoctorQualificationOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type MedicalAiConversationOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -44967,110 +42115,6 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type MedicalAiMessageListRelationFilter = {
-    every?: MedicalAiMessageWhereInput
-    some?: MedicalAiMessageWhereInput
-    none?: MedicalAiMessageWhereInput
-  }
-
-  export type MedicalAiMessageOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type MedicalAiConversationCountOrderByAggregateInput = {
-    id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
-    title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type MedicalAiConversationMaxOrderByAggregateInput = {
-    id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
-    title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type MedicalAiConversationMinOrderByAggregateInput = {
-    id?: SortOrder
-    doctorId?: SortOrder
-    patientId?: SortOrder
-    title?: SortOrder
-    createdAt?: SortOrder
-    updatedAt?: SortOrder
-  }
-
-  export type EnumMedicalAiMessageRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageRole | EnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel> | $Enums.MedicalAiMessageRole
-  }
-
-  export type EnumMedicalAiMessageStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageStatus | EnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel> | $Enums.MedicalAiMessageStatus
-  }
-
-  export type MedicalAiConversationScalarRelationFilter = {
-    is?: MedicalAiConversationWhereInput
-    isNot?: MedicalAiConversationWhereInput
-  }
-
-  export type MedicalAiMessageCountOrderByAggregateInput = {
-    id?: SortOrder
-    conversationId?: SortOrder
-    role?: SortOrder
-    content?: SortOrder
-    citations?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type MedicalAiMessageMaxOrderByAggregateInput = {
-    id?: SortOrder
-    conversationId?: SortOrder
-    role?: SortOrder
-    content?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type MedicalAiMessageMinOrderByAggregateInput = {
-    id?: SortOrder
-    conversationId?: SortOrder
-    role?: SortOrder
-    content?: SortOrder
-    status?: SortOrder
-    createdAt?: SortOrder
-  }
-
-  export type EnumMedicalAiMessageRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageRole | EnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageRoleWithAggregatesFilter<$PrismaModel> | $Enums.MedicalAiMessageRole
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel>
-    _max?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel>
-  }
-
-  export type EnumMedicalAiMessageStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageStatus | EnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageStatusWithAggregatesFilter<$PrismaModel> | $Enums.MedicalAiMessageStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel>
-    _max?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel>
-  }
-
   export type AdminCreateNestedOneWithoutUserInput = {
     create?: XOR<AdminCreateWithoutUserInput, AdminUncheckedCreateWithoutUserInput>
     connectOrCreate?: AdminCreateOrConnectWithoutUserInput
@@ -45738,13 +42782,6 @@ export namespace Prisma {
     connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
   }
 
-  export type MedicalAiConversationCreateNestedManyWithoutDoctorInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput> | MedicalAiConversationCreateWithoutDoctorInput[] | MedicalAiConversationUncheckedCreateWithoutDoctorInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutDoctorInput | MedicalAiConversationCreateOrConnectWithoutDoctorInput[]
-    createMany?: MedicalAiConversationCreateManyDoctorInputEnvelope
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-  }
-
   export type LeaveUncheckedCreateNestedManyWithoutDoctorInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -45812,13 +42849,6 @@ export namespace Prisma {
     connectOrCreate?: DoctorQualificationCreateOrConnectWithoutDoctorInput | DoctorQualificationCreateOrConnectWithoutDoctorInput[]
     createMany?: DoctorQualificationCreateManyDoctorInputEnvelope
     connect?: DoctorQualificationWhereUniqueInput | DoctorQualificationWhereUniqueInput[]
-  }
-
-  export type MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput> | MedicalAiConversationCreateWithoutDoctorInput[] | MedicalAiConversationUncheckedCreateWithoutDoctorInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutDoctorInput | MedicalAiConversationCreateOrConnectWithoutDoctorInput[]
-    createMany?: MedicalAiConversationCreateManyDoctorInputEnvelope
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
   }
 
   export type EnumSpecialtyFieldUpdateOperationsInput = {
@@ -45977,20 +43007,6 @@ export namespace Prisma {
     deleteMany?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
   }
 
-  export type MedicalAiConversationUpdateManyWithoutDoctorNestedInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput> | MedicalAiConversationCreateWithoutDoctorInput[] | MedicalAiConversationUncheckedCreateWithoutDoctorInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutDoctorInput | MedicalAiConversationCreateOrConnectWithoutDoctorInput[]
-    upsert?: MedicalAiConversationUpsertWithWhereUniqueWithoutDoctorInput | MedicalAiConversationUpsertWithWhereUniqueWithoutDoctorInput[]
-    createMany?: MedicalAiConversationCreateManyDoctorInputEnvelope
-    set?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    disconnect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    delete?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    update?: MedicalAiConversationUpdateWithWhereUniqueWithoutDoctorInput | MedicalAiConversationUpdateWithWhereUniqueWithoutDoctorInput[]
-    updateMany?: MedicalAiConversationUpdateManyWithWhereWithoutDoctorInput | MedicalAiConversationUpdateManyWithWhereWithoutDoctorInput[]
-    deleteMany?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
-  }
-
   export type LeaveUncheckedUpdateManyWithoutDoctorNestedInput = {
     create?: XOR<LeaveCreateWithoutDoctorInput, LeaveUncheckedCreateWithoutDoctorInput> | LeaveCreateWithoutDoctorInput[] | LeaveUncheckedCreateWithoutDoctorInput[]
     connectOrCreate?: LeaveCreateOrConnectWithoutDoctorInput | LeaveCreateOrConnectWithoutDoctorInput[]
@@ -46127,20 +43143,6 @@ export namespace Prisma {
     deleteMany?: DoctorQualificationScalarWhereInput | DoctorQualificationScalarWhereInput[]
   }
 
-  export type MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput> | MedicalAiConversationCreateWithoutDoctorInput[] | MedicalAiConversationUncheckedCreateWithoutDoctorInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutDoctorInput | MedicalAiConversationCreateOrConnectWithoutDoctorInput[]
-    upsert?: MedicalAiConversationUpsertWithWhereUniqueWithoutDoctorInput | MedicalAiConversationUpsertWithWhereUniqueWithoutDoctorInput[]
-    createMany?: MedicalAiConversationCreateManyDoctorInputEnvelope
-    set?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    disconnect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    delete?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    update?: MedicalAiConversationUpdateWithWhereUniqueWithoutDoctorInput | MedicalAiConversationUpdateWithWhereUniqueWithoutDoctorInput[]
-    updateMany?: MedicalAiConversationUpdateManyWithWhereWithoutDoctorInput | MedicalAiConversationUpdateManyWithWhereWithoutDoctorInput[]
-    deleteMany?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
-  }
-
   export type DoctorCreateNestedOneWithoutDoctorQualificationsInput = {
     create?: XOR<DoctorCreateWithoutDoctorQualificationsInput, DoctorUncheckedCreateWithoutDoctorQualificationsInput>
     connectOrCreate?: DoctorCreateOrConnectWithoutDoctorQualificationsInput
@@ -46207,13 +43209,6 @@ export namespace Prisma {
     connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
   }
 
-  export type MedicalAiConversationCreateNestedManyWithoutPatientInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput> | MedicalAiConversationCreateWithoutPatientInput[] | MedicalAiConversationUncheckedCreateWithoutPatientInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutPatientInput | MedicalAiConversationCreateOrConnectWithoutPatientInput[]
-    createMany?: MedicalAiConversationCreateManyPatientInputEnvelope
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-  }
-
   export type DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -46254,13 +43249,6 @@ export namespace Prisma {
     connectOrCreate?: MedicalDocumentCreateOrConnectWithoutPatientInput | MedicalDocumentCreateOrConnectWithoutPatientInput[]
     createMany?: MedicalDocumentCreateManyPatientInputEnvelope
     connect?: MedicalDocumentWhereUniqueInput | MedicalDocumentWhereUniqueInput[]
-  }
-
-  export type MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput> | MedicalAiConversationCreateWithoutPatientInput[] | MedicalAiConversationUncheckedCreateWithoutPatientInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutPatientInput | MedicalAiConversationCreateOrConnectWithoutPatientInput[]
-    createMany?: MedicalAiConversationCreateManyPatientInputEnvelope
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
   }
 
   export type UserUpdateOneRequiredWithoutPatientNestedInput = {
@@ -46355,20 +43343,6 @@ export namespace Prisma {
     deleteMany?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
   }
 
-  export type MedicalAiConversationUpdateManyWithoutPatientNestedInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput> | MedicalAiConversationCreateWithoutPatientInput[] | MedicalAiConversationUncheckedCreateWithoutPatientInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutPatientInput | MedicalAiConversationCreateOrConnectWithoutPatientInput[]
-    upsert?: MedicalAiConversationUpsertWithWhereUniqueWithoutPatientInput | MedicalAiConversationUpsertWithWhereUniqueWithoutPatientInput[]
-    createMany?: MedicalAiConversationCreateManyPatientInputEnvelope
-    set?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    disconnect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    delete?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    update?: MedicalAiConversationUpdateWithWhereUniqueWithoutPatientInput | MedicalAiConversationUpdateWithWhereUniqueWithoutPatientInput[]
-    updateMany?: MedicalAiConversationUpdateManyWithWhereWithoutPatientInput | MedicalAiConversationUpdateManyWithWhereWithoutPatientInput[]
-    deleteMany?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
-  }
-
   export type DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput = {
     create?: XOR<DoctorPatientRelationCreateWithoutPatientInput, DoctorPatientRelationUncheckedCreateWithoutPatientInput> | DoctorPatientRelationCreateWithoutPatientInput[] | DoctorPatientRelationUncheckedCreateWithoutPatientInput[]
     connectOrCreate?: DoctorPatientRelationCreateOrConnectWithoutPatientInput | DoctorPatientRelationCreateOrConnectWithoutPatientInput[]
@@ -46451,20 +43425,6 @@ export namespace Prisma {
     update?: MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput | MedicalDocumentUpdateWithWhereUniqueWithoutPatientInput[]
     updateMany?: MedicalDocumentUpdateManyWithWhereWithoutPatientInput | MedicalDocumentUpdateManyWithWhereWithoutPatientInput[]
     deleteMany?: MedicalDocumentScalarWhereInput | MedicalDocumentScalarWhereInput[]
-  }
-
-  export type MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput> | MedicalAiConversationCreateWithoutPatientInput[] | MedicalAiConversationUncheckedCreateWithoutPatientInput[]
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutPatientInput | MedicalAiConversationCreateOrConnectWithoutPatientInput[]
-    upsert?: MedicalAiConversationUpsertWithWhereUniqueWithoutPatientInput | MedicalAiConversationUpsertWithWhereUniqueWithoutPatientInput[]
-    createMany?: MedicalAiConversationCreateManyPatientInputEnvelope
-    set?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    disconnect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    delete?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    connect?: MedicalAiConversationWhereUniqueInput | MedicalAiConversationWhereUniqueInput[]
-    update?: MedicalAiConversationUpdateWithWhereUniqueWithoutPatientInput | MedicalAiConversationUpdateWithWhereUniqueWithoutPatientInput[]
-    updateMany?: MedicalAiConversationUpdateManyWithWhereWithoutPatientInput | MedicalAiConversationUpdateManyWithWhereWithoutPatientInput[]
-    deleteMany?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
   }
 
   export type PatientCreateNestedOneWithoutMedicalDocumentsInput = {
@@ -47263,98 +44223,6 @@ export namespace Prisma {
     update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutCommentsInput, PatientUpdateWithoutCommentsInput>, PatientUncheckedUpdateWithoutCommentsInput>
   }
 
-  export type DoctorCreateNestedOneWithoutMedicalAiConversationsInput = {
-    create?: XOR<DoctorCreateWithoutMedicalAiConversationsInput, DoctorUncheckedCreateWithoutMedicalAiConversationsInput>
-    connectOrCreate?: DoctorCreateOrConnectWithoutMedicalAiConversationsInput
-    connect?: DoctorWhereUniqueInput
-  }
-
-  export type PatientCreateNestedOneWithoutMedicalAiConversationsInput = {
-    create?: XOR<PatientCreateWithoutMedicalAiConversationsInput, PatientUncheckedCreateWithoutMedicalAiConversationsInput>
-    connectOrCreate?: PatientCreateOrConnectWithoutMedicalAiConversationsInput
-    connect?: PatientWhereUniqueInput
-  }
-
-  export type MedicalAiMessageCreateNestedManyWithoutConversationInput = {
-    create?: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput> | MedicalAiMessageCreateWithoutConversationInput[] | MedicalAiMessageUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: MedicalAiMessageCreateOrConnectWithoutConversationInput | MedicalAiMessageCreateOrConnectWithoutConversationInput[]
-    createMany?: MedicalAiMessageCreateManyConversationInputEnvelope
-    connect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-  }
-
-  export type MedicalAiMessageUncheckedCreateNestedManyWithoutConversationInput = {
-    create?: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput> | MedicalAiMessageCreateWithoutConversationInput[] | MedicalAiMessageUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: MedicalAiMessageCreateOrConnectWithoutConversationInput | MedicalAiMessageCreateOrConnectWithoutConversationInput[]
-    createMany?: MedicalAiMessageCreateManyConversationInputEnvelope
-    connect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-  }
-
-  export type DoctorUpdateOneRequiredWithoutMedicalAiConversationsNestedInput = {
-    create?: XOR<DoctorCreateWithoutMedicalAiConversationsInput, DoctorUncheckedCreateWithoutMedicalAiConversationsInput>
-    connectOrCreate?: DoctorCreateOrConnectWithoutMedicalAiConversationsInput
-    upsert?: DoctorUpsertWithoutMedicalAiConversationsInput
-    connect?: DoctorWhereUniqueInput
-    update?: XOR<XOR<DoctorUpdateToOneWithWhereWithoutMedicalAiConversationsInput, DoctorUpdateWithoutMedicalAiConversationsInput>, DoctorUncheckedUpdateWithoutMedicalAiConversationsInput>
-  }
-
-  export type PatientUpdateOneRequiredWithoutMedicalAiConversationsNestedInput = {
-    create?: XOR<PatientCreateWithoutMedicalAiConversationsInput, PatientUncheckedCreateWithoutMedicalAiConversationsInput>
-    connectOrCreate?: PatientCreateOrConnectWithoutMedicalAiConversationsInput
-    upsert?: PatientUpsertWithoutMedicalAiConversationsInput
-    connect?: PatientWhereUniqueInput
-    update?: XOR<XOR<PatientUpdateToOneWithWhereWithoutMedicalAiConversationsInput, PatientUpdateWithoutMedicalAiConversationsInput>, PatientUncheckedUpdateWithoutMedicalAiConversationsInput>
-  }
-
-  export type MedicalAiMessageUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput> | MedicalAiMessageCreateWithoutConversationInput[] | MedicalAiMessageUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: MedicalAiMessageCreateOrConnectWithoutConversationInput | MedicalAiMessageCreateOrConnectWithoutConversationInput[]
-    upsert?: MedicalAiMessageUpsertWithWhereUniqueWithoutConversationInput | MedicalAiMessageUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: MedicalAiMessageCreateManyConversationInputEnvelope
-    set?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    disconnect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    delete?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    connect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    update?: MedicalAiMessageUpdateWithWhereUniqueWithoutConversationInput | MedicalAiMessageUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: MedicalAiMessageUpdateManyWithWhereWithoutConversationInput | MedicalAiMessageUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: MedicalAiMessageScalarWhereInput | MedicalAiMessageScalarWhereInput[]
-  }
-
-  export type MedicalAiMessageUncheckedUpdateManyWithoutConversationNestedInput = {
-    create?: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput> | MedicalAiMessageCreateWithoutConversationInput[] | MedicalAiMessageUncheckedCreateWithoutConversationInput[]
-    connectOrCreate?: MedicalAiMessageCreateOrConnectWithoutConversationInput | MedicalAiMessageCreateOrConnectWithoutConversationInput[]
-    upsert?: MedicalAiMessageUpsertWithWhereUniqueWithoutConversationInput | MedicalAiMessageUpsertWithWhereUniqueWithoutConversationInput[]
-    createMany?: MedicalAiMessageCreateManyConversationInputEnvelope
-    set?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    disconnect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    delete?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    connect?: MedicalAiMessageWhereUniqueInput | MedicalAiMessageWhereUniqueInput[]
-    update?: MedicalAiMessageUpdateWithWhereUniqueWithoutConversationInput | MedicalAiMessageUpdateWithWhereUniqueWithoutConversationInput[]
-    updateMany?: MedicalAiMessageUpdateManyWithWhereWithoutConversationInput | MedicalAiMessageUpdateManyWithWhereWithoutConversationInput[]
-    deleteMany?: MedicalAiMessageScalarWhereInput | MedicalAiMessageScalarWhereInput[]
-  }
-
-  export type MedicalAiConversationCreateNestedOneWithoutMessagesInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutMessagesInput, MedicalAiConversationUncheckedCreateWithoutMessagesInput>
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutMessagesInput
-    connect?: MedicalAiConversationWhereUniqueInput
-  }
-
-  export type EnumMedicalAiMessageRoleFieldUpdateOperationsInput = {
-    set?: $Enums.MedicalAiMessageRole
-  }
-
-  export type EnumMedicalAiMessageStatusFieldUpdateOperationsInput = {
-    set?: $Enums.MedicalAiMessageStatus
-  }
-
-  export type MedicalAiConversationUpdateOneRequiredWithoutMessagesNestedInput = {
-    create?: XOR<MedicalAiConversationCreateWithoutMessagesInput, MedicalAiConversationUncheckedCreateWithoutMessagesInput>
-    connectOrCreate?: MedicalAiConversationCreateOrConnectWithoutMessagesInput
-    upsert?: MedicalAiConversationUpsertWithoutMessagesInput
-    connect?: MedicalAiConversationWhereUniqueInput
-    update?: XOR<XOR<MedicalAiConversationUpdateToOneWithWhereWithoutMessagesInput, MedicalAiConversationUpdateWithoutMessagesInput>, MedicalAiConversationUncheckedUpdateWithoutMessagesInput>
-  }
-
   export type NestedStringFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel>
     in?: string[] | ListStringFieldRefInput<$PrismaModel>
@@ -47840,40 +44708,6 @@ export namespace Prisma {
     not?: InputJsonValue | JsonFieldRefInput<$PrismaModel> | JsonNullValueFilter
   }
 
-  export type NestedEnumMedicalAiMessageRoleFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageRole | EnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel> | $Enums.MedicalAiMessageRole
-  }
-
-  export type NestedEnumMedicalAiMessageStatusFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageStatus | EnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel> | $Enums.MedicalAiMessageStatus
-  }
-
-  export type NestedEnumMedicalAiMessageRoleWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageRole | EnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageRole[] | ListEnumMedicalAiMessageRoleFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageRoleWithAggregatesFilter<$PrismaModel> | $Enums.MedicalAiMessageRole
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel>
-    _max?: NestedEnumMedicalAiMessageRoleFilter<$PrismaModel>
-  }
-
-  export type NestedEnumMedicalAiMessageStatusWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: $Enums.MedicalAiMessageStatus | EnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    in?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    notIn?: $Enums.MedicalAiMessageStatus[] | ListEnumMedicalAiMessageStatusFieldRefInput<$PrismaModel>
-    not?: NestedEnumMedicalAiMessageStatusWithAggregatesFilter<$PrismaModel> | $Enums.MedicalAiMessageStatus
-    _count?: NestedIntFilter<$PrismaModel>
-    _min?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel>
-    _max?: NestedEnumMedicalAiMessageStatusFilter<$PrismaModel>
-  }
-
   export type AdminCreateWithoutUserInput = {
     id?: string
     createdAt?: Date | string
@@ -47917,7 +44751,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutUserInput = {
@@ -47942,7 +44775,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutUserInput = {
@@ -47963,7 +44795,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutUserInput = {
@@ -47979,7 +44810,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutUserInput = {
@@ -48358,7 +45188,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutUserInput = {
@@ -48383,7 +45212,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutUserInput = {
@@ -48410,7 +45238,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutUserInput = {
@@ -48426,7 +45253,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type OtpUpsertWithWhereUniqueWithoutUserInput = {
@@ -49437,34 +46263,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type MedicalAiConversationCreateWithoutDoctorInput = {
-    id?: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    patient: PatientCreateNestedOneWithoutMedicalAiConversationsInput
-    messages?: MedicalAiMessageCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationUncheckedCreateWithoutDoctorInput = {
-    id?: string
-    patientId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    messages?: MedicalAiMessageUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationCreateOrConnectWithoutDoctorInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    create: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput>
-  }
-
-  export type MedicalAiConversationCreateManyDoctorInputEnvelope = {
-    data: MedicalAiConversationCreateManyDoctorInput | MedicalAiConversationCreateManyDoctorInput[]
-    skipDuplicates?: boolean
-  }
-
   export type UserUpsertWithoutDoctorInput = {
     update: XOR<UserUpdateWithoutDoctorInput, UserUncheckedUpdateWithoutDoctorInput>
     create: XOR<UserCreateWithoutDoctorInput, UserUncheckedCreateWithoutDoctorInput>
@@ -49811,34 +46609,6 @@ export namespace Prisma {
     qualification?: EnumQualificationFilter<"DoctorQualification"> | $Enums.Qualification
   }
 
-  export type MedicalAiConversationUpsertWithWhereUniqueWithoutDoctorInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    update: XOR<MedicalAiConversationUpdateWithoutDoctorInput, MedicalAiConversationUncheckedUpdateWithoutDoctorInput>
-    create: XOR<MedicalAiConversationCreateWithoutDoctorInput, MedicalAiConversationUncheckedCreateWithoutDoctorInput>
-  }
-
-  export type MedicalAiConversationUpdateWithWhereUniqueWithoutDoctorInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    data: XOR<MedicalAiConversationUpdateWithoutDoctorInput, MedicalAiConversationUncheckedUpdateWithoutDoctorInput>
-  }
-
-  export type MedicalAiConversationUpdateManyWithWhereWithoutDoctorInput = {
-    where: MedicalAiConversationScalarWhereInput
-    data: XOR<MedicalAiConversationUpdateManyMutationInput, MedicalAiConversationUncheckedUpdateManyWithoutDoctorInput>
-  }
-
-  export type MedicalAiConversationScalarWhereInput = {
-    AND?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
-    OR?: MedicalAiConversationScalarWhereInput[]
-    NOT?: MedicalAiConversationScalarWhereInput | MedicalAiConversationScalarWhereInput[]
-    id?: StringFilter<"MedicalAiConversation"> | string
-    doctorId?: StringFilter<"MedicalAiConversation"> | string
-    patientId?: StringFilter<"MedicalAiConversation"> | string
-    title?: StringNullableFilter<"MedicalAiConversation"> | string | null
-    createdAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-    updatedAt?: DateTimeFilter<"MedicalAiConversation"> | Date | string
-  }
-
   export type DoctorCreateWithoutDoctorQualificationsInput = {
     isReleaseFixture?: boolean
     id?: string
@@ -49861,7 +46631,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutDoctorQualificationsInput = {
@@ -49886,7 +46655,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutDoctorQualificationsInput = {
@@ -49927,7 +46695,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutDoctorQualificationsInput = {
@@ -49952,7 +46719,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserCreateWithoutPatientInput = {
@@ -50250,34 +47016,6 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type MedicalAiConversationCreateWithoutPatientInput = {
-    id?: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctor: DoctorCreateNestedOneWithoutMedicalAiConversationsInput
-    messages?: MedicalAiMessageCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationUncheckedCreateWithoutPatientInput = {
-    id?: string
-    doctorId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    messages?: MedicalAiMessageUncheckedCreateNestedManyWithoutConversationInput
-  }
-
-  export type MedicalAiConversationCreateOrConnectWithoutPatientInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    create: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput>
-  }
-
-  export type MedicalAiConversationCreateManyPatientInputEnvelope = {
-    data: MedicalAiConversationCreateManyPatientInput | MedicalAiConversationCreateManyPatientInput[]
-    skipDuplicates?: boolean
-  }
-
   export type UserUpsertWithoutPatientInput = {
     update: XOR<UserUpdateWithoutPatientInput, UserUncheckedUpdateWithoutPatientInput>
     create: XOR<UserCreateWithoutPatientInput, UserUncheckedCreateWithoutPatientInput>
@@ -50463,22 +47201,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFilter<"MedicalDocument"> | Date | string
   }
 
-  export type MedicalAiConversationUpsertWithWhereUniqueWithoutPatientInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    update: XOR<MedicalAiConversationUpdateWithoutPatientInput, MedicalAiConversationUncheckedUpdateWithoutPatientInput>
-    create: XOR<MedicalAiConversationCreateWithoutPatientInput, MedicalAiConversationUncheckedCreateWithoutPatientInput>
-  }
-
-  export type MedicalAiConversationUpdateWithWhereUniqueWithoutPatientInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    data: XOR<MedicalAiConversationUpdateWithoutPatientInput, MedicalAiConversationUncheckedUpdateWithoutPatientInput>
-  }
-
-  export type MedicalAiConversationUpdateManyWithWhereWithoutPatientInput = {
-    where: MedicalAiConversationScalarWhereInput
-    data: XOR<MedicalAiConversationUpdateManyMutationInput, MedicalAiConversationUncheckedUpdateManyWithoutPatientInput>
-  }
-
   export type PatientCreateWithoutMedicalDocumentsInput = {
     id?: string
     medicalHistory?: string
@@ -50492,7 +47214,6 @@ export namespace Prisma {
     checkouts?: CheckoutCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutMedicalDocumentsInput = {
@@ -50508,7 +47229,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutMedicalDocumentsInput = {
@@ -50540,7 +47260,6 @@ export namespace Prisma {
     checkouts?: CheckoutUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutMedicalDocumentsInput = {
@@ -50556,7 +47275,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type UserCreateWithoutNotificationsInput = {
@@ -50709,7 +47427,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutLeavesInput = {
@@ -50734,7 +47451,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutLeavesInput = {
@@ -50775,7 +47491,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutLeavesInput = {
@@ -50800,7 +47515,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorCreateWithoutScheduleInput = {
@@ -50825,7 +47539,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutScheduleInput = {
@@ -50850,7 +47563,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutScheduleInput = {
@@ -50891,7 +47603,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutScheduleInput = {
@@ -50916,7 +47627,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type AppointmentCreateWithoutSlotInput = {
@@ -51047,7 +47757,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutSlotsInput = {
@@ -51072,7 +47781,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutSlotsInput = {
@@ -51145,7 +47853,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutSlotsInput = {
@@ -51170,7 +47877,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type SlotCreateWithoutAppointmentsInput = {
@@ -51346,7 +48052,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutAppointmentsInput = {
@@ -51371,7 +48076,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutAppointmentsInput = {
@@ -51392,7 +48096,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutAppointmentsInput = {
@@ -51408,7 +48111,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutAppointmentsInput = {
@@ -51618,7 +48320,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutAppointmentsInput = {
@@ -51643,7 +48344,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutAppointmentsInput = {
@@ -51670,7 +48370,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutAppointmentsInput = {
@@ -51686,7 +48385,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type ChatMessagesCreateWithoutDoctorPatientRelationInput = {
@@ -51743,7 +48441,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutPatientRelationsInput = {
@@ -51768,7 +48465,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutPatientRelationsInput = {
@@ -51789,7 +48485,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutDoctorRelationsInput = {
@@ -51805,7 +48500,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutDoctorRelationsInput = {
@@ -51862,7 +48556,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutPatientRelationsInput = {
@@ -51887,7 +48580,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutDoctorRelationsInput = {
@@ -51914,7 +48606,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutDoctorRelationsInput = {
@@ -51930,7 +48621,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorPatientRelationCreateWithoutChatMessagesInput = {
@@ -52688,7 +49378,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutCheckoutsInput = {
@@ -52704,7 +49393,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutCheckoutsInput = {
@@ -52734,7 +49422,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutCheckoutsInput = {
@@ -52759,7 +49446,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutCheckoutsInput = {
@@ -52983,7 +49669,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutCheckoutsInput = {
@@ -52999,7 +49684,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorUpsertWithoutCheckoutsInput = {
@@ -53035,7 +49719,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutCheckoutsInput = {
@@ -53060,7 +49743,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type SlotUpsertWithoutCheckoutsInput = {
@@ -53452,7 +50134,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutWithdrawalsInput = {
@@ -53477,7 +50158,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutWithdrawalsInput = {
@@ -53518,7 +50198,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutWithdrawalsInput = {
@@ -53543,7 +50222,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type UserCreateWithoutBankAccountsInput = {
@@ -54080,7 +50758,6 @@ export namespace Prisma {
     comments?: CommentCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutRatingsInput = {
@@ -54105,7 +50782,6 @@ export namespace Prisma {
     comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutRatingsInput = {
@@ -54126,7 +50802,6 @@ export namespace Prisma {
     checkouts?: CheckoutCreateNestedManyWithoutPatientInput
     comments?: CommentCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutRatingsInput = {
@@ -54142,7 +50817,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedCreateNestedManyWithoutPatientInput
     comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutRatingsInput = {
@@ -54183,7 +50857,6 @@ export namespace Prisma {
     comments?: CommentUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutRatingsInput = {
@@ -54208,7 +50881,6 @@ export namespace Prisma {
     comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutRatingsInput = {
@@ -54235,7 +50907,6 @@ export namespace Prisma {
     checkouts?: CheckoutUpdateManyWithoutPatientNestedInput
     comments?: CommentUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutRatingsInput = {
@@ -54251,7 +50922,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedUpdateManyWithoutPatientNestedInput
     comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
   }
 
   export type DoctorCreateWithoutCommentsInput = {
@@ -54276,7 +50946,6 @@ export namespace Prisma {
     ratings?: RatingCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorUncheckedCreateWithoutCommentsInput = {
@@ -54301,7 +50970,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
     withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
     doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutDoctorInput
   }
 
   export type DoctorCreateOrConnectWithoutCommentsInput = {
@@ -54322,7 +50990,6 @@ export namespace Prisma {
     checkouts?: CheckoutCreateNestedManyWithoutPatientInput
     ratings?: RatingCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationCreateNestedManyWithoutPatientInput
   }
 
   export type PatientUncheckedCreateWithoutCommentsInput = {
@@ -54338,7 +51005,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedCreateNestedManyWithoutPatientInput
     ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
     medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-    medicalAiConversations?: MedicalAiConversationUncheckedCreateNestedManyWithoutPatientInput
   }
 
   export type PatientCreateOrConnectWithoutCommentsInput = {
@@ -54379,7 +51045,6 @@ export namespace Prisma {
     ratings?: RatingUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutDoctorNestedInput
   }
 
   export type DoctorUncheckedUpdateWithoutCommentsInput = {
@@ -54404,7 +51069,6 @@ export namespace Prisma {
     ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
     withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
     doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutDoctorNestedInput
   }
 
   export type PatientUpsertWithoutCommentsInput = {
@@ -54431,7 +51095,6 @@ export namespace Prisma {
     checkouts?: CheckoutUpdateManyWithoutPatientNestedInput
     ratings?: RatingUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUpdateManyWithoutPatientNestedInput
   }
 
   export type PatientUncheckedUpdateWithoutCommentsInput = {
@@ -54447,312 +51110,6 @@ export namespace Prisma {
     checkouts?: CheckoutUncheckedUpdateManyWithoutPatientNestedInput
     ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
     medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-    medicalAiConversations?: MedicalAiConversationUncheckedUpdateManyWithoutPatientNestedInput
-  }
-
-  export type DoctorCreateWithoutMedicalAiConversationsInput = {
-    isReleaseFixture?: boolean
-    id?: string
-    specialty: $Enums.Specialty
-    experience?: number
-    fees?: number
-    doctorBio?: string | null
-    balance?: number
-    latitude?: number | null
-    longitude?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutDoctorInput
-    leaves?: LeaveCreateNestedManyWithoutDoctorInput
-    schedule?: ScheduleCreateNestedOneWithoutDoctorInput
-    patientRelations?: DoctorPatientRelationCreateNestedManyWithoutDoctorInput
-    appointments?: AppointmentCreateNestedManyWithoutDoctorInput
-    slots?: SlotCreateNestedManyWithoutDoctorInput
-    checkouts?: CheckoutCreateNestedManyWithoutDoctorInput
-    comments?: CommentCreateNestedManyWithoutDoctorInput
-    ratings?: RatingCreateNestedManyWithoutDoctorInput
-    withdrawals?: WithdrawalCreateNestedManyWithoutDoctorInput
-    doctorQualifications?: DoctorQualificationCreateNestedManyWithoutDoctorInput
-  }
-
-  export type DoctorUncheckedCreateWithoutMedicalAiConversationsInput = {
-    isReleaseFixture?: boolean
-    id?: string
-    userId: string
-    specialty: $Enums.Specialty
-    experience?: number
-    fees?: number
-    doctorBio?: string | null
-    balance?: number
-    latitude?: number | null
-    longitude?: number | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    leaves?: LeaveUncheckedCreateNestedManyWithoutDoctorInput
-    schedule?: ScheduleUncheckedCreateNestedOneWithoutDoctorInput
-    patientRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutDoctorInput
-    appointments?: AppointmentUncheckedCreateNestedManyWithoutDoctorInput
-    slots?: SlotUncheckedCreateNestedManyWithoutDoctorInput
-    checkouts?: CheckoutUncheckedCreateNestedManyWithoutDoctorInput
-    comments?: CommentUncheckedCreateNestedManyWithoutDoctorInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutDoctorInput
-    withdrawals?: WithdrawalUncheckedCreateNestedManyWithoutDoctorInput
-    doctorQualifications?: DoctorQualificationUncheckedCreateNestedManyWithoutDoctorInput
-  }
-
-  export type DoctorCreateOrConnectWithoutMedicalAiConversationsInput = {
-    where: DoctorWhereUniqueInput
-    create: XOR<DoctorCreateWithoutMedicalAiConversationsInput, DoctorUncheckedCreateWithoutMedicalAiConversationsInput>
-  }
-
-  export type PatientCreateWithoutMedicalAiConversationsInput = {
-    id?: string
-    medicalHistory?: string
-    allergies?: string
-    currentMedications?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    user: UserCreateNestedOneWithoutPatientInput
-    doctorRelations?: DoctorPatientRelationCreateNestedManyWithoutPatientInput
-    appointments?: AppointmentCreateNestedManyWithoutPatientInput
-    checkouts?: CheckoutCreateNestedManyWithoutPatientInput
-    comments?: CommentCreateNestedManyWithoutPatientInput
-    ratings?: RatingCreateNestedManyWithoutPatientInput
-    medicalDocuments?: MedicalDocumentCreateNestedManyWithoutPatientInput
-  }
-
-  export type PatientUncheckedCreateWithoutMedicalAiConversationsInput = {
-    id?: string
-    userId: string
-    medicalHistory?: string
-    allergies?: string
-    currentMedications?: string
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctorRelations?: DoctorPatientRelationUncheckedCreateNestedManyWithoutPatientInput
-    appointments?: AppointmentUncheckedCreateNestedManyWithoutPatientInput
-    checkouts?: CheckoutUncheckedCreateNestedManyWithoutPatientInput
-    comments?: CommentUncheckedCreateNestedManyWithoutPatientInput
-    ratings?: RatingUncheckedCreateNestedManyWithoutPatientInput
-    medicalDocuments?: MedicalDocumentUncheckedCreateNestedManyWithoutPatientInput
-  }
-
-  export type PatientCreateOrConnectWithoutMedicalAiConversationsInput = {
-    where: PatientWhereUniqueInput
-    create: XOR<PatientCreateWithoutMedicalAiConversationsInput, PatientUncheckedCreateWithoutMedicalAiConversationsInput>
-  }
-
-  export type MedicalAiMessageCreateWithoutConversationInput = {
-    id?: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-  }
-
-  export type MedicalAiMessageUncheckedCreateWithoutConversationInput = {
-    id?: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-  }
-
-  export type MedicalAiMessageCreateOrConnectWithoutConversationInput = {
-    where: MedicalAiMessageWhereUniqueInput
-    create: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput>
-  }
-
-  export type MedicalAiMessageCreateManyConversationInputEnvelope = {
-    data: MedicalAiMessageCreateManyConversationInput | MedicalAiMessageCreateManyConversationInput[]
-    skipDuplicates?: boolean
-  }
-
-  export type DoctorUpsertWithoutMedicalAiConversationsInput = {
-    update: XOR<DoctorUpdateWithoutMedicalAiConversationsInput, DoctorUncheckedUpdateWithoutMedicalAiConversationsInput>
-    create: XOR<DoctorCreateWithoutMedicalAiConversationsInput, DoctorUncheckedCreateWithoutMedicalAiConversationsInput>
-    where?: DoctorWhereInput
-  }
-
-  export type DoctorUpdateToOneWithWhereWithoutMedicalAiConversationsInput = {
-    where?: DoctorWhereInput
-    data: XOR<DoctorUpdateWithoutMedicalAiConversationsInput, DoctorUncheckedUpdateWithoutMedicalAiConversationsInput>
-  }
-
-  export type DoctorUpdateWithoutMedicalAiConversationsInput = {
-    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
-    id?: StringFieldUpdateOperationsInput | string
-    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
-    experience?: IntFieldUpdateOperationsInput | number
-    fees?: IntFieldUpdateOperationsInput | number
-    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
-    balance?: IntFieldUpdateOperationsInput | number
-    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
-    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutDoctorNestedInput
-    leaves?: LeaveUpdateManyWithoutDoctorNestedInput
-    schedule?: ScheduleUpdateOneWithoutDoctorNestedInput
-    patientRelations?: DoctorPatientRelationUpdateManyWithoutDoctorNestedInput
-    appointments?: AppointmentUpdateManyWithoutDoctorNestedInput
-    slots?: SlotUpdateManyWithoutDoctorNestedInput
-    checkouts?: CheckoutUpdateManyWithoutDoctorNestedInput
-    comments?: CommentUpdateManyWithoutDoctorNestedInput
-    ratings?: RatingUpdateManyWithoutDoctorNestedInput
-    withdrawals?: WithdrawalUpdateManyWithoutDoctorNestedInput
-    doctorQualifications?: DoctorQualificationUpdateManyWithoutDoctorNestedInput
-  }
-
-  export type DoctorUncheckedUpdateWithoutMedicalAiConversationsInput = {
-    isReleaseFixture?: BoolFieldUpdateOperationsInput | boolean
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    specialty?: EnumSpecialtyFieldUpdateOperationsInput | $Enums.Specialty
-    experience?: IntFieldUpdateOperationsInput | number
-    fees?: IntFieldUpdateOperationsInput | number
-    doctorBio?: NullableStringFieldUpdateOperationsInput | string | null
-    balance?: IntFieldUpdateOperationsInput | number
-    latitude?: NullableFloatFieldUpdateOperationsInput | number | null
-    longitude?: NullableFloatFieldUpdateOperationsInput | number | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    leaves?: LeaveUncheckedUpdateManyWithoutDoctorNestedInput
-    schedule?: ScheduleUncheckedUpdateOneWithoutDoctorNestedInput
-    patientRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutDoctorNestedInput
-    appointments?: AppointmentUncheckedUpdateManyWithoutDoctorNestedInput
-    slots?: SlotUncheckedUpdateManyWithoutDoctorNestedInput
-    checkouts?: CheckoutUncheckedUpdateManyWithoutDoctorNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutDoctorNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutDoctorNestedInput
-    withdrawals?: WithdrawalUncheckedUpdateManyWithoutDoctorNestedInput
-    doctorQualifications?: DoctorQualificationUncheckedUpdateManyWithoutDoctorNestedInput
-  }
-
-  export type PatientUpsertWithoutMedicalAiConversationsInput = {
-    update: XOR<PatientUpdateWithoutMedicalAiConversationsInput, PatientUncheckedUpdateWithoutMedicalAiConversationsInput>
-    create: XOR<PatientCreateWithoutMedicalAiConversationsInput, PatientUncheckedCreateWithoutMedicalAiConversationsInput>
-    where?: PatientWhereInput
-  }
-
-  export type PatientUpdateToOneWithWhereWithoutMedicalAiConversationsInput = {
-    where?: PatientWhereInput
-    data: XOR<PatientUpdateWithoutMedicalAiConversationsInput, PatientUncheckedUpdateWithoutMedicalAiConversationsInput>
-  }
-
-  export type PatientUpdateWithoutMedicalAiConversationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    medicalHistory?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    currentMedications?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    user?: UserUpdateOneRequiredWithoutPatientNestedInput
-    doctorRelations?: DoctorPatientRelationUpdateManyWithoutPatientNestedInput
-    appointments?: AppointmentUpdateManyWithoutPatientNestedInput
-    checkouts?: CheckoutUpdateManyWithoutPatientNestedInput
-    comments?: CommentUpdateManyWithoutPatientNestedInput
-    ratings?: RatingUpdateManyWithoutPatientNestedInput
-    medicalDocuments?: MedicalDocumentUpdateManyWithoutPatientNestedInput
-  }
-
-  export type PatientUncheckedUpdateWithoutMedicalAiConversationsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    userId?: StringFieldUpdateOperationsInput | string
-    medicalHistory?: StringFieldUpdateOperationsInput | string
-    allergies?: StringFieldUpdateOperationsInput | string
-    currentMedications?: StringFieldUpdateOperationsInput | string
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctorRelations?: DoctorPatientRelationUncheckedUpdateManyWithoutPatientNestedInput
-    appointments?: AppointmentUncheckedUpdateManyWithoutPatientNestedInput
-    checkouts?: CheckoutUncheckedUpdateManyWithoutPatientNestedInput
-    comments?: CommentUncheckedUpdateManyWithoutPatientNestedInput
-    ratings?: RatingUncheckedUpdateManyWithoutPatientNestedInput
-    medicalDocuments?: MedicalDocumentUncheckedUpdateManyWithoutPatientNestedInput
-  }
-
-  export type MedicalAiMessageUpsertWithWhereUniqueWithoutConversationInput = {
-    where: MedicalAiMessageWhereUniqueInput
-    update: XOR<MedicalAiMessageUpdateWithoutConversationInput, MedicalAiMessageUncheckedUpdateWithoutConversationInput>
-    create: XOR<MedicalAiMessageCreateWithoutConversationInput, MedicalAiMessageUncheckedCreateWithoutConversationInput>
-  }
-
-  export type MedicalAiMessageUpdateWithWhereUniqueWithoutConversationInput = {
-    where: MedicalAiMessageWhereUniqueInput
-    data: XOR<MedicalAiMessageUpdateWithoutConversationInput, MedicalAiMessageUncheckedUpdateWithoutConversationInput>
-  }
-
-  export type MedicalAiMessageUpdateManyWithWhereWithoutConversationInput = {
-    where: MedicalAiMessageScalarWhereInput
-    data: XOR<MedicalAiMessageUpdateManyMutationInput, MedicalAiMessageUncheckedUpdateManyWithoutConversationInput>
-  }
-
-  export type MedicalAiMessageScalarWhereInput = {
-    AND?: MedicalAiMessageScalarWhereInput | MedicalAiMessageScalarWhereInput[]
-    OR?: MedicalAiMessageScalarWhereInput[]
-    NOT?: MedicalAiMessageScalarWhereInput | MedicalAiMessageScalarWhereInput[]
-    id?: StringFilter<"MedicalAiMessage"> | string
-    conversationId?: StringFilter<"MedicalAiMessage"> | string
-    role?: EnumMedicalAiMessageRoleFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageRole
-    content?: StringFilter<"MedicalAiMessage"> | string
-    citations?: JsonNullableFilter<"MedicalAiMessage">
-    status?: EnumMedicalAiMessageStatusFilter<"MedicalAiMessage"> | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFilter<"MedicalAiMessage"> | Date | string
-  }
-
-  export type MedicalAiConversationCreateWithoutMessagesInput = {
-    id?: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-    doctor: DoctorCreateNestedOneWithoutMedicalAiConversationsInput
-    patient: PatientCreateNestedOneWithoutMedicalAiConversationsInput
-  }
-
-  export type MedicalAiConversationUncheckedCreateWithoutMessagesInput = {
-    id?: string
-    doctorId: string
-    patientId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type MedicalAiConversationCreateOrConnectWithoutMessagesInput = {
-    where: MedicalAiConversationWhereUniqueInput
-    create: XOR<MedicalAiConversationCreateWithoutMessagesInput, MedicalAiConversationUncheckedCreateWithoutMessagesInput>
-  }
-
-  export type MedicalAiConversationUpsertWithoutMessagesInput = {
-    update: XOR<MedicalAiConversationUpdateWithoutMessagesInput, MedicalAiConversationUncheckedUpdateWithoutMessagesInput>
-    create: XOR<MedicalAiConversationCreateWithoutMessagesInput, MedicalAiConversationUncheckedCreateWithoutMessagesInput>
-    where?: MedicalAiConversationWhereInput
-  }
-
-  export type MedicalAiConversationUpdateToOneWithWhereWithoutMessagesInput = {
-    where?: MedicalAiConversationWhereInput
-    data: XOR<MedicalAiConversationUpdateWithoutMessagesInput, MedicalAiConversationUncheckedUpdateWithoutMessagesInput>
-  }
-
-  export type MedicalAiConversationUpdateWithoutMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctor?: DoctorUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-    patient?: PatientUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateWithoutMessagesInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type OtpCreateManyUserInput = {
@@ -55401,14 +51758,6 @@ export namespace Prisma {
     qualification: $Enums.Qualification
   }
 
-  export type MedicalAiConversationCreateManyDoctorInput = {
-    id?: string
-    patientId: string
-    title?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
   export type LeaveUpdateWithoutDoctorInput = {
     id?: StringFieldUpdateOperationsInput | string
     reason?: StringFieldUpdateOperationsInput | string
@@ -55735,32 +52084,6 @@ export namespace Prisma {
     qualification?: EnumQualificationFieldUpdateOperationsInput | $Enums.Qualification
   }
 
-  export type MedicalAiConversationUpdateWithoutDoctorInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    patient?: PatientUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-    messages?: MedicalAiMessageUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateWithoutDoctorInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    messages?: MedicalAiMessageUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateManyWithoutDoctorInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    patientId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
   export type DoctorPatientRelationCreateManyPatientInput = {
     id?: string
     doctorsUserId: string
@@ -55842,14 +52165,6 @@ export namespace Prisma {
     processingStatus?: $Enums.MedicalDocumentProcessingStatus
     processingError?: string | null
     processedAt?: Date | string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type MedicalAiConversationCreateManyPatientInput = {
-    id?: string
-    doctorId: string
-    title?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
   }
@@ -56109,32 +52424,6 @@ export namespace Prisma {
     processingStatus?: EnumMedicalDocumentProcessingStatusFieldUpdateOperationsInput | $Enums.MedicalDocumentProcessingStatus
     processingError?: NullableStringFieldUpdateOperationsInput | string | null
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiConversationUpdateWithoutPatientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    doctor?: DoctorUpdateOneRequiredWithoutMedicalAiConversationsNestedInput
-    messages?: MedicalAiMessageUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateWithoutPatientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    messages?: MedicalAiMessageUncheckedUpdateManyWithoutConversationNestedInput
-  }
-
-  export type MedicalAiConversationUncheckedUpdateManyWithoutPatientInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    doctorId?: StringFieldUpdateOperationsInput | string
-    title?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -56491,42 +52780,6 @@ export namespace Prisma {
     nextAttemptAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     receivedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     processedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  }
-
-  export type MedicalAiMessageCreateManyConversationInput = {
-    id?: string
-    role: $Enums.MedicalAiMessageRole
-    content: string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: $Enums.MedicalAiMessageStatus
-    createdAt?: Date | string
-  }
-
-  export type MedicalAiMessageUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiMessageUncheckedUpdateWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type MedicalAiMessageUncheckedUpdateManyWithoutConversationInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    role?: EnumMedicalAiMessageRoleFieldUpdateOperationsInput | $Enums.MedicalAiMessageRole
-    content?: StringFieldUpdateOperationsInput | string
-    citations?: NullableJsonNullValueInput | InputJsonValue
-    status?: EnumMedicalAiMessageStatusFieldUpdateOperationsInput | $Enums.MedicalAiMessageStatus
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
