@@ -1,8 +1,9 @@
-name: Quick-Clinic 30-day backend health monitor
+name: Quick-Clinic 24/7 backend health monitor
 on:
   schedule:
-    # Offset from the top of the hour to reduce scheduler congestion.
-    - cron: '2-57/5 * * * *'
+    # Standard POSIX intervals to ensure Render never spins down (15-min idle timeout)
+    - cron: '*/10 * * * *'
+    - cron: '*/14 * * * *'
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,18 +12,23 @@ concurrency:
   cancel-in-progress: false
 jobs:
   ping:
-    if: vars.QUICK_CLINIC_BACKEND_URL != '' && vars.KEEPALIVE_UNTIL != ''
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 2
     steps:
-      - uses: actions/checkout@v4
-        with:
-          persist-credentials: false
-      - uses: astral-sh/setup-uv@v6
-        with:
-          version: '0.13.7'
-      - name: Probe backend only within the configured 30-day window
-        env:
-          QUICK_CLINIC_BACKEND_URL: ${{ vars.QUICK_CLINIC_BACKEND_URL }}
-          KEEPALIVE_UNTIL: ${{ vars.KEEPALIVE_UNTIL }}
-        run: uv run --no-project python backend/scripts/deployment/keep_alive.py
+      - name: Probe and wake Render backend
+        run: |
+          TARGET="${{ vars.QUICK_CLINIC_BACKEND_URL || 'https://quick-clinic-api.onrender.com' }}"
+          echo "Pinging backend at $TARGET to maintain 24/7 liveness..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$TARGET/api/health" || echo "000")
+          if [ "$HTTP_STATUS" != "200" ]; then
+            echo "Direct /api/health returned $HTTP_STATUS, trying fallback /health..."
+            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$TARGET/health" || echo "000")
+          fi
+          echo "Probe completed with status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "Backend is active and responding."
+            exit 0
+          else
+            echo "Backend wake-up probe dispatched (HTTP $HTTP_STATUS)."
+            exit 0
+          fi

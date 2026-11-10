@@ -10,7 +10,7 @@ from .storage import MAX_FILE_BYTES, storage_path
 
 def upload_key(patient_id: str, document_id: str, fingerprint: str) -> str:
     suffix = f"{patient_id}/{document_id}/{fingerprint}"
-    if get_settings().document_storage_backend == "supabase":
+    if get_settings().document_storage_backend in ("supabase", "cloudinary"):
         return f"supabase/quickclinic/medical-documents/{suffix}"
     return f"local/{suffix}"
 

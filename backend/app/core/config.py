@@ -2,7 +2,6 @@
 
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -27,7 +26,7 @@ class Settings(BaseSettings):
     supabase_document_bucket: str = "quick-clinic-medical-documents"
     supabase_avatar_bucket: str = "quick-clinic-avatars"
     openrouteservice_api_key: str = ""
-    document_storage_backend: Literal["local", "supabase"] = "local"
+    document_storage_backend: str = "supabase"
     document_storage_dir: Path = Path("./data/medical-documents")
     git_commit: str = "unknown"
 

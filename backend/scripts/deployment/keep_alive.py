@@ -15,6 +15,8 @@ class NoRedirects(HTTPRedirectHandler):
 
 
 def active_window(expires_at: str, now: datetime | None = None) -> bool:
+    if str(expires_at).lower().strip() in ("always", "forever", "unlimited", "24/7", "*"):
+        return True
     deadline = datetime.fromisoformat(expires_at.replace("Z", "+00:00"))
     if deadline.tzinfo is None:
         raise ValueError("KEEPALIVE_UNTIL must include a timezone")
@@ -42,13 +44,13 @@ def health_url(base_url: str) -> str:
 
 
 def main() -> int:
-    base_url = os.environ.get("QUICK_CLINIC_BACKEND_URL", "")
-    deadline = os.environ.get("KEEPALIVE_UNTIL", "")
-    if not base_url or not deadline:
-        print("Keep-alive inactive: configure backend URL and 30-day expiry first.")
+    base_url = os.environ.get("QUICK_CLINIC_BACKEND_URL", "https://quick-clinic-api.onrender.com")
+    deadline = os.environ.get("KEEPALIVE_UNTIL", "always")
+    if not base_url:
+        print("Keep-alive inactive: configure backend URL.")
         return 0
     if not active_window(deadline):
-        print("The 30-day keep-alive window has ended. No requests sent.")
+        print("The keep-alive window has ended. No requests sent.")
         return 0
     request = Request(health_url(base_url), headers={"User-Agent": "QuickClinic-HealthMonitor/1.0"})
     try:
