@@ -1,6 +1,7 @@
 """Durable, idempotent full-refund claims and provider reconciliation."""
 
 import logging
+import re
 from datetime import timedelta
 from urllib.parse import quote
 from uuid import uuid4
@@ -109,14 +110,28 @@ async def execute_refund(db, refund_id):
                 f"payments/{provider_payment_id}/refunds/{quote(refund_record['razorpayRefundId'], safe='')}",
             )
         else:
+            safe_key = re.sub(r"[^a-zA-Z0-9_-]", "_", refund_record["idempotencyKey"])[:40]
             outcome = await provider(
                 "POST",
                 f"payments/{provider_payment_id}/refund",
                 payload=dict(amount=refund_record["amount"], notes=dict(reason=refund_record["reason"])),
-                headers={"X-Refund-Idempotency": refund_record["idempotencyKey"]},
+                headers={"X-Refund-Idempotency": safe_key},
             )
         complete = outcome and outcome.get("status") == "processed"
         failed = outcome and outcome.get("status") == "failed"
+        if outcome:
+            provider_payment_out = outcome.get("payment_id")
+            provider_amount = outcome.get("amount")
+            provider_currency = outcome.get("currency")
+            if provider_payment_out and provider_payment_out != payment_record["razorpayPaymentId"]:
+                logger.error("Provider refund payment ID mismatch for %s", refund_record["id"])
+                failed, complete = True, False
+            elif provider_amount is not None and provider_amount != refund_record["amount"]:
+                logger.error("Provider refund amount mismatch for %s", refund_record["id"])
+                failed, complete = True, False
+            elif provider_currency and provider_currency != refund_record["currency"]:
+                logger.error("Provider refund currency mismatch for %s", refund_record["id"])
+                failed, complete = True, False
         values = dict(
             status="PROCESSED" if complete else ("FAILED" if failed else "PENDING"),
             leaseOwner=None,

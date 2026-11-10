@@ -1,7 +1,34 @@
 """Isolated test infrastructure; no configured external database or services."""
 
+# ruff: noqa: E402 -- credentials must be isolated before importing the application
+
 import os
+import ipaddress
+import socket
 from uuid import uuid4
+
+# Override before importing application modules: collection must never load a
+# developer's Neon, Redis, mail or payment credentials from the local .env.
+for _key, _value in {
+    "DATABASE_URL": "sqlite+aiosqlite://",
+    "JWT_SECRET": "isolated-test-signing-secret-32-characters",
+    "NODE_ENV": "test",
+    "FRONTEND_URL": "http://localhost:3000",
+    "BACKEND_PUBLIC_URL": "http://localhost:4000",
+    "DOCUMENT_STORAGE_BACKEND": "local",
+    "CRON_SECRET": "isolated-test-cron-secret",
+    "INTERNAL_API_SECRET": "isolated-test-internal-secret",
+    "SUPER_ADMIN_CODE": "isolated-test-super-admin-code",
+    "REDIS_URL": "",
+    "RESEND_API_KEY": "",
+    "RAZORPAY_KEY_ID": "",
+    "RAZORPAY_KEY_SECRET": "",
+    "RAZORPAY_WEBHOOK_SECRET": "",
+    "SUPABASE_URL": "",
+    "SUPABASE_SECRET_KEY": "",
+    "OPENROUTESERVICE_API_KEY": "",
+}.items():
+    os.environ[_key] = _value
 
 import httpx
 import pytest
@@ -15,28 +42,86 @@ from app.infrastructure.database import get_db, metadata, new_id, tables
 from app.features.auth.passwords import hash_password
 
 
-@pytest_asyncio.fixture
-async def db(monkeypatch, tmp_path):
+def pytest_addoption(parser):
+    parser.addoption(
+        "--run-live", action="store_true", help="Enable explicitly selected read-only live probes"
+    )
+
+
+def pytest_collection_modifyitems(config, items):
+    for item in items:
+        parts = item.path.parts
+        for category in ("unit", "features", "integration", "security", "performance", "smoke", "live"):
+            if category in parts:
+                item.add_marker(getattr(pytest.mark, "feature" if category == "features" else category))
+        if "test_postgres" in item.path.name:
+            item.add_marker(pytest.mark.integration)
+            item.add_marker(pytest.mark.postgres)
+        if "live" in parts and not config.getoption("--run-live"):
+            item.add_marker(pytest.mark.skip(reason="Read-only live probes require --run-live"))
+
+
+@pytest.fixture(autouse=True)
+def isolated_runtime(monkeypatch, tmp_path, request):
     settings = get_settings()
     for field, value in {
         "jwt_secret": "isolated-test-signing-secret-32-characters",
         "node_env": "test",
         "redis_url": "",
+        "resend_api_key": "",
         "cron_secret": "isolated-test-cron-secret",
         "internal_api_secret": "isolated-test-internal-secret",
         "super_admin_code": "isolated-test-super-admin-code",
-        "resend_api_key": "",
         "razorpay_key_id": "",
         "razorpay_key_secret": "",
         "razorpay_webhook_secret": "",
-        "cloudinary_cloud_name": "",
-        "cloudinary_api_key": "",
-        "cloudinary_api_secret": "",
+        "supabase_url": "",
+        "supabase_secret_key": "",
         "openrouteservice_api_key": "",
         "document_storage_dir": tmp_path / "documents",
         "document_storage_backend": "local",
+        "frontend_url": "http://localhost:3000",
+        "backend_public_url": "http://localhost:4000",
     }.items():
         monkeypatch.setattr(settings, field, value)
+    from app.core.middleware import _rate_windows
+
+    _rate_windows.clear()
+    # Mock transports and loopback sockets work; accidental paid/provider traffic
+    # fails immediately. The disposable PostgreSQL hostname is the sole exception.
+    allowed = set()
+    raw = os.environ.get("QC_TEST_DATABASE_URL")
+    if raw:
+        host = make_url(raw).host
+        if host:
+            allowed.update(row[4][0] for row in socket.getaddrinfo(host, None))
+    if request.node.get_closest_marker("live") and request.config.getoption("--run-live"):
+        from urllib.parse import urlsplit
+
+        for key in ("QC_LIVE_BACKEND_URL", "QC_LIVE_FRONTEND_URL"):
+            host = urlsplit(os.environ.get(key, "")).hostname
+            if host:
+                allowed.update(row[4][0] for row in socket.getaddrinfo(host, None))
+    original = socket.socket.connect
+
+    def guarded_connect(sock, address):
+        if sock.family in (socket.AF_INET, socket.AF_INET6):
+            host = address[0]
+            try:
+                local = ipaddress.ip_address(host).is_loopback
+            except ValueError:
+                local = host == "localhost"
+            if not local and host not in allowed:
+                raise AssertionError("External network disabled in isolated tests; mock the provider")
+        return original(sock, address)
+
+    monkeypatch.setattr(socket.socket, "connect", guarded_connect)
+    yield
+    _rate_windows.clear()
+
+
+@pytest_asyncio.fixture
+async def db():
     engine = create_async_engine("sqlite+aiosqlite://")
     async with engine.connect() as connection:
         await connection.execute(text("PRAGMA foreign_keys=ON"))
@@ -113,6 +198,8 @@ async def pg_engine():
     """
     raw = os.environ.get("QC_TEST_DATABASE_URL")
     if not raw:
+        if os.environ.get("QC_REQUIRE_POSTGRES") == "true":
+            pytest.fail("Required PostgreSQL integration tests need QC_TEST_DATABASE_URL")
         pytest.skip("QC_TEST_DATABASE_URL is not configured")
     url = make_url(raw)
     if not url.drivername.startswith("postgresql") or "test" not in (url.database or "").lower():

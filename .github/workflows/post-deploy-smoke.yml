@@ -5,11 +5,18 @@ jobs:
   health:
     runs-on: ubuntu-latest
     steps:
-      - name: Check configured frontend and unified backend
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+      - run: uv sync --locked --project backend
+      - name: Read-only deployment smoke and access-control probes
         env:
-          APP_URL: ${{ secrets.PRODUCTION_APP_URL }}
-          BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL }}
-        run: |
-          test -n "$APP_URL" && test -n "$BACKEND_URL"
-          curl --fail --silent --show-error --max-time 30 "$APP_URL/api/health"
-          curl --fail --silent --show-error --max-time 30 "$BACKEND_URL/api/ready"
+          QC_LIVE_FRONTEND_URL: ${{ secrets.PRODUCTION_APP_URL }}
+          QC_LIVE_BACKEND_URL: ${{ secrets.PRODUCTION_BACKEND_URL }}
+        run: uv run --directory backend pytest tests/live --run-live --junitxml=/tmp/quick-clinic-live-tests.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: deployment-smoke-results
+          path: /tmp/quick-clinic-live-tests.xml

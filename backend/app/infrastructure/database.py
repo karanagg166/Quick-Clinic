@@ -23,6 +23,8 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
+from sqlalchemy.exc import TimeoutError as PoolTimeoutError
+from fastapi import HTTPException
 from app.core.config import get_settings
 
 
@@ -111,17 +113,40 @@ def database_url() -> str:
     return url
 
 
-engine = create_async_engine(database_url(), pool_pre_ping=True)
+def _make_engine():
+    url = database_url()
+    settings = get_settings()
+    is_sqlite = url.startswith("sqlite")
+    kwargs = {"pool_pre_ping": True}
+    if not is_sqlite:
+        kwargs.update(
+            pool_size=settings.db_pool_size,
+            max_overflow=settings.db_max_overflow,
+            pool_timeout=settings.db_pool_timeout,
+            pool_recycle=settings.db_pool_recycle,
+            connect_args={"server_settings": {"application_name": "quick-clinic-api"}},
+        )
+    return create_async_engine(url, **kwargs)
+
+
+engine = _make_engine()
 
 
 async def get_db() -> AsyncIterator[AsyncConnection]:
-    async with engine.connect() as connection:
-        try:
-            yield connection
-            await connection.commit()
-        except BaseException:
-            await connection.rollback()
-            raise
+    try:
+        async with engine.connect() as connection:
+            try:
+                yield connection
+                await connection.commit()
+            except BaseException:
+                await connection.rollback()
+                raise
+    except (OSError, TimeoutError, PoolTimeoutError) as exc:
+        # asyncpg can raise native socket errors before SQLAlchemy wraps them.
+        # Keep connection addresses and credentials out of the HTTP response.
+        raise HTTPException(
+            503, {"error": "Database temporarily unavailable", "code": "DATABASE_UNAVAILABLE"}
+        ) from exc
 
 
 def public_user(row: Mapping) -> dict:

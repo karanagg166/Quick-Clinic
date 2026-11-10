@@ -4,3 +4,8 @@
 url = "https://mcp.render.com/mcp"
 oauth = { client_id = "codex" }
 startup_timeout_sec = 30
+
+# Supabase access is restricted server-side to Quick-Clinic, not other projects.
+[mcp_servers.supabase-quick-clinic]
+url = "https://mcp.supabase.com/mcp?project_ref=atsicusbhiujthlshszg&features=docs%2Cdatabase%2Cdebugging%2Cdevelopment%2Cstorage"
+startup_timeout_sec = 30

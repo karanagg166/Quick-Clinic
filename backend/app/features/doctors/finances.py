@@ -1,5 +1,6 @@
 """Doctor earnings and atomic withdrawal reservations, with paise accounting."""
 
+import hashlib
 from datetime import timedelta
 from fastapi import HTTPException
 from sqlalchemy import func, insert, select, update
@@ -24,11 +25,18 @@ async def get_balance(doctor_id: str, user, db: AsyncConnection):
 
 async def list_earnings(doctor_id: str, filters, user, db: AsyncConnection):
     doctor = await owned_doctor(db, doctor_id, user)
+    payment_table = tables["Payment"]
     stmt = (
-        select(appointments_table.c.id, slots_table.c.startTime, users_table.c.name)
+        select(
+            appointments_table.c.id,
+            slots_table.c.startTime,
+            users_table.c.name,
+            func.coalesce(payment_table.c.amount / 100, doctor["fees"]).label("earned_amount"),
+        )
         .join(slots_table, appointments_table.c.slotId == slots_table.c.id)
         .join(patients_table, appointments_table.c.patientId == patients_table.c.id)
         .join(users_table, patients_table.c.userId == users_table.c.id)
+        .outerjoin(payment_table, appointments_table.c.paymentId == payment_table.c.id)
         .where(appointments_table.c.doctorId == doctor_id, appointments_table.c.status == "COMPLETED")
     )
     for key, comparison in (("startDate", "ge"), ("endDate", "le")):
@@ -47,13 +55,14 @@ async def list_earnings(doctor_id: str, filters, user, db: AsyncConnection):
     items = [
         {
             "id": r["id"],
-            "earned": doctor["fees"],
+            "earned": int(r["earned_amount"]),
             "patientName": r["name"],
             "appointmentDateTime": r["startTime"],
         }
         for r in rows
     ]
-    return {"total": doctor["fees"] * len(items), "count": len(items), "earnings": items}
+    total = sum(item["earned"] for item in items)
+    return {"total": total, "count": len(items), "earnings": items}
 
 
 async def get_doctor_statistics(doctor_id: str, user, db: AsyncConnection):
@@ -136,6 +145,33 @@ async def request_withdrawal(doctor_id: str, body, user, db: AsyncConnection):
     )
     if not bank:
         raise HTTPException(400, "Bank details not set. Please add bank details first.")
+
+    idempotency_key = body.get("idempotencyKey")
+    withdrawal_id = (
+        "w_" + hashlib.sha256(f"{doctor_id}:{idempotency_key}".encode()).hexdigest()[:24]
+        if idempotency_key and isinstance(idempotency_key, str)
+        else new_id()
+    )
+    if idempotency_key:
+        existing = (
+            await db.execute(
+                select(withdrawals_table).where(
+                    withdrawals_table.c.id == withdrawal_id,
+                    withdrawals_table.c.doctorId == doctor_id,
+                )
+            )
+        ).mappings().first()
+        if existing:
+            return {
+                "message": "Withdrawal request already processed",
+                "withdrawal": {
+                    **dict(existing),
+                    "amountInRupees": existing["amount"] / 100,
+                    "bankAccountNumber": "********" + bank["bankAccountNumber"][-4:],
+                    **{k: bank[k] for k in ("bankIFSC", "bankAccountHolderName", "bankName")},
+                },
+            }
+
     result = await db.execute(
         update(doctors_table)
         .where(doctors_table.c.id == doctor_id, doctors_table.c.balance >= amount * 100)
@@ -143,7 +179,6 @@ async def request_withdrawal(doctor_id: str, body, user, db: AsyncConnection):
     )
     if not result.rowcount:
         raise HTTPException(400, "Insufficient balance")
-    withdrawal_id = new_id()
     await db.execute(
         insert(withdrawals_table).values(
             id=withdrawal_id, doctorId=doctor_id, amount=amount * 100, currency="INR", status="PENDING"

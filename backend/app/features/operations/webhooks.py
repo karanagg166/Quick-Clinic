@@ -93,12 +93,27 @@ async def process_webhook(db, stored):
                     if payment_record
                     else None
                 )
-                if refund_record and not refund_record.get("razorpayRefundId"):
-                    await db.execute(
-                        update(tables["Refund"])
-                        .where(tables["Refund"].c.id == refund_record["id"])
-                        .values(razorpayRefundId=entity["id"])
-                    )
+                if refund_record:
+                    # Enforce exact amount and currency binding before linking refund
+                    entity_amount = entity.get("amount")
+                    entity_currency = entity.get("currency")
+                    if entity_amount is not None and entity_amount != refund_record["amount"]:
+                        logger.warning(
+                            "Webhook refund amount mismatch: %s != %s for refund %s",
+                            entity_amount,
+                            refund_record["amount"],
+                            refund_record["id"],
+                        )
+                        refund_record = None
+                    elif entity_currency and entity_currency != refund_record["currency"]:
+                        logger.warning("Webhook refund currency mismatch for %s", refund_record["id"])
+                        refund_record = None
+                    elif not refund_record.get("razorpayRefundId"):
+                        await db.execute(
+                            update(tables["Refund"])
+                            .where(tables["Refund"].c.id == refund_record["id"])
+                            .values(razorpayRefundId=entity["id"])
+                        )
             if refund_record:
                 await execute_refund(db, refund_record["id"])
                 outcome = "PROCESSED"

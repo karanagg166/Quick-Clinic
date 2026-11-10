@@ -1,4 +1,4 @@
-# Free-only deployment. PostgreSQL remains on the existing Neon database.
+# Free-only deployment. Database and object storage use the dedicated Quick-Clinic Supabase project.
 services:
   - type: web
     name: quick-clinic-api
@@ -13,7 +13,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: DOCUMENT_STORAGE_BACKEND
-        value: cloudinary
+        value: supabase
       - key: FRONTEND_URL
         value: https://quick-clinic-nine.vercel.app
       - key: BACKEND_PUBLIC_URL
@@ -24,12 +24,14 @@ services:
         sync: false
       - key: CRON_SECRET
         sync: false
-      - key: CLOUDINARY_CLOUD_NAME
+      - key: SUPABASE_URL
+        value: https://yrrcjcddrmkercetjfhl.supabase.co
+      - key: SUPABASE_SECRET_KEY
         sync: false
-      - key: CLOUDINARY_API_KEY
-        sync: false
-      - key: CLOUDINARY_API_SECRET
-        sync: false
+      - key: SUPABASE_DOCUMENT_BUCKET
+        value: quick-clinic-medical-documents
+      - key: SUPABASE_AVATAR_BUCKET
+        value: quick-clinic-avatars
       - key: RAZORPAY_KEY_ID
         sync: false
       - key: RAZORPAY_KEY_SECRET

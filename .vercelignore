@@ -12,3 +12,6 @@ docs/
 playwright-report/
 test-results/
 coverage/
+
+.agents/
+supabase/

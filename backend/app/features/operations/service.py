@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import timedelta
 from urllib.parse import quote
+from uuid import uuid4
 
 from sqlalchemy import func, or_, select, update
 
@@ -115,6 +116,20 @@ async def reconcile(db):
     for row in pending:
         if time.monotonic() - started >= 22:
             break
+        worker_id = f"worker_{uuid4().hex[:12]}"
+        # Atomically claim checkout lease
+        claimed = await db.execute(
+            update(checkout_table)
+            .where(
+                checkout_table.c.id == row["id"],
+                or_(checkout_table.c.leaseExpiresAt.is_(None), checkout_table.c.leaseExpiresAt <= now),
+            )
+            .values(leaseOwner=worker_id, leaseExpiresAt=now + timedelta(seconds=30))
+        )
+        if not claimed.rowcount:
+            continue
+        await db.commit()
+
         try:
             record = dict(row)
             if not record.get("razorpayOrderId"):
@@ -150,13 +165,30 @@ async def reconcile(db):
             await db.execute(
                 update(checkout_table)
                 .where(checkout_table.c.id == row["id"])
-                .values(nextAttemptAt=utcnow() + timedelta(minutes=2))
+                .values(nextAttemptAt=utcnow() + timedelta(minutes=2), leaseOwner=None, leaseExpiresAt=None)
             )
             await db.commit()
-        except Exception:
-            logger.exception("Checkout reconciliation failed for %s", row["id"])
+        except Exception as exc:
+            logger.warning("Checkout reconciliation retry for %s: %s", row["id"], type(exc).__name__)
             await db.rollback()
-            results["errors"].append(f"Checkout {row['id']} requires retry")
+            attempts = (row.get("attempts") or 0) + 1
+            delay_minutes = min(2 ** min(attempts, 6), 60)
+            is_exhausted = attempts >= 10
+            await db.execute(
+                update(checkout_table)
+                .where(checkout_table.c.id == row["id"])
+                .values(
+                    attempts=attempts,
+                    status="MANUAL_REVIEW" if is_exhausted else row["status"],
+                    nextAttemptAt=utcnow() + timedelta(minutes=delay_minutes),
+                    leaseOwner=None,
+                    leaseExpiresAt=None,
+                    lastError=f"Reconciliation error (attempt {attempts}): {type(exc).__name__}",
+                )
+            )
+            await db.commit()
+            if is_exhausted:
+                results["errors"].append(f"Checkout {row['id']} exceeded retry limit and marked MANUAL_REVIEW")
     # Pre-migration Payment rows may have no canonical Checkout. Recover them too.
     payment_table, appointment_table = tables["Payment"], tables["Appointment"]
     legacy = (
@@ -202,10 +234,23 @@ async def reconcile(db):
                 .values(nextAttemptAt=utcnow() + timedelta(minutes=2))
             )
             await db.commit()
-        except Exception:
+        except Exception as exc:
             await db.rollback()
-            logger.exception("Legacy payment reconciliation failed for %s", row["id"])
-            results["errors"].append(f"Payment {row['id']} requires retry")
+            logger.warning("Legacy payment reconciliation retry for %s: %s", row["id"], type(exc).__name__)
+            attempts = (row.get("attempts") or 0) + 1
+            delay_minutes = min(2 ** min(attempts, 6), 60)
+            await db.execute(
+                update(payment_table)
+                .where(payment_table.c.id == row["id"])
+                .values(
+                    attempts=attempts,
+                    nextAttemptAt=utcnow() + timedelta(minutes=delay_minutes),
+                    lastError=f"Reconciliation error (attempt {attempts}): {type(exc).__name__}",
+                )
+            )
+            await db.commit()
+            if attempts >= 10:
+                results["errors"].append(f"Payment {row['id']} requires review")
     rows = (
         (
             await db.execute(

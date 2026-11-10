@@ -10,9 +10,9 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'res.cloudinary.com',
+        hostname: 'yrrcjcddrmkercetjfhl.supabase.co',
         port: '',
-        pathname: '/**',
+        pathname: '/storage/v1/object/public/quick-clinic-avatars/**',
       },
     ],
   },

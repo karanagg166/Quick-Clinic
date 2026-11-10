@@ -17,7 +17,7 @@
 
 ## Migration and safety
 
-- Never run production schema/data mutations, drop tables, reset Git state, or overwrite unrelated user work.
+- Never run production schema/data mutations outside an explicitly authorized migration, drop source tables, reset Git state, or overwrite unrelated user work. The Supabase migration and audited fixture/demo cleanup are explicitly authorized; preserve the Neon source and private backup.
 - Database tables/columns remain compatible with the existing PostgreSQL schema. No automatic table creation or migration at startup.
 - Preserve JWT session/socket audience separation, cookie authentication, database role/active checks, appointment ownership and payment/refund idempotency.
 - Store new medical documents only in private persistent storage. Never expose storage paths or publish a static document directory. Preserve legacy file metadata pending explicit import.
@@ -35,6 +35,6 @@
 
 ## Hosting constraints
 
-- Use free instances only, always. Reuse the existing Neon database. Do not provision paid Render plans, persistent disks, or Render cron jobs.
-- Render production documents must use authenticated Cloudinary storage; never its ephemeral filesystem.
-- `.codex/config.toml` contains the project-scoped Render MCP alias. Credentials are stored outside Git. Restrict actions to Quick-Clinic resources.
+- Use free instances only, always. Use only the dedicated Supabase project `yrrcjcddrmkercetjfhl` for the migrated database and object storage; retain Neon as the read-only rollback source. Do not provision paid Render plans, persistent disks, or Render cron jobs.
+- Render production documents must use the private Supabase medical bucket; never its ephemeral filesystem or a public medical bucket. Avatars use the separate public avatar bucket.
+- `.codex/config.toml` contains project-scoped Render and Supabase MCP aliases; `.vscode/mcp.json` and `.agents/mcp_config.json` configure VS Code and Antigravity. Supabase is server-scoped to `yrrcjcddrmkercetjfhl`. Credentials are stored outside Git. Restrict actions to Quick-Clinic resources.

@@ -72,12 +72,10 @@ async def watch_session(sid):
 async def connect(sid, environ, auth):
     auth = auth if isinstance(auth, dict) else {}
     query = parse_qs(environ.get("QUERY_STRING", ""))
+    if "token" in query:
+        raise socketio.exceptions.ConnectionRefusedError("Authentication tokens are prohibited in query parameters; pass via auth payload")
     header = environ.get("HTTP_AUTHORIZATION", "")
-    token = (
-        auth.get("token")
-        or (header[7:] if header.startswith("Bearer ") else None)
-        or query.get("token", [None])[0]
-    )
+    token = auth.get("token") or (header[7:] if header.startswith("Bearer ") else None)
     relation_id = auth.get("relationId") or query.get("relationId", [None])[0]
     if not isinstance(token, str) or (relation_id is not None and not isinstance(relation_id, str)):
         raise socketio.exceptions.ConnectionRefusedError("Missing token or invalid relation")

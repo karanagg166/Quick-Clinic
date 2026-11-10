@@ -24,6 +24,7 @@ jobs:
       QC_TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/quickclinic_test
       JWT_SECRET: ci-isolated-secret-at-least-32-characters
       NODE_ENV: test
+      QC_REQUIRE_POSTGRES: "true"
     defaults:
       run:
         working-directory: backend
@@ -34,7 +35,15 @@ jobs:
           version: "0.13.7"
       - run: uv sync --locked
       - run: uv run ruff check app tests
-      - run: uv run pytest
+      - run: uv run pytest --cov=app --cov-report=term-missing --cov-report=xml:/tmp/quick-clinic-coverage.xml --cov-report=json:/tmp/quick-clinic-coverage.json --junitxml=/tmp/quick-clinic-backend-tests.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-test-results
+          path: |
+            /tmp/quick-clinic-coverage.xml
+            /tmp/quick-clinic-coverage.json
+            /tmp/quick-clinic-backend-tests.xml
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -49,5 +58,52 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm type-check
       - run: pnpm lint
-      - run: pnpm test
+      - run: pnpm test:coverage
       - run: pnpm build
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: coverage/
+  browser:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quickclinic_e2e_test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      QC_BROWSER_TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quickclinic_e2e_test
+      NEXT_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: uv sync --locked --project backend
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm build
+        env:
+          JWT_SECRET: browser-isolated-signing-secret-at-least-32-characters
+          BACKEND_URL: http://localhost:4100
+          NEXT_PUBLIC_SOCKET_URL: http://localhost:4100
+      - run: pnpm test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-test-results
+          path: |
+            /tmp/quick-clinic-playwright-report/
+            /tmp/quick-clinic-playwright-results/

@@ -16,6 +16,18 @@ async def apply_leave(db, doctor_id, start, end, reason):
     from app.features.booking.service import persist_side_effects
     from app.features.payments.refunds import enqueue_refund
 
+    # Serializing on the doctor and affected slots prevents concurrent confirmations racing with leave creation
+    await db.execute(select(doctors_table.c.id).where(doctors_table.c.id == doctor_id).with_for_update())
+    await db.execute(
+        select(slots_table.c.id)
+        .where(
+            slots_table.c.doctorId == doctor_id,
+            slots_table.c.startTime < end,
+            slots_table.c.endTime > start,
+        )
+        .with_for_update()
+    )
+
     appointments = (
         (
             await db.execute(

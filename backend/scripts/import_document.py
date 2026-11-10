@@ -22,7 +22,7 @@ async def main(document_id: str, source: Path):
             .mappings()
             .one()
         )
-        if row["storagePath"].startswith(("local/", "cloudinary/")):
+        if row["storagePath"].startswith(("supabase/",)):
             raise SystemExit("Document is already managed by application storage")
         data = source.read_bytes()
         validate_file(data, row["mimeType"])

@@ -140,19 +140,24 @@ async def send_email_otp(user_id: str, db: AsyncConnection):
     key = get_settings().resend_api_key
     if not key:
         raise HTTPException(503, "Email service is not configured")
-    async with httpx.AsyncClient(timeout=15) as client:
-        sent = await client.post(
-            "https://api.resend.com/emails",
-            headers={"Authorization": f"Bearer {key}"},
-            json={
-                "from": get_settings().resend_from,
-                "to": user.email,
-                "subject": "Your OTP Code",
-                "html": f"<p>Your OTP code is <b>{code}</b>. It expires in 10 minutes.</p>",
-            },
-        )
-    if sent.is_error:
-        raise HTTPException(502, "Email delivery failed")
+    try:
+        async with httpx.AsyncClient(timeout=15) as client:
+            sent = await client.post(
+                "https://api.resend.com/emails",
+                headers={"Authorization": f"Bearer {key}"},
+                json={
+                    "from": get_settings().resend_from,
+                    "to": user.email,
+                    "subject": "Your OTP Code",
+                    "html": f"<p>Your OTP code is <b>{code}</b>. It expires in 10 minutes.</p>",
+                },
+            )
+        sent.raise_for_status()
+        result = sent.json()
+        if not isinstance(result, dict) or not isinstance(result.get("id"), str) or not result["id"]:
+            raise ValueError("Invalid delivery acknowledgement")
+    except (httpx.HTTPError, ValueError) as exc:
+        raise HTTPException(502, "Email delivery failed") from exc
     return {"message": "OTP sent successfully"}
 
 

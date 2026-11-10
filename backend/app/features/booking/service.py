@@ -82,11 +82,18 @@ async def acquire_hold(db, slot_id, doctor_id, patient_id):
     slot_record = await fetch_record(
         db, slot_table, slot_table.c.id == slot_id, slot_table.c.doctorId == doctor_id, lock=True
     )
+    user_table = tables["User"]
     doctor_record = await fetch_record(
         db, doctor_table, doctor_table.c.id == doctor_id, doctor_table.c.isReleaseFixture.is_(False)
     )
+    doctor_user = (
+        await fetch_record(db, user_table, user_table.c.id == doctor_record["userId"], user_table.c.isActive.is_(True))
+        if doctor_record
+        else None
+    )
     if (
         not doctor_record
+        or not doctor_user
         or not slot_record
         or as_utc_datetime(slot_record["startTime"]) <= as_utc_datetime(now)
     ):
@@ -241,6 +248,16 @@ async def confirm_hold(db, *, slot_id, doctor_id, patient_id, token, payment_met
         db, slot_table, slot_table.c.id == slot_id, slot_table.c.doctorId == doctor_id, lock=True
     )
     if not slot_record:
+        return None
+    leaves_table = tables["Leave"]
+    doctor_on_leave = await fetch_record(
+        db,
+        leaves_table,
+        leaves_table.c.doctorId == doctor_id,
+        leaves_table.c.startDate < slot_record["endTime"],
+        leaves_table.c.endDate > slot_record["startTime"],
+    )
+    if doctor_on_leave:
         return None
     existing = await fetch_record(
         db,

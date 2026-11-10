@@ -89,6 +89,7 @@ export default function DoctorAppointmentsPage() {
   // Setup Socket.IO connection for real-time appointment requests
   useEffect(() => {
     if (!userId) return;
+    let cancelled = false;
 
     // Clean up existing connection if any
     if (socketRef.current) {
@@ -96,62 +97,84 @@ export default function DoctorAppointmentsPage() {
       socketRef.current = null;
     }
 
-    const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+    async function initSocket() {
+      try {
+        const res = await fetch('/api/socket/token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'same-origin',
+        });
+        if (!res.ok || cancelled) return;
+        const data = await res.json();
+        if (!data?.token || cancelled) return;
 
-    const socket = io(socketUrl, {
-      auth: {
-        userId, // Only userId, no relationId for notifications
-      },
-      transports: ['polling', 'websocket'],
-      reconnection: true,
-      reconnectionDelay: 1000,
-      reconnectionDelayMax: 5000,
-      reconnectionAttempts: 5,
-      timeout: 20000,
-      forceNew: true,
-    });
+        const socketUrl = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:4000';
+        const socket = io(socketUrl, {
+          path: '/socket.io',
+          auth: {
+            token: data.token,
+          },
+          transports: ['websocket', 'polling'],
+          reconnection: true,
+          reconnectionDelay: 1000,
+          reconnectionDelayMax: 5000,
+          reconnectionAttempts: 5,
+          timeout: 20000,
+        });
 
-    socketRef.current = socket;
-
-    socket.on('connect', () => {
-      setSocketConnected(true);
-    });
-
-    socket.on('notification_connected', () => {
-      // Notification connection confirmed
-    });
-
-    // Listen for new appointment requests
-    socket.on('new_appointment_request', (data: { appointment: DoctorAppointment }) => {
-      // Add the new appointment to the list (if it's pending and matches filters)
-      setAppointments((prev) => {
-        const exists = prev.some((apt) => apt.id === data.appointment.id);
-        if (exists) {
-          return prev.map((apt) =>
-            apt.id === data.appointment.id ? data.appointment : apt
-          );
+        if (cancelled) {
+          socket.disconnect();
+          return;
         }
-        return [data.appointment, ...prev];
-      });
 
-      if (doctorId) {
-        fetchAppointments();
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+          setSocketConnected(true);
+        });
+
+        socket.on('notification_connected', () => {
+          // Notification connection confirmed
+        });
+
+        // Listen for new appointment requests
+        socket.on('new_appointment_request', (eventData: { appointment: DoctorAppointment }) => {
+          setAppointments((prev) => {
+            const exists = prev.some((apt) => apt.id === eventData.appointment.id);
+            if (exists) {
+              return prev.map((apt) =>
+                apt.id === eventData.appointment.id ? eventData.appointment : apt
+              );
+            }
+            return [eventData.appointment, ...prev];
+          });
+
+          if (doctorId) {
+            fetchAppointments();
+          }
+        });
+
+        socket.on('disconnect', () => {
+          setSocketConnected(false);
+        });
+
+        socket.on('connect_error', () => {
+          setSocketConnected(false);
+        });
+      } catch (err) {
+        console.error('Failed to initialize doctor appointments socket', err);
       }
-    });
+    }
 
-    socket.on('disconnect', () => {
-      setSocketConnected(false);
-    });
-
-    socket.on('connect_error', () => {
-      setSocketConnected(false);
-    });
+    initSocket();
 
     return () => {
-      socket.disconnect();
-      socketRef.current = null;
+      cancelled = true;
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userId, doctorId]);
 
   return (

@@ -31,10 +31,14 @@ async def lifespan(application):
         raise RuntimeError("JWT_SECRET must contain at least 32 characters")
     if settings.node_env == "production" and not settings.backend_public_url.startswith("https://"):
         raise RuntimeError("BACKEND_PUBLIC_URL must use HTTPS in production")
-    if settings.node_env == "production" and settings.document_storage_backend == "cloudinary":
-        from app.features.documents.cloudinary_storage import credentials
+    if settings.node_env == "production" and settings.document_storage_backend == "supabase":
+        from app.infrastructure.object_storage import configuration, object_path
 
-        credentials()
+        configuration()
+        object_path(settings.supabase_document_bucket, "configuration-check")
+        object_path(settings.supabase_avatar_bucket, "configuration-check")
+        if settings.supabase_document_bucket == settings.supabase_avatar_bucket:
+            raise RuntimeError("Medical documents and avatars must use separate buckets")
     if (
         settings.node_env == "production"
         and os.environ.get("RENDER")

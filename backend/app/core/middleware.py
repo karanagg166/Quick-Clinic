@@ -1,14 +1,16 @@
 """Request IDs, private response caching, request limits and auth abuse controls."""
 
+import asyncio
 import time
 from collections import defaultdict, deque
 from uuid import uuid4
-from fastapi import Request
+from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
 from .config import get_settings
 
 # One process is the default deployment. Redis is used for distributed limiting when configured.
 _rate_windows = defaultdict(deque)
+MAX_REQUEST_BYTES = 11 * 1024 * 1024
 
 
 async def request_guards(request: Request, call_next):
@@ -16,11 +18,27 @@ async def request_guards(request: Request, call_next):
     length = request.headers.get("content-length")
     if length:
         try:
-            oversized = int(length) > 11 * 1024 * 1024
+            oversized = int(length) > MAX_REQUEST_BYTES
         except ValueError:
             return JSONResponse({"error": "Invalid Content-Length"}, status_code=400)
         if oversized:
             return JSONResponse({"error": "Request body too large"}, status_code=413)
+
+    # Protect streaming/chunked requests from exceeding max body size
+    original_receive = request._receive
+    bytes_received = 0
+
+    async def bounded_receive():
+        nonlocal bytes_received
+        message = await original_receive()
+        if message.get("type") == "http.request":
+            bytes_received += len(message.get("body", b""))
+            if bytes_received > MAX_REQUEST_BYTES:
+                raise HTTPException(413, "Request body too large")
+        return message
+
+    request._receive = bounded_receive
+
     # Never trust forwarded IP headers from public clients for abuse limits.
     client = request.client.host if request.client else "unknown"
     sensitive = (
@@ -34,10 +52,14 @@ async def request_guards(request: Request, call_next):
             from redis.asyncio import Redis
 
             try:
-                async with Redis.from_url(get_settings().redis_url) as redis:
-                    count = await redis.incr(key)
+                async with Redis.from_url(
+                    get_settings().redis_url,
+                    socket_timeout=1.0,
+                    socket_connect_timeout=1.0,
+                ) as redis:
+                    count = await asyncio.wait_for(redis.incr(key), timeout=1.5)
                     if count == 1:
-                        await redis.expire(key, 61)
+                        await asyncio.wait_for(redis.expire(key, 61), timeout=1.0)
             except Exception:
                 return JSONResponse(
                     {"error": "Authentication service temporarily unavailable"}, status_code=503

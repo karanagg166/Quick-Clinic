@@ -1,15 +1,58 @@
-"""Avatar validation and signed uploads to the image storage provider."""
+"""Bounded image processing and public Supabase avatar persistence."""
 
-import hashlib
-import time
+import io
+import logging
+import secrets
+import warnings
 from urllib.parse import urlparse
-import httpx
+
 from fastapi import HTTPException
+from PIL import Image, ImageOps, UnidentifiedImageError
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncConnection
+from starlette.concurrency import run_in_threadpool
+
 from app.core.config import get_settings
 from app.core.security import ensure_owner
+from app.infrastructure import object_storage
 from app.infrastructure.database import tables, utcnow
+
+logger = logging.getLogger(__name__)
+MAX_AVATAR_BYTES = 5 * 1024 * 1024
+MAX_AVATAR_PIXELS = 20_000_000
+AVATAR_FORMATS = {"image/jpeg": "JPEG", "image/png": "PNG", "image/webp": "WEBP", "image/gif": "GIF"}
+
+
+def prepare_avatar(content: bytes, content_type: str) -> bytes:
+    """Decode actual image bytes and remove metadata through bounded WebP encoding."""
+    if content_type not in AVATAR_FORMATS:
+        raise HTTPException(400, "File must be a JPEG, PNG, WebP or GIF image")
+    if not content or len(content) > MAX_AVATAR_BYTES:
+        raise HTTPException(400, "File size must be between 1 byte and 5MB")
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(io.BytesIO(content), formats=list(AVATAR_FORMATS.values())) as image:
+                if image.format != AVATAR_FORMATS[content_type]:
+                    raise ValueError("Image content does not match its media type")
+                if image.width * image.height > MAX_AVATAR_PIXELS:
+                    raise ValueError("Image dimensions exceed the avatar limit")
+                image.verify()
+            with Image.open(io.BytesIO(content)) as image:
+                image.load()
+                normalized = ImageOps.exif_transpose(image).convert("RGBA")
+                normalized.thumbnail((512, 512), Image.Resampling.LANCZOS)
+                output = io.BytesIO()
+                normalized.save(output, format="WEBP", quality=85, method=4)
+                return output.getvalue()
+    except (
+        UnidentifiedImageError,
+        OSError,
+        ValueError,
+        Image.DecompressionBombError,
+        Image.DecompressionBombWarning,
+    ) as exc:
+        raise HTTPException(400, "File is not a valid supported image within the size limits") from exc
 
 
 def sanitize_avatar_url(url):
@@ -56,41 +99,26 @@ async def upload_avatar(user_id: str, uploaded_file, user: dict, db: AsyncConnec
     ensure_owner(user, user_id, allow_admin=False)
     if uploaded_file is None or not hasattr(uploaded_file, "read"):
         raise HTTPException(400, "No file uploaded")
-    if uploaded_file.content_type not in {"image/jpeg", "image/png", "image/webp", "image/gif"}:
+    if uploaded_file.content_type not in AVATAR_FORMATS:
         raise HTTPException(400, "File must be an image")
-    content = await uploaded_file.read(5 * 1024 * 1024 + 1)
-    if not content or len(content) > 5 * 1024 * 1024:
-        raise HTTPException(400, "File size must be less than 5MB")
-    settings = get_settings()
-    cloud, key, secret = (
-        settings.cloudinary_cloud_name,
-        settings.cloudinary_api_key,
-        settings.cloudinary_api_secret,
+    content = await uploaded_file.read(MAX_AVATAR_BYTES + 1)
+    prepared = await run_in_threadpool(prepare_avatar, content, uploaded_file.content_type)
+    bucket = get_settings().supabase_avatar_bucket
+    object_path = f"avatars/{user_id}/{secrets.token_hex(24)}.webp"
+    avatar = object_storage.public_object_url(bucket, object_path)
+    await object_storage.upload_object(
+        bucket, object_path, prepared, "image/webp", max_bytes=MAX_AVATAR_BYTES
     )
-    if not all((cloud, key, secret)):
-        raise HTTPException(503, "Image storage is not configured")
-    params = {
-        "folder": "quickclinic/avatars",
-        "public_id": f"user_{user_id}_{int(time.time())}",
-        "timestamp": str(int(time.time())),
-        "transformation": "c_fill,g_face,h_400,w_400/q_auto/f_auto",
-    }
-    signing = "&".join((f"{name}={value}" for name, value in sorted(params.items()))) + secret
-    signature = hashlib.sha1(signing.encode()).hexdigest()
-    async with httpx.AsyncClient(timeout=30) as client:
-        uploaded = await client.post(
-            f"https://api.cloudinary.com/v1_1/{cloud}/image/upload",
-            data={**params, "api_key": key, "signature": signature},
-            files={"file": (uploaded_file.filename, content, uploaded_file.content_type)},
+    try:
+        await db.execute(
+            update(tables["User"])
+            .where(tables["User"].c.id == user_id)
+            .values(profileImageUrl=avatar, updatedAt=utcnow())
         )
-    if uploaded.is_error:
-        raise HTTPException(502, "Avatar upload failed")
-    avatar = sanitize_avatar_url(uploaded.json().get("secure_url"))
-    if not avatar:
-        raise HTTPException(502, "Image storage returned an invalid URL")
-    await db.execute(
-        update(tables["User"])
-        .where(tables["User"].c.id == user_id)
-        .values(profileImageUrl=avatar, updatedAt=utcnow())
-    )
+    except BaseException:
+        try:
+            await object_storage.delete_object(bucket, object_path)
+        except Exception:
+            logger.warning("Could not remove avatar after an account persistence failure")
+        raise
     return {"avatarUrl": avatar}

@@ -32,3 +32,5 @@ docker compose down
 ```
 
 For deployment, data preservation and historical document imports, see [backend migration](docs/backend-migration.md). Do not run database tests against production.
+
+For feature coverage, test layers, isolated PostgreSQL/browser setup, coverage gates and read-only live probes, see [testing](docs/testing.md). The default browser command is now `pnpm test:e2e` with `QC_BROWSER_TEST_DATABASE_URL` set to a local disposable `quickclinic_e2e_test` database. Build the browser frontend with the isolated values documented there first. The suite starts the frontend and FastAPI itself; it never reuses a production database or running service.

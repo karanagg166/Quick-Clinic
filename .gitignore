@@ -61,7 +61,8 @@ Thumbs.db
 *.swo
 *~
 .idea/
-.vscode/
+.vscode/*
+!.vscode/mcp.json
 !.vscode/extensions.json
 !.vscode/settings.json
 
@@ -86,3 +87,12 @@ backend/data/
 .vercel
 .env*
 !.env.example
+
+# Isolated test instrumentation
+.coverage*
+.hypothesis/
+coverage.xml
+
+# Supabase CLI local state and exported data
+supabase/.temp/
+supabase/.branches/

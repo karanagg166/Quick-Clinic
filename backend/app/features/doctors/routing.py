@@ -40,6 +40,8 @@ async def route_metrics(lat, lng, doctor_profiles):
             and isinstance(duration, (int, float))
             and math.isfinite(distance)
             and math.isfinite(duration)
+            and distance >= 0
+            and duration >= 0
         }
     except (httpx.HTTPError, ValueError, KeyError, TypeError, IndexError):
         logging.getLogger(__name__).warning("Driving route service unavailable; using distance estimate")

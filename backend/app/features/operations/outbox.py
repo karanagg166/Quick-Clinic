@@ -1,5 +1,6 @@
 """Lease-based, ordered delivery of durable realtime notification intents."""
 
+import asyncio
 import logging
 from datetime import timedelta
 from uuid import uuid4
@@ -65,15 +66,18 @@ async def dispatch_outbox(db, limit=20):
     result = {"delivered": 0, "failed": 0}
     for row in rows:
         try:
-            await publish_outbox(row["channel"], row["targetUserId"], row["payload"])
+            await asyncio.wait_for(
+                publish_outbox(row["channel"], row["targetUserId"], row["payload"]),
+                timeout=5.0,
+            )
             await db.execute(
                 update(outbox)
                 .where(outbox.c.id == row["id"], outbox.c.leaseOwner == lease_owner)
                 .values(status="DELIVERED", deliveredAt=utcnow(), leaseOwner=None, leaseExpiresAt=None)
             )
             result["delivered"] += 1
-        except Exception:
-            logger.exception("Realtime outbox delivery failed for %s", row["id"])
+        except Exception as exc:
+            logger.error("Realtime outbox delivery failed for %s: %s", row["id"], type(exc).__name__)
             await db.execute(
                 update(outbox)
                 .where(outbox.c.id == row["id"], outbox.c.leaseOwner == lease_owner)

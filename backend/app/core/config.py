@@ -22,13 +22,38 @@ class Settings(BaseSettings):
     razorpay_webhook_secret: str = ""
     resend_api_key: str = ""
     resend_from: str = "onboarding@resend.dev"
-    cloudinary_cloud_name: str = ""
-    cloudinary_api_key: str = ""
-    cloudinary_api_secret: str = ""
+    supabase_url: str = ""
+    supabase_secret_key: str = ""
+    supabase_document_bucket: str = "quick-clinic-medical-documents"
+    supabase_avatar_bucket: str = "quick-clinic-avatars"
     openrouteservice_api_key: str = ""
-    document_storage_backend: Literal["local", "cloudinary"] = "local"
+    document_storage_backend: Literal["local", "supabase"] = "local"
     document_storage_dir: Path = Path("./data/medical-documents")
     git_commit: str = "unknown"
+
+    # Database connection pooling (safe for free-tier Neon / Supabase session pooler)
+    db_pool_size: int = 5
+    db_max_overflow: int = 5
+    db_pool_timeout: float = 15.0
+    db_pool_recycle: int = 1800
+
+    # AI & Model Providers
+    google_api_key: str = ""
+    groq_api_key: str = ""
+    cohere_api_key: str = ""
+
+    # LangChain & LangSmith
+    langsmith_tracing: str = ""
+    langsmith_endpoint: str = ""
+    langsmith_api_key: str = ""
+    langsmith_project: str = ""
+    langchain_tracing_v2: str = ""
+    langchain_api_key: str = ""
+    langchain_project: str = ""
+    langchain_endpoint: str = ""
+
+    # LangGraph Checkpointing
+    langgraph_database_url: str = ""
 
     @property
     def cors_origins(self) -> list[str]:

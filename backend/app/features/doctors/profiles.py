@@ -47,8 +47,12 @@ async def get_doctor_profile(doctor_id: str, viewer, db: AsyncConnection):
     doctor = (
         (
             await db.execute(
-                select(doctors_table).where(
-                    doctors_table.c.id == doctor_id, doctors_table.c.isReleaseFixture.is_(False)
+                select(doctors_table)
+                .join(users_table, doctors_table.c.userId == users_table.c.id)
+                .where(
+                    doctors_table.c.id == doctor_id,
+                    doctors_table.c.isReleaseFixture.is_(False),
+                    users_table.c.isActive.is_(True),
                 )
             )
         )
