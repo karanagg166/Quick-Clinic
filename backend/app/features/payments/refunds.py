@@ -1,7 +1,6 @@
 """Durable, idempotent full-refund claims and provider reconciliation."""
 
 import logging
-import re
 from datetime import timedelta
 from urllib.parse import quote
 from uuid import uuid4
