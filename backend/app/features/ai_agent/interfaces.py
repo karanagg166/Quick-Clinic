@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncConnection
 from app.features.scheduling import service as scheduling_service
 from app.features.booking import service as booking_service
 from app.features.documents import service as documents_service
-from .security import assert_agent_authorization, audit_agent_action
+from .security.policies import assert_agent_authorization, audit_agent_action
 
 
 class DoctorSchedulingToolInterface:

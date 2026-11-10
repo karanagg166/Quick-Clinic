@@ -1,19 +1,19 @@
 """AI Agent architecture readiness module."""
 
 from .interfaces import (
-    DoctorSchedulingToolInterface,
     AppointmentActionToolInterface,
     ClinicalDocumentsToolInterface,
+    DoctorSchedulingToolInterface,
 )
-from .security import assert_agent_authorization, audit_agent_action, ActionRiskLevel
-from .persistence import LangGraphPersistenceConfig
+from .persistence.config import LangGraphPersistenceConfig
+from .security.policies import ActionRiskLevel, assert_agent_authorization, audit_agent_action
 
 __all__ = [
-    "DoctorSchedulingToolInterface",
+    "ActionRiskLevel",
     "AppointmentActionToolInterface",
     "ClinicalDocumentsToolInterface",
+    "DoctorSchedulingToolInterface",
+    "LangGraphPersistenceConfig",
     "assert_agent_authorization",
     "audit_agent_action",
-    "ActionRiskLevel",
-    "LangGraphPersistenceConfig",
 ]
