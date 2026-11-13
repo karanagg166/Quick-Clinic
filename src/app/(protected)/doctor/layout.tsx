@@ -6,6 +6,7 @@ import { useUserStore } from '@/store/userStore';
 import DoctorNavbar from '@/components/doctor/navbar';
 import DoctorSidebar from '@/components/doctor/sidebar';
 import Footer from '@/components/general/Footer';
+import { FloatingAgentWidget } from '@/components/ai-agent/FloatingAgentWidget';
 
 export default function DoctorDashboardLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
@@ -65,6 +66,7 @@ export default function DoctorDashboardLayout({ children }: Readonly<{ children:
           <Footer />
         </div>
       </main>
+      <FloatingAgentWidget role="DOCTOR" />
     </div>
   );
 }

@@ -6,6 +6,7 @@ import { useState } from 'react';
 import PatientNavbar from '@/components/patient/navbar';
 import PatientSidebar from '@/components/patient/sidebar';
 import Footer from '@/components/general/Footer';
+import { FloatingAgentWidget } from '@/components/ai-agent/FloatingAgentWidget';
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
 
@@ -21,6 +22,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <Footer />
         </div>
       </main>
+      <FloatingAgentWidget role="PATIENT" />
     </div>
   );
 }

@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   AlertCircle,
   ArrowUpRight,
-  Bot,
   Check,
   Copy,
   RefreshCw,
@@ -16,6 +15,7 @@ import { cn } from "@/lib/utils";
 import type { AgentMessage as AgentMessageType, ApprovalStatus } from "@/lib/ai-agent/types";
 import { ToolActivity } from "./ToolActivity";
 import { ApprovalCard } from "./ApprovalCard";
+import { AiPetIcon } from "./AiPetIcon";
 
 interface AgentMessageProps {
   message: AgentMessageType;
@@ -94,8 +94,8 @@ export function AgentMessage({
       )}
     >
       {!isUser && (
-        <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-          <Bot className="w-4 h-4" />
+        <div className="shrink-0 mt-0.5">
+          <AiPetIcon size="sm" />
         </div>
       )}
 

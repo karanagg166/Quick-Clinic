@@ -10,6 +10,8 @@ import { MAX_AGENT_MESSAGE_LENGTH } from "@/lib/ai-agent/types";
 import { ToolActivity } from "@/components/ai-agent/ToolActivity";
 import { ApprovalCard } from "@/components/ai-agent/ApprovalCard";
 import { AgentChat } from "@/components/ai-agent/AgentChat";
+import { AiPetIcon } from "@/components/ai-agent/AiPetIcon";
+import { FloatingAgentWidget } from "@/components/ai-agent/FloatingAgentWidget";
 import PatientSidebar from "@/components/patient/sidebar";
 import DoctorSidebar from "@/components/doctor/sidebar";
 
@@ -269,6 +271,83 @@ describe("Quick-Clinic AI Agent Frontend Suite", () => {
       render(<DoctorSidebar isSidebarOpen={true} setSidebarOpen={vi.fn()} />);
       const doctorLink = screen.getByRole("link", { name: /AI Copilot/i });
       expect(doctorLink.getAttribute("href")).toBe("/doctor/assistant");
+    });
+  });
+
+  describe("6. AiPetIcon & FloatingAgentWidget", () => {
+    it("renders AiPetIcon across moods and sizes", () => {
+      const { rerender } = render(<AiPetIcon size="lg" mood="idle" showGlow />);
+      const icon = screen.getByTestId("ai-pet-icon");
+      expect(icon.getAttribute("data-mood")).toBe("idle");
+
+      rerender(<AiPetIcon size="xl" mood="thinking" showGlow />);
+      expect(screen.getByTestId("ai-pet-icon").getAttribute("data-mood")).toBe("thinking");
+
+      rerender(<AiPetIcon size="sm" mood="excited" />);
+      expect(screen.getByTestId("ai-pet-icon").getAttribute("data-mood")).toBe("excited");
+    });
+
+    it("opens floating Ask AI pet popover, sends a message, and closes on Escape", async () => {
+      currentPathname = "/patient";
+      global.fetch = vi.fn().mockImplementation((url: string) => {
+        if (url.includes("/api/ai-agent/threads")) {
+          return Promise.resolve({
+            ok: false,
+            status: 404,
+            json: async () => ({ detail: "Not Found" }),
+          });
+        }
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            response: "Dr. Sharma has openings at 10:30 AM and 3:00 PM tomorrow.",
+          }),
+        });
+      }) as unknown as typeof fetch;
+
+      render(<FloatingAgentWidget role="PATIENT" />);
+
+      const trigger = screen.getByTestId("floating-ai-pet-trigger");
+      expect(trigger.getAttribute("aria-label")).toBe("Ask AI Assistant");
+      expect(screen.getByText("Ask AI")).toBeDefined();
+
+      fireEvent.click(trigger);
+
+      expect(screen.getByTestId("floating-ai-chat-panel")).toBeDefined();
+      expect(screen.getByText("Ask AI Care Pet")).toBeDefined();
+      const expandLink = screen.getByRole("link", { name: /Expand full workspace/i });
+      expect(expandLink.getAttribute("href")).toBe("/patient/assistant");
+
+      const input = screen.getByLabelText("Message AI assistant");
+      fireEvent.change(input, { target: { value: "Check Dr. Sharma slots tomorrow" } });
+      fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+      await waitFor(() => {
+        expect(
+          screen.getByText("Dr. Sharma has openings at 10:30 AM and 3:00 PM tomorrow.")
+        ).toBeDefined();
+      });
+
+      fireEvent.keyDown(window, { key: "Escape" });
+      expect(screen.queryByTestId("floating-ai-chat-panel")).toBeNull();
+      expect(screen.getByTestId("floating-ai-pet-trigger")).toBeDefined();
+    });
+
+    it("hides FloatingAgentWidget when already on assistant pages", () => {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: "Not Found" }),
+      }) as unknown as typeof fetch;
+
+      currentPathname = "/patient/assistant";
+      const { rerender } = render(<FloatingAgentWidget role="PATIENT" />);
+      expect(screen.queryByTestId("floating-ai-pet-trigger")).toBeNull();
+
+      currentPathname = "/doctor/assistant";
+      rerender(<FloatingAgentWidget role="DOCTOR" />);
+      expect(screen.queryByTestId("floating-ai-pet-trigger")).toBeNull();
     });
   });
 });

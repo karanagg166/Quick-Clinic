@@ -73,7 +73,7 @@ class AIAgentService:
         if not isinstance(response, AIMessage):
             raise RuntimeError("Invalid AI model response")
 
-        answer = response.text().strip()
+        answer = response.text.strip()
 
         if not answer:
             raise RuntimeError("AI model returned an empty response")

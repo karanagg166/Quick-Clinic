@@ -8,6 +8,7 @@ import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
 import Logo from '@/components/general/Logo';
 import NotificationMenu from '@/components/general/NotificationMenu';
+import { AiPetIcon } from '@/components/ai-agent/AiPetIcon';
 
 interface PatientNavbarProps {
     isSidebarOpen: boolean;
@@ -73,15 +74,26 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                     </Link>
                     <Link
                         href="/patient/assistant"
-                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 text-sm font-semibold text-emerald-800 hover:bg-emerald-100/80 hover:border-emerald-300 transition-colors"
                     >
-                        AI Assistant
+                        <AiPetIcon size="xs" />
+                        <span>AI Assistant</span>
                     </Link>
                 </div>
             </div>
 
             {/* Right Section - Actions */}
             <div className="flex items-center gap-2 sm:gap-3">
+                {/* Compact mobile Ask AI link */}
+                <Link
+                    href="/patient/assistant"
+                    aria-label="Ask AI Assistant"
+                    className="lg:hidden inline-flex items-center gap-1 px-2 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
+                >
+                    <AiPetIcon size="xs" />
+                    <span className="hidden sm:inline">Ask AI</span>
+                </Link>
+
                 {/* Notifications */}
                 <NotificationMenu />
                 

@@ -14,7 +14,7 @@ def get_model(provider: str = "google") -> BaseChatModel:
             raise ValueError("GOOGLE_API_KEY is not configured")
 
         return ChatGoogleGenerativeAI(
-            model="gemini-2.5-flash",
+            model="gemini-3.1-flash-lite",
             google_api_key=settings.google_api_key,
             temperature=0,
         )
@@ -26,7 +26,7 @@ def get_model(provider: str = "google") -> BaseChatModel:
             raise ValueError("GROQ_API_KEY is not configured")
 
         return ChatGroq(
-            model="llama-3.3-70b-versatile",
+            model="openai/gpt-oss-120b",
             api_key=settings.groq_api_key,
             temperature=0,
         )

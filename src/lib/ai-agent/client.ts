@@ -189,46 +189,7 @@ export const agentClient = {
     threads: AgentThread[];
     mode: AgentConnectionMode;
   }> {
-    try {
-      const response = await fetch(
-        `/api/ai-agent/threads?role=${encodeURIComponent(role)}`,
-        {
-          method: "GET",
-          credentials: "include",
-          cache: "no-store",
-        }
-      );
-
-      if (response.ok) {
-        const data = await response.json();
-
-        return {
-          threads: Array.isArray(data?.threads)
-            ? data.threads
-            : [],
-          mode: "live",
-        };
-      }
-
-      if (!isUnimplementedBackendStatus(response.status)) {
-        throw new Error(
-          await parseErrorMessage(
-            response,
-            "Unable to load conversations."
-          )
-        );
-      }
-    } catch (error) {
-      if (
-        error instanceof Error &&
-        error.name !== "TypeError"
-      ) {
-        throw error;
-      }
-    }
-
-    // The threads API is not implemented yet.
-    // These are local preview threads, not server history.
+    // Backend exposes single-turn POST /api/ai-agent/chat; threads live in local storage.
     return {
       threads: loadPreviewThreads(role, userId),
       mode: "preview",
@@ -488,26 +449,6 @@ export const agentClient = {
   async deleteThread(
     threadId: string
   ): Promise<void> {
-    const response = await fetch(
-      `/api/ai-agent/threads/${encodeURIComponent(threadId)}`,
-      {
-        method: "DELETE",
-        credentials: "include",
-      }
-    );
-
-    if (
-      response.ok ||
-      isUnimplementedBackendStatus(response.status)
-    ) {
-      return;
-    }
-
-    throw new Error(
-      await parseErrorMessage(
-        response,
-        "Unable to delete conversation."
-      )
-    );
+    void threadId;
   },
 };

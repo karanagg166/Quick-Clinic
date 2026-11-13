@@ -3,14 +3,12 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertCircle,
-  Bot,
   Loader2,
   MessageSquarePlus,
   PanelLeft,
   Send,
   ShieldAlert,
   ShieldCheck,
-  Sparkles,
   Trash2,
   X,
 } from "lucide-react";
@@ -28,6 +26,7 @@ import {
 } from "@/lib/ai-agent/types";
 import { cn } from "@/lib/utils";
 import { AgentMessage } from "./AgentMessage";
+import { AiPetIcon } from "./AiPetIcon";
 
 interface AgentChatProps {
   role: AgentRole;
@@ -135,8 +134,8 @@ export function AgentChat({ role, userId, userName }: AgentChatProps) {
               <PanelLeft className="w-4 h-4" />
             </Button>
 
-            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-              <Bot className="w-5 h-5" />
+            <div className="shrink-0">
+              <AiPetIcon size="md" mood={isSending ? "thinking" : "idle"} showGlow />
             </div>
 
             <div className="min-w-0">
@@ -322,8 +321,8 @@ export function AgentChat({ role, userId, userName }: AgentChatProps) {
               {messages.length === 0 ? (
                 <div className="max-w-2xl mx-auto py-4 sm:py-8 space-y-6">
                   <div className="text-center space-y-2">
-                    <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary border border-primary/20 flex items-center justify-center mx-auto">
-                      <Sparkles className="w-6 h-6" />
+                    <div className="flex justify-center">
+                      <AiPetIcon size="xl" mood="excited" showGlow />
                     </div>
                     <h2 className="text-xl font-bold text-foreground">
                       {userName ? `Hello, ${userName}` : portalTitle}
@@ -379,9 +378,7 @@ export function AgentChat({ role, userId, userName }: AgentChatProps) {
 
               {isSending && (
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-primary/10 text-primary border border-primary/20 flex items-center justify-center shrink-0">
-                    <Bot className="w-4 h-4" />
-                  </div>
+                  <AiPetIcon size="sm" mood="thinking" showGlow />
                   <div className="rounded-2xl rounded-bl-sm border bg-card px-4 py-2.5 text-xs text-muted-foreground flex items-center gap-2">
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
                     Checking policies and clinic tools...

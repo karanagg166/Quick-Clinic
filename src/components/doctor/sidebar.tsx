@@ -14,13 +14,13 @@ import {
   Settings,
   ChevronDown,
   X,
-  MessageCircle,
-  Bot
+  MessageCircle
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { AiPetIcon } from '@/components/ai-agent/AiPetIcon';
 
 interface DoctorSidebarProps {
   isSidebarOpen: boolean;
@@ -75,7 +75,7 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
     {
       label: 'AI Copilot',
       href: '/doctor/assistant',
-      icon: Bot,
+      icon: AiPetIcon,
     },
     {
       label: 'Leave Management',

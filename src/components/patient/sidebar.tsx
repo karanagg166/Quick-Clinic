@@ -8,13 +8,13 @@ import {
   Stethoscope,
   MessageCircle,
   FolderHeart,
-  Bot,
   ChevronDown,
   X
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { AiPetIcon } from '@/components/ai-agent/AiPetIcon';
 
 interface PatientSidebarProps {
   isSidebarOpen: boolean;
@@ -66,7 +66,7 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
     {
       label: "AI Assistant",
       href: "/patient/assistant",
-      icon: Bot,
+      icon: AiPetIcon,
     },
   ];
 

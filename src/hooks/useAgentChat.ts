@@ -108,12 +108,10 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
   }, [role, userId]);
 
   const updateAndPersistThreads = useCallback(
-    (updater: (prev: AgentThread[]) => AgentThread[], currentMode: AgentConnectionMode) => {
+    (updater: (prev: AgentThread[]) => AgentThread[]) => {
       setThreadList((prev) => {
         const next = updater(prev);
-        if (currentMode === "preview") {
-          agentClient.persistPreviewThreads(role, next, userId);
-        }
+        agentClient.persistPreviewThreads(role, next, userId);
         return next;
       });
     },
@@ -155,11 +153,11 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
 
   const createThread = useCallback(() => {
     const fresh = makeEmptyThread(role);
-    updateAndPersistThreads((prev) => [fresh, ...prev], mode);
+    updateAndPersistThreads((prev) => [fresh, ...prev]);
     setActiveThreadId(fresh.threadId);
     setError(null);
     return fresh.threadId;
-  }, [role, mode, updateAndPersistThreads]);
+  }, [role, updateAndPersistThreads]);
 
   const selectThread = useCallback((threadId: string) => {
     setActiveThreadId(threadId);
@@ -172,16 +170,14 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
       setThreadList((prev) => {
         const filtered = prev.filter((t) => t.threadId !== threadId);
         const next = filtered.length > 0 ? filtered : [makeEmptyThread(role)];
-        if (mode === "preview") {
-          agentClient.persistPreviewThreads(role, next, userId);
-        }
+        agentClient.persistPreviewThreads(role, next, userId);
         if (activeThreadId === threadId) {
           setActiveThreadId(next[0].threadId);
         }
         return next;
       });
     },
-    [activeThreadId, mode, role, userId]
+    [activeThreadId, role, userId]
   );
 
   const sendMessage = useCallback(
@@ -225,8 +221,7 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
               messages: [...thread.messages, userMessage],
             };
           });
-        },
-        mode
+        }
       );
 
       abortControllerRef.current?.abort();
@@ -255,8 +250,7 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
                     messages: [...thread.messages, response.message],
                   }
                 : thread
-            ),
-          response.mode
+            )
         );
 
         return true;
@@ -279,8 +273,7 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
                     ),
                   }
                 : thread
-            ),
-          mode
+            )
         );
 
         return false;
@@ -288,7 +281,7 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
         setIsSending(false);
       }
     },
-    [activeThread, isSending, mode, role, updateAndPersistThreads, userId]
+    [activeThread, isSending, role, updateAndPersistThreads, userId]
   );
 
   const retryMessage = useCallback(
@@ -307,13 +300,12 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
                     messages: thread.messages.filter((m) => m.id !== messageId),
                   }
                 : thread
-            ),
-          mode
+            )
         );
       }
       await sendMessage(target.content);
     },
-    [activeThread, isSending, messages, mode, sendMessage, updateAndPersistThreads]
+    [activeThread, isSending, messages, sendMessage, updateAndPersistThreads]
   );
 
   const decideApproval = useCallback(
@@ -377,8 +369,7 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
                 updatedAt: new Date().toISOString(),
                 messages: updatedMessages,
               };
-            }),
-          result.mode
+            })
         );
 
         if (decision === "APPROVED") {
