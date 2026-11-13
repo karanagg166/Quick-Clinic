@@ -1,3 +1,4 @@
+
 import {
   AgentApprovalRequest,
   AgentConnectionMode,
@@ -10,6 +11,7 @@ import {
   SendAgentMessageResponse,
   SubmitApprovalResponse,
 } from "./types";
+
 import {
   buildPreviewAgentReply,
   loadPreviewThreads,
@@ -17,38 +19,56 @@ import {
   savePreviewThreads,
 } from "./preview";
 
+
 export interface ValidationResult {
   valid: boolean;
   sanitized: string;
   error?: string;
 }
 
-/**
- * Mirrors backend `guardrails.validate_user_message` constraints on the client:
- * non-empty after trimming, <= 6000 chars, and no ASCII control chars (< 32)
- * other than newline, carriage return, or tab.
- */
-export function validateAgentMessage(raw: string): ValidationResult {
+function isPreviewEnabled(): boolean {
+  return process.env.NEXT_PUBLIC_AGENT_PREVIEW_ENABLED === "true";
+}
+
+
+export function validateAgentMessage(
+  raw: string
+): ValidationResult {
   if (typeof raw !== "string") {
-    return { valid: false, sanitized: "", error: "Message must be text." };
+    return {
+      valid: false,
+      sanitized: "",
+      error: "Message must be text.",
+    };
   }
 
   const sanitized = raw.trim();
+
   if (!sanitized) {
-    return { valid: false, sanitized: "", error: "Please enter a message before sending." };
+    return {
+      valid: false,
+      sanitized: "",
+      error: "Please enter a message before sending.",
+    };
   }
 
   if (sanitized.length > MAX_AGENT_MESSAGE_LENGTH) {
     return {
       valid: false,
       sanitized,
-      error: `Message exceeds the ${MAX_AGENT_MESSAGE_LENGTH.toLocaleString()} character limit.`,
+      error: `Message exceeds the ${MAX_AGENT_MESSAGE_LENGTH} character limit.`,
     };
   }
 
-  for (let i = 0; i < sanitized.length; i += 1) {
-    const code = sanitized.charCodeAt(i);
-    if (code < 32 && code !== 10 && code !== 13 && code !== 9) {
+  for (const char of sanitized) {
+    const code = char.charCodeAt(0);
+
+    if (
+      code < 32 &&
+      code !== 10 &&
+      code !== 13 &&
+      code !== 9
+    ) {
       return {
         valid: false,
         sanitized,
@@ -57,33 +77,48 @@ export function validateAgentMessage(raw: string): ValidationResult {
     }
   }
 
-  return { valid: true, sanitized };
+  return {
+    valid: true,
+    sanitized,
+  };
 }
 
-/**
- * Generates a 16-128 character idempotency key matching backend schema constraints.
- */
-export function generateIdempotencyKey(prefix = "qc_agent"): string {
-  const cleanPrefix = prefix.replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 20);
-  const randomPart =
-    typeof crypto !== "undefined" && typeof crypto.randomUUID === "function"
-      ? crypto.randomUUID().replace(/-/g, "")
-      : `${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 14)}`;
+
+export function generateIdempotencyKey(
+  prefix = "qc_agent"
+): string {
+  const cleanPrefix = prefix
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .slice(0, 20);
+
+  const randomPart = crypto.randomUUID().replace(/-/g, "");
+
   return `${cleanPrefix}_${randomPart}`.slice(0, 128);
 }
 
+
 export function deriveThreadTitle(prompt: string): string {
   const cleaned = prompt.trim().replace(/\s+/g, " ");
-  if (!cleaned) return "New conversation";
-  return cleaned.length > 48 ? `${cleaned.slice(0, 45)}...` : cleaned;
+
+  if (!cleaned) {
+    return "New conversation";
+  }
+
+  return cleaned.length > 48
+    ? `${cleaned.slice(0, 45)}...`
+    : cleaned;
 }
 
-export function summarizeThread(thread: AgentThread): AgentThreadSummary {
+
+export function summarizeThread(
+  thread: AgentThread
+): AgentThreadSummary {
   const pendingApprovals = thread.messages.filter(
-    (msg) =>
-      msg.approvalRequest &&
-      msg.approvalRequest.status === "PENDING" &&
-      new Date(msg.approvalRequest.expiresAt).getTime() > Date.now()
+    (message) =>
+      message.approvalRequest?.status === "PENDING" &&
+      new Date(
+        message.approvalRequest.expiresAt
+      ).getTime() > Date.now()
   ).length;
 
   return {
@@ -97,52 +132,109 @@ export function summarizeThread(thread: AgentThread): AgentThreadSummary {
   };
 }
 
-function isUnimplementedBackendStatus(status: number): boolean {
-  return status === 404 || status === 405 || status === 501;
+
+function isUnimplementedBackendStatus(
+  status: number
+): boolean {
+  return [404, 405, 501].includes(status);
 }
 
-async function parseErrorMessage(response: Response, fallback: string): Promise<string> {
+
+async function parseErrorMessage(
+  response: Response,
+  fallback: string
+): Promise<string> {
+  if (response.status === 401) {
+    return "Please log in to use the AI assistant.";
+  }
+
+  if (response.status === 403) {
+    return "You are not authorized to perform this action.";
+  }
+
+  if (response.status === 429) {
+    return "Too many requests. Please try again later.";
+  }
+
   try {
     const payload = await response.json();
-    if (typeof payload?.detail === "string" && payload.detail.trim()) {
+
+    if (
+      typeof payload?.detail === "string" &&
+      payload.detail.trim()
+    ) {
       return payload.detail;
     }
-    if (typeof payload?.error === "string" && payload.error.trim()) {
+
+    if (
+      typeof payload?.error === "string" &&
+      payload.error.trim()
+    ) {
       return payload.error;
     }
   } catch {
-    // Ignore non-JSON error responses
+    // Use the safe fallback message.
   }
+
   return fallback;
 }
 
+
 export const agentClient = {
+
   async listThreads(
     role: AgentRole,
     userId?: string | null
-  ): Promise<{ threads: AgentThread[]; mode: AgentConnectionMode }> {
+  ): Promise<{
+    threads: AgentThread[];
+    mode: AgentConnectionMode;
+  }> {
     try {
-      const response = await fetch(`/api/ai-agent/threads?role=${encodeURIComponent(role)}`, {
-        method: "GET",
-        credentials: "include",
-      });
+      const response = await fetch(
+        `/api/ai-agent/threads?role=${encodeURIComponent(role)}`,
+        {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        }
+      );
 
       if (response.ok) {
         const data = await response.json();
-        const threads = Array.isArray(data?.threads) ? (data.threads as AgentThread[]) : [];
-        return { threads, mode: "live" };
+
+        return {
+          threads: Array.isArray(data?.threads)
+            ? data.threads
+            : [],
+          mode: "live",
+        };
       }
 
       if (!isUnimplementedBackendStatus(response.status)) {
-        // For auth/rate-limit errors, keep local threads empty or surface cleanly
-        return { threads: loadPreviewThreads(role, userId), mode: "preview" };
+        throw new Error(
+          await parseErrorMessage(
+            response,
+            "Unable to load conversations."
+          )
+        );
       }
-    } catch {
-      // Network unavailable -> fall back to local preview threads
+    } catch (error) {
+      if (
+        error instanceof Error &&
+        error.name !== "TypeError"
+      ) {
+        throw error;
+      }
     }
 
-    return { threads: loadPreviewThreads(role, userId), mode: "preview" };
+    // The threads API is not implemented yet.
+    // These are local preview threads, not server history.
+    return {
+      threads: loadPreviewThreads(role, userId),
+      mode: "preview",
+    };
   },
+
 
   async sendMessage(params: {
     threadId: string;
@@ -152,67 +244,136 @@ export const agentClient = {
     userId?: string | null;
     signal?: AbortSignal;
   }): Promise<SendAgentMessageResponse> {
-    const validation = validateAgentMessage(params.message);
+
+    const validation = validateAgentMessage(
+      params.message
+    );
+
     if (!validation.valid) {
-      throw new Error(validation.error || "Invalid message");
+      throw new Error(
+        validation.error || "Invalid message"
+      );
     }
 
-    const idempotencyKey = params.idempotencyKey || generateIdempotencyKey("msg");
+    const idempotencyKey =
+      params.idempotencyKey ||
+      generateIdempotencyKey("msg");
+
+    let response: Response;
 
     try {
-      const response = await fetch("/api/ai-agent/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        signal: params.signal,
-        body: JSON.stringify({
-          thread_id: params.threadId,
-          role: params.role,
-          message: validation.sanitized,
-          idempotency_key: idempotencyKey,
-        }),
-      });
+      response = await fetch(
+        "/api/ai-agent/chat",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          cache: "no-store",
+          signal: params.signal,
 
-      if (response.ok) {
-        const data = await response.json();
-        const assistantMessage: AgentMessage = data?.message ?? {
-          id: generateIdempotencyKey("resp"),
-          role: "assistant",
-          content: typeof data?.reply === "string" ? data.reply : "Response received.",
-          createdAt: new Date().toISOString(),
-          status: "sent",
-          toolActivities: Array.isArray(data?.toolActivities) ? data.toolActivities : undefined,
-          approvalRequest: data?.approvalRequest,
-          citations: Array.isArray(data?.citations) ? data.citations : undefined,
-        };
-        return {
-          threadId: data?.threadId || params.threadId,
-          message: assistantMessage,
-          mode: "live",
-        };
-      }
-
-      if (!isUnimplementedBackendStatus(response.status)) {
-        const errMsg = await parseErrorMessage(response, "Failed to reach AI assistant.");
-        throw new Error(errMsg);
-      }
+          // The current backend supports single-turn chat.
+          // Role comes from the authenticated session,
+          // not from client-supplied values.
+          body: JSON.stringify({
+            message: validation.sanitized,
+          }),
+        }
+      );
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") {
+      if (
+        error instanceof Error &&
+        error.name === "AbortError"
+      ) {
         throw error;
       }
-      if (error instanceof Error && error.message !== "Failed to fetch" && !error.message.includes("fetch")) {
-        throw error;
-      }
+
+      throw new Error(
+        "Cannot connect to the AI assistant backend."
+      );
     }
 
-    // Preview simulation while backend `/api/ai-agent/chat` is not yet wired
-    const simulated = buildPreviewAgentReply(params.role, validation.sanitized, idempotencyKey);
-    return {
-      threadId: params.threadId,
-      message: simulated,
-      mode: "preview",
-    };
+    if (response.ok) {
+      const data = await response.json();
+
+      // Supports the current FastAPI response:
+      // { "response": "AI reply" }
+      const reply =
+        typeof data?.response === "string"
+          ? data.response
+          : typeof data?.reply === "string"
+            ? data.reply
+            : typeof data?.message?.content === "string"
+              ? data.message.content
+              : null;
+
+      if (!reply?.trim()) {
+        throw new Error(
+          "Invalid response from AI assistant."
+        );
+      }
+
+      const assistantMessage: AgentMessage = {
+        id:
+          typeof data?.message?.id === "string"
+            ? data.message.id
+            : generateIdempotencyKey("resp"),
+
+        role: "assistant",
+
+        content: reply,
+
+        createdAt:
+          typeof data?.message?.createdAt === "string"
+            ? data.message.createdAt
+            : new Date().toISOString(),
+
+        status: "sent",
+
+        toolActivities: Array.isArray(data?.toolActivities)
+          ? data.toolActivities
+          : undefined,
+
+        approvalRequest: data?.approvalRequest,
+
+        citations: Array.isArray(data?.citations)
+          ? data.citations
+          : undefined,
+      };
+
+      return {
+        threadId: data?.threadId || params.threadId,
+        message: assistantMessage,
+        mode: "live",
+      };
+    }
+
+    if (
+      isPreviewEnabled() &&
+      isUnimplementedBackendStatus(response.status)
+    ) {
+      const simulated = buildPreviewAgentReply(
+        params.role,
+        validation.sanitized,
+        idempotencyKey
+      );
+
+      return {
+        threadId: params.threadId,
+        message: simulated,
+        mode: "preview",
+      };
+    }
+
+    throw new Error(
+      await parseErrorMessage(
+        response,
+        "Failed to get a response from the AI assistant."
+      )
+    );
   },
+
 
   async submitApproval(params: {
     threadId: string;
@@ -221,80 +382,132 @@ export const agentClient = {
     decisionReason?: string;
     userId?: string | null;
   }): Promise<SubmitApprovalResponse> {
-    if (new Date(params.approval.expiresAt).getTime() <= Date.now()) {
-      throw new Error("This approval request has expired. Please ask the assistant to stage a new action.");
+
+    if (
+      new Date(params.approval.expiresAt).getTime() <=
+      Date.now()
+    ) {
+      throw new Error(
+        "Approval expired. Please request a new action."
+      );
     }
 
-    const idempotencyKey = generateIdempotencyKey("appr");
+    const idempotencyKey =
+      generateIdempotencyKey("appr");
+
+    let response: Response;
 
     try {
-      const response = await fetch(
-        `/api/ai-agent/approvals/${encodeURIComponent(params.approval.approvalId)}`,
+      response = await fetch(
+        `/api/ai-agent/approvals/${encodeURIComponent(
+          params.approval.approvalId
+        )}`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+          },
           credentials: "include",
+          cache: "no-store",
           body: JSON.stringify({
             thread_id: params.threadId,
             approval_id: params.approval.approvalId,
             decision: params.decision,
-            decision_reason: params.decisionReason?.trim() || undefined,
+            decision_reason:
+              params.decisionReason?.trim() || undefined,
             idempotency_key: idempotencyKey,
           }),
         }
       );
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          threadId: data?.threadId || params.threadId,
-          approval: data?.approval || {
-            ...params.approval,
-            status: params.decision,
-            decidedAt: new Date().toISOString(),
-            decisionReason: params.decisionReason?.trim() || undefined,
-          },
-          followUpMessage: data?.followUpMessage,
-          mode: "live",
-        };
-      }
-
-      if (!isUnimplementedBackendStatus(response.status)) {
-        const errMsg = await parseErrorMessage(response, "Failed to submit approval decision.");
-        throw new Error(errMsg);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.message !== "Failed to fetch" && !error.message.includes("fetch")) {
-        throw error;
-      }
+    } catch {
+      throw new Error(
+        "Cannot connect to the approval service."
+      );
     }
 
-    const preview = resolvePreviewApproval(
-      params.approval,
-      params.decision,
-      params.decisionReason,
-      params.userId
+    if (response.ok) {
+      const data = await response.json();
+
+      return {
+        threadId: data?.threadId || params.threadId,
+
+        approval: data?.approval || {
+          ...params.approval,
+          status: params.decision,
+          decidedAt: new Date().toISOString(),
+          decisionReason:
+            params.decisionReason?.trim() || undefined,
+        },
+
+        followUpMessage: data?.followUpMessage,
+        mode: "live",
+      };
+    }
+
+    if (
+      isPreviewEnabled() &&
+      isUnimplementedBackendStatus(response.status)
+    ) {
+      const preview = resolvePreviewApproval(
+        params.approval,
+        params.decision,
+        params.decisionReason,
+        params.userId
+      );
+
+      return {
+        threadId: params.threadId,
+        approval: preview.approval,
+        followUpMessage: preview.followUpMessage,
+        mode: "preview",
+      };
+    }
+
+    throw new Error(
+      await parseErrorMessage(
+        response,
+        "Approval could not be submitted."
+      )
     );
-    return {
-      threadId: params.threadId,
-      approval: preview.approval,
-      followUpMessage: preview.followUpMessage,
-      mode: "preview",
-    };
   },
 
-  persistPreviewThreads(role: AgentRole, threads: AgentThread[], userId?: string | null): void {
-    savePreviewThreads(role, threads, userId);
+
+  persistPreviewThreads(
+    role: AgentRole,
+    threads: AgentThread[],
+    userId?: string | null
+  ): void {
+    savePreviewThreads(
+      role,
+      threads,
+      userId
+    );
   },
 
-  async deleteThread(threadId: string): Promise<void> {
-    try {
-      await fetch(`/api/ai-agent/threads/${encodeURIComponent(threadId)}`, {
+
+  async deleteThread(
+    threadId: string
+  ): Promise<void> {
+    const response = await fetch(
+      `/api/ai-agent/threads/${encodeURIComponent(threadId)}`,
+      {
         method: "DELETE",
         credentials: "include",
-      });
-    } catch {
-      // Ignore network errors in preview mode
+      }
+    );
+
+    if (
+      response.ok ||
+      isUnimplementedBackendStatus(response.status)
+    ) {
+      return;
     }
+
+    throw new Error(
+      await parseErrorMessage(
+        response,
+        "Unable to delete conversation."
+      )
+    );
   },
 };

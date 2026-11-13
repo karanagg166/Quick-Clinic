@@ -56,6 +56,7 @@ describe("Quick-Clinic AI Agent Frontend Suite", () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
+    vi.unstubAllEnvs();
   });
 
   describe("1. Guardrail Validation & Idempotency", () => {
@@ -165,7 +166,8 @@ describe("Quick-Clinic AI Agent Frontend Suite", () => {
   });
 
   describe("4. AgentChat Workspace (Preview & Live Modes)", () => {
-    it("runs interactive patient workflow in preview mode when backend routes return 404", async () => {
+    it("runs interactive patient workflow in preview mode when NEXT_PUBLIC_AGENT_PREVIEW_ENABLED is true", async () => {
+      vi.stubEnv("NEXT_PUBLIC_AGENT_PREVIEW_ENABLED", "true");
       global.fetch = vi.fn().mockResolvedValue({
         ok: false,
         status: 404,
@@ -197,42 +199,55 @@ describe("Quick-Clinic AI Agent Frontend Suite", () => {
       });
     });
 
-    it("uses live API response when /api/ai-agent endpoints return 200", async () => {
+    it("fails closed on 404 when preview mode is disabled", async () => {
+      vi.stubEnv("NEXT_PUBLIC_AGENT_PREVIEW_ENABLED", "false");
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({ detail: "Not Found" }),
+      }) as unknown as typeof fetch;
+
+      render(<AgentChat role="PATIENT" userId="pat_user_2" userName="Maya" />);
+
+      await waitFor(() => {
+        expect(screen.getByText("Quick-Clinic Care Assistant")).toBeDefined();
+      });
+
+      const input = screen.getByLabelText("Message AI assistant");
+      fireEvent.change(input, { target: { value: "Check doctor slots" } });
+      fireEvent.click(screen.getByRole("button", { name: "Send message" }));
+
+      await waitFor(() => {
+        expect(screen.getAllByText(/Not Found/i).length).toBeGreaterThan(0);
+      });
+    });
+
+    it("uses live FastAPI response when /api/ai-agent/chat returns 200", async () => {
       global.fetch = vi.fn().mockImplementation((url: string) => {
         if (url.includes("/api/ai-agent/threads")) {
           return Promise.resolve({
-            ok: true,
-            status: 200,
-            json: async () => ({ threads: [] }),
+            ok: false,
+            status: 404,
+            json: async () => ({ detail: "Not Found" }),
           });
         }
         return Promise.resolve({
           ok: true,
           status: 200,
           json: async () => ({
-            threadId: "thread_live_1",
-            message: {
-              id: "msg_live_1",
-              role: "assistant",
-              content: "Dr. Kapoor has 3 open slots today at 2:00 PM, 2:30 PM, and 4:00 PM.",
-              createdAt: new Date().toISOString(),
-              status: "sent",
-            },
+            response: "Dr. Kapoor has 3 open slots today at 2:00 PM, 2:30 PM, and 4:00 PM.",
           }),
         });
       }) as unknown as typeof fetch;
 
       render(<AgentChat role="DOCTOR" userId="doc_user_1" userName="Dr. Kapoor" />);
 
-      await waitFor(() => {
-        expect(screen.getByText("Live Agent API")).toBeDefined();
-      });
-
       const input = screen.getByLabelText("Message AI assistant");
       fireEvent.change(input, { target: { value: "Check my open slots today" } });
       fireEvent.click(screen.getByRole("button", { name: "Send message" }));
 
       await waitFor(() => {
+        expect(screen.getByText("Live Agent API")).toBeDefined();
         expect(
           screen.getByText("Dr. Kapoor has 3 open slots today at 2:00 PM, 2:30 PM, and 4:00 PM.")
         ).toBeDefined();
