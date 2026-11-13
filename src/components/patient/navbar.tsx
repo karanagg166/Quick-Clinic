@@ -71,6 +71,12 @@ export default function PatientNavbar({ isSidebarOpen, setSidebarOpen }: Patient
                     >
                         Chat
                     </Link>
+                    <Link
+                        href="/patient/assistant"
+                        className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors"
+                    >
+                        AI Assistant
+                    </Link>
                 </div>
             </div>
 

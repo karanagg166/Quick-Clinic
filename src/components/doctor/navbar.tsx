@@ -4,7 +4,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle, Clock } from 'lucide-react';
+import { LogOut, Menu, CalendarDays, ClipboardList, Users, Wallet, MessageCircle, Clock, Bot } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
 import Avatar from '@/components/general/Avatar';
 import NotificationMenu from '@/components/general/NotificationMenu';
@@ -123,6 +123,13 @@ export default function DoctorNavbar({ isSidebarOpen, setSidebarOpen }: DoctorNa
             className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
           >
             <MessageCircle className="w-4 h-4" /> Chat
+          </Link>
+
+          <Link
+            href="/doctor/assistant"
+            className="text-sm font-medium text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+          >
+            <Bot className="w-4 h-4" /> AI Copilot
           </Link>
 
           <Link

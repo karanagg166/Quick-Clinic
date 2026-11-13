@@ -8,6 +8,7 @@ import {
   Stethoscope,
   MessageCircle,
   FolderHeart,
+  Bot,
   ChevronDown,
   X
 } from 'lucide-react';
@@ -61,6 +62,11 @@ export default function PatientSidebar({ isSidebarOpen, setSidebarOpen }: Patien
       label: "Chat",
       href: "/patient/chat",
       icon: MessageCircle,
+    },
+    {
+      label: "AI Assistant",
+      href: "/patient/assistant",
+      icon: Bot,
     },
   ];
 

@@ -14,7 +14,8 @@ import {
   Settings,
   ChevronDown,
   X,
-  MessageCircle
+  MessageCircle,
+  Bot
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -70,6 +71,11 @@ export default function DoctorSidebar({ isSidebarOpen, setSidebarOpen }: DoctorS
       label: 'Chat',
       href: '/doctor/chat',
       icon: MessageCircle,
+    },
+    {
+      label: 'AI Copilot',
+      href: '/doctor/assistant',
+      icon: Bot,
     },
     {
       label: 'Leave Management',

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, Users, Wallet, Clock3, PlusCircle, MessageCircle, FileText } from "lucide-react";
+import { CalendarDays, Users, Wallet, Clock3, PlusCircle, MessageCircle, FileText, Bot } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import TodaysAppointmentSection from "@/components/doctor/todaysAppointmentSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -192,6 +192,7 @@ export default function DoctorDashboard() {
                 { href: "/doctor/schedule", icon: CalendarDays, title: "Manage schedule", desc: "Update availability and slots", color: "text-blue-600" },
                 { href: "/doctor/leave/apply", icon: Clock3, title: "Request leave", desc: "Plan time off", color: "text-amber-600" },
                 { href: "/doctor/earnings", icon: Wallet, title: "Earnings", desc: "Track payouts and history", color: "text-indigo-600" },
+                { href: "/doctor/assistant", icon: Bot, title: "AI Copilot", desc: "Inspect schedule & staged actions", color: "text-emerald-600" },
               ].map((action, index) => (
                 <motion.div
                   key={action.href}

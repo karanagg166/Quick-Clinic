@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, CheckCircle2, Clock3 } from "lucide-react";
+import { CalendarDays, UserPlus, MessageCircle, FileText, Stethoscope, CheckCircle2, Clock3, Bot } from "lucide-react";
 import { useUserStore } from "@/store/userStore";
 import UpcomingAppointmentsSection from "@/components/patient/upcomingAppointmentsSection";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -189,6 +189,7 @@ export default function PatientDashboard() {
                 { href: "/patient/appointments", icon: CalendarDays, title: "My appointments", desc: "View bookings & status", color: "text-purple-600" },
                 { href: "/patient/medical-documents", icon: FileText, title: "Medical documents", desc: "Upload and view clinical records", color: "text-emerald-600" },
                 { href: "/patient/chat", icon: MessageCircle, title: "Messages", desc: "Chat with your assigned doctors", color: "text-teal-600" },
+                { href: "/patient/assistant", icon: Bot, title: "AI Care Assistant", desc: "Check availability & stage actions", color: "text-indigo-600" },
               ].map((action, index) => (
                 <motion.div
                   key={action.href}

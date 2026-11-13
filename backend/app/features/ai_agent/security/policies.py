@@ -1,31 +1,65 @@
-"""Security boundaries, human approval rules, and audit logging for AI Agent execution."""
 
-import logging
+"""Security policies for Quick-Clinic AI agent actions."""
+
 from enum import Enum
 from typing import Any
-from fastapi import HTTPException
+
+from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncConnection
+
 from app.infrastructure.audit import record_audit_event
 
-logger = logging.getLogger(__name__)
+from .permissions import require_permission
 
 
 class ActionRiskLevel(str, Enum):
-    LOW_AUTONOMOUS = "LOW_AUTONOMOUS"  # Read-only lookups (availability, clinic info)
-    MEDIUM_HUMAN_APPROVAL = "MEDIUM_HUMAN_APPROVAL"  # Mutating appointments, cancellations
-    HIGH_CLINICAL_RESTRICTED = "HIGH_CLINICAL_RESTRICTED"  # Access to medical files, diagnoses
+    LOW_AUTONOMOUS = "LOW_AUTONOMOUS"
+    MEDIUM_HUMAN_APPROVAL = "MEDIUM_HUMAN_APPROVAL"
+    HIGH_CLINICAL_RESTRICTED = "HIGH_CLINICAL_RESTRICTED"
 
 
-# Explicit risk mapping per action type
 ACTION_RISK_MAP = {
     "CHECK_AVAILABILITY": ActionRiskLevel.LOW_AUTONOMOUS,
     "GET_DOCTOR_INFO": ActionRiskLevel.LOW_AUTONOMOUS,
     "PROPOSE_APPOINTMENT": ActionRiskLevel.MEDIUM_HUMAN_APPROVAL,
     "CANCEL_APPOINTMENT": ActionRiskLevel.MEDIUM_HUMAN_APPROVAL,
-    "RESCHEDULE_APPOINTMENT": ActionRiskLevel.MEDIUM_HUMAN_APPROVAL,
     "ACCESS_MEDICAL_DOCUMENTS": ActionRiskLevel.HIGH_CLINICAL_RESTRICTED,
-    "SUMMARIZE_VISIT_HISTORY": ActionRiskLevel.HIGH_CLINICAL_RESTRICTED,
 }
+
+
+ACTION_PERMISSIONS = {
+    "CHECK_AVAILABILITY": {
+        "PATIENT": "get_available_slots",
+        "DOCTOR": "get_available_slots",
+    },
+    "GET_DOCTOR_INFO": {
+        "PATIENT": "get_doctor_profile",
+        "DOCTOR": "get_doctor_profile",
+    },
+    "PROPOSE_APPOINTMENT": {
+        "PATIENT": "create_slot_hold",
+    },
+    "CANCEL_APPOINTMENT": {
+        "PATIENT": "cancel_patient_appointment",
+        "DOCTOR": "update_doctor_appointment",
+    },
+    "ACCESS_MEDICAL_DOCUMENTS": {
+        "PATIENT": "get_owned_document",
+        "DOCTOR": "get_doctor_document",
+    },
+}
+
+
+def get_action_risk(action_name: str) -> ActionRiskLevel:
+    risk = ACTION_RISK_MAP.get(action_name)
+
+    if risk is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Unknown or unsupported agent action",
+        )
+
+    return risk
 
 
 def assert_agent_authorization(
@@ -34,19 +68,45 @@ def assert_agent_authorization(
     target_patient_id: str | None = None,
     target_doctor_id: str | None = None,
 ) -> None:
-    """Verify that an agent call is operating on behalf of an authorized and active user."""
-    if not actor.get("isActive"):
-        raise HTTPException(403, "Inactive account cannot invoke agent operations")
+    """Authorize an agent action before reaching domain services."""
 
-    role = actor.get("role")
-    risk = ACTION_RISK_MAP.get(action_name, ActionRiskLevel.HIGH_CLINICAL_RESTRICTED)
+    risk = get_action_risk(action_name)
 
-    # High clinical actions require doctor or verified patient self-access
-    if risk == ActionRiskLevel.HIGH_CLINICAL_RESTRICTED:
-        if role not in ("DOCTOR", "PATIENT", "ADMIN"):
-            raise HTTPException(403, "Unauthorized role for clinical document access")
+    role = actor.get("role") if isinstance(actor, dict) else None
 
-    logger.info("Agent action authorized: action=%s actor_id=%s role=%s", action_name, actor.get("id"), role)
+    permission = ACTION_PERMISSIONS.get(
+        action_name, {}
+    ).get(role)
+
+    if permission is None:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Action not permitted for this role",
+        )
+
+    require_permission(actor, permission)
+
+    # Mutations and clinical access remain disabled until
+    # approval handling and resource ownership checks exist.
+    if risk != ActionRiskLevel.LOW_AUTONOMOUS:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "This agent action requires additional "
+                "authorization or human approval and is "
+                "not enabled yet"
+            ),
+        )
+
+
+SAFE_AUDIT_FIELDS = frozenset({
+    "doctorId",
+    "patientId",
+    "appointmentId",
+    "slotId",
+    "date",
+    "count",
+})
 
 
 async def audit_agent_action(
@@ -55,9 +115,18 @@ async def audit_agent_action(
     action_name: str,
     details: dict[str, Any],
 ) -> None:
-    """Persist immutable audit trail for every AI agent tool execution."""
-    safe_details = {k: v for k, v in details.items() if k not in ("token", "password", "secret")}
-    safe_details["invoked_by"] = "LANGGRAPH_DOCTOR_AGENT"
+    """Record permitted agent metadata without prompt or medical text."""
+
+    safe_details = {
+        key: value
+        for key, value in details.items()
+        if key in SAFE_AUDIT_FIELDS
+        and type(value) in (str, int)
+        and len(str(value)) <= 128
+    }
+
+    safe_details["invoked_by"] = "QUICK_CLINIC_AI_AGENT"
+
     await record_audit_event(
         db,
         actor_id,
