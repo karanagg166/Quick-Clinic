@@ -214,9 +214,10 @@ async def pg_engine():
     admin_engine = create_async_engine(url)
     engine = None
     async with admin_engine.begin() as connection:
+        await connection.execute(text("CREATE EXTENSION IF NOT EXISTS vector SCHEMA public"))
         await connection.execute(text(f'CREATE SCHEMA "{schema_name}"'))
     try:
-        engine = create_async_engine(url, connect_args={"server_settings": {"search_path": schema_name}})
+        engine = create_async_engine(url, connect_args={"server_settings": {"search_path": f"{schema_name},public"}})
         async with engine.begin() as connection:
             await connection.run_sync(metadata.create_all)
         yield engine

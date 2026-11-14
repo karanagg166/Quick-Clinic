@@ -17,6 +17,27 @@ from .storage import MAX_FILE_BYTES
 logger = logging.getLogger(__name__)
 
 
+class _OfflineSafeTokenizer:
+    """Count tokens with tiktoken when cached, falling back offline without network calls."""
+
+    name = "quick-clinic:cl100k_or_approx"
+    _encoding: Any = None
+    _checked = False
+
+    def count(self, text: str) -> int:
+        if not self._checked:
+            self.__class__._checked = True
+            try:
+                import tiktoken
+
+                self.__class__._encoding = tiktoken.get_encoding("cl100k_base")
+            except Exception:
+                self.__class__._encoding = None
+        if self._encoding is not None:
+            return len(self._encoding.encode(text, disallowed_special=()))
+        return max(1, (len(text) + 3) // 4)
+
+
 def _build_pipeline() -> DocumentPipeline:
     """Configure bounded extraction suitable for Render free-tier memory."""
 
@@ -28,7 +49,7 @@ def _build_pipeline() -> DocumentPipeline:
         overlap_sentences=1,
         use_opencv=False,
     )
-    return DocumentPipeline(config=config)
+    return DocumentPipeline(config=config, tokenizer=_OfflineSafeTokenizer())
 
 
 def _extract_and_chunk(data: bytes) -> tuple[Any, list[Any]]:
