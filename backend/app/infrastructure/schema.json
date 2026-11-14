@@ -49,6 +49,50 @@
       "PHYSIOTHERAPIST",
       "NUTRITIONIST"
     ],
+    "AgentApprovalStatus": [
+      "PENDING",
+      "APPROVED",
+      "REJECTED",
+      "EXPIRED"
+    ],
+    "AgentExecutionStatus": [
+      "NOT_STARTED",
+      "EXECUTING",
+      "COMPLETED",
+      "FAILED"
+    ],
+    "AgentActionRiskLevel": [
+      "LOW_AUTONOMOUS",
+      "MEDIUM_HUMAN_APPROVAL",
+      "HIGH_CLINICAL_RESTRICTED"
+    ],
+    "MedicalPipelineStatus": [
+      "PENDING",
+      "QUEUED",
+      "RUNNING",
+      "PARTIAL",
+      "COMPLETED",
+      "RETRYABLE",
+      "FAILED",
+      "REVOKED"
+    ],
+    "AgentThreadStatus": [
+      "ACTIVE",
+      "ARCHIVED",
+      "REDACTED"
+    ],
+    "AgentMessageRole": [
+      "USER",
+      "ASSISTANT",
+      "TOOL",
+      "SYSTEM"
+    ],
+    "AgentMessageStatus": [
+      "PENDING",
+      "COMPLETED",
+      "FAILED",
+      "REDACTED"
+    ],
     "Qualification": [
       "MBBS",
       "BDS",
@@ -3028,6 +3072,4143 @@
         ],
         [
           "createdAt"
+        ]
+      ]
+    },
+    "MedicalDocumentVersion": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "documentId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocument.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "versionNumber",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceSha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "schemaVersion",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pipelineVersion",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "configFingerprint",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tokenizerName",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "extractionStatus",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "indexStatus",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "isPublished",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "pageCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "objectCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "chunkCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "issueCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "manifest",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pipelineMetadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "contentSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "publishedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "revokedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "documentId",
+          "versionNumber"
+        ]
+      ],
+      "indexes": [
+        [
+          "documentId",
+          "isPublished",
+          "revokedAt"
+        ],
+        [
+          "sourceSha256"
+        ]
+      ]
+    },
+    "MedicalIngestionJob": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "documentId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocument.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "generation",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 1
+        },
+        {
+          "name": "status",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "QUEUED"
+        },
+        {
+          "name": "stage",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "registered"
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "availableAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "startedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "lastHeartbeatAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseToken",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseOwner",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "errorCode",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "retryable",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "progress",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "resourceMetrics",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [
+        [
+          "documentId",
+          "generation"
+        ]
+      ],
+      "indexes": [
+        [
+          "status",
+          "availableAt"
+        ],
+        [
+          "leaseExpiresAt"
+        ]
+      ]
+    },
+    "MedicalDocumentPage": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "pageNumber",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "width",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "height",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rotation",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "selectableChars",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "coordinateSystem",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "unrotated_pdf_points"
+        },
+        {
+          "name": "cropbox",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pdfToPage",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "COMPLETED"
+        },
+        {
+          "name": "metadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "versionId",
+          "pageNumber"
+        ]
+      ],
+      "indexes": []
+    },
+    "MedicalDocumentSection": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "sectionStableId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "parentSectionId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "level",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "headingPath",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "source",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "readingOrder",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "versionId",
+          "sectionStableId"
+        ]
+      ],
+      "indexes": []
+    },
+    "MedicalDocumentObject": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "objectStableId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "kind",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "subtype",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "text",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sectionStableId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "headingPath",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "firstPage",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "lastPage",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "readingOrder",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PARTIAL"
+        },
+        {
+          "name": "reviewRequired",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "confidence",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "normalized",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "versionId",
+          "objectStableId"
+        ]
+      ],
+      "indexes": [
+        [
+          "versionId",
+          "kind",
+          "firstPage"
+        ],
+        [
+          "sectionStableId"
+        ]
+      ]
+    },
+    "MedicalObjectRegion": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "objectId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentObject.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "pageId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentPage.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "regionStableId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "parentRegionId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "readingOrder",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "coordinateSystem",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "x0",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "y0",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "x1",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "y1",
+          "type": "Float",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceImageId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "provider",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "model",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "confidence",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "evidence",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "source",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "objectId",
+          "pageId",
+          "regionStableId"
+        ]
+      ],
+      "indexes": [
+        [
+          "pageId",
+          "readingOrder"
+        ]
+      ]
+    },
+    "MedicalDocumentAsset": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "objectId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentObject.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "kind",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "opaqueAssetId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "storagePath",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "mimeType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "fileSize",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "geometry",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "metadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "deletedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "versionId",
+          "opaqueAssetId"
+        ]
+      ],
+      "indexes": [
+        [
+          "objectId"
+        ]
+      ]
+    },
+    "MedicalExtractionIssue": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "pageNumber",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "objectStableId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "stage",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "code",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "retryable",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "details",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "versionId",
+          "stage",
+          "pageNumber"
+        ]
+      ]
+    },
+    "MedicalDocumentChunk": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "chunkStableId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "chunkIndex",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "kind",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "contentSha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tokenCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tokenizer",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "headingPath",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceObjectIds",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "paragraphIds",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sentenceIds",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pageNumbers",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "startPage",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "endPage",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rowStart",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rowEnd",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "isFragment",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "provenance",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pipelineVersion",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "COMPLETED"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "versionId",
+          "chunkStableId"
+        ],
+        [
+          "versionId",
+          "chunkIndex"
+        ]
+      ],
+      "indexes": [
+        [
+          "versionId",
+          "kind",
+          "startPage"
+        ],
+        [
+          "contentSha256"
+        ]
+      ]
+    },
+    "MedicalChunkObject": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "chunkId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentChunk.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "objectId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentObject.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "sourceRefs",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "chunkId",
+          "objectId"
+        ]
+      ],
+      "indexes": [
+        [
+          "objectId"
+        ]
+      ]
+    },
+    "MedicalChunkEmbedding": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "chunkId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentChunk.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "vectorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "provider",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "model",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "dimension",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 384
+        },
+        {
+          "name": "embeddingVersion",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "indexGeneration",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 1
+        },
+        {
+          "name": "inputSha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "MedicalPipelineStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "embedding",
+          "type": "Vector(384)",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "embeddingMetadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "indexedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "chunkId",
+          "model",
+          "embeddingVersion"
+        ]
+      ],
+      "indexes": [
+        [
+          "status",
+          "model",
+          "dimension"
+        ]
+      ]
+    },
+    "MedicalObservation": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "versionId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentVersion.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "objectId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentObject.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "chunkId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentChunk.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "observationType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "displayName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "valueNumeric",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "valueSecondaryNumeric",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "valueText",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "unit",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "referenceRange",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "observedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "reportedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "dateInferred",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "extractionMethod",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "confidence",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "reviewStatus",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "UNREVIEWED"
+        },
+        {
+          "name": "source",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "patientId",
+          "observationType",
+          "observedAt"
+        ],
+        [
+          "versionId",
+          "pageNumber"
+        ]
+      ]
+    },
+    "MedicalAccessGrant": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "documentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocument.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "grantedByUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "relationshipAppointmentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "scope",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "consentSource",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "policyVersion",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 1
+        },
+        {
+          "name": "effectiveAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "expiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "revokedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "revokedReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "doctorId",
+          "patientId",
+          "revokedAt",
+          "expiresAt"
+        ],
+        [
+          "documentId"
+        ]
+      ]
+    },
+    "MedicalDocumentCleanup": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "documentId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocument.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "documentIdSnapshot",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "storagePath",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "QUEUED"
+        },
+        {
+          "name": "attempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "availableAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "leaseToken",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "leaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "lastErrorCode",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "status",
+          "availableAt"
+        ],
+        [
+          "documentIdSnapshot"
+        ]
+      ]
+    },
+    "AgentThread": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "ownerUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "doctorId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Doctor.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "patientId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "Patient.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "scopeType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "GENERAL"
+        },
+        {
+          "name": "purpose",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "CLINIC_ASSISTANT"
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "New conversation"
+        },
+        {
+          "name": "status",
+          "type": "AgentThreadStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "ACTIVE"
+        },
+        {
+          "name": "permissionRevision",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 1
+        },
+        {
+          "name": "latestMemoryVersion",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        },
+        {
+          "name": "lastMessageAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "redactedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "ownerUserId",
+          "status",
+          "updatedAt"
+        ],
+        [
+          "doctorId",
+          "patientId"
+        ]
+      ]
+    },
+    "AgentTurn": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "turnIndex",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "originalQuery",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "retrievalQuery",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rewritten",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "requiresHistory",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "queryRoute",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "queryPolicyVersion",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "classification",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "plannedTools",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "RUNNING"
+        },
+        {
+          "name": "responseHash",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "startedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "threadId",
+          "turnIndex"
+        ]
+      ],
+      "indexes": [
+        [
+          "threadId",
+          "startedAt"
+        ]
+      ]
+    },
+    "AgentMessage": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "turnId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentTurn.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "sequence",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "role",
+          "type": "AgentMessageRole",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "AgentMessageStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "COMPLETED"
+        },
+        {
+          "name": "content",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "contentSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "messageMetadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "redactedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "redactionReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "threadId",
+          "sequence"
+        ]
+      ],
+      "indexes": [
+        [
+          "turnId",
+          "createdAt"
+        ],
+        [
+          "threadId",
+          "createdAt"
+        ]
+      ]
+    },
+    "AgentContextLink": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "turnId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentTurn.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "messageId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentMessage.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "reason",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "orderIndex",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "permissionRevision",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "includedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "turnId",
+          "messageId"
+        ]
+      ],
+      "indexes": [
+        [
+          "messageId"
+        ]
+      ]
+    },
+    "AgentMemorySnapshot": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "version",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "summary",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "summarySha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "coveredMessageIds",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceChunkIds",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "topics",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "latestMessageId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "tokenCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "summarizerModel",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "permissionRevision",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "authorizationHash",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "invalidatedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "invalidationReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "threadId",
+          "version"
+        ]
+      ],
+      "indexes": [
+        [
+          "threadId",
+          "invalidatedAt"
+        ]
+      ]
+    },
+    "AgentRetrievalRun": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "turnId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentTurn.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "query",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "strategy",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "queryFilters",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "indexVersion",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "embeddingModel",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rerankerModel",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "topK",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "candidateCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "selectedCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "authorizationHash",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "RUNNING"
+        },
+        {
+          "name": "durationMs",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "metrics",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "turnId",
+          "createdAt"
+        ]
+      ]
+    },
+    "AgentRetrievalHit": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "retrievalRunId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentRetrievalRun.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "chunkId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "MedicalDocumentChunk.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "chunkStableId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "versionStableId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceObjectIds",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceRefs",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "contentSha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "candidateRank",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "finalRank",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "denseScore",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sparseScore",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "hybridScore",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "rerankScore",
+          "type": "Float",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "includedInPrompt",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "citedInAnswer",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "reviewRequired",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "authorizedAtRetrieval",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "excludedReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [
+        [
+          "retrievalRunId",
+          "candidateRank"
+        ]
+      ],
+      "indexes": [
+        [
+          "chunkId"
+        ]
+      ]
+    },
+    "AgentMessageCitation": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "messageId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentMessage.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "retrievalHitId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentRetrievalHit.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "label",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "claimSpan",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "chunkStableId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "documentVersionId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceObjectId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "pageNumber",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "sourceRefs",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "contentSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "reviewRequired",
+          "type": "Boolean",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": false
+        },
+        {
+          "name": "revokedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "messageId"
+        ],
+        [
+          "chunkStableId"
+        ],
+        [
+          "documentVersionId"
+        ]
+      ]
+    },
+    "AgentToolCall": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "turnId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentTurn.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "toolCallId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "toolName",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "actionType",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "riskLevel",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "inputJson",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "inputSha256",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "resultJson",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "resultSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PROPOSED"
+        },
+        {
+          "name": "approvalId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentApproval.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "errorCode",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "durationMs",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "startedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [
+        [
+          "threadId",
+          "toolCallId"
+        ]
+      ],
+      "indexes": [
+        [
+          "turnId",
+          "startedAt"
+        ],
+        [
+          "status"
+        ]
+      ]
+    },
+    "AgentModelCall": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "turnId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentTurn.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "purpose",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "provider",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "model",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "modelVersion",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "promptVersion",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "requestSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "responseSha256",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "promptTokens",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "completionTokens",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "totalTokens",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "latencyMs",
+          "type": "Int",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "providerRequestId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "traceId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "retryCount",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "fallbackFrom",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "privacyPolicyRef",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "RUNNING"
+        },
+        {
+          "name": "errorCode",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "usageMetadata",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        }
+      ],
+      "unique": [],
+      "indexes": [
+        [
+          "threadId",
+          "createdAt"
+        ],
+        [
+          "provider",
+          "model",
+          "createdAt"
+        ]
+      ]
+    },
+    "AgentApproval": {
+      "fields": [
+        {
+          "name": "id",
+          "type": "String",
+          "nullable": false,
+          "primary": true,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__id__"
+        },
+        {
+          "name": "threadId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "AgentThread.id",
+          "on_delete": "CASCADE"
+        },
+        {
+          "name": "toolCallId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "requestedByUserId",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "RESTRICT"
+        },
+        {
+          "name": "approvedByUserId",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "foreign_key": "User.id",
+          "on_delete": "SET NULL"
+        },
+        {
+          "name": "actionType",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "riskLevel",
+          "type": "AgentActionRiskLevel",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "title",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "summary",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "reason",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "parameters",
+          "type": "Json",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "payloadHash",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "idempotencyKey",
+          "type": "String",
+          "nullable": false,
+          "primary": false,
+          "unique": true,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "status",
+          "type": "AgentApprovalStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "PENDING"
+        },
+        {
+          "name": "executionStatus",
+          "type": "AgentExecutionStatus",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "NOT_STARTED"
+        },
+        {
+          "name": "createdAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": "__now__"
+        },
+        {
+          "name": "expiresAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "decidedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "decisionReason",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "executedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "completedAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "executionResult",
+          "type": "Json",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "executionLeaseExpiresAt",
+          "type": "DateTime",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "executionAttempts",
+          "type": "Int",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false,
+          "default": 0
+        },
+        {
+          "name": "lastErrorCode",
+          "type": "String",
+          "nullable": true,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": false
+        },
+        {
+          "name": "updatedAt",
+          "type": "DateTime",
+          "nullable": false,
+          "primary": false,
+          "unique": false,
+          "date": false,
+          "updated": true
+        }
+      ],
+      "unique": [
+        [
+          "threadId",
+          "toolCallId"
+        ]
+      ],
+      "indexes": [
+        [
+          "requestedByUserId",
+          "status",
+          "expiresAt"
+        ],
+        [
+          "status",
+          "executionStatus"
+        ],
+        [
+          "executionStatus",
+          "executionLeaseExpiresAt"
         ]
       ]
     }

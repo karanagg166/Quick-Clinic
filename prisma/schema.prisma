@@ -118,7 +118,6 @@ enum AgentMessageStatus {
   REDACTED
 }
 
-
 enum Qualification {
   MBBS
   BDS
@@ -200,29 +199,28 @@ model User {
 
   pinCode Int
 
-  
-  profileImageUrl String?
-  emailVerified   Boolean        @default(false)
-  isActive        Boolean        @default(true)
-  admin           Admin?
-  doctor          Doctor?
-  patient         Patient?
-  otp             Otp[]
-  accessLogs      AccessLog[]
-  auditLogs       AuditLog[]
-  chatMessages    ChatMessages[]
-  payments        Payment[]
-  checkouts       Checkout[]
-  notifications   Notification[]
+  profileImageUrl         String?
+  emailVerified           Boolean              @default(false)
+  isActive                Boolean              @default(true)
+  admin                   Admin?
+  doctor                  Doctor?
+  patient                 Patient?
+  otp                     Otp[]
+  accessLogs              AccessLog[]
+  auditLogs               AuditLog[]
+  chatMessages            ChatMessages[]
+  payments                Payment[]
+  checkouts               Checkout[]
+  notifications           Notification[]
   agentThreadsOwned       AgentThread[]        @relation("AgentThreadOwner")
   agentApprovalsRequested AgentApproval[]      @relation("AgentApprovalRequester")
   agentApprovalsDecided   AgentApproval[]      @relation("AgentApprovalDecider")
   medicalGrantsCreated    MedicalAccessGrant[] @relation("MedicalGrantCreator")
-  
-  updatedAt       DateTime       @updatedAt
-  createdAt       DateTime       @default(now())
-  location        Location       @relation(fields: [pinCode], references: [pincode])
-  bankAccounts    BankAccount[]
+
+  updatedAt    DateTime      @updatedAt
+  createdAt    DateTime      @default(now())
+  location     Location      @relation(fields: [pinCode], references: [pincode])
+  bankAccounts BankAccount[]
 }
 
 model Location {
@@ -251,28 +249,28 @@ model Admin {
 }
 
 model Doctor {
-  isReleaseFixture Boolean @default(false)
-  id         String    @id @default(cuid())
-  userId     String    @unique
-  specialty  Specialty
-  experience Int       @default(0)
-  fees      Int     @default(0)
-  doctorBio String?
-  balance   Int     @default(0) 
+  isReleaseFixture Boolean   @default(false)
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  specialty        Specialty
+  experience       Int       @default(0)
+  fees             Int       @default(0)
+  doctorBio        String?
+  balance          Int       @default(0)
   // A one-time saved practice location. Patient locations are never stored.
-  latitude  Float?  @db.DoublePrecision
-  longitude Float?  @db.DoublePrecision
+  latitude         Float?    @db.DoublePrecision
+  longitude        Float?    @db.DoublePrecision
 
-  user             User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  leaves           Leave[]
-  schedule         Schedule?
-  patientRelations DoctorPatientRelation[]
-  appointments     Appointment[]
-  slots            Slot[]
-  checkouts        Checkout[]
-  comments         Comment[]
-  ratings          Rating[]
-  withdrawals      Withdrawal[]
+  user                User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaves              Leave[]
+  schedule            Schedule?
+  patientRelations    DoctorPatientRelation[]
+  appointments        Appointment[]
+  slots               Slot[]
+  checkouts           Checkout[]
+  comments            Comment[]
+  ratings             Rating[]
+  withdrawals         Withdrawal[]
   agentThreads        AgentThread[]
   medicalAccessGrants MedicalAccessGrant[]
 
@@ -280,7 +278,6 @@ model Doctor {
   updatedAt DateTime @updatedAt
 
   doctorQualifications DoctorQualification[]
-
 
   @@index([latitude, longitude])
 }
@@ -301,14 +298,14 @@ model Patient {
   medicalHistory     String @default("")
   allergies          String @default("")
   currentMedications String @default("")
-  
-  user            User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  doctorRelations DoctorPatientRelation[]
-  appointments    Appointment[]
-  checkouts       Checkout[]
-  comments        Comment[]
-  ratings         Rating[]
-  medicalDocuments MedicalDocument[]
+
+  user                  User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  doctorRelations       DoctorPatientRelation[]
+  appointments          Appointment[]
+  checkouts             Checkout[]
+  comments              Comment[]
+  ratings               Rating[]
+  medicalDocuments      MedicalDocument[]
   agentThreads          AgentThread[]
   medicalAccessGrants   MedicalAccessGrant[]
   extractedObservations MedicalObservation[]
@@ -318,19 +315,19 @@ model Patient {
 }
 
 model MedicalDocument {
-  id               String              @id @default(cuid())
+  id String @id @default(cuid())
 
-  patientId        String
-  patient          Patient             @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
-  title            String
-  type             MedicalDocumentType
+  title String
+  type  MedicalDocumentType
 
-  fileName         String
-  mimeType         String
-  fileSize         Int
+  fileName String
+  mimeType String
+  fileSize Int
 
-  storagePath      String              @unique
+  storagePath String @unique
 
   reportDate       DateTime
   hospitalOrDoctor String?
@@ -345,8 +342,8 @@ model MedicalDocument {
   accessGrants    MedicalAccessGrant[]
   cleanupRequests MedicalDocumentCleanup[]
 
-  createdAt        DateTime                        @default(now())
-  updatedAt        DateTime                        @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([patientId])
   @@index([patientId, reportDate])
@@ -364,10 +361,10 @@ model Notification {
   message     String
   actionHref  String?
   actionLabel String?
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  isRead  Boolean   @default(false)
-  status  String    @default("UNREAD")
-  readAt  DateTime?
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isRead      Boolean   @default(false)
+  status      String    @default("UNREAD")
+  readAt      DateTime?
   eventId     String?
 
   createdAt DateTime @default(now())
@@ -405,7 +402,7 @@ model Schedule {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   @@index([doctorId])
 }
 
@@ -427,6 +424,7 @@ model Slot {
   doctor    Doctor   @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   @@unique([doctorId, date, startTime])
   @@index([doctorId, date, status])
   @@index([startTime, status])
@@ -494,8 +492,8 @@ model ChatMessages {
   sender          User    @relation(fields: [senderId], references: [id], onDelete: Cascade)
   clientMessageId String? @unique
 
-  isRead          Boolean   @default(false)
-  readAt          DateTime?
+  isRead Boolean   @default(false)
+  readAt DateTime?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -506,31 +504,31 @@ model ChatMessages {
 }
 
 model Payment {
-  id             String   @id @default(cuid())
-  idempotencyKey String?  @unique
+  id             String  @id @default(cuid())
+  idempotencyKey String? @unique
   amount         Int
-  currency       String   @default("INR")
+  currency       String  @default("INR")
   userId         String
   doctorId       String?
   slotId         String?
   holdToken      String?
-  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   status            String
-  razorpayOrderId   String   @unique
-  razorpayPaymentId String?  @unique
+  razorpayOrderId   String    @unique
+  razorpayPaymentId String?   @unique
   capturedAt        DateTime?
   leaseExpiresAt    DateTime?
   leaseOwner        String?
-  attempts          Int      @default(0)
+  attempts          Int       @default(0)
   nextAttemptAt     DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now()) @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @default(now()) @updatedAt
 
-  appointment       Appointment?
-  checkout          Checkout?
-  refunds           Refund[]
-  webhookEvents     WebhookEvent[]
+  appointment   Appointment?
+  checkout      Checkout?
+  refunds       Refund[]
+  webhookEvents WebhookEvent[]
 
   @@index([userId, status])
   @@index([slotId])
@@ -549,44 +547,44 @@ enum CheckoutStatus {
 }
 
 model Checkout {
-  id              String         @id @default(cuid())
-  idempotencyKey  String         @unique
-  userId          String
-  patientId       String
-  doctorId        String
-  slotId          String
-  holdToken       String
-  paymentMethod   PaymentMethod  @default(ONLINE)
-  amount          Int            // Immutable amount in paise
-  currency        String         @default("INR")
-  status          CheckoutStatus @default(PENDING_ORDER)
+  id             String         @id @default(cuid())
+  idempotencyKey String         @unique
+  userId         String
+  patientId      String
+  doctorId       String
+  slotId         String
+  holdToken      String
+  paymentMethod  PaymentMethod  @default(ONLINE)
+  amount         Int // Immutable amount in paise
+  currency       String         @default("INR")
+  status         CheckoutStatus @default(PENDING_ORDER)
 
-  razorpayOrderId   String?        @unique
+  razorpayOrderId   String?  @unique
   providerReference String?
   expiresAt         DateTime
 
-  paymentId       String?        @unique
-  appointmentId   String?        @unique
+  paymentId     String? @unique
+  appointmentId String? @unique
 
   // Processing, lease & reconciliation tracking
   processingStartedAt DateTime?
   leaseExpiresAt      DateTime?
   leaseOwner          String?
-  attempts            Int            @default(0)
+  attempts            Int       @default(0)
   lastAttemptAt       DateTime?
   nextAttemptAt       DateTime?
   lastError           String?
 
-  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  patient         Patient        @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctor          Doctor         @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  slot            Slot           @relation(fields: [slotId], references: [id], onDelete: Cascade)
-  payment         Payment?       @relation(fields: [paymentId], references: [id], onDelete: SetNull)
-  appointment     Appointment?   @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  patient     Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor      Doctor       @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  slot        Slot         @relation(fields: [slotId], references: [id], onDelete: Cascade)
+  payment     Payment?     @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  appointment Appointment? @relation(fields: [appointmentId], references: [id], onDelete: SetNull)
 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  confirmedAt     DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  confirmedAt DateTime?
 
   @@index([userId, status])
   @@index([doctorId, slotId])
@@ -607,7 +605,7 @@ model Refund {
   id               String       @id @default(cuid())
   paymentId        String
   payment          Payment      @relation(fields: [paymentId], references: [id], onDelete: Cascade)
-  amount           Int          // Amount in paise
+  amount           Int // Amount in paise
   currency         String       @default("INR")
   reason           String
   status           RefundStatus @default(PENDING)
@@ -669,7 +667,7 @@ enum OutboxStatus {
 model NotificationOutbox {
   id                  String       @id @default(cuid())
   eventId             String       @unique
-  channel             String       // e.g. "SOCKET_NOTIFICATION", "SOCKET_APPOINTMENT_REQUEST", "SOCKET_APPOINTMENT_STATUS"
+  channel             String // e.g. "SOCKET_NOTIFICATION", "SOCKET_APPOINTMENT_REQUEST", "SOCKET_APPOINTMENT_STATUS"
   targetUserId        String
   payload             Json
   status              OutboxStatus @default(PENDING)
@@ -781,14 +779,14 @@ model AuditLog {
 // ======================================================
 
 model Rating {
-  id       String @id @default(cuid())
-  doctorId String
-  patientId   String
-  rating   Int // 1-5 stars
+  id        String @id @default(cuid())
+  doctorId  String
+  patientId String
+  rating    Int // 1-5 stars
 
   // Relations
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -799,14 +797,14 @@ model Rating {
 }
 
 model Comment {
-  id       String @id @default(cuid())
-  doctorId String
-  patientId   String
-  text     String // Comment text
+  id        String @id @default(cuid())
+  doctorId  String
+  patientId String
+  text      String // Comment text
 
   // Relations
-  doctor Doctor @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctor  Doctor  @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  patient Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -816,32 +814,31 @@ model Comment {
   @@index([createdAt])
 }
 
-
 // -----------------------------------------------------------------------------
 // Ingestion: immutable versions, page geometry, source hierarchy, structured data
 // -----------------------------------------------------------------------------
 
 model MedicalDocumentVersion {
-  id                String                @id @default(cuid())
+  id                String                   @id @default(cuid())
   documentId        String
-  document          MedicalDocument       @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  document          MedicalDocument          @relation(fields: [documentId], references: [id], onDelete: Cascade)
   versionNumber     Int
   sourceSha256      String
   schemaVersion     String
   pipelineVersion   String
   configFingerprint String
   tokenizerName     String?
-  extractionStatus  MedicalPipelineStatus @default(PENDING)
-  indexStatus       MedicalPipelineStatus @default(PENDING)
-  isPublished       Boolean               @default(false)
-  pageCount         Int                   @default(0)
-  objectCount       Int                   @default(0)
-  chunkCount        Int                   @default(0)
-  issueCount        Int                   @default(0)
+  extractionStatus  MedicalPipelineStatus    @default(PENDING)
+  indexStatus       MedicalPipelineStatus    @default(PENDING)
+  isPublished       Boolean                  @default(false)
+  pageCount         Int                      @default(0)
+  objectCount       Int                      @default(0)
+  chunkCount        Int                      @default(0)
+  issueCount        Int                      @default(0)
   manifest          Json? // full NormalizedDocument metadata (pages/sections/config/issues)
   pipelineMetadata  Json? // provider versions, model choices, budgets, actual capabilities
   contentSha256     String?
-  createdAt         DateTime              @default(now())
+  createdAt         DateTime                 @default(now())
   publishedAt       DateTime?
   revokedAt         DateTime?
   pages             MedicalDocumentPage[]
@@ -859,28 +856,28 @@ model MedicalDocumentVersion {
 }
 
 model MedicalIngestionJob {
-  id               String                @id @default(cuid())
-  documentId       String
-  document         MedicalDocument       @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  versionId        String?
-  version          MedicalDocumentVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
-  generation       Int                   @default(1)
-  status           MedicalPipelineStatus @default(QUEUED)
-  stage            String                @default("registered")
-  attempts         Int                   @default(0)
-  availableAt      DateTime              @default(now())
-  startedAt        DateTime?
-  lastHeartbeatAt  DateTime?
-  completedAt      DateTime?
-  leaseToken       String?
-  leaseOwner       String?
-  leaseExpiresAt   DateTime?
-  errorCode        String?
-  retryable        Boolean               @default(false)
-  progress         Json?
-  resourceMetrics  Json? // elapsed, peak RSS, provider usage, token counts
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
+  id              String                  @id @default(cuid())
+  documentId      String
+  document        MedicalDocument         @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  versionId       String?
+  version         MedicalDocumentVersion? @relation(fields: [versionId], references: [id], onDelete: SetNull)
+  generation      Int                     @default(1)
+  status          MedicalPipelineStatus   @default(QUEUED)
+  stage           String                  @default("registered")
+  attempts        Int                     @default(0)
+  availableAt     DateTime                @default(now())
+  startedAt       DateTime?
+  lastHeartbeatAt DateTime?
+  completedAt     DateTime?
+  leaseToken      String?
+  leaseOwner      String?
+  leaseExpiresAt  DateTime?
+  errorCode       String?
+  retryable       Boolean                 @default(false)
+  progress        Json?
+  resourceMetrics Json? // elapsed, peak RSS, provider usage, token counts
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
 
   @@unique([documentId, generation])
   @@index([status, availableAt])
@@ -907,44 +904,44 @@ model MedicalDocumentPage {
 }
 
 model MedicalDocumentSection {
-  id                String                 @id @default(cuid())
-  versionId         String
-  version           MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  sectionStableId   String
-  parentSectionId   String?
-  title             String
-  level             Int
-  headingPath       Json // ordered heading strings
-  source            Json // exact Search Sphere SourceRef
-  readingOrder      Int?
+  id              String                 @id @default(cuid())
+  versionId       String
+  version         MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  sectionStableId String
+  parentSectionId String?
+  title           String
+  level           Int
+  headingPath     Json // ordered heading strings
+  source          Json // exact Search Sphere SourceRef
+  readingOrder    Int?
 
   @@unique([versionId, sectionStableId])
 }
 
 model MedicalDocumentObject {
-  id             String                 @id @default(cuid())
-  versionId      String
-  version        MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  objectStableId String
-  kind           String // text | table | image | chart | diagram
-  subtype        String? // e.g. pie, bar, flowchart; NEVER assume verified
-  title          String?
-  text           String? // paragraph/native/combined searchable content, as appropriate
+  id              String                 @id @default(cuid())
+  versionId       String
+  version         MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  objectStableId  String
+  kind            String // text | table | image | chart | diagram
+  subtype         String? // e.g. pie, bar, flowchart; NEVER assume verified
+  title           String?
+  text            String? // paragraph/native/combined searchable content, as appropriate
   sectionStableId String?
-  headingPath    Json? // section ancestry
-  firstPage      Int?
-  lastPage       Int?
-  readingOrder   Int?
-  status         MedicalPipelineStatus @default(PARTIAL)
-  reviewRequired Boolean              @default(false)
-  confidence     Float?
-  normalized     Json // ENTIRE validated Paragraph/Table/Visual object, no field loss
-  sourceSha256   String?
-  createdAt      DateTime             @default(now())
-  regions        MedicalObjectRegion[]
-  assets         MedicalDocumentAsset[]
-  chunkLinks     MedicalChunkObject[]
-  observations   MedicalObservation[]
+  headingPath     Json? // section ancestry
+  firstPage       Int?
+  lastPage        Int?
+  readingOrder    Int?
+  status          MedicalPipelineStatus  @default(PARTIAL)
+  reviewRequired  Boolean                @default(false)
+  confidence      Float?
+  normalized      Json // ENTIRE validated Paragraph/Table/Visual object, no field loss
+  sourceSha256    String?
+  createdAt       DateTime               @default(now())
+  regions         MedicalObjectRegion[]
+  assets          MedicalDocumentAsset[]
+  chunkLinks      MedicalChunkObject[]
+  observations    MedicalObservation[]
 
   @@unique([versionId, objectStableId])
   @@index([versionId, kind, firstPage])
@@ -952,63 +949,63 @@ model MedicalDocumentObject {
 }
 
 model MedicalObjectRegion {
-  id                String                @id @default(cuid())
-  objectId          String
-  object            MedicalDocumentObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
-  pageId            String
-  page              MedicalDocumentPage   @relation(fields: [pageId], references: [id], onDelete: Cascade)
-  regionStableId    String
-  parentRegionId    String?
-  readingOrder      Int
-  coordinateSystem  String
-  x0                Float
-  y0                Float
-  x1                Float
-  y1                Float
-  sourceImageId     String? // opaque authorized asset ID, not a public URL
-  provider          String?
-  model             String?
-  confidence        Float?
-  evidence          Json? // OCR, layout model and source-specific evidence markers
-  source            Json // full SourceRef JSON incl. page, bbox, section, offsets
+  id               String                @id @default(cuid())
+  objectId         String
+  object           MedicalDocumentObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  pageId           String
+  page             MedicalDocumentPage   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  regionStableId   String
+  parentRegionId   String?
+  readingOrder     Int
+  coordinateSystem String
+  x0               Float
+  y0               Float
+  x1               Float
+  y1               Float
+  sourceImageId    String? // opaque authorized asset ID, not a public URL
+  provider         String?
+  model            String?
+  confidence       Float?
+  evidence         Json? // OCR, layout model and source-specific evidence markers
+  source           Json // full SourceRef JSON incl. page, bbox, section, offsets
 
   @@unique([objectId, pageId, regionStableId])
   @@index([pageId, readingOrder])
 }
 
 model MedicalDocumentAsset {
-  id             String                 @id @default(cuid())
-  versionId      String
-  version        MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  objectId       String?
-  object         MedicalDocumentObject? @relation(fields: [objectId], references: [id], onDelete: SetNull)
-  kind           String // crop, page_preview, diagram_panel, image, etc.
-  opaqueAssetId  String
-  storagePath    String                 @unique // Quick-Clinic PRIVATE object storage
-  mimeType       String
-  fileSize       Int
-  sha256         String
-  pageNumber     Int?
-  geometry       Json?
-  metadata       Json?
-  createdAt      DateTime               @default(now())
-  deletedAt      DateTime?
+  id            String                 @id @default(cuid())
+  versionId     String
+  version       MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  objectId      String?
+  object        MedicalDocumentObject? @relation(fields: [objectId], references: [id], onDelete: SetNull)
+  kind          String // crop, page_preview, diagram_panel, image, etc.
+  opaqueAssetId String
+  storagePath   String                 @unique // Quick-Clinic PRIVATE object storage
+  mimeType      String
+  fileSize      Int
+  sha256        String
+  pageNumber    Int?
+  geometry      Json?
+  metadata      Json?
+  createdAt     DateTime               @default(now())
+  deletedAt     DateTime?
 
   @@unique([versionId, opaqueAssetId])
   @@index([objectId])
 }
 
 model MedicalExtractionIssue {
-  id           String                 @id @default(cuid())
-  versionId    String
-  version      MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  pageNumber   Int?
+  id             String                 @id @default(cuid())
+  versionId      String
+  version        MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  pageNumber     Int?
   objectStableId String?
-  stage        String
-  code         String
-  retryable    Boolean               @default(false)
-  details      Json? // sanitized diagnostic metadata, no raw credentials
-  createdAt    DateTime              @default(now())
+  stage          String
+  code           String
+  retryable      Boolean                @default(false)
+  details        Json? // sanitized diagnostic metadata, no raw credentials
+  createdAt      DateTime               @default(now())
 
   @@index([versionId, stage, pageNumber])
 }
@@ -1018,34 +1015,34 @@ model MedicalExtractionIssue {
 // -----------------------------------------------------------------------------
 
 model MedicalDocumentChunk {
-  id                 String                 @id @default(cuid())
-  versionId          String
-  version            MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  chunkStableId      String
-  chunkIndex         Int
-  kind               String // text, table, chart, diagram, image
-  content            String
-  contentSha256      String
-  tokenCount         Int
-  tokenizer          String
-  headingPath        Json?
-  sourceObjectIds    Json // preserve stable source object IDs
-  paragraphIds       Json?
-  sentenceIds        Json?
-  pageNumbers        Json // sorted full page list
-  startPage          Int
-  endPage            Int
-  rowStart           Int?
-  rowEnd             Int?
-  isFragment         Boolean              @default(false)
-  provenance         Json // exact SourceRef list + extraction provenance
-  pipelineVersion    String
-  status             MedicalPipelineStatus @default(COMPLETED)
-  createdAt          DateTime              @default(now())
-  sourceLinks        MedicalChunkObject[]
-  embeddings         MedicalChunkEmbedding[]
-  retrievalHits      AgentRetrievalHit[]
-  observations       MedicalObservation[]
+  id              String                  @id @default(cuid())
+  versionId       String
+  version         MedicalDocumentVersion  @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  chunkStableId   String
+  chunkIndex      Int
+  kind            String // text, table, chart, diagram, image
+  content         String
+  contentSha256   String
+  tokenCount      Int
+  tokenizer       String
+  headingPath     Json?
+  sourceObjectIds Json // preserve stable source object IDs
+  paragraphIds    Json?
+  sentenceIds     Json?
+  pageNumbers     Json // sorted full page list
+  startPage       Int
+  endPage         Int
+  rowStart        Int?
+  rowEnd          Int?
+  isFragment      Boolean                 @default(false)
+  provenance      Json // exact SourceRef list + extraction provenance
+  pipelineVersion String
+  status          MedicalPipelineStatus   @default(COMPLETED)
+  createdAt       DateTime                @default(now())
+  sourceLinks     MedicalChunkObject[]
+  embeddings      MedicalChunkEmbedding[]
+  retrievalHits   AgentRetrievalHit[]
+  observations    MedicalObservation[]
 
   @@unique([versionId, chunkStableId])
   @@unique([versionId, chunkIndex])
@@ -1054,66 +1051,66 @@ model MedicalDocumentChunk {
 }
 
 model MedicalChunkObject {
-  id          String                 @id @default(cuid())
-  chunkId     String
-  chunk       MedicalDocumentChunk   @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-  objectId    String
-  object      MedicalDocumentObject  @relation(fields: [objectId], references: [id], onDelete: Cascade)
-  sourceRefs  Json? // page boxes, sentence offsets, cell/row ranges
-  createdAt   DateTime               @default(now())
+  id         String                @id @default(cuid())
+  chunkId    String
+  chunk      MedicalDocumentChunk  @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  objectId   String
+  object     MedicalDocumentObject @relation(fields: [objectId], references: [id], onDelete: Cascade)
+  sourceRefs Json? // page boxes, sentence offsets, cell/row ranges
+  createdAt  DateTime              @default(now())
 
   @@unique([chunkId, objectId])
   @@index([objectId])
 }
 
 model MedicalChunkEmbedding {
-  id               String                @id @default(cuid())
-  chunkId          String
-  chunk            MedicalDocumentChunk  @relation(fields: [chunkId], references: [id], onDelete: Cascade)
-  vectorId         String                @unique // stable search/index identity
-  provider         String
-  model            String
-  dimension        Int                   @default(384)
-  embeddingVersion String
-  indexGeneration  Int                   @default(1)
-  inputSha256      String
-  status           MedicalPipelineStatus @default(PENDING)
-  embedding        Unsupported("vector(384)")? // pgvector: created via SQL migration
+  id                String                      @id @default(cuid())
+  chunkId           String
+  chunk             MedicalDocumentChunk        @relation(fields: [chunkId], references: [id], onDelete: Cascade)
+  vectorId          String                      @unique // stable search/index identity
+  provider          String
+  model             String
+  dimension         Int                         @default(384)
+  embeddingVersion  String
+  indexGeneration   Int                         @default(1)
+  inputSha256       String
+  status            MedicalPipelineStatus       @default(PENDING)
+  embedding         Unsupported("vector(384)")? // pgvector: created via SQL migration
   embeddingMetadata Json?
-  indexedAt        DateTime?
-  createdAt        DateTime              @default(now())
+  indexedAt         DateTime?
+  createdAt         DateTime                    @default(now())
 
   @@unique([chunkId, model, embeddingVersion])
   @@index([status, model, dimension])
 }
 
 model MedicalObservation {
-  id                  String                 @id @default(cuid())
-  patientId           String
-  patient             Patient                @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  versionId           String
-  version             MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
-  objectId            String?
-  object              MedicalDocumentObject? @relation(fields: [objectId], references: [id], onDelete: SetNull)
-  chunkId             String?
-  chunk               MedicalDocumentChunk?  @relation(fields: [chunkId], references: [id], onDelete: SetNull)
-  observationType     String
-  displayName         String
-  valueNumeric        Float?
+  id                    String                 @id @default(cuid())
+  patientId             String
+  patient               Patient                @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  versionId             String
+  version               MedicalDocumentVersion @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  objectId              String?
+  object                MedicalDocumentObject? @relation(fields: [objectId], references: [id], onDelete: SetNull)
+  chunkId               String?
+  chunk                 MedicalDocumentChunk?  @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+  observationType       String
+  displayName           String
+  valueNumeric          Float?
   valueSecondaryNumeric Float?
-  valueText           String?
-  unit                String?
-  referenceRange      Json?
-  observedAt          DateTime?
-  reportedAt          DateTime?
-  dateInferred        Boolean                @default(false)
-  pageNumber          Int?
-  extractionMethod    String
-  confidence          Float?
-  reviewStatus        String                 @default("UNREVIEWED")
-  source              Json // values/cells/page/region/ocr evidence
-  createdAt           DateTime               @default(now())
-  updatedAt           DateTime               @updatedAt
+  valueText             String?
+  unit                  String?
+  referenceRange        Json?
+  observedAt            DateTime?
+  reportedAt            DateTime?
+  dateInferred          Boolean                @default(false)
+  pageNumber            Int?
+  extractionMethod      String
+  confidence            Float?
+  reviewStatus          String                 @default("UNREVIEWED")
+  source                Json // values/cells/page/region/ocr evidence
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
 
   @@index([patientId, observationType, observedAt])
   @@index([versionId, pageNumber])
@@ -1124,44 +1121,44 @@ model MedicalObservation {
 // -----------------------------------------------------------------------------
 
 model MedicalAccessGrant {
-  id               String            @id @default(cuid())
-  patientId        String
-  patient          Patient           @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  doctorId         String
-  doctor           Doctor            @relation(fields: [doctorId], references: [id], onDelete: Cascade)
-  documentId       String?
-  document         MedicalDocument?  @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  grantedByUserId  String
-  grantedBy        User              @relation("MedicalGrantCreator", fields: [grantedByUserId], references: [id], onDelete: Restrict)
+  id                        String           @id @default(cuid())
+  patientId                 String
+  patient                   Patient          @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId                  String
+  doctor                    Doctor           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  documentId                String?
+  document                  MedicalDocument? @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  grantedByUserId           String
+  grantedBy                 User             @relation("MedicalGrantCreator", fields: [grantedByUserId], references: [id], onDelete: Restrict)
   relationshipAppointmentId String?
-  scope            Json // document/category and permitted operations; never trust without auth
-  consentSource    String
-  policyVersion    Int               @default(1)
-  effectiveAt      DateTime          @default(now())
-  expiresAt        DateTime?
-  revokedAt        DateTime?
-  revokedReason    String?
-  createdAt        DateTime          @default(now())
-  updatedAt        DateTime          @updatedAt
+  scope                     Json // document/category and permitted operations; never trust without auth
+  consentSource             String
+  policyVersion             Int              @default(1)
+  effectiveAt               DateTime         @default(now())
+  expiresAt                 DateTime?
+  revokedAt                 DateTime?
+  revokedReason             String?
+  createdAt                 DateTime         @default(now())
+  updatedAt                 DateTime         @updatedAt
 
   @@index([doctorId, patientId, revokedAt, expiresAt])
   @@index([documentId])
 }
 
 model MedicalDocumentCleanup {
-  id           String           @id @default(cuid())
-  documentId   String?
-  document     MedicalDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
+  id                 String           @id @default(cuid())
+  documentId         String?
+  document           MedicalDocument? @relation(fields: [documentId], references: [id], onDelete: SetNull)
   documentIdSnapshot String
-  storagePath  String // opaque private storage key; no extracted PHI
-  status       String           @default("QUEUED")
-  attempts     Int              @default(0)
-  availableAt  DateTime         @default(now())
-  leaseToken   String?
-  leaseExpiresAt DateTime?
-  lastErrorCode String?
-  createdAt    DateTime         @default(now())
-  completedAt  DateTime?
+  storagePath        String // opaque private storage key; no extracted PHI
+  status             String           @default("QUEUED")
+  attempts           Int              @default(0)
+  availableAt        DateTime         @default(now())
+  leaseToken         String?
+  leaseExpiresAt     DateTime?
+  lastErrorCode      String?
+  createdAt          DateTime         @default(now())
+  completedAt        DateTime?
 
   @@index([status, availableAt])
   @@index([documentIdSnapshot])
@@ -1172,21 +1169,21 @@ model MedicalDocumentCleanup {
 // -----------------------------------------------------------------------------
 
 model AgentThread {
-  id                  String            @id @default(cuid()) // stable LangGraph thread_id
+  id                  String                @id @default(cuid()) // stable LangGraph thread_id
   ownerUserId         String
-  owner               User              @relation("AgentThreadOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
+  owner               User                  @relation("AgentThreadOwner", fields: [ownerUserId], references: [id], onDelete: Cascade)
   doctorId            String?
-  doctor              Doctor?           @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  doctor              Doctor?               @relation(fields: [doctorId], references: [id], onDelete: Cascade)
   patientId           String?
-  patient             Patient?          @relation(fields: [patientId], references: [id], onDelete: Cascade)
-  scopeType           String            @default("GENERAL") // GENERAL or SINGLE_PATIENT
-  purpose             String            @default("CLINIC_ASSISTANT")
-  title               String            @default("New conversation")
-  status              AgentThreadStatus @default(ACTIVE)
-  permissionRevision  Int               @default(1)
-  latestMemoryVersion Int               @default(0)
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt
+  patient             Patient?              @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  scopeType           String                @default("GENERAL") // GENERAL or SINGLE_PATIENT
+  purpose             String                @default("CLINIC_ASSISTANT")
+  title               String                @default("New conversation")
+  status              AgentThreadStatus     @default(ACTIVE)
+  permissionRevision  Int                   @default(1)
+  latestMemoryVersion Int                   @default(0)
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
   lastMessageAt       DateTime?
   redactedAt          DateTime?
   messages            AgentMessage[]
@@ -1201,21 +1198,21 @@ model AgentThread {
 }
 
 model AgentTurn {
-  id                 String       @id @default(cuid())
+  id                 String              @id @default(cuid())
   threadId           String
-  thread             AgentThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  thread             AgentThread         @relation(fields: [threadId], references: [id], onDelete: Cascade)
   turnIndex          Int
   originalQuery      String
   retrievalQuery     String?
-  rewritten          Boolean      @default(false)
-  requiresHistory    Boolean      @default(false)
+  rewritten          Boolean             @default(false)
+  requiresHistory    Boolean             @default(false)
   queryRoute         String? // DIRECT, RAG, CLARIFICATION, etc.
   queryPolicyVersion String?
   classification     Json?
   plannedTools       Json?
-  status             String       @default("RUNNING")
+  status             String              @default("RUNNING")
   responseHash       String?
-  startedAt          DateTime     @default(now())
+  startedAt          DateTime            @default(now())
   completedAt        DateTime?
   messages           AgentMessage[]
   contextLinks       AgentContextLink[]
@@ -1228,22 +1225,22 @@ model AgentTurn {
 }
 
 model AgentMessage {
-  id           String             @id @default(cuid())
-  threadId     String
-  thread       AgentThread        @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  turnId       String?
-  turn         AgentTurn?         @relation(fields: [turnId], references: [id], onDelete: SetNull)
-  sequence     Int
-  role         AgentMessageRole
-  status       AgentMessageStatus @default(COMPLETED)
-  content      String // original Q / assistant answer / safe tool message
-  contentSha256 String?
+  id              String                 @id @default(cuid())
+  threadId        String
+  thread          AgentThread            @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  turnId          String?
+  turn            AgentTurn?             @relation(fields: [turnId], references: [id], onDelete: SetNull)
+  sequence        Int
+  role            AgentMessageRole
+  status          AgentMessageStatus     @default(COMPLETED)
+  content         String // original Q / assistant answer / safe tool message
+  contentSha256   String?
   messageMetadata Json? // API request IDs, versions, app display info, token counts
-  createdAt    DateTime           @default(now())
-  redactedAt   DateTime?
+  createdAt       DateTime               @default(now())
+  redactedAt      DateTime?
   redactionReason String?
-  citations    AgentMessageCitation[]
-  usedAsContext AgentContextLink[]
+  citations       AgentMessageCitation[]
+  usedAsContext   AgentContextLink[]
 
   @@unique([threadId, sequence])
   @@index([turnId, createdAt])
@@ -1251,112 +1248,112 @@ model AgentMessage {
 }
 
 model AgentContextLink {
-  id           String       @id @default(cuid())
-  turnId       String
-  turn         AgentTurn    @relation(fields: [turnId], references: [id], onDelete: Cascade)
-  messageId    String
-  message      AgentMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  reason       String // recent_window, semantic_memory, previous_answer_reference
-  orderIndex   Int
+  id                 String       @id @default(cuid())
+  turnId             String
+  turn               AgentTurn    @relation(fields: [turnId], references: [id], onDelete: Cascade)
+  messageId          String
+  message            AgentMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  reason             String // recent_window, semantic_memory, previous_answer_reference
+  orderIndex         Int
   permissionRevision Int
-  includedAt   DateTime     @default(now())
+  includedAt         DateTime     @default(now())
 
   @@unique([turnId, messageId])
   @@index([messageId])
 }
 
 model AgentMemorySnapshot {
-  id                  String       @id @default(cuid())
-  threadId            String
-  thread              AgentThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  version             Int
-  summary             String
-  summarySha256       String
-  coveredMessageIds   Json // exact past messages summarized
-  sourceChunkIds      Json? // linked chunk/version IDs, not PHI copies
-  topics              Json?
-  latestMessageId     String?
-  tokenCount          Int          @default(0)
-  summarizerModel     String?
-  permissionRevision  Int
-  authorizationHash   String?
-  createdAt           DateTime     @default(now())
-  invalidatedAt       DateTime?
-  invalidationReason  String?
+  id                 String      @id @default(cuid())
+  threadId           String
+  thread             AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  version            Int
+  summary            String
+  summarySha256      String
+  coveredMessageIds  Json // exact past messages summarized
+  sourceChunkIds     Json? // linked chunk/version IDs, not PHI copies
+  topics             Json?
+  latestMessageId    String?
+  tokenCount         Int         @default(0)
+  summarizerModel    String?
+  permissionRevision Int
+  authorizationHash  String?
+  createdAt          DateTime    @default(now())
+  invalidatedAt      DateTime?
+  invalidationReason String?
 
   @@unique([threadId, version])
   @@index([threadId, invalidatedAt])
 }
 
 model AgentRetrievalRun {
-  id             String              @id @default(cuid())
-  turnId         String
-  turn           AgentTurn           @relation(fields: [turnId], references: [id], onDelete: Cascade)
-  query          String
-  strategy       String // dense, sparse, hybrid, observation, exact_prior_chunk
-  queryFilters   Json?
-  indexVersion   String?
-  embeddingModel String?
-  rerankerModel  String?
-  topK           Int
-  candidateCount Int                   @default(0)
-  selectedCount  Int                   @default(0)
+  id                String              @id @default(cuid())
+  turnId            String
+  turn              AgentTurn           @relation(fields: [turnId], references: [id], onDelete: Cascade)
+  query             String
+  strategy          String // dense, sparse, hybrid, observation, exact_prior_chunk
+  queryFilters      Json?
+  indexVersion      String?
+  embeddingModel    String?
+  rerankerModel     String?
+  topK              Int
+  candidateCount    Int                 @default(0)
+  selectedCount     Int                 @default(0)
   authorizationHash String?
-  status         String                @default("RUNNING")
-  durationMs     Int?
-  metrics        Json? // scores, cache hit, tokenizer, retrieval config
-  createdAt      DateTime              @default(now())
-  hits           AgentRetrievalHit[]
+  status            String              @default("RUNNING")
+  durationMs        Int?
+  metrics           Json? // scores, cache hit, tokenizer, retrieval config
+  createdAt         DateTime            @default(now())
+  hits              AgentRetrievalHit[]
 
   @@index([turnId, createdAt])
 }
 
 model AgentRetrievalHit {
-  id             String                @id @default(cuid())
-  retrievalRunId String
-  retrievalRun   AgentRetrievalRun     @relation(fields: [retrievalRunId], references: [id], onDelete: Cascade)
-  chunkId        String?
-  chunk          MedicalDocumentChunk? @relation(fields: [chunkId], references: [id], onDelete: SetNull)
-  chunkStableId  String // historical stable ID; authorization checked before use
-  versionStableId String?
-  sourceObjectIds Json?
-  sourceRefs     Json? // page numbers / bboxes / source evidence references
-  contentSha256  String
-  candidateRank  Int
-  finalRank      Int?
-  denseScore     Float?
-  sparseScore    Float?
-  hybridScore    Float?
-  rerankScore    Float?
-  includedInPrompt Boolean @default(false)
-  citedInAnswer  Boolean @default(false)
-  reviewRequired Boolean @default(false)
-  authorizedAtRetrieval Boolean @default(false)
-  excludedReason String?
-  createdAt      DateTime              @default(now())
-  citations      AgentMessageCitation[]
+  id                    String                 @id @default(cuid())
+  retrievalRunId        String
+  retrievalRun          AgentRetrievalRun      @relation(fields: [retrievalRunId], references: [id], onDelete: Cascade)
+  chunkId               String?
+  chunk                 MedicalDocumentChunk?  @relation(fields: [chunkId], references: [id], onDelete: SetNull)
+  chunkStableId         String // historical stable ID; authorization checked before use
+  versionStableId       String?
+  sourceObjectIds       Json?
+  sourceRefs            Json? // page numbers / bboxes / source evidence references
+  contentSha256         String
+  candidateRank         Int
+  finalRank             Int?
+  denseScore            Float?
+  sparseScore           Float?
+  hybridScore           Float?
+  rerankScore           Float?
+  includedInPrompt      Boolean                @default(false)
+  citedInAnswer         Boolean                @default(false)
+  reviewRequired        Boolean                @default(false)
+  authorizedAtRetrieval Boolean                @default(false)
+  excludedReason        String?
+  createdAt             DateTime               @default(now())
+  citations             AgentMessageCitation[]
 
   @@unique([retrievalRunId, candidateRank])
   @@index([chunkId])
 }
 
 model AgentMessageCitation {
-  id                  String              @id @default(cuid())
-  messageId           String
-  message             AgentMessage        @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  retrievalHitId      String?
-  retrievalHit        AgentRetrievalHit?  @relation(fields: [retrievalHitId], references: [id], onDelete: SetNull)
-  label               String
-  claimSpan           Json? // answer character range or quote range
-  chunkStableId       String?
-  documentVersionId   String?
-  sourceObjectId      String?
-  pageNumber          Int?
-  sourceRefs          Json? // crop/rectangle/page, reviewed confidence
-  contentSha256       String?
-  reviewRequired      Boolean             @default(false)
-  revokedAt           DateTime?
-  createdAt           DateTime            @default(now())
+  id                String             @id @default(cuid())
+  messageId         String
+  message           AgentMessage       @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  retrievalHitId    String?
+  retrievalHit      AgentRetrievalHit? @relation(fields: [retrievalHitId], references: [id], onDelete: SetNull)
+  label             String
+  claimSpan         Json? // answer character range or quote range
+  chunkStableId     String?
+  documentVersionId String?
+  sourceObjectId    String?
+  pageNumber        Int?
+  sourceRefs        Json? // crop/rectangle/page, reviewed confidence
+  contentSha256     String?
+  reviewRequired    Boolean            @default(false)
+  revokedAt         DateTime?
+  createdAt         DateTime           @default(now())
 
   @@index([messageId])
   @@index([chunkStableId])
@@ -1364,26 +1361,26 @@ model AgentMessageCitation {
 }
 
 model AgentToolCall {
-  id             String       @id @default(cuid())
-  threadId       String
-  thread         AgentThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  turnId         String
-  turn           AgentTurn    @relation(fields: [turnId], references: [id], onDelete: Cascade)
-  toolCallId     String
-  toolName       String
-  actionType     String?
-  riskLevel      String?
-  inputJson      Json // validated, scoped arguments; never trust LLM IDs
-  inputSha256    String
-  resultJson     Json? // sanitized, authorized, bounded output only
-  resultSha256   String?
-  status         String       @default("PROPOSED")
-  approvalId     String?      @unique
-  approval       AgentApproval? @relation(fields: [approvalId], references: [id], onDelete: SetNull)
-  errorCode      String?
-  durationMs     Int?
-  startedAt      DateTime     @default(now())
-  completedAt    DateTime?
+  id           String         @id @default(cuid())
+  threadId     String
+  thread       AgentThread    @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  turnId       String
+  turn         AgentTurn      @relation(fields: [turnId], references: [id], onDelete: Cascade)
+  toolCallId   String
+  toolName     String
+  actionType   String?
+  riskLevel    String?
+  inputJson    Json // validated, scoped arguments; never trust LLM IDs
+  inputSha256  String
+  resultJson   Json? // sanitized, authorized, bounded output only
+  resultSha256 String?
+  status       String         @default("PROPOSED")
+  approvalId   String?        @unique
+  approval     AgentApproval? @relation(fields: [approvalId], references: [id], onDelete: SetNull)
+  errorCode    String?
+  durationMs   Int?
+  startedAt    DateTime       @default(now())
+  completedAt  DateTime?
 
   @@unique([threadId, toolCallId])
   @@index([turnId, startedAt])
@@ -1391,32 +1388,32 @@ model AgentToolCall {
 }
 
 model AgentModelCall {
-  id             String      @id @default(cuid())
-  threadId       String
-  thread         AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  turnId         String?
-  turn           AgentTurn?  @relation(fields: [turnId], references: [id], onDelete: SetNull)
-  purpose        String // answer, rewrite, classification, embedding, vision, rerank
-  provider       String
-  model          String
-  modelVersion   String?
-  promptVersion  String?
-  requestSha256  String?
-  responseSha256 String?
-  promptTokens   Int?
-  completionTokens Int?
-  totalTokens    Int?
-  latencyMs      Int?
+  id                String      @id @default(cuid())
+  threadId          String
+  thread            AgentThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  turnId            String?
+  turn              AgentTurn?  @relation(fields: [turnId], references: [id], onDelete: SetNull)
+  purpose           String // answer, rewrite, classification, embedding, vision, rerank
+  provider          String
+  model             String
+  modelVersion      String?
+  promptVersion     String?
+  requestSha256     String?
+  responseSha256    String?
+  promptTokens      Int?
+  completionTokens  Int?
+  totalTokens       Int?
+  latencyMs         Int?
   providerRequestId String?
-  traceId        String?
-  retryCount     Int          @default(0)
-  fallbackFrom   String?
-  privacyPolicyRef String?
-  status         String       @default("RUNNING")
-  errorCode      String?
-  usageMetadata  Json?
-  createdAt      DateTime     @default(now())
-  completedAt    DateTime?
+  traceId           String?
+  retryCount        Int         @default(0)
+  fallbackFrom      String?
+  privacyPolicyRef  String?
+  status            String      @default("RUNNING")
+  errorCode         String?
+  usageMetadata     Json?
+  createdAt         DateTime    @default(now())
+  completedAt       DateTime?
 
   @@index([threadId, createdAt])
   @@index([provider, model, createdAt])
@@ -1427,36 +1424,36 @@ model AgentModelCall {
 // -----------------------------------------------------------------------------
 
 model AgentApproval {
-  id               String               @id @default(cuid())
-  threadId         String
-  thread           AgentThread          @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  toolCallId       String
-  requestedByUserId String
-  requestedBy      User                 @relation("AgentApprovalRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
-  approvedByUserId String?
-  decidedBy        User?                @relation("AgentApprovalDecider", fields: [approvedByUserId], references: [id], onDelete: SetNull)
-  actionType       String
-  riskLevel        AgentActionRiskLevel
-  title            String
-  summary          String
-  reason           String
-  parameters       Json
-  payloadHash      String
-  idempotencyKey   String               @unique
-  status           AgentApprovalStatus  @default(PENDING)
-  executionStatus  AgentExecutionStatus @default(NOT_STARTED)
-  createdAt        DateTime             @default(now())
-  expiresAt        DateTime
-  decidedAt        DateTime?
-  decisionReason   String?
-  executedAt       DateTime?
-  completedAt      DateTime?
-  executionResult  Json? // safe non-PHI outcome code and affected IDs
+  id                      String               @id @default(cuid())
+  threadId                String
+  thread                  AgentThread          @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  toolCallId              String
+  requestedByUserId       String
+  requestedBy             User                 @relation("AgentApprovalRequester", fields: [requestedByUserId], references: [id], onDelete: Restrict)
+  approvedByUserId        String?
+  decidedBy               User?                @relation("AgentApprovalDecider", fields: [approvedByUserId], references: [id], onDelete: SetNull)
+  actionType              String
+  riskLevel               AgentActionRiskLevel
+  title                   String
+  summary                 String
+  reason                  String
+  parameters              Json
+  payloadHash             String
+  idempotencyKey          String               @unique
+  status                  AgentApprovalStatus  @default(PENDING)
+  executionStatus         AgentExecutionStatus @default(NOT_STARTED)
+  createdAt               DateTime             @default(now())
+  expiresAt               DateTime
+  decidedAt               DateTime?
+  decisionReason          String?
+  executedAt              DateTime?
+  completedAt             DateTime?
+  executionResult         Json? // safe non-PHI outcome code and affected IDs
   executionLeaseExpiresAt DateTime?
-  executionAttempts Int                 @default(0)
-  lastErrorCode     String?
-  updatedAt        DateTime             @updatedAt
-  toolInvocation   AgentToolCall?
+  executionAttempts       Int                  @default(0)
+  lastErrorCode           String?
+  updatedAt               DateTime             @updatedAt
+  toolInvocation          AgentToolCall?
 
   @@unique([threadId, toolCallId])
   @@index([requestedByUserId, status, expiresAt])
