@@ -10,9 +10,15 @@ Copy `.env.example` to `.env`, supply your existing PostgreSQL credentials and J
 
 For a **fresh disposable database only**, initialize tables with `docker compose exec backend uv run python -m scripts.init_db`. Existing production databases must already have the reviewed historical migrations, including `Appointment_active_slot_unique`; no data migration is needed for the Python switch. Take a backup and validate the deployed schema in staging before cutover.
 
-## Documents and removed AI features
+## Documents and Doctor AI Agent
 
-Patients can upload PDF/JPEG/PNG/WebP documents, list/filter, preview/download, rename and delete their own files. Doctors can read documents only when a CONFIRMED or COMPLETED appointment grants access. Human doctor–patient chat remains available. Medical chatbot routes, conversation UI, semantic search, RAG answers, observations and all Search Sphere network integrations have been removed. No new AI agent is implemented in this migration.
+Patients can upload PDF/JPEG/PNG/WebP documents, list/filter, preview/download, rename and delete their own files. Doctors can read documents only when a CONFIRMED or COMPLETED appointment grants access. Human doctor–patient chat remains available.
+
+The **Doctor AI Agent** (`backend/app/features/ai_agent/`) runs on LangGraph with PostgreSQL persistence (`AgentThread`, `AgentTurn`, `AgentMessage`, `AgentToolCall`, `AgentModelCall`, `AgentApproval`, `AgentRetrievalRun`, `AgentRetrievalHit`, `AgentMessageCitation`):
+- **60-second HITL Approvals**: All mutating doctor tools (`APPLY_LEAVE`, `UPDATE_LEAVE`, `CANCEL_LEAVE`, `UPDATE_SCHEDULE`, `CREATE_SLOT`, `UPDATE_SLOT`, `REMOVE_SLOT`, `UPDATE_DOCTOR_PROFILE`, `UPDATE_APPOINTMENT`, `SEND_PATIENT_MESSAGE`) pause via `interrupt()`, persist an `AgentApproval` with a 60s TTL, and execute atomically only after authenticated doctor confirmation at `POST /api/ai-agent/approvals/{approval_id}/decision`.
+- **Search Sphere Document Intelligence**: Quick-Clinic consumes `search-sphere-ingest` as a Python library dependency (`backend/pyproject.toml`) to extract, normalize, and chunk uploaded medical documents into Quick-Clinic's own Supabase PostgreSQL + `pgvector` tables (`MedicalDocumentVersion`, `MedicalDocumentPage`, `MedicalDocumentSection`, `MedicalDocumentObject`, `MedicalDocumentChunk`, `MedicalChunkEmbedding`). No patient data is sent to or stored in Search Sphere's application database.
+- **Clinical RAG Authorization**: `backend/app/features/ai_agent/rag/` re-verifies active doctor-patient appointment access on every retrieval and invalidates/deletes evidence immediately on document deletion.
+- **Environment Variables**: `GOOGLE_API_KEY` (primary Gemini chat & 384-dim embeddings), optional `GROQ_API_KEY` / `COHERE_API_KEY` fallbacks, and `LANGGRAPH_DATABASE_URL` (optional dedicated Postgres URL for LangGraph checkpoints).
 
 New files use private Supabase object storage in free Render production, or private `DOCUMENT_STORAGE_DIR` storage in local Docker, with 10 MB file, 100 document and 100 MB patient quotas. Files are validated by actual file content, never served as a public static directory, and reauthorized on each download. Storage paths are omitted from API responses. Use persistent storage and include it in backups. A single backend deployment can use its persistent volume; multiple backend replicas require a shared filesystem for medical files, Redis for socket fanout and distributed rate limiting, and sticky routing for Socket.IO polling.
 

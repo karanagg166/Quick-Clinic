@@ -7,14 +7,31 @@ export type AgentActionType =
   | "CANCEL_APPOINTMENT"
   | "RESCHEDULE_APPOINTMENT"
   | "ACCESS_MEDICAL_DOCUMENTS"
-  | "SUMMARIZE_VISIT_HISTORY";
+  | "SUMMARIZE_VISIT_HISTORY"
+  | "QUERY_CLINICAL_DOCS"
+  | "APPLY_LEAVE"
+  | "UPDATE_LEAVE"
+  | "CANCEL_LEAVE"
+  | "UPDATE_SCHEDULE"
+  | "CREATE_SLOT"
+  | "UPDATE_SLOT"
+  | "REMOVE_SLOT"
+  | "UPDATE_DOCTOR_PROFILE"
+  | "UPDATE_APPOINTMENT"
+  | "SEND_PATIENT_MESSAGE";
 
 export type ActionRiskLevel =
   | "LOW_AUTONOMOUS"
   | "MEDIUM_HUMAN_APPROVAL"
   | "HIGH_CLINICAL_RESTRICTED";
 
-export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type ApprovalStatus = "PENDING" | "APPROVED" | "REJECTED" | "EXPIRED";
+
+export type ApprovalExecutionStatus =
+  | "NOT_STARTED"
+  | "EXECUTING"
+  | "COMPLETED"
+  | "FAILED";
 
 export type ToolExecutionStatus =
   | "running"
@@ -41,9 +58,12 @@ export interface AgentToolActivity {
 
 export interface AgentApprovalRequest {
   approvalId: string;
+  toolCallId?: string;
   actionType: AgentActionType;
   riskLevel: ActionRiskLevel;
   status: ApprovalStatus;
+  executionStatus?: ApprovalExecutionStatus;
+  executionResult?: Record<string, unknown>;
   title: string;
   summary: string;
   reason: string;
@@ -61,6 +81,9 @@ export interface AgentCitation {
   label: string;
   href?: string;
   type: "doctor" | "appointment" | "document" | "schedule";
+  documentId?: string;
+  pageNumbers?: number[];
+  chunkId?: string;
 }
 
 export interface AgentMessage {
@@ -110,7 +133,7 @@ export interface SendAgentMessageResponse {
 export interface SubmitApprovalRequest {
   threadId: string;
   approvalId: string;
-  decision: Exclude<ApprovalStatus, "PENDING">;
+  decision: "APPROVED" | "REJECTED";
   decisionReason?: string;
   idempotencyKey: string;
 }

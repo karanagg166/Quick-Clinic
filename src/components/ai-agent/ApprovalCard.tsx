@@ -20,7 +20,7 @@ interface ApprovalCardProps {
   isProcessing?: boolean;
   onDecide: (
     approvalId: string,
-    decision: Exclude<ApprovalStatus, "PENDING">,
+    decision: "APPROVED" | "REJECTED",
     reason?: string
   ) => void | Promise<unknown>;
 }

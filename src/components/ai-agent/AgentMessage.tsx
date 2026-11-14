@@ -22,7 +22,7 @@ interface AgentMessageProps {
   processingApprovalId?: string | null;
   onDecideApproval?: (
     approvalId: string,
-    decision: Exclude<ApprovalStatus, "PENDING">,
+    decision: "APPROVED" | "REJECTED",
     reason?: string
   ) => void | Promise<unknown>;
   onRetry?: (messageId: string) => void | Promise<unknown>;
