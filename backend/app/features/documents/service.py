@@ -18,6 +18,7 @@ from .storage import (
 )
 
 from . import files
+from .cleanup import invalidate_document_evidence
 
 logger = logging.getLogger(__name__)
 
@@ -220,6 +221,7 @@ async def rename_patient_document(database, actor, document_id, payload: Documen
 async def delete_patient_document(database, actor, document_id):
     document = await get_owned_document(database, actor, document_id)
     files.check_managed_file(document["storagePath"])
+    await invalidate_document_evidence(database, document_id=document_id)
     # Delete the private object first; preserve metadata if the provider fails.
     await files.remove_file(document["storagePath"])
     await database.execute(delete(documents).where(documents.c.id == document_id))

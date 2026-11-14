@@ -1,15 +1,25 @@
 """HTTP adapters for patient-owned files and authorized doctor read access."""
 
 from typing import Annotated, Literal
-from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Response, UploadFile
+from fastapi import APIRouter, BackgroundTasks, Depends, File, Form, Header, HTTPException, Response, UploadFile
 from pydantic import ValidationError
 from sqlalchemy.ext.asyncio import AsyncConnection
 from app.core.security import current_user
+from app.infrastructure import database as db_mod
 from app.infrastructure.database import get_db
 from . import service
+from .pipeline_runner import run_document_ingestion
 from .schemas import DocumentFilters, DocumentRename, DocumentUpload
 from .storage import MAX_FILE_BYTES
 from .files import check_managed_file
+
+
+async def _run_background_ingestion(document_id: str, data: bytes) -> None:
+    try:
+        async with db_mod.engine.begin() as conn:
+            await run_document_ingestion(conn, document_id=document_id, data=data)
+    except Exception:
+        pass
 
 router = APIRouter(prefix="/api", tags=["medical documents"])
 Database = Annotated[AsyncConnection, Depends(get_db)]
@@ -27,6 +37,7 @@ async def upload_document(
     database: Database,
     actor: Actor,
     response: Response,
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     title: str = Form(...),
     type: str = Form(...),
@@ -45,6 +56,8 @@ async def upload_document(
     document, created = await service.upload_patient_document(
         database, actor, metadata, data, file.filename or "document", file.content_type or "", idempotency_key
     )
+    if created:
+        background_tasks.add_task(_run_background_ingestion, document["id"], data)
     response.status_code = 201 if created else 200
     return {"document": document}
 

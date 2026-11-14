@@ -23,6 +23,8 @@ from app.features.doctors.agent_queries import (
     get_my_balance as fetch_balance,
     get_my_earnings_summary as fetch_earnings,
 )
+from .doctor_mutations import build_doctor_mutating_tools
+from .doctor_reads import build_doctor_extended_read_tools
 
 
 class SlotDateInput(BaseModel):
@@ -58,6 +60,10 @@ def build_doctor_tools(
     db: AsyncConnection,
     actor: dict[str, Any],
     reference_date: date | None = None,
+    *,
+    thread_id: str | None = None,
+    turn_id: str | None = None,
+    include_mutations: bool = False,
 ) -> list[BaseTool]:
     """Build tools using trusted authenticated request context."""
 
@@ -209,7 +215,7 @@ def build_doctor_tools(
             end_day=resolved_end,
         )
 
-    return [
+    tools_list: list[BaseTool] = [
         get_my_consultation_slots,
         get_my_free_slots,
         get_my_profile,
@@ -218,4 +224,14 @@ def build_doctor_tools(
         get_my_statistics,
         get_my_balance,
         get_my_earnings_summary,
+        *build_doctor_extended_read_tools(
+            db,
+            actor,
+            reference_date=reference_date,
+            thread_id=thread_id,
+            turn_id=turn_id,
+        ),
     ]
+    if include_mutations:
+        tools_list.extend(build_doctor_mutating_tools())
+    return tools_list

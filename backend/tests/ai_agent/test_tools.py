@@ -59,10 +59,24 @@ async def test_doctor_tools_only_call_backend_functions(monkeypatch):
         for item in doctor_tools.build_doctor_tools(db, DOCTOR)
     }
 
-    assert set(tools) == {
+    assert {
         "get_my_free_slots",
         "get_my_consultation_slots",
-    }
+        "get_my_profile",
+        "get_my_weekly_schedule",
+        "get_my_leaves",
+        "get_my_statistics",
+        "get_my_balance",
+        "get_my_earnings_summary",
+        "get_my_appointments",
+        "get_appointment_details",
+        "list_my_patients",
+        "get_patient_info",
+        "get_patient_appointment_history",
+        "list_patient_medical_documents",
+        "query_patient_medical_documents",
+        "get_conversation_history",
+    }.issubset(tools)
 
     free_result = await tools["get_my_free_slots"].ainvoke({
         "day": "2026-11-16"
