@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, select, text
 from sqlalchemy.engine import make_url
 from sqlalchemy.ext.asyncio import create_async_engine
 
@@ -17,6 +17,7 @@ async def prepare(raw):
     engine = create_async_engine(raw)
     try:
         async with engine.begin() as db:
+            await db.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
             await db.run_sync(metadata.create_all)
             # Previous failed runs can leave synthetic metadata after their temporary files were removed.
             await db.execute(
