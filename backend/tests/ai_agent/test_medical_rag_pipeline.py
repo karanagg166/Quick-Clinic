@@ -111,9 +111,10 @@ async def test_search_sphere_ingestion_rag_citations_and_revocation(db, monkeypa
     await _seed_clinical_context(db)
     pdf_bytes = _make_lab_pdf("Complete Blood Count\nHemoglobin: 13.8 g/dL (Reference 13.0-17.0)")
 
-    # Disable external embedding calls in isolated test
+    # Disable external embedding/reranker calls in isolated test
     monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _none_coro())
-    monkeypatch.setattr("app.features.ai_agent.rag.retrieval.embed_query", lambda q: _none_coro())
+    monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_embedding_provider", lambda: None)
+    monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_reranker_provider", lambda: None)
 
     ingest_res = await run_document_ingestion(db, document_id="doc_lab_1", data=pdf_bytes)
     assert ingest_res["status"] in {"COMPLETED", "PARTIAL"}

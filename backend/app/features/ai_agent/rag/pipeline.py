@@ -1,9 +1,9 @@
-"""Medical-document RAG query classification, rewrite, and grounded answering."""
+"""Shared medical-document RAG pipeline for Doctor and Patient AI agents."""
 
-import re
 from typing import Any
 
 from langchain_core.messages import HumanMessage, SystemMessage
+from search_sphere_rag import ConversationTurn, classify_query_intent, rewrite_query
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.config import get_settings
@@ -12,38 +12,42 @@ from app.infrastructure.database import new_id, tables, utcnow
 
 from .retrieval import retrieve_authorized_chunks
 
-DEPENDENCY_PATTERN = re.compile(
-    r"\b(it|its|that|this|those|these|they|them|the report|the lab|same patient|previous|earlier)\b",
-    re.I,
-)
+
+def _to_turns(history_messages: list[dict[str, Any]] | None) -> list[ConversationTurn]:
+    if not history_messages:
+        return []
+    return [
+        ConversationTurn(
+            role=str(m.get("role", "USER")),
+            content=str(m.get("content", "")),
+            message_id=m.get("id"),
+        )
+        for m in history_messages
+        if str(m.get("content", "")).strip()
+    ]
 
 
-def rewrite_query_if_dependent(
+async def rewrite_query_if_dependent(
     question: str,
     history_messages: list[dict[str, Any]] | None = None,
-) -> tuple[str, bool]:
-    """Rewrite follow-up questions using recent user context without DB access."""
+) -> tuple[str, bool, bool]:
+    """Classify and rewrite follow-up questions using search-sphere-rag."""
 
-    if not history_messages or not DEPENDENCY_PATTERN.search(question):
-        return question.strip(), False
-
-    prior_user = [
-        str(m.get("content", "")).strip()
-        for m in reversed(history_messages)
-        if str(m.get("role", "")).upper() == "USER" and str(m.get("content", "")).strip()
-    ]
-    if not prior_user:
-        return question.strip(), False
-
-    context_snippet = prior_user[0][:240]
-    return f"{question.strip()} (Context from prior question: {context_snippet})", True
+    turns = _to_turns(history_messages)
+    res = await rewrite_query(question, turns)
+    return res.rewritten_query, res.was_rewritten, res.requires_history
 
 
-def _build_citations(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
+def _build_citations(hits: list[dict[str, Any]], *, role: str) -> list[dict[str, Any]]:
     citations: list[dict[str, Any]] = []
     for idx, hit in enumerate(hits, start=1):
         title = hit.get("documentTitle") or "Medical Document"
         page = hit.get("startPage") or 1
+        href = (
+            f"/doctor/patients/{hit.get('patientId') or ''}"
+            if role == "DOCTOR"
+            else "/patient/medical-documents"
+        )
         citations.append(
             {
                 "label": f"[{idx}] {title} (p. {page})",
@@ -55,56 +59,120 @@ def _build_citations(hits: list[dict[str, Any]]) -> list[dict[str, Any]]:
                 "pageNumber": page,
                 "contentSha256": hit.get("contentSha256"),
                 "sourceRefs": hit.get("provenance"),
-                "href": f"/doctor/patients/{hit.get('patientId') or ''}",
+                "href": href,
             }
         )
     return citations
+
+
+async def retrieve_medical_evidence(
+    db: AsyncConnection,
+    *,
+    actor: dict[str, Any],
+    question: str,
+    patient_id: str | None = None,
+    turn_id: str | None = None,
+    history_messages: list[dict[str, Any]] | None = None,
+    document_ids: list[str] | None = None,
+    document_type: str | None = None,
+    top_k: int = 5,
+) -> dict[str, Any]:
+    """Shared retrieval + query rewrite + citation packaging for both agents."""
+
+    intent = classify_query_intent(question)
+    rewritten_query, was_rewritten, requires_hist = await rewrite_query_if_dependent(
+        question, history_messages
+    )
+    retrieval = await retrieve_authorized_chunks(
+        db,
+        actor=actor,
+        patient_id=patient_id,
+        query=rewritten_query or question,
+        turn_id=turn_id,
+        top_k=top_k,
+        document_ids=document_ids,
+        document_type=document_type,
+    )
+    hits = retrieval["hits"]
+    role = str(actor.get("role") or "PATIENT")
+    citations = _build_citations(hits, role=role)
+    formatted_chunks = [
+        {
+            "chunk_id": h["chunkId"],
+            "chunk_stable_id": h.get("chunkStableId"),
+            "document_id": h["documentId"],
+            "document_title": h.get("documentTitle"),
+            "document_version_id": h.get("versionId"),
+            "content": h["content"],
+            "kind": h.get("kind", "text"),
+            "page_numbers": h.get("pageNumbers") or [h.get("startPage") or 1],
+            "source_refs": h.get("provenance") or [],
+            "score": h.get("rerankScore") or h.get("hybridScore") or 0.0,
+            "review_required": bool(h.get("reviewRequired", False)),
+        }
+        for h in hits
+    ]
+    return {
+        "query": question,
+        "rewritten_query": rewritten_query if was_rewritten else question,
+        "was_rewritten": was_rewritten,
+        "requires_history": requires_hist,
+        "intent_route": intent.route.value,
+        "patientId": retrieval["patientId"],
+        "retrieval_run_id": retrieval["retrievalRunId"],
+        "retrievalRunId": retrieval["retrievalRunId"],
+        "hits": hits,
+        "chunks": formatted_chunks,
+        "citations": citations,
+    }
 
 
 async def answer_medical_question(
     db: AsyncConnection,
     *,
     actor: dict[str, Any],
-    patient_id: str,
+    patient_id: str | None,
     question: str,
     turn_id: str | None = None,
     history_messages: list[dict[str, Any]] | None = None,
+    document_ids: list[str] | None = None,
+    document_type: str | None = None,
+    top_k: int = 5,
 ) -> dict[str, Any]:
-    """Answer a doctor's question grounded strictly in authorized patient documents."""
+    """Answer a doctor or patient question grounded strictly in authorized documents."""
 
-    rewritten_query, was_rewritten = rewrite_query_if_dependent(question, history_messages)
-    retrieval = await retrieve_authorized_chunks(
+    evidence = await retrieve_medical_evidence(
         db,
         actor=actor,
+        question=question,
         patient_id=patient_id,
-        query=rewritten_query,
         turn_id=turn_id,
-        top_k=5,
+        history_messages=history_messages,
+        document_ids=document_ids,
+        document_type=document_type,
+        top_k=top_k,
     )
-    hits = retrieval["hits"]
-    for h in hits:
-        h["patientId"] = patient_id
+    hits = evidence["hits"]
+    citations = evidence["citations"]
 
     if not hits:
         return {
             "type": "MEDICAL_RAG_ANSWER",
-            "patientId": patient_id,
-            "rewrittenQuery": rewritten_query if was_rewritten else None,
+            "patientId": evidence["patientId"],
+            "rewrittenQuery": evidence["rewritten_query"] if evidence["was_rewritten"] else None,
             "answer": (
-                "No matching extracted evidence was found in this patient's uploaded "
-                "medical documents. Ensure the document has finished processing."
+                "No matching extracted evidence was found in the authorized medical "
+                "documents. Ensure the document has finished processing."
             ),
             "citations": [],
-            "retrievalRunId": retrieval["retrievalRunId"],
+            "chunks": [],
+            "retrievalRunId": evidence["retrievalRunId"],
         }
 
-    citations = _build_citations(hits)
-    evidence_blocks = []
-    for idx, hit in enumerate(hits, start=1):
-        evidence_blocks.append(
-            f"[{idx}] {hit['documentTitle']} (Page {hit['startPage']}, Kind: {hit['kind']}):\n"
-            f"{hit['content']}"
-        )
+    evidence_blocks = [
+        f"[{idx}] {hit['documentTitle']} (Page {hit['startPage']}, Kind: {hit['kind']}):\n{hit['content']}"
+        for idx, hit in enumerate(hits, start=1)
+    ]
 
     settings = get_settings()
     answer_text = ""
@@ -118,8 +186,9 @@ async def answer_medical_question(
         )
         try:
             model = get_model(provider)
+            role_label = "doctor's" if actor.get("role") == "DOCTOR" else "patient's"
             prompt = (
-                "Answer the doctor's question using ONLY the numbered medical document "
+                f"Answer the {role_label} question using ONLY the numbered medical document "
                 "excerpts below. Cite sources inline as [1], [2], etc. Never invent values "
                 "or present uncertain chart estimates as verified facts.\n\n"
                 + "\n\n".join(evidence_blocks)
@@ -138,11 +207,12 @@ async def answer_medical_question(
 
     return {
         "type": "MEDICAL_RAG_ANSWER",
-        "patientId": patient_id,
-        "rewrittenQuery": rewritten_query if was_rewritten else None,
+        "patientId": evidence["patientId"],
+        "rewrittenQuery": evidence["rewritten_query"] if evidence["was_rewritten"] else None,
         "answer": answer_text,
         "citations": citations,
-        "retrievalRunId": retrieval["retrievalRunId"],
+        "chunks": evidence["chunks"],
+        "retrievalRunId": evidence["retrievalRunId"],
     }
 
 

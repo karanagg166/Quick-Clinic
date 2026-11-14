@@ -52,7 +52,7 @@ export function AgentEmptyState({
         <p className="text-sm text-muted-foreground max-w-lg mx-auto">
           {role === "DOCTOR"
             ? "Ask about your open schedule slots, upcoming appointments, or authorized patient records. Mutating actions always pause for your sign-off."
-            : "Ask about doctor availability, stage a 10-minute appointment hold, or inspect your medical document metadata."}
+            : "Ask about your uploaded medical documents, search doctors & open slots, or manage appointments. Mutating actions always pause for your approval."}
         </p>
       </div>
 

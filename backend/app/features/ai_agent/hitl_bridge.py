@@ -16,6 +16,8 @@ from app.features.ai_agent.persistence.telemetry import record_tool_call
 from app.features.ai_agent.security.approvals import ApprovalRequest
 from app.features.ai_agent.tools.doctor_executor import execute_approved_doctor_action
 from app.features.ai_agent.tools.doctor_mutations import MUTATING_TOOL_ACTION_MAP
+from app.features.ai_agent.tools.patient_executor import execute_approved_patient_action
+from app.features.ai_agent.tools.patient_mutations import PATIENT_MUTATING_TOOL_ACTION_MAP
 
 
 def _aware_utc(dt):
@@ -37,11 +39,26 @@ def _describe_action(action_type: str, args: dict[str, Any]) -> tuple[str, str, 
         "UPDATE_APPOINTMENT": "Update Appointment Status",
         "CANCEL_APPOINTMENT": "Cancel Appointment",
         "SEND_PATIENT_MESSAGE": "Send Patient Message",
+        "UPDATE_PATIENT_ACCOUNT": "Update Profile",
+        "UPDATE_MEDICAL_PROFILE": "Update Medical Profile",
+        "CANCEL_PATIENT_APPOINTMENT": "Cancel Appointment",
+        "PROPOSE_BOOKING": "Hold Slot for Booking",
+        "RENAME_DOCUMENT": "Rename Medical Document",
+        "DELETE_DOCUMENT": "Delete Medical Document",
+        "SEND_DOCTOR_MESSAGE": "Send Message to Doctor",
+        "MARK_NOTIFICATION_READ": "Mark Notification Read",
+        "SUBMIT_DOCTOR_FEEDBACK": "Submit Doctor Feedback",
     }
     title = title_map.get(action_type, action_type.replace("_", " ").title())
     summary = f"Execute {title} with parameters: {json.dumps(args, default=str)[:350]}"
-    reason = str(args.get("reason") or f"Doctor requested {title.lower()}")[:300]
+    reason = str(args.get("reason") or f"User requested {title.lower()}")[:300]
     return title, summary, reason
+
+
+def _role_action_map(actor: dict[str, Any]) -> dict[str, str]:
+    if actor.get("role") == "PATIENT":
+        return PATIENT_MUTATING_TOOL_ACTION_MAP
+    return MUTATING_TOOL_ACTION_MAP
 
 
 def build_hitl_callbacks(
@@ -53,11 +70,13 @@ def build_hitl_callbacks(
 ):
     """Build request-scoped factory, verifier, and executor bound to db & actor."""
 
+    action_map = _role_action_map(actor)
+
     async def approval_request_factory(call: dict[str, Any]) -> ApprovalRequest:
         tool_name = str(call.get("name") or "")
         tool_call_id = str(call.get("id") or "")
         args = dict(call.get("args") or {})
-        action_type = MUTATING_TOOL_ACTION_MAP.get(tool_name)
+        action_type = action_map.get(tool_name)
         if action_type is None:
             raise PermissionError(f"Unsupported mutating tool: {tool_name}")
 
@@ -100,7 +119,7 @@ def build_hitl_callbacks(
         )
 
     async def approval_verifier(request: ApprovalRequest) -> bool:
-        action_type = MUTATING_TOOL_ACTION_MAP.get(request.action, "")
+        action_type = action_map.get(request.action, "")
         tool_call_id = ""
         # Look up exact tool_call_id from the persisted approval
         from app.features.ai_agent.persistence.approvals import get_approval
@@ -126,7 +145,7 @@ def build_hitl_callbacks(
     async def approved_tool_executor(call: dict[str, Any]) -> dict[str, Any]:
         tool_name = str(call.get("name") or "")
         tool_call_id = str(call.get("id") or "")
-        action_type = MUTATING_TOOL_ACTION_MAP[tool_name]
+        action_type = action_map[tool_name]
         from app.features.ai_agent.persistence.approvals import list_thread_approvals
 
         approvals = await list_thread_approvals(db, actor=actor, thread_id=thread_id)
@@ -145,7 +164,12 @@ def build_hitl_callbacks(
             idempotency_key=match["idempotencyKey"],
         )
         try:
-            code, payload = await execute_approved_doctor_action(
+            executor_fn = (
+                execute_approved_patient_action
+                if actor.get("role") == "PATIENT"
+                else execute_approved_doctor_action
+            )
+            code, payload = await executor_fn(
                 db,
                 actor=actor,
                 action_type=action_type,

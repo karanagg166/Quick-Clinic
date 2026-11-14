@@ -1,12 +1,11 @@
 """Application service for the Quick-Clinic AI Agent."""
 
-import json
 import time
 from datetime import datetime
 from typing import Any
 
 from fastapi import HTTPException
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.clock import now_clinic, to_clinic_time
@@ -39,23 +38,14 @@ from app.features.ai_agent.prompts import (
 )
 from app.features.ai_agent.rag.pipeline import persist_message_citations
 from app.features.ai_agent.security.guardrails import validate_user_message
-from app.features.ai_agent.tools.doctor import build_doctor_tools
+from app.features.ai_agent.service_helpers import (
+    build_conversation_summary,
+    build_role_tools,
+    extract_citations_from_messages,
+)
 
 MAX_CONTEXT_MESSAGES = 40
 _format_approval_payload = format_approval_payload
-
-
-def _extract_citations_from_messages(messages: list[Any]) -> list[dict[str, Any]]:
-    citations: list[dict[str, Any]] = []
-    for m in messages:
-        if isinstance(m, ToolMessage) and getattr(m, "name", "") == "query_patient_medical_documents":
-            try:
-                payload = json.loads(m.content) if isinstance(m.content, str) else m.content
-                if isinstance(payload, dict) and isinstance(payload.get("citations"), list):
-                    citations.extend(payload["citations"])
-            except Exception:
-                pass
-    return citations
 
 
 class AIAgentService:
@@ -88,20 +78,23 @@ class AIAgentService:
         message = validate_user_message(message)
         current_ist = to_clinic_time(now_ist) if now_ist is not None else now_clinic()
 
-        if role == "DOCTOR":
-            if db is None:
-                raise RuntimeError("Database connection required for Doctor Agent")
-            tools = build_doctor_tools(db=db, actor=actor, reference_date=current_ist.date())
-            system_prompt = build_system_prompt(DOCTOR_SYSTEM_PROMPT, current_ist)
-        else:
-            tools = []
-            system_prompt = build_system_prompt(PATIENT_SYSTEM_PROMPT, current_ist)
+        if role == "DOCTOR" and db is None:
+            raise RuntimeError("Database connection required for Doctor Agent")
+        tools = (
+            build_role_tools(role=role, db=db, actor=actor, reference_date=current_ist.date())
+            if db is not None
+            else []
+        )
+        system_prompt = build_system_prompt(
+            DOCTOR_SYSTEM_PROMPT if role == "DOCTOR" else PATIENT_SYSTEM_PROMPT,
+            current_ist,
+        )
 
-        graph = build_workflow(model=self.model, tools=tools)
+        graph = build_workflow(model=self.model, tools=tools, role=role)
         result = await graph.ainvoke(
             {
                 "messages": [SystemMessage(content=system_prompt), HumanMessage(content=message)],
-                "next_agent": "doctor" if role == "DOCTOR" else "finish",
+                "next_agent": "doctor" if role == "DOCTOR" else "patient",
             },
             config={"recursion_limit": 16},
         )
@@ -159,18 +152,15 @@ class AIAgentService:
         started = time.monotonic()
         async with optional_checkpointer() as cp_from_env:
             active_cp = checkpointer or cp_from_env
-            enable_hitl = role == "DOCTOR" and active_cp is not None
-            tools = (
-                build_doctor_tools(
-                    db=db,
-                    actor=actor,
-                    reference_date=current_ist.date(),
-                    thread_id=tid,
-                    turn_id=turn["id"],
-                    include_mutations=enable_hitl,
-                )
-                if role == "DOCTOR"
-                else []
+            enable_hitl = active_cp is not None
+            tools = build_role_tools(
+                role=role,
+                db=db,
+                actor=actor,
+                reference_date=current_ist.date(),
+                thread_id=tid,
+                turn_id=turn["id"],
+                include_mutations=enable_hitl,
             )
             if enable_hitl:
                 factory, verifier, executor = build_hitl_callbacks(
@@ -179,19 +169,20 @@ class AIAgentService:
                 graph = build_workflow(
                     model=self.model,
                     tools=tools,
+                    role=role,
                     checkpointer=active_cp,
                     approval_request_factory=factory,
                     approval_verifier=verifier,
                     approved_tool_executor=executor,
                 )
             else:
-                graph = build_workflow(model=self.model, tools=tools, checkpointer=active_cp)
+                graph = build_workflow(model=self.model, tools=tools, role=role, checkpointer=active_cp)
 
             config: dict[str, Any] = {"recursion_limit": 16}
             if active_cp is not None:
                 config["configurable"] = {"thread_id": tid}
             result = await graph.ainvoke(
-                {"messages": lc_messages, "next_agent": "doctor" if role == "DOCTOR" else "finish"},
+                {"messages": lc_messages, "next_agent": "doctor" if role == "DOCTOR" else "patient"},
                 config=config,
             )
 
@@ -235,7 +226,7 @@ class AIAgentService:
 
         response = result["messages"][-1]
         answer = extract_ai_text(response) if isinstance(response, AIMessage) else str(response)
-        citations = _extract_citations_from_messages(result.get("messages", []))
+        citations = extract_citations_from_messages(result.get("messages", []))
         msg_row = await append_message(
             db,
             thread_id=tid,
@@ -252,7 +243,7 @@ class AIAgentService:
             await create_memory_snapshot(
                 db,
                 thread_id=tid,
-                summary=f"Recent clinical topics discussed ({len(covered)} messages); latest: {message[:180]}",
+                summary=build_conversation_summary(history, message, answer, citations),
                 covered_message_ids=covered,
                 source_chunk_ids=[c["chunkStableId"] for c in citations if c.get("chunkStableId")],
                 permission_revision=thread["permissionRevision"],

@@ -7,6 +7,7 @@ from langchain_core.messages import AIMessage
 from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.core.clock import now_clinic
 from app.features.ai_agent.graph.workflow import build_workflow
 from app.features.ai_agent.hitl_bridge import build_hitl_callbacks
 from app.features.ai_agent.persistence.approvals import (
@@ -20,6 +21,8 @@ from app.features.ai_agent.persistence.config import LangGraphPersistenceConfig
 from app.features.ai_agent.persistence.threads import append_message, append_turn, complete_turn
 from app.features.ai_agent.tools.doctor import build_doctor_tools
 from app.features.ai_agent.tools.doctor_executor import execute_approved_doctor_action
+from app.features.ai_agent.tools.patient import build_patient_tools
+from app.features.ai_agent.tools.patient_executor import execute_approved_patient_action
 
 
 @asynccontextmanager
@@ -106,13 +109,21 @@ async def decide_and_resume_approval(
             },
         }
 
+    role = str(actor.get("role") or "DOCTOR")
     resumed_text = ""
     async with optional_checkpointer() as cp_from_env:
         active_cp = checkpointer or cp_from_env
         if active_cp is not None:
             turn = await append_turn(db, thread_id=thread_id, original_query=f"RESUME:{approval_id}")
-            tools = build_doctor_tools(
-                db=db, actor=actor, thread_id=thread_id, turn_id=turn["id"], include_mutations=True
+            ref_date = now_clinic().date()
+            tools = (
+                build_patient_tools(
+                    db=db, actor=actor, reference_date=ref_date, thread_id=thread_id, turn_id=turn["id"], include_mutations=True
+                )
+                if role == "PATIENT"
+                else build_doctor_tools(
+                    db=db, actor=actor, reference_date=ref_date, thread_id=thread_id, turn_id=turn["id"], include_mutations=True
+                )
             )
             factory, verifier, executor = build_hitl_callbacks(
                 db, actor=actor, thread_id=thread_id, turn_id=turn["id"]
@@ -120,6 +131,7 @@ async def decide_and_resume_approval(
             graph = build_workflow(
                 model=model,
                 tools=tools,
+                role=role,
                 checkpointer=active_cp,
                 approval_request_factory=factory,
                 approval_verifier=verifier,
@@ -143,7 +155,12 @@ async def decide_and_resume_approval(
                 payload_hash=updated["payloadHash"],
                 idempotency_key=updated["idempotencyKey"],
             )
-            code, _ = await execute_approved_doctor_action(
+            executor_fn = (
+                execute_approved_patient_action
+                if role == "PATIENT"
+                else execute_approved_doctor_action
+            )
+            code, _ = await executor_fn(
                 db,
                 actor=actor,
                 action_type=claimed["actionType"],

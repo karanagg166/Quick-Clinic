@@ -18,8 +18,8 @@ from app.features.ai_agent.security.approvals import (
 from .nodes import create_agent_node, create_tool_node
 from .routing import (
     MAX_TOOL_CALLS_PER_TURN,
-    READ_ONLY_DOCTOR_TOOLS,
     blocked_tool_node,
+    get_role_tool_policy,
     tool_calls_used,
     tool_limit_node,
 )
@@ -33,20 +33,26 @@ def build_workflow(
     model: BaseChatModel,
     tools: Sequence[BaseTool] | None = None,
     *,
+    role: str = "DOCTOR",
     checkpointer: BaseCheckpointSaver | None = None,
     approval_request_factory: ApprovalRequestFactory | None = None,
     approval_verifier: ApprovalVerifier | None = None,
     approved_tool_executor: ApprovedToolExecutor | None = None,
 ):
-    """Build an authenticated, request-scoped agent graph."""
+    """Build an authenticated, role-scoped agent graph."""
 
     registered_tools = list(tools or [])
     names = [item.name for item in registered_tools]
     if len(names) != len(set(names)):
         raise ValueError("Duplicate agent tool names")
 
+    read_only_tools, policy_approval_tools = get_role_tool_policy(role)
     registered_names = set(names)
-    approval_required = registered_names - READ_ONLY_DOCTOR_TOOLS
+    unknown_tools = registered_names - read_only_tools - policy_approval_tools
+    if unknown_tools:
+        raise PermissionError(f"Unclassified tools cannot be registered for {role}: {sorted(unknown_tools)}")
+
+    approval_required = registered_names & policy_approval_tools
 
     if approval_required:
         if checkpointer is None or approval_request_factory is None or approval_verifier is None:

@@ -30,6 +30,23 @@ DOCTOR_ACTION_PERMISSIONS = {
     "SEND_PATIENT_MESSAGE": "send_rest_message",
 }
 
+PATIENT_ACTION_PERMISSIONS = {
+    "UPDATE_PATIENT_ACCOUNT": "update_profile",
+    "UPDATE_MEDICAL_PROFILE": "update_patient_profile",
+    "CANCEL_PATIENT_APPOINTMENT": "cancel_patient_appointment",
+    "PROPOSE_BOOKING": "create_slot_hold",
+    "RENAME_DOCUMENT": "rename_patient_document",
+    "DELETE_DOCUMENT": "delete_patient_document",
+    "SEND_DOCTOR_MESSAGE": "send_rest_message",
+    "MARK_NOTIFICATION_READ": "mark_notification_read",
+    "SUBMIT_DOCTOR_FEEDBACK": "submit_rating",
+}
+
+ROLE_ACTION_PERMISSIONS: dict[str, dict[str, str]] = {
+    "DOCTOR": DOCTOR_ACTION_PERMISSIONS,
+    "PATIENT": PATIENT_ACTION_PERMISSIONS,
+}
+
 
 def approval_table():
     """Resolve the AgentApproval table when approval persistence is used."""
@@ -51,19 +68,20 @@ def require_doctor_actor(
     actor: dict[str, Any],
     action: str | None = None,
 ) -> str:
-    """Validate authenticated doctor identity and permission."""
+    """Validate authenticated doctor or patient identity and approval permission."""
 
-    if not isinstance(actor, dict) or actor.get("role") != "DOCTOR":
-        raise HTTPException(403, "Doctor authorization required")
+    if not isinstance(actor, dict) or actor.get("role") not in ROLE_ACTION_PERMISSIONS:
+        raise HTTPException(403, "Authenticated doctor or patient authorization required")
 
+    role = str(actor["role"])
     user_id = actor.get("id")
     if not isinstance(user_id, str) or not user_id or actor.get("isActive") is not True:
-        raise HTTPException(403, "Active doctor required")
+        raise HTTPException(403, "Active account required")
 
     if action is not None:
-        permission = DOCTOR_ACTION_PERMISSIONS.get(action)
+        permission = ROLE_ACTION_PERMISSIONS[role].get(action)
         if permission is None:
-            raise HTTPException(403, "Unsupported doctor approval action")
+            raise HTTPException(403, f"Unsupported {role.lower()} approval action")
         require_permission(actor, permission)
 
     return user_id

@@ -101,11 +101,7 @@ async def list_threads(
     threads = []
     for row in rows:
         msgs = await list_thread_messages(db, thread_id=row["id"], limit=50)
-        approvals = (
-            await list_thread_approvals(db, actor=actor, thread_id=row["id"])
-            if role == "DOCTOR"
-            else []
-        )
+        approvals = await list_thread_approvals(db, actor=actor, thread_id=row["id"])
         approval_by_id = {a["id"]: _format_approval_payload(a) for a in approvals}
         formatted_msgs = []
         for m in msgs:

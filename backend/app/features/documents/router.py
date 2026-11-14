@@ -8,7 +8,7 @@ from app.core.security import current_user
 from app.infrastructure import database as db_mod
 from app.infrastructure.database import get_db
 from . import service
-from .pipeline_runner import run_document_ingestion
+from .ingestion_jobs import claim_next_ingestion_job, process_claimed_job
 from .schemas import DocumentFilters, DocumentRename, DocumentUpload
 from .storage import MAX_FILE_BYTES
 from .files import check_managed_file
@@ -17,7 +17,9 @@ from .files import check_managed_file
 async def _run_background_ingestion(document_id: str, data: bytes) -> None:
     try:
         async with db_mod.engine.begin() as conn:
-            await run_document_ingestion(conn, document_id=document_id, data=data)
+            job = await claim_next_ingestion_job(conn, document_id=document_id)
+            if job is not None:
+                await process_claimed_job(conn, job, data=data)
     except Exception:
         pass
 

@@ -18,6 +18,14 @@ export const PATIENT_STARTER_PROMPTS: AgentStarterPrompt[] = [
     description: "Prepares a booking request for confirmation before reserving.",
   },
   {
+    id: "patient-medical-rag",
+    title: "Search my medical records",
+    prompt: "Search my uploaded medical documents for recent lab values and prescriptions.",
+    actionType: "ACCESS_MEDICAL_DOCUMENTS",
+    riskLevel: "LOW_AUTONOMOUS",
+    description: "Retrieves evidence-grounded answers with page-level document citations.",
+  },
+  {
     id: "patient-history",
     title: "Summarize my visits",
     prompt: "Summarize my upcoming and recent Quick-Clinic appointments.",

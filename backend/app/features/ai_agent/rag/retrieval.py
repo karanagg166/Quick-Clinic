@@ -1,117 +1,124 @@
-"""Authorized hybrid retrieval and pgvector ranking for medical documents."""
+"""Shared authorized hybrid retrieval for Doctor and Patient AI agents."""
 
-import re
-import time
 from typing import Any
 
+from fastapi import HTTPException
+from search_sphere_rag import CohereRerankProvider, HybridRagEngine
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.core.config import get_settings
 from app.features.doctors.agent_patient_queries import _authorize_patient, _resolve_doctor
-from app.features.documents.embeddings import embed_query
+from app.features.documents.embeddings import get_embedding_provider
 from app.infrastructure.database import new_id, tables, utcnow
 
-
-def _tokenize(text: str) -> set[str]:
-    return {t for t in re.findall(r"[a-z0-9]+", text.lower()) if len(t) > 1}
+from .adapters import QuickClinicLexicalRetriever, QuickClinicVectorRetriever
 
 
-def _lexical_score(query_tokens: set[str], content: str) -> float:
-    if not query_tokens:
-        return 0.0
-    doc_tokens = _tokenize(content)
-    if not doc_tokens:
-        return 0.0
-    overlap = len(query_tokens & doc_tokens)
-    return overlap / max(1, len(query_tokens))
+async def resolve_authorized_patient_scope(
+    db: AsyncConnection,
+    *,
+    actor: dict[str, Any],
+    patient_id: str | None = None,
+) -> str:
+    """Resolve and authorize the target patient_id from the authenticated actor."""
+
+    role = actor.get("role")
+    if role == "DOCTOR":
+        if not patient_id:
+            raise HTTPException(400, "patient_id is required for doctor retrieval")
+        doctor = await _resolve_doctor(db, actor)
+        await _authorize_patient(db, actor, doctor["id"], patient_id)
+        return patient_id
+
+    if role == "PATIENT":
+        patients = tables["Patient"]
+        row = (
+            await db.execute(select(patients.c.id).where(patients.c.userId == actor["id"]))
+        ).first()
+        if row is None:
+            raise HTTPException(404, "Patient profile not found")
+        resolved = str(row[0])
+        if patient_id is not None and patient_id != resolved:
+            raise HTTPException(403, "Patients may only access their own medical documents")
+        return resolved
+
+    raise HTTPException(403, "Medical document retrieval is not permitted for this role")
 
 
-def _cosine_similarity(a: list[float], b: list[float]) -> float:
-    if not a or not b or len(a) != len(b):
-        return 0.0
-    dot = sum(x * y for x, y in zip(a, b))
-    na = sum(x * x for x in a) ** 0.5
-    nb = sum(y * y for y in b) ** 0.5
-    if na == 0.0 or nb == 0.0:
-        return 0.0
-    return max(0.0, dot / (na * nb))
+def get_reranker_provider():
+    settings = get_settings()
+    return (
+        CohereRerankProvider(api_key=settings.cohere_api_key)
+        if settings.cohere_api_key
+        else None
+    )
 
 
 async def retrieve_authorized_chunks(
     db: AsyncConnection,
     *,
     actor: dict[str, Any],
-    patient_id: str,
+    patient_id: str | None = None,
     query: str,
     turn_id: str | None = None,
     top_k: int = 6,
+    document_ids: list[str] | None = None,
+    document_type: str | None = None,
 ) -> dict[str, Any]:
-    """Retrieve and rerank authorized chunks for a patient's medical documents."""
+    """Retrieve, fuse, and optionally rerank authorized chunks via search-sphere-rag."""
 
-    started = time.monotonic()
-    doctor = await _resolve_doctor(db, actor)
-    await _authorize_patient(db, actor, doctor["id"], patient_id)
-
-    chunks_t = tables["MedicalDocumentChunk"]
-    versions_t = tables["MedicalDocumentVersion"]
-    docs_t = tables["MedicalDocument"]
-    emb_t = tables["MedicalChunkEmbedding"]
-
-    stmt = (
-        select(
-            chunks_t.c.id.label("chunkId"),
-            chunks_t.c.chunkStableId,
-            chunks_t.c.versionId,
-            chunks_t.c.kind,
-            chunks_t.c.content,
-            chunks_t.c.contentSha256,
-            chunks_t.c.startPage,
-            chunks_t.c.endPage,
-            chunks_t.c.sourceObjectIds,
-            chunks_t.c.provenance,
-            docs_t.c.id.label("documentId"),
-            docs_t.c.title.label("documentTitle"),
-            docs_t.c.type.label("documentType"),
-            docs_t.c.reportDate,
-            emb_t.c.embedding,
-        )
-        .select_from(
-            chunks_t.join(versions_t, versions_t.c.id == chunks_t.c.versionId)
-            .join(docs_t, docs_t.c.id == versions_t.c.documentId)
-            .outerjoin(emb_t, (emb_t.c.chunkId == chunks_t.c.id) & (emb_t.c.status == "COMPLETED"))
-        )
-        .where(
-            docs_t.c.patientId == patient_id,
-            versions_t.c.isPublished.is_(True),
-            versions_t.c.revokedAt.is_(None),
-        )
-        .limit(200)
+    resolved_patient_id = await resolve_authorized_patient_scope(
+        db, actor=actor, patient_id=patient_id
     )
-    rows = (await db.execute(stmt)).mappings().all()
 
-    q_tokens = _tokenize(query)
-    q_emb = await embed_query(query) if rows else None
-    q_vec = q_emb[2] if q_emb else None
-    emb_model = q_emb[1] if q_emb else None
+    embedding_provider = get_embedding_provider()
+    reranker = get_reranker_provider()
 
-    scored: list[dict[str, Any]] = []
-    for r in rows:
-        sparse = _lexical_score(q_tokens, r["content"])
-        dense = _cosine_similarity(q_vec, r["embedding"]) if (q_vec and r["embedding"]) else 0.0
-        hybrid = (0.65 * dense + 0.35 * sparse) if q_vec else sparse
-        if hybrid <= 0.0 and len(rows) > top_k:
-            continue
-        item = dict(r)
-        item.pop("embedding", None)
-        item["sparseScore"] = round(sparse, 4)
-        item["denseScore"] = round(dense, 4) if q_vec else None
-        item["hybridScore"] = round(hybrid, 4)
-        scored.append(item)
+    engine = HybridRagEngine(
+        vector_retriever=QuickClinicVectorRetriever(db),
+        lexical_retriever=QuickClinicLexicalRetriever(db),
+        embedding_provider=embedding_provider,
+        reranker=reranker,
+        default_top_k=top_k,
+    )
 
-    scored.sort(key=lambda x: (x["hybridScore"], x["startPage"] * -1), reverse=True)
-    selected = scored[:top_k]
+    scope: dict[str, Any] = {"patient_id": resolved_patient_id}
+    if document_ids:
+        scope["document_ids"] = document_ids
+    if document_type:
+        scope["document_type"] = document_type
 
-    duration_ms = int((time.monotonic() - started) * 1000)
+    response = await engine.retrieve(query, scope=scope, top_k=top_k)
+
+    selected: list[dict[str, Any]] = []
+    for item in response.results:
+        cand = item.candidate
+        selected.append(
+            {
+                "chunkId": cand.chunk_id,
+                "chunkStableId": cand.chunk_stable_id,
+                "versionId": cand.document_version_id,
+                "kind": cand.kind,
+                "content": cand.content,
+                "contentSha256": cand.content_sha256,
+                "startPage": cand.start_page,
+                "endPage": cand.end_page,
+                "pageNumbers": cand.page_numbers or [cand.start_page],
+                "sourceObjectIds": cand.source_object_ids,
+                "provenance": cand.source_refs,
+                "documentId": cand.document_id,
+                "documentTitle": cand.document_title,
+                "documentType": cand.document_type,
+                "patientId": resolved_patient_id,
+                "reviewRequired": cand.review_required,
+                "denseScore": item.dense_score,
+                "sparseScore": item.sparse_score,
+                "hybridScore": item.hybrid_score,
+                "rerankScore": item.rerank_score,
+            }
+        )
+
     run_id = None
     if turn_id is not None:
         runs_t = tables["AgentRetrievalRun"]
@@ -123,14 +130,16 @@ async def retrieve_authorized_chunks(
                 id=run_id,
                 turnId=turn_id,
                 query=query,
-                strategy="hybrid" if q_vec else "sparse",
-                queryFilters={"patientId": patient_id},
-                embeddingModel=emb_model,
+                strategy=response.strategy,
+                queryFilters=scope,
+                embeddingModel=(
+                    response.embedding_space.model if response.embedding_space else None
+                ),
                 topK=top_k,
-                candidateCount=len(rows),
+                candidateCount=response.candidate_count,
                 selectedCount=len(selected),
                 status="COMPLETED",
-                durationMs=duration_ms,
+                durationMs=response.duration_ms,
                 createdAt=now,
             )
         )
@@ -152,7 +161,7 @@ async def retrieve_authorized_chunks(
                     denseScore=item["denseScore"],
                     sparseScore=item["sparseScore"],
                     hybridScore=item["hybridScore"],
-                    rerankScore=item["hybridScore"],
+                    rerankScore=item["rerankScore"],
                     includedInPrompt=True,
                     citedInAnswer=True,
                     authorizedAtRetrieval=True,
@@ -161,8 +170,8 @@ async def retrieve_authorized_chunks(
             )
 
     return {
-        "patientId": patient_id,
+        "patientId": resolved_patient_id,
         "retrievalRunId": run_id,
-        "candidateCount": len(rows),
+        "candidateCount": response.candidate_count,
         "hits": selected,
     }
