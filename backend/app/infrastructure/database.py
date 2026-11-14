@@ -23,10 +23,53 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
+from sqlalchemy.ext.compiler import compiles
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError
+from sqlalchemy.types import UserDefinedType
 from fastapi import HTTPException
 from app.core import clock as clinic_clock
 from app.core.config import get_settings
+
+
+class VectorType(UserDefinedType):
+    """pgvector column on PostgreSQL; JSON float list on SQLite tests."""
+
+    cache_ok = True
+
+    def __init__(self, dim: int = 384):
+        self.dim = dim
+
+    def get_col_spec(self, **kw) -> str:
+        return f"vector({self.dim})"
+
+    def bind_processor(self, dialect):
+        if dialect.name == "sqlite":
+            return lambda value: json.dumps(value) if value is not None else None
+
+        def process(value):
+            if value is None or isinstance(value, str):
+                return value
+            return "[" + ",".join(str(float(x)) for x in value) + "]"
+
+        return process
+
+    def result_processor(self, dialect, coltype):
+        if dialect.name == "sqlite":
+            return lambda value: json.loads(value) if isinstance(value, str) else value
+
+        def process(value):
+            if value is None or isinstance(value, list):
+                return value
+            if isinstance(value, str):
+                return [float(x) for x in value.strip("[]").split(",") if x.strip()]
+            return list(value)
+
+        return process
+
+
+@compiles(VectorType, "sqlite")
+def _compile_vector_sqlite(element: VectorType, compiler, **kw) -> str:
+    return "TEXT"
 
 
 def new_id() -> str:
@@ -54,6 +97,8 @@ for name, model in schema["models"].items():
             "Json": JSON,
         }
         datatype = types.get(kind)
+        if datatype is None and kind.startswith("Vector(") and kind.endswith(")"):
+            datatype = VectorType(int(kind[len("Vector(") : -1]))
         if datatype is None:
             datatype = Enum(*schema["enums"][kind], name=kind, validate_strings=True)
         options = dict(

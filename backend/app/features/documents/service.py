@@ -9,15 +9,10 @@ from starlette.concurrency import run_in_threadpool
 from sqlalchemy import delete, func, insert, or_, select, update
 from app.infrastructure.database import new_id, tables, utcnow
 from .schemas import DocumentFilters, DocumentRename, DocumentType, DocumentUpload
-from .storage import (
-    MAX_ACCOUNT_BYTES,
-    MAX_ACCOUNT_DOCUMENTS,
-    document_metadata,
-    safe_filename,
-    validate_file,
-)
-
+from .storage import MAX_ACCOUNT_BYTES, MAX_ACCOUNT_DOCUMENTS, document_metadata, safe_filename, validate_file
 from . import files
+from .cleanup import invalidate_document_evidence
+from .ingestion_jobs import enqueue_ingestion_job
 
 logger = logging.getLogger(__name__)
 
@@ -172,6 +167,7 @@ async def upload_patient_document(
             .mappings()
             .one()
         )
+        await enqueue_ingestion_job(database, document_id=identifier)
         await record_access(database, actor, identifier, "MEDICAL_DOCUMENT_UPLOAD")
         await database.commit()
     except BaseException:
@@ -220,6 +216,7 @@ async def rename_patient_document(database, actor, document_id, payload: Documen
 async def delete_patient_document(database, actor, document_id):
     document = await get_owned_document(database, actor, document_id)
     files.check_managed_file(document["storagePath"])
+    await invalidate_document_evidence(database, document_id=document_id)
     # Delete the private object first; preserve metadata if the provider fails.
     await files.remove_file(document["storagePath"])
     await database.execute(delete(documents).where(documents.c.id == document_id))

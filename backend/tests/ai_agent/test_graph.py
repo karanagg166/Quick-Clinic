@@ -22,12 +22,17 @@ router_module = importlib.import_module(
 )
 
 
+class _ToolAwareFakeModel(FakeListChatModel):
+    def bind_tools(self, tools, **kwargs):
+        return self
+
+
 @pytest.mark.unit
 @pytest.mark.asyncio
 async def test_chat_endpoint_returns_ai_response(monkeypatch):
     """Exercise FastAPI and LangGraph without a real API call."""
 
-    fake_model = FakeListChatModel(
+    fake_model = _ToolAwareFakeModel(
         responses=["Hello! I am your Quick-Clinic assistant."]
     )
 

@@ -46,12 +46,29 @@ async def lifespan(application):
     ):
         raise RuntimeError("Render requires durable cloud document storage")
     task = asyncio.create_task(deliver_pending_notifications())
+    recovery_task = None
+    if settings.node_env != "test":
+        from app.features.documents.ingestion_jobs import recover_pending_ingestion_jobs
+
+        async def _startup_recovery():
+            try:
+                await recover_pending_ingestion_jobs(limit=5)
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                logger.warning("Startup ingestion recovery skipped (%s)", type(exc).__name__)
+
+        recovery_task = asyncio.create_task(_startup_recovery())
     try:
         yield
     finally:
         task.cancel()
         with suppress(asyncio.CancelledError):
             await task
+        if recovery_task is not None:
+            recovery_task.cancel()
+            with suppress(asyncio.CancelledError):
+                await recovery_task
         from app.infrastructure.realtime import shutdown
 
         await shutdown()

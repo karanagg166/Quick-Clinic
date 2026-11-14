@@ -29,12 +29,13 @@ async def main():
         print("Dropped and recreated 'testing' schema.")
     else:
         async with admin_engine.begin() as conn:
+            await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector SCHEMA public"))
             await conn.execute(text("CREATE SCHEMA IF NOT EXISTS testing"))
 
     await admin_engine.dispose()
 
     # Create all tables in testing schema using search_path
-    engine = create_async_engine(url, connect_args={"server_settings": {"search_path": "testing"}})
+    engine = create_async_engine(url, connect_args={"server_settings": {"search_path": "testing,public"}})
     async with engine.begin() as conn:
         await conn.run_sync(metadata.create_all)
 

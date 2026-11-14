@@ -456,6 +456,472 @@ exports.Prisma.CommentScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.MedicalDocumentVersionScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  versionNumber: 'versionNumber',
+  sourceSha256: 'sourceSha256',
+  schemaVersion: 'schemaVersion',
+  pipelineVersion: 'pipelineVersion',
+  configFingerprint: 'configFingerprint',
+  tokenizerName: 'tokenizerName',
+  extractionStatus: 'extractionStatus',
+  indexStatus: 'indexStatus',
+  isPublished: 'isPublished',
+  pageCount: 'pageCount',
+  objectCount: 'objectCount',
+  chunkCount: 'chunkCount',
+  issueCount: 'issueCount',
+  manifest: 'manifest',
+  pipelineMetadata: 'pipelineMetadata',
+  contentSha256: 'contentSha256',
+  createdAt: 'createdAt',
+  publishedAt: 'publishedAt',
+  revokedAt: 'revokedAt'
+};
+
+exports.Prisma.MedicalIngestionJobScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  versionId: 'versionId',
+  generation: 'generation',
+  status: 'status',
+  stage: 'stage',
+  attempts: 'attempts',
+  availableAt: 'availableAt',
+  startedAt: 'startedAt',
+  lastHeartbeatAt: 'lastHeartbeatAt',
+  completedAt: 'completedAt',
+  leaseToken: 'leaseToken',
+  leaseOwner: 'leaseOwner',
+  leaseExpiresAt: 'leaseExpiresAt',
+  errorCode: 'errorCode',
+  retryable: 'retryable',
+  progress: 'progress',
+  resourceMetrics: 'resourceMetrics',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MedicalDocumentPageScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  pageNumber: 'pageNumber',
+  width: 'width',
+  height: 'height',
+  rotation: 'rotation',
+  selectableChars: 'selectableChars',
+  coordinateSystem: 'coordinateSystem',
+  cropbox: 'cropbox',
+  pdfToPage: 'pdfToPage',
+  status: 'status',
+  metadata: 'metadata'
+};
+
+exports.Prisma.MedicalDocumentSectionScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  sectionStableId: 'sectionStableId',
+  parentSectionId: 'parentSectionId',
+  title: 'title',
+  level: 'level',
+  headingPath: 'headingPath',
+  source: 'source',
+  readingOrder: 'readingOrder'
+};
+
+exports.Prisma.MedicalDocumentObjectScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  objectStableId: 'objectStableId',
+  kind: 'kind',
+  subtype: 'subtype',
+  title: 'title',
+  text: 'text',
+  sectionStableId: 'sectionStableId',
+  headingPath: 'headingPath',
+  firstPage: 'firstPage',
+  lastPage: 'lastPage',
+  readingOrder: 'readingOrder',
+  status: 'status',
+  reviewRequired: 'reviewRequired',
+  confidence: 'confidence',
+  normalized: 'normalized',
+  sourceSha256: 'sourceSha256',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MedicalObjectRegionScalarFieldEnum = {
+  id: 'id',
+  objectId: 'objectId',
+  pageId: 'pageId',
+  regionStableId: 'regionStableId',
+  parentRegionId: 'parentRegionId',
+  readingOrder: 'readingOrder',
+  coordinateSystem: 'coordinateSystem',
+  x0: 'x0',
+  y0: 'y0',
+  x1: 'x1',
+  y1: 'y1',
+  sourceImageId: 'sourceImageId',
+  provider: 'provider',
+  model: 'model',
+  confidence: 'confidence',
+  evidence: 'evidence',
+  source: 'source'
+};
+
+exports.Prisma.MedicalDocumentAssetScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  objectId: 'objectId',
+  kind: 'kind',
+  opaqueAssetId: 'opaqueAssetId',
+  storagePath: 'storagePath',
+  mimeType: 'mimeType',
+  fileSize: 'fileSize',
+  sha256: 'sha256',
+  pageNumber: 'pageNumber',
+  geometry: 'geometry',
+  metadata: 'metadata',
+  createdAt: 'createdAt',
+  deletedAt: 'deletedAt'
+};
+
+exports.Prisma.MedicalExtractionIssueScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  pageNumber: 'pageNumber',
+  objectStableId: 'objectStableId',
+  stage: 'stage',
+  code: 'code',
+  retryable: 'retryable',
+  details: 'details',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MedicalDocumentChunkScalarFieldEnum = {
+  id: 'id',
+  versionId: 'versionId',
+  chunkStableId: 'chunkStableId',
+  chunkIndex: 'chunkIndex',
+  kind: 'kind',
+  content: 'content',
+  contentSha256: 'contentSha256',
+  tokenCount: 'tokenCount',
+  tokenizer: 'tokenizer',
+  headingPath: 'headingPath',
+  sourceObjectIds: 'sourceObjectIds',
+  paragraphIds: 'paragraphIds',
+  sentenceIds: 'sentenceIds',
+  pageNumbers: 'pageNumbers',
+  startPage: 'startPage',
+  endPage: 'endPage',
+  rowStart: 'rowStart',
+  rowEnd: 'rowEnd',
+  isFragment: 'isFragment',
+  provenance: 'provenance',
+  pipelineVersion: 'pipelineVersion',
+  status: 'status',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MedicalChunkObjectScalarFieldEnum = {
+  id: 'id',
+  chunkId: 'chunkId',
+  objectId: 'objectId',
+  sourceRefs: 'sourceRefs',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MedicalChunkEmbeddingScalarFieldEnum = {
+  id: 'id',
+  chunkId: 'chunkId',
+  vectorId: 'vectorId',
+  provider: 'provider',
+  model: 'model',
+  dimension: 'dimension',
+  embeddingVersion: 'embeddingVersion',
+  indexGeneration: 'indexGeneration',
+  inputSha256: 'inputSha256',
+  status: 'status',
+  embeddingMetadata: 'embeddingMetadata',
+  indexedAt: 'indexedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.MedicalObservationScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  versionId: 'versionId',
+  objectId: 'objectId',
+  chunkId: 'chunkId',
+  observationType: 'observationType',
+  displayName: 'displayName',
+  valueNumeric: 'valueNumeric',
+  valueSecondaryNumeric: 'valueSecondaryNumeric',
+  valueText: 'valueText',
+  unit: 'unit',
+  referenceRange: 'referenceRange',
+  observedAt: 'observedAt',
+  reportedAt: 'reportedAt',
+  dateInferred: 'dateInferred',
+  pageNumber: 'pageNumber',
+  extractionMethod: 'extractionMethod',
+  confidence: 'confidence',
+  reviewStatus: 'reviewStatus',
+  source: 'source',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MedicalAccessGrantScalarFieldEnum = {
+  id: 'id',
+  patientId: 'patientId',
+  doctorId: 'doctorId',
+  documentId: 'documentId',
+  grantedByUserId: 'grantedByUserId',
+  relationshipAppointmentId: 'relationshipAppointmentId',
+  scope: 'scope',
+  consentSource: 'consentSource',
+  policyVersion: 'policyVersion',
+  effectiveAt: 'effectiveAt',
+  expiresAt: 'expiresAt',
+  revokedAt: 'revokedAt',
+  revokedReason: 'revokedReason',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+};
+
+exports.Prisma.MedicalDocumentCleanupScalarFieldEnum = {
+  id: 'id',
+  documentId: 'documentId',
+  documentIdSnapshot: 'documentIdSnapshot',
+  storagePath: 'storagePath',
+  status: 'status',
+  attempts: 'attempts',
+  availableAt: 'availableAt',
+  leaseToken: 'leaseToken',
+  leaseExpiresAt: 'leaseExpiresAt',
+  lastErrorCode: 'lastErrorCode',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.AgentThreadScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  doctorId: 'doctorId',
+  patientId: 'patientId',
+  scopeType: 'scopeType',
+  purpose: 'purpose',
+  title: 'title',
+  status: 'status',
+  permissionRevision: 'permissionRevision',
+  latestMemoryVersion: 'latestMemoryVersion',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  lastMessageAt: 'lastMessageAt',
+  redactedAt: 'redactedAt'
+};
+
+exports.Prisma.AgentTurnScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  turnIndex: 'turnIndex',
+  originalQuery: 'originalQuery',
+  retrievalQuery: 'retrievalQuery',
+  rewritten: 'rewritten',
+  requiresHistory: 'requiresHistory',
+  queryRoute: 'queryRoute',
+  queryPolicyVersion: 'queryPolicyVersion',
+  classification: 'classification',
+  plannedTools: 'plannedTools',
+  status: 'status',
+  responseHash: 'responseHash',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.AgentMessageScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  turnId: 'turnId',
+  sequence: 'sequence',
+  role: 'role',
+  status: 'status',
+  content: 'content',
+  contentSha256: 'contentSha256',
+  messageMetadata: 'messageMetadata',
+  createdAt: 'createdAt',
+  redactedAt: 'redactedAt',
+  redactionReason: 'redactionReason'
+};
+
+exports.Prisma.AgentContextLinkScalarFieldEnum = {
+  id: 'id',
+  turnId: 'turnId',
+  messageId: 'messageId',
+  reason: 'reason',
+  orderIndex: 'orderIndex',
+  permissionRevision: 'permissionRevision',
+  includedAt: 'includedAt'
+};
+
+exports.Prisma.AgentMemorySnapshotScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  version: 'version',
+  summary: 'summary',
+  summarySha256: 'summarySha256',
+  coveredMessageIds: 'coveredMessageIds',
+  sourceChunkIds: 'sourceChunkIds',
+  topics: 'topics',
+  latestMessageId: 'latestMessageId',
+  tokenCount: 'tokenCount',
+  summarizerModel: 'summarizerModel',
+  permissionRevision: 'permissionRevision',
+  authorizationHash: 'authorizationHash',
+  createdAt: 'createdAt',
+  invalidatedAt: 'invalidatedAt',
+  invalidationReason: 'invalidationReason'
+};
+
+exports.Prisma.AgentRetrievalRunScalarFieldEnum = {
+  id: 'id',
+  turnId: 'turnId',
+  query: 'query',
+  strategy: 'strategy',
+  queryFilters: 'queryFilters',
+  indexVersion: 'indexVersion',
+  embeddingModel: 'embeddingModel',
+  rerankerModel: 'rerankerModel',
+  topK: 'topK',
+  candidateCount: 'candidateCount',
+  selectedCount: 'selectedCount',
+  authorizationHash: 'authorizationHash',
+  status: 'status',
+  durationMs: 'durationMs',
+  metrics: 'metrics',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AgentRetrievalHitScalarFieldEnum = {
+  id: 'id',
+  retrievalRunId: 'retrievalRunId',
+  chunkId: 'chunkId',
+  chunkStableId: 'chunkStableId',
+  versionStableId: 'versionStableId',
+  sourceObjectIds: 'sourceObjectIds',
+  sourceRefs: 'sourceRefs',
+  contentSha256: 'contentSha256',
+  candidateRank: 'candidateRank',
+  finalRank: 'finalRank',
+  denseScore: 'denseScore',
+  sparseScore: 'sparseScore',
+  hybridScore: 'hybridScore',
+  rerankScore: 'rerankScore',
+  includedInPrompt: 'includedInPrompt',
+  citedInAnswer: 'citedInAnswer',
+  reviewRequired: 'reviewRequired',
+  authorizedAtRetrieval: 'authorizedAtRetrieval',
+  excludedReason: 'excludedReason',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AgentMessageCitationScalarFieldEnum = {
+  id: 'id',
+  messageId: 'messageId',
+  retrievalHitId: 'retrievalHitId',
+  label: 'label',
+  claimSpan: 'claimSpan',
+  chunkStableId: 'chunkStableId',
+  documentVersionId: 'documentVersionId',
+  sourceObjectId: 'sourceObjectId',
+  pageNumber: 'pageNumber',
+  sourceRefs: 'sourceRefs',
+  contentSha256: 'contentSha256',
+  reviewRequired: 'reviewRequired',
+  revokedAt: 'revokedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.AgentToolCallScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  turnId: 'turnId',
+  toolCallId: 'toolCallId',
+  toolName: 'toolName',
+  actionType: 'actionType',
+  riskLevel: 'riskLevel',
+  inputJson: 'inputJson',
+  inputSha256: 'inputSha256',
+  resultJson: 'resultJson',
+  resultSha256: 'resultSha256',
+  status: 'status',
+  approvalId: 'approvalId',
+  errorCode: 'errorCode',
+  durationMs: 'durationMs',
+  startedAt: 'startedAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.AgentModelCallScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  turnId: 'turnId',
+  purpose: 'purpose',
+  provider: 'provider',
+  model: 'model',
+  modelVersion: 'modelVersion',
+  promptVersion: 'promptVersion',
+  requestSha256: 'requestSha256',
+  responseSha256: 'responseSha256',
+  promptTokens: 'promptTokens',
+  completionTokens: 'completionTokens',
+  totalTokens: 'totalTokens',
+  latencyMs: 'latencyMs',
+  providerRequestId: 'providerRequestId',
+  traceId: 'traceId',
+  retryCount: 'retryCount',
+  fallbackFrom: 'fallbackFrom',
+  privacyPolicyRef: 'privacyPolicyRef',
+  status: 'status',
+  errorCode: 'errorCode',
+  usageMetadata: 'usageMetadata',
+  createdAt: 'createdAt',
+  completedAt: 'completedAt'
+};
+
+exports.Prisma.AgentApprovalScalarFieldEnum = {
+  id: 'id',
+  threadId: 'threadId',
+  toolCallId: 'toolCallId',
+  requestedByUserId: 'requestedByUserId',
+  approvedByUserId: 'approvedByUserId',
+  actionType: 'actionType',
+  riskLevel: 'riskLevel',
+  title: 'title',
+  summary: 'summary',
+  reason: 'reason',
+  parameters: 'parameters',
+  payloadHash: 'payloadHash',
+  idempotencyKey: 'idempotencyKey',
+  status: 'status',
+  executionStatus: 'executionStatus',
+  createdAt: 'createdAt',
+  expiresAt: 'expiresAt',
+  decidedAt: 'decidedAt',
+  decisionReason: 'decisionReason',
+  executedAt: 'executedAt',
+  completedAt: 'completedAt',
+  executionResult: 'executionResult',
+  executionLeaseExpiresAt: 'executionLeaseExpiresAt',
+  executionAttempts: 'executionAttempts',
+  lastErrorCode: 'lastErrorCode',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -639,6 +1105,57 @@ exports.WithdrawalStatus = exports.$Enums.WithdrawalStatus = {
   CANCELLED: 'CANCELLED'
 };
 
+exports.MedicalPipelineStatus = exports.$Enums.MedicalPipelineStatus = {
+  PENDING: 'PENDING',
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  PARTIAL: 'PARTIAL',
+  COMPLETED: 'COMPLETED',
+  RETRYABLE: 'RETRYABLE',
+  FAILED: 'FAILED',
+  REVOKED: 'REVOKED'
+};
+
+exports.AgentThreadStatus = exports.$Enums.AgentThreadStatus = {
+  ACTIVE: 'ACTIVE',
+  ARCHIVED: 'ARCHIVED',
+  REDACTED: 'REDACTED'
+};
+
+exports.AgentMessageRole = exports.$Enums.AgentMessageRole = {
+  USER: 'USER',
+  ASSISTANT: 'ASSISTANT',
+  TOOL: 'TOOL',
+  SYSTEM: 'SYSTEM'
+};
+
+exports.AgentMessageStatus = exports.$Enums.AgentMessageStatus = {
+  PENDING: 'PENDING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED',
+  REDACTED: 'REDACTED'
+};
+
+exports.AgentActionRiskLevel = exports.$Enums.AgentActionRiskLevel = {
+  LOW_AUTONOMOUS: 'LOW_AUTONOMOUS',
+  MEDIUM_HUMAN_APPROVAL: 'MEDIUM_HUMAN_APPROVAL',
+  HIGH_CLINICAL_RESTRICTED: 'HIGH_CLINICAL_RESTRICTED'
+};
+
+exports.AgentApprovalStatus = exports.$Enums.AgentApprovalStatus = {
+  PENDING: 'PENDING',
+  APPROVED: 'APPROVED',
+  REJECTED: 'REJECTED',
+  EXPIRED: 'EXPIRED'
+};
+
+exports.AgentExecutionStatus = exports.$Enums.AgentExecutionStatus = {
+  NOT_STARTED: 'NOT_STARTED',
+  EXECUTING: 'EXECUTING',
+  COMPLETED: 'COMPLETED',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Location: 'Location',
@@ -665,7 +1182,32 @@ exports.Prisma.ModelName = {
   AccessLog: 'AccessLog',
   AuditLog: 'AuditLog',
   Rating: 'Rating',
-  Comment: 'Comment'
+  Comment: 'Comment',
+  MedicalDocumentVersion: 'MedicalDocumentVersion',
+  MedicalIngestionJob: 'MedicalIngestionJob',
+  MedicalDocumentPage: 'MedicalDocumentPage',
+  MedicalDocumentSection: 'MedicalDocumentSection',
+  MedicalDocumentObject: 'MedicalDocumentObject',
+  MedicalObjectRegion: 'MedicalObjectRegion',
+  MedicalDocumentAsset: 'MedicalDocumentAsset',
+  MedicalExtractionIssue: 'MedicalExtractionIssue',
+  MedicalDocumentChunk: 'MedicalDocumentChunk',
+  MedicalChunkObject: 'MedicalChunkObject',
+  MedicalChunkEmbedding: 'MedicalChunkEmbedding',
+  MedicalObservation: 'MedicalObservation',
+  MedicalAccessGrant: 'MedicalAccessGrant',
+  MedicalDocumentCleanup: 'MedicalDocumentCleanup',
+  AgentThread: 'AgentThread',
+  AgentTurn: 'AgentTurn',
+  AgentMessage: 'AgentMessage',
+  AgentContextLink: 'AgentContextLink',
+  AgentMemorySnapshot: 'AgentMemorySnapshot',
+  AgentRetrievalRun: 'AgentRetrievalRun',
+  AgentRetrievalHit: 'AgentRetrievalHit',
+  AgentMessageCitation: 'AgentMessageCitation',
+  AgentToolCall: 'AgentToolCall',
+  AgentModelCall: 'AgentModelCall',
+  AgentApproval: 'AgentApproval'
 };
 
 /**

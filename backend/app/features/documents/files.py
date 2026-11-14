@@ -44,6 +44,14 @@ async def remove_file(key: str):
         storage_path(key).unlink(missing_ok=True)
 
 
+async def read_file_bytes(key: str) -> bytes:
+    """Read raw bytes from private local or Supabase storage for durable ingestion."""
+    check_managed_file(key)
+    if key.startswith("supabase/"):
+        return await supabase_storage.download_document(key)
+    return storage_path(key).read_bytes()
+
+
 async def file_response(document, action: str):
     key = document["storagePath"]
     check_managed_file(key)
