@@ -13,6 +13,11 @@ import EmptyState from "@/components/general/EmptyState";
 import { Wallet, CreditCard, ArrowDownCircle, History, TrendingUp, CalendarDays } from "lucide-react";
 import EnhancedSkeleton from "@/components/general/EnhancedSkeleton";
 import StatusBadge from "@/components/general/StatusBadge";
+import {
+  addDaysToDateString,
+  getClinicDateParts,
+  getTodayInClinicTimezone,
+} from "@/lib/dateUtils";
 
 interface BankDetails {
   bankAccountNumber: string | null;
@@ -106,19 +111,17 @@ export default function DoctorEarnings() {
     if (!doctorId) return;
     setLoadingSummary(true);
 
-    const now = new Date();
-    const today = now.toISOString().split("T")[0];
+    const today = getTodayInClinicTimezone();
+    const { year: clinicYear, month: clinicMonth, dayOfWeek } = getClinicDateParts();
 
-    // Week start (Sunday)
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    const week = weekStart.toISOString().split("T")[0];
+    // Week start (Sunday) in clinic timezone
+    const week = addDaysToDateString(today, -dayOfWeek);
 
-    // Month start
-    const month = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split("T")[0];
+    // Month start in clinic timezone
+    const month = `${clinicYear}-${String(clinicMonth).padStart(2, "0")}-01`;
 
-    // Year start
-    const year = new Date(now.getFullYear(), 0, 1).toISOString().split("T")[0];
+    // Year start in clinic timezone
+    const year = `${clinicYear}-01-01`;
 
     try {
       const [todayRes, weekRes, monthRes, yearRes] = await Promise.all([

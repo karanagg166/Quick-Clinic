@@ -2,7 +2,7 @@
 
 import json
 from collections.abc import AsyncIterator, Mapping
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 from sqlalchemy import (
@@ -25,6 +25,7 @@ from sqlalchemy import (
 from sqlalchemy.ext.asyncio import AsyncConnection, create_async_engine
 from sqlalchemy.exc import TimeoutError as PoolTimeoutError
 from fastapi import HTTPException
+from app.core import clock as clinic_clock
 from app.core.config import get_settings
 
 
@@ -34,7 +35,7 @@ def new_id() -> str:
 
 def utcnow() -> datetime:
     # Prisma PostgreSQL DateTime uses timestamp without timezone, containing UTC.
-    return datetime.now(UTC).replace(tzinfo=None)
+    return clinic_clock.now_utc().replace(tzinfo=None)
 
 
 schema = json.loads(Path(__file__).with_name("schema.json").read_text())

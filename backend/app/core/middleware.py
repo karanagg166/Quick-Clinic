@@ -6,6 +6,7 @@ from collections import defaultdict, deque
 from uuid import uuid4
 from fastapi import HTTPException, Request
 from fastapi.responses import JSONResponse
+from . import clock
 from .config import get_settings
 
 # One process is the default deployment. Redis is used for distributed limiting when configured.
@@ -15,6 +16,13 @@ MAX_REQUEST_BYTES = 11 * 1024 * 1024
 
 async def request_guards(request: Request, call_next):
     request_id = uuid4().hex
+    instant_utc = clock.now_utc()
+    instant_clinic = clock.to_clinic_time(instant_utc)
+    request.state.now_utc = instant_utc
+    request.state.now_clinic = instant_clinic
+    request.state.today_clinic = instant_clinic.date()
+    request.state.clinic_timezone = get_settings().clinic_timezone
+
     length = request.headers.get("content-length")
     if length:
         try:

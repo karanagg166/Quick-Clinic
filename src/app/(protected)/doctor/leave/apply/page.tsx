@@ -6,8 +6,10 @@ import Link from "next/link";
 import { useUserStore } from "@/store/userStore";
 import { showToast } from "@/lib/toast";
 import {
-  getTodayInUserTimezone,
-  getCurrentTimeInUserTimezone,
+  DEFAULT_CLINIC_TIMEZONE,
+  getCurrentTimeInClinicTimezone,
+  getTodayInClinicTimezone,
+  localDateAndTimeToUtc,
 } from "@/lib/dateUtils";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,19 +35,16 @@ export default function DoctorLeave() {
   const [todayTime, setTodayTime] = useState("");
 
   useEffect(() => {
-    // Get current date/time in user's local timezone
-    setTodayDate(getTodayInUserTimezone());
-    setTodayTime(getCurrentTimeInUserTimezone());
+    // Get current date/time in authoritative clinic timezone (Asia/Kolkata)
+    setTodayDate(getTodayInClinicTimezone());
+    setTodayTime(getCurrentTimeInClinicTimezone());
     setMounted(true);
   }, []);
 
   const combineDateTime = (date: string, time: string) => {
     if (!date || !time) return null;
     try {
-      const timeClean = time.length === 5 ? `${time}:00.000Z` : time.endsWith("Z") ? time : `${time}.000Z`;
-      const dateObj = new Date(`${date}T${timeClean}`);
-      if (isNaN(dateObj.getTime())) return null;
-      return dateObj;
+      return localDateAndTimeToUtc(date, time.slice(0, 5), DEFAULT_CLINIC_TIMEZONE);
     } catch {
       return null;
     }

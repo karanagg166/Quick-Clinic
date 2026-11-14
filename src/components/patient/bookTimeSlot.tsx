@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { showToast } from '@/lib/toast';
 import {
-  getTodayInUserTimezone,
   DEFAULT_CLINIC_TIMEZONE,
   formatAppointmentTime,
+  formatCalendarDate,
+  getAuthoritativeNow,
+  getTodayInClinicTimezone,
   isLegacySlot,
   getUserTimezone,
 } from '@/lib/dateUtils';
@@ -37,16 +39,16 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
 
   const isSlotBookable = (slot: Slot) => {
     if (slot.status !== 'AVAILABLE') return false;
-    const today = getTodayInUserTimezone();
+    const today = getTodayInClinicTimezone();
     if (date === today) {
       const slotStart = new Date(slot.startTime);
-      if (slotStart <= new Date()) return false;
+      if (slotStart <= getAuthoritativeNow()) return false;
     }
     return true;
   };
 
   useEffect(() => {
-    const timeout = window.setTimeout(() => setDate(getTodayInUserTimezone()), 0);
+    const timeout = window.setTimeout(() => setDate(getTodayInClinicTimezone()), 0);
     return () => window.clearTimeout(timeout);
   }, []);
 
@@ -309,9 +311,9 @@ export default function BookTimeSlot({ doctorId }: BookTimeSlotProps) {
             <label htmlFor="date-picker" className="block text-lg font-semibold mb-2">Select Date</label>
             <Input id="date-picker" type="date" value={date} onChange={(event) => {
               setDate(event.target.value); setSelectedSlot(null); setShowPaymentOptions(false);
-            }} min={new Date().toISOString().split('T')[0]} className="w-full md:w-auto" />
+            }} min={getTodayInClinicTimezone()} className="w-full md:w-auto" />
           </div>
-          <CardTitle>Available Slots for {date && new Date(date).toLocaleDateString('en-US', {
+          <CardTitle>Available Slots for {date && formatCalendarDate(date, {
             weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
           })}</CardTitle>
         </div>

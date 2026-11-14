@@ -1,14 +1,15 @@
 """Private schedule summaries and contiguous daily timeline blocks."""
 
 import calendar
-from datetime import date, timedelta, timezone
+from datetime import date, timedelta
 from fastapi import HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncConnection
+from app.core.clock import clinic_day_bounds_utc, to_clinic_time, today_clinic
 from app.infrastructure.database import tables, utcnow
 from app.features.doctors.repository import owned_doctor
 from .availability import daily_slots
-from .validation import CLINIC_ZONE, aware, parse_date
+from .validation import aware, parse_date
 
 (doctors_table, slots_table, schedules_table, leaves_table, appointments_table) = (
     tables[name] for name in ("Doctor", "Slot", "Schedule", "Leave", "Appointment")
@@ -59,9 +60,7 @@ def timeline_blocks(items):
     result = []
     for kind, group in groups:
         (start, end) = (group[0]["startTime"], group[-1]["endTime"])
-        (start_local, end_local) = (
-            value.replace(tzinfo=timezone.utc).astimezone(CLINIC_ZONE) for value in (start, end)
-        )
+        (start_local, end_local) = (to_clinic_time(value) for value in (start, end))
         titles = {
             "FREE": f"Available ({len(group)} open slots)",
             "BUSY": f"Busy ({len(group)} Appointments)",
@@ -92,7 +91,7 @@ async def get_schedule_overview(doctor_id: str, filters, user, db: AsyncConnecti
     q = filters
     view = q.get("view", "day")
     if view == "day":
-        day = parse_date(q.get("date", utcnow().date().isoformat()))
+        day = parse_date(q.get("date") or today_clinic().isoformat())
         (items, _) = await daily_slots(db, doctor_id, day)
         for item in items:
             appt = (
@@ -136,7 +135,7 @@ async def get_schedule_overview(doctor_id: str, filters, user, db: AsyncConnecti
             "metrics": day_metrics(items),
         }
     if view == "week":
-        start = parse_date(q.get("startDate", utcnow().date().isoformat()))
+        start = parse_date(q.get("startDate") or today_clinic().isoformat())
         days = []
         for i in range(7):
             day = start + timedelta(days=i)
@@ -167,8 +166,12 @@ async def get_schedule_overview(doctor_id: str, filters, user, db: AsyncConnecti
             },
         }
     if view == "month":
+        clinic_today = today_clinic()
         try:
-            (year, month) = (int(q.get("year", utcnow().year)), int(q.get("month", utcnow().month)))
+            (year, month) = (
+                int(q.get("year", clinic_today.year)),
+                int(q.get("month", clinic_today.month)),
+            )
             first = date(year, month, 1)
             days_in_month = calendar.monthrange(year, month)[1]
         except (ValueError, TypeError):
@@ -183,9 +186,11 @@ async def get_schedule_overview(doctor_id: str, filters, user, db: AsyncConnecti
             day = first + timedelta(days=i)
             (items, _) = await daily_slots(db, doctor_id, day, generate=False)
             metrics = day_metrics(items)
+            day_start_utc, day_end_utc = clinic_day_bounds_utc(day, naive=True)
             on_leave = any(
                 (
-                    aware(leave["startDate"]).date() <= day <= aware(leave["endDate"]).date()
+                    aware(leave["startDate"]) < day_end_utc
+                    and aware(leave["endDate"]) > day_start_utc
                     for leave in list_leaves
                 )
             )

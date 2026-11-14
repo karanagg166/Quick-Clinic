@@ -5,6 +5,7 @@ from datetime import timedelta
 import pytest
 from sqlalchemy import insert, select, update
 
+from app.core.clock import today_clinic
 from app.features.booking.service import expire_holds
 from app.features.operations.outbox import dispatch_outbox
 from app.features.operations import service as operations
@@ -160,7 +161,7 @@ async def test_automatic_expiry_preserves_terminal_and_rescheduled_history(db, v
 
 
 async def test_todays_visits_are_not_expired_based_only_on_elapsed_start_time(db, visit):
-    await db.execute(update(tables["Slot"]).values(date=utcnow().date()))
+    await db.execute(update(tables["Slot"]).values(date=today_clinic()))
     assert (await operations.expire_appointments(db))["expired"] == 0
 
 

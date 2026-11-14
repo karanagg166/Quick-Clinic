@@ -5,6 +5,8 @@ from enum import Enum
 from typing import Any, Optional
 from pydantic import BaseModel, Field
 
+from app.core.clock import now_utc
+
 
 class AgentActionType(str, Enum):
     CHECK_AVAILABILITY = "CHECK_AVAILABILITY"
@@ -43,4 +45,4 @@ class HumanApprovalDecision(BaseModel):
     decision: ApprovalStatus
     decided_by_user_id: str
     decision_reason: Optional[str] = None
-    decided_at: datetime = Field(default_factory=datetime.utcnow)
+    decided_at: datetime = Field(default_factory=now_utc)

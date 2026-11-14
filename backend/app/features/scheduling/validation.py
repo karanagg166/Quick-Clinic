@@ -2,41 +2,32 @@
 
 import calendar
 import re
-from datetime import date, datetime, timezone
-from zoneinfo import ZoneInfo
+from datetime import timezone
+
 from fastapi import HTTPException
 
-CLINIC_ZONE = ZoneInfo("Asia/Kolkata")
+from app.core.clock import (
+    CLINIC_ZONE as CLINIC_ZONE,
+    clinic_datetime_to_utc,
+    parse_date as parse_date,
+    parse_datetime as _parse_datetime_clock,
+    to_naive_utc,
+)
 
 
 def aware(value):
-    return value if value.tzinfo is None else value.astimezone(timezone.utc).replace(tzinfo=None)
+    return to_naive_utc(value)
 
 
 def parse_datetime(value):
-    try:
-        return aware(datetime.fromisoformat(value.replace("Z", "+00:00")))
-    except (ValueError, AttributeError, TypeError):
-        raise HTTPException(400, "Invalid date format")
-
-
-def parse_date(value):
-    try:
-        return date.fromisoformat(value)
-    except (ValueError, TypeError):
-        raise HTTPException(400, "Invalid date format")
+    return _parse_datetime_clock(value, default_tz=timezone.utc, naive=True)
 
 
 def local_time(day, value):
-    if "T" in value:
+    if isinstance(value, str) and "T" in value:
         return parse_datetime(value)
     time_minutes(value)
-    return (
-        datetime.fromisoformat(f"{day}T{value}")
-        .replace(tzinfo=CLINIC_ZONE)
-        .astimezone(timezone.utc)
-        .replace(tzinfo=None)
-    )
+    return clinic_datetime_to_utc(day, value, naive=True)
 
 
 def time_minutes(value):

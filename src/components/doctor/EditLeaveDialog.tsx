@@ -12,10 +12,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { showToast } from "@/lib/toast";
 import {
-  formatUTCToUserTimezone,
-  combineDateTimeInUserTimezone,
-  getTodayInUserTimezone,
-  getCurrentTimeInUserTimezone,
+  DEFAULT_CLINIC_TIMEZONE,
+  getCurrentTimeInClinicTimezone,
+  getTodayInClinicTimezone,
+  localDateAndTimeToUtc,
+  utcToLocalDateAndTime,
 } from "@/lib/dateUtils";
 import { Calendar, Clock, Edit3, FastForward, Info } from "lucide-react";
 
@@ -44,12 +45,12 @@ export function EditLeaveDialog({
   useEffect(() => {
     if (leave && isOpen) {
       try {
-        const start = new Date(leave.startDate);
-        const end = new Date(leave.endDate);
-        setStartDate(start.toISOString().split("T")[0]);
-        setStartTime(start.toISOString().slice(11, 16));
-        setEndDate(end.toISOString().split("T")[0]);
-        setEndTime(end.toISOString().slice(11, 16));
+        const start = utcToLocalDateAndTime(new Date(leave.startDate), DEFAULT_CLINIC_TIMEZONE);
+        const end = utcToLocalDateAndTime(new Date(leave.endDate), DEFAULT_CLINIC_TIMEZONE);
+        setStartDate(start.date);
+        setStartTime(start.time);
+        setEndDate(end.date);
+        setEndTime(end.time);
         setReason(leave.reason || "");
       } catch {
         setStartDate("");
@@ -62,9 +63,8 @@ export function EditLeaveDialog({
   }, [leave, isOpen]);
 
   const handleEndNow = () => {
-    const now = new Date();
-    setEndDate(now.toISOString().split("T")[0]);
-    setEndTime(now.toISOString().slice(11, 16));
+    setEndDate(getTodayInClinicTimezone());
+    setEndTime(getCurrentTimeInClinicTimezone());
     showToast.info("End date/time set to now. Click 'Save Changes' to confirm.");
   };
 
@@ -77,12 +77,12 @@ export function EditLeaveDialog({
       return;
     }
 
-    const timeStartClean = startTime.length === 5 ? `${startTime}:00.000Z` : startTime;
-    const timeEndClean = endTime.length === 5 ? `${endTime}:00.000Z` : endTime;
-    const newStart = new Date(`${startDate}T${timeStartClean}`);
-    const newEnd = new Date(`${endDate}T${timeEndClean}`);
-
-    if (isNaN(newStart.getTime()) || isNaN(newEnd.getTime())) {
+    let newStart: Date;
+    let newEnd: Date;
+    try {
+      newStart = localDateAndTimeToUtc(startDate, startTime.slice(0, 5), DEFAULT_CLINIC_TIMEZONE);
+      newEnd = localDateAndTimeToUtc(endDate, endTime.slice(0, 5), DEFAULT_CLINIC_TIMEZONE);
+    } catch {
       showToast.error("Invalid date or time");
       return;
     }

@@ -237,12 +237,127 @@ export function formatUTCToUserTimezone(utcDate: Date): { date: string; time: st
   return { date, time };
 }
 
+let serverClockOffsetMs = 0;
+
+/**
+ * Sets an optional offset between browser clock and authoritative server UTC clock.
+ */
+export function setServerClockOffsetFromIso(isoUtc: string, nowMs: number = Date.now()): void {
+  const parsed = Date.parse(isoUtc);
+  if (!Number.isNaN(parsed)) {
+    serverClockOffsetMs = parsed - nowMs;
+  }
+}
+
+/**
+ * Resets server clock offset (intended for tests).
+ */
+export function resetServerClockOffset(): void {
+  serverClockOffsetMs = 0;
+}
+
+/**
+ * Returns a Date adjusted by any synchronized server clock offset.
+ */
+export function getAuthoritativeNow(): Date {
+  return new Date(Date.now() + serverClockOffsetMs);
+}
+
+/**
+ * Synchronizes local clock offset with backend /api/clock endpoint.
+ */
+export async function syncClockWithServer(): Promise<void> {
+  if (typeof fetch !== 'function') return;
+  try {
+    const before = Date.now();
+    const res = await fetch('/api/clock', { cache: 'no-store' });
+    const after = Date.now();
+    if (!res.ok) return;
+    const data = await res.json();
+    if (data?.utc) {
+      const midpoint = Math.round((before + after) / 2);
+      setServerClockOffsetFromIso(data.utc, midpoint);
+    }
+  } catch {
+    // Non-fatal fallback to browser clock
+  }
+}
+
+/**
+ * Returns today's calendar date (YYYY-MM-DD) in the authoritative clinic timezone (Asia/Kolkata).
+ */
+export function getTodayInClinicTimezone(now: Date = getAuthoritativeNow()): string {
+  const { date } = utcToLocalDateAndTime(now, DEFAULT_CLINIC_TIMEZONE);
+  return date;
+}
+
+/**
+ * Returns the current wall-clock time (HH:mm) in the authoritative clinic timezone (Asia/Kolkata).
+ */
+export function getCurrentTimeInClinicTimezone(now: Date = getAuthoritativeNow()): string {
+  const { time } = utcToLocalDateAndTime(now, DEFAULT_CLINIC_TIMEZONE);
+  return time;
+}
+
+/**
+ * Returns { year, month, day, dayOfWeek } in the authoritative clinic timezone (Asia/Kolkata).
+ * month is 1-indexed (1-12), dayOfWeek is 0 (Sunday) through 6 (Saturday).
+ */
+export function getClinicDateParts(now: Date = getAuthoritativeNow()): {
+  year: number;
+  month: number;
+  day: number;
+  dayOfWeek: number;
+} {
+  const todayStr = getTodayInClinicTimezone(now);
+  const [year, month, day] = todayStr.split('-').map(Number);
+  const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getUTCDay();
+  return { year, month, day, dayOfWeek };
+}
+
+/**
+ * Returns { year, month } (month 1-12) in the authoritative clinic timezone (Asia/Kolkata).
+ */
+export function getClinicYearMonth(now: Date = getAuthoritativeNow()): { year: number; month: number } {
+  const { year, month } = getClinicDateParts(now);
+  return { year, month };
+}
+
+/**
+ * Performs pure calendar-day arithmetic on YYYY-MM-DD strings without local-timezone day shifts.
+ */
+export function addDaysToDateString(dateStr: string, days: number): string {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+    throw new Error(`Invalid date string: ${dateStr}`);
+  }
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1, day + days));
+  return shifted.toISOString().split('T')[0];
+}
+
+/**
+ * Formats a YYYY-MM-DD calendar date safely in clinic timezone without shifting days across browser timezones.
+ */
+export function formatCalendarDate(
+  dateStr: string,
+  options: Intl.DateTimeFormatOptions = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' },
+  locale: string = 'en-US'
+): string {
+  if (!dateStr || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr || '';
+  const [year, month, day] = dateStr.split('-').map(Number);
+  const noonUtc = new Date(Date.UTC(year, month - 1, day, 12, 0, 0));
+  return new Intl.DateTimeFormat(locale, {
+    ...options,
+    timeZone: DEFAULT_CLINIC_TIMEZONE,
+  }).format(noonUtc);
+}
+
 /**
  * Returns today's calendar date in user's timezone (YYYY-MM-DD).
  */
 export function getTodayInUserTimezone(timeZone?: string): string {
   const tz = timeZone || getUserTimezone() || DEFAULT_CLINIC_TIMEZONE;
-  const { date } = utcToLocalDateAndTime(new Date(), tz);
+  const { date } = utcToLocalDateAndTime(getAuthoritativeNow(), tz);
   return date;
 }
 
@@ -251,7 +366,7 @@ export function getTodayInUserTimezone(timeZone?: string): string {
  */
 export function getCurrentTimeInUserTimezone(timeZone?: string): string {
   const tz = timeZone || getUserTimezone() || DEFAULT_CLINIC_TIMEZONE;
-  const { time } = utcToLocalDateAndTime(new Date(), tz);
+  const { time } = utcToLocalDateAndTime(getAuthoritativeNow(), tz);
   return time;
 }
 

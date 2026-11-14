@@ -5,6 +5,7 @@ import AppointmentCard from '@/components/doctor/appointmentCard';
 import EmptyState from '@/components/general/EmptyState';
 import { CalendarDays } from 'lucide-react';
 import LoadingSpinner from '@/components/general/LoadingSpinner';
+import { getTodayInClinicTimezone } from '@/lib/dateUtils';
 
 export default function TodaysAppointmentSection({ doctorId }: { doctorId: string }) {
   const [appointments, setAppointments] = useState<Array<DoctorAppointment>>([]);
@@ -19,9 +20,8 @@ export default function TodaysAppointmentSection({ doctorId }: { doctorId: strin
         setLoading(true);
         setError(null);
 
-        // Build "today" range for the API filters it supports (startDate/startTime/endDate/endTime)
-        const now = new Date();
-        const yyyyMmDd = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+        // Build "today" range in authoritative clinic timezone (Asia/Kolkata)
+        const yyyyMmDd = getTodayInClinicTimezone();
         const startTime = '00:00:00';
         const endTime = '23:59:59';
 

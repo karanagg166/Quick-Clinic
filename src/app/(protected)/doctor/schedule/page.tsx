@@ -36,6 +36,8 @@ import { showToast } from "@/lib/toast";
 import {
   DEFAULT_CLINIC_TIMEZONE,
   formatAppointmentTime,
+  getClinicYearMonth,
+  getTodayInClinicTimezone,
   isLegacySlot,
 } from "@/lib/dateUtils";
 
@@ -150,7 +152,7 @@ export default function DoctorSchedulePage() {
   const doctorId = useUserStore((s) => s.doctorId);
 
   const [viewMode, setViewMode] = useState<"day" | "week" | "month">("day");
-  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const todayStr = useMemo(() => getTodayInClinicTimezone(), []);
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
 
   // Day view state
@@ -163,10 +165,11 @@ export default function DoctorSchedulePage() {
   const [weekMetrics, setWeekMetrics] = useState<{ totalSlots: number; totalBooked: number; totalAvailable: number; occupancyRate: number } | null>(null);
 
   // Month view state
+  const initialClinicYm = useMemo(() => getClinicYearMonth(), []);
   const [monthDays, setMonthDays] = useState<MonthDayItem[]>([]);
   const [firstDayOffset, setFirstDayOffset] = useState<number>(0);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState<number>(initialClinicYm.year);
+  const [selectedMonth, setSelectedMonth] = useState<number>(initialClinicYm.month);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -301,10 +304,10 @@ export default function DoctorSchedulePage() {
   };
 
   const handleToday = () => {
-    setSelectedDate(todayStr);
-    const now = new Date();
-    setSelectedYear(now.getFullYear());
-    setSelectedMonth(now.getMonth() + 1);
+    setSelectedDate(getTodayInClinicTimezone());
+    const { year, month } = getClinicYearMonth();
+    setSelectedYear(year);
+    setSelectedMonth(month);
   };
 
   const selectedDateLabel = useMemo(() => {

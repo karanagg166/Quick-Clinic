@@ -8,6 +8,7 @@ from uuid import uuid4
 
 from sqlalchemy import func, or_, select, update
 
+from app.core.clock import today_clinic
 from app.infrastructure.database import tables, utcnow
 from app.features.booking.service import CLEAR_HOLD, expire_holds, fetch_record, persist_side_effects
 from app.features.payments.service import attach_order, verify_payment
@@ -22,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 async def expire_appointments(db):
     appointment_table, slot_table, payment_table = (tables[n] for n in ("Appointment", "Slot", "Payment"))
-    today = utcnow().date()
+    today = today_clinic()
     rows = (
         (
             await db.execute(

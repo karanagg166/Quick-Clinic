@@ -37,6 +37,9 @@ class Settings(BaseSettings):
     db_pool_timeout: float = 15.0
     db_pool_recycle: int = 1800
 
+    # Application business timezone
+    clinic_timezone: str = "Asia/Kolkata"
+
     # AI & Model Providers
     google_api_key: str = ""
     groq_api_key: str = ""

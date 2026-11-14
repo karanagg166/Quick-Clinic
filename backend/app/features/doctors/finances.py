@@ -1,10 +1,17 @@
 """Doctor earnings and atomic withdrawal reservations, with paise accounting."""
 
 import hashlib
-from datetime import timedelta
 from fastapi import HTTPException
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncConnection
+from app.core.clock import (
+    clinic_datetime_to_utc,
+    clinic_day_bounds_utc,
+    clinic_zone,
+    parse_datetime,
+    to_clinic_time,
+    today_clinic,
+)
 from app.infrastructure.database import new_id, tables, utcnow
 from .repository import (
     doctors_table,
@@ -41,13 +48,19 @@ async def list_earnings(doctor_id: str, filters, user, db: AsyncConnection):
     )
     for key, comparison in (("startDate", "ge"), ("endDate", "le")):
         if filters.get(key):
-            from app.features.scheduling.validation import parse_datetime
-
-            time = filters.get(
-                "startTime" if key == "startDate" else "endTime",
-                "00:00:00" if key == "startDate" else "23:59:59",
-            )
-            value = parse_datetime(filters[key] + "T" + time)
+            raw_date = filters[key]
+            if "T" in raw_date:
+                value = parse_datetime(raw_date, default_tz=clinic_zone(), naive=True)
+            else:
+                time_str = filters.get(
+                    "startTime" if key == "startDate" else "endTime",
+                    "00:00:00" if key == "startDate" else "23:59:59",
+                )
+                if comparison == "le" and "endTime" not in filters and time_str in ("23:59", "23:59:59"):
+                    _, end_exclusive = clinic_day_bounds_utc(raw_date, naive=True)
+                    stmt = stmt.where(slots_table.c.startTime < end_exclusive)
+                    continue
+                value = clinic_datetime_to_utc(raw_date, time_str, naive=True)
             stmt = stmt.where(
                 slots_table.c.startTime >= value if comparison == "ge" else slots_table.c.startTime <= value
             )
@@ -67,7 +80,8 @@ async def list_earnings(doctor_id: str, filters, user, db: AsyncConnection):
 
 async def get_doctor_statistics(doctor_id: str, user, db: AsyncConnection):
     doctor = await owned_doctor(db, doctor_id, user)
-    today = utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    clinic_today = today_clinic()
+    today_start_utc, today_end_utc = clinic_day_bounds_utc(clinic_today, naive=True)
     stmt = (
         select(appointments_table.c.status, slots_table.c.startTime)
         .join(slots_table, appointments_table.c.slotId == slots_table.c.id)
@@ -84,7 +98,7 @@ async def get_doctor_statistics(doctor_id: str, user, db: AsyncConnection):
         "todayAppointments": sum(
             (
                 r["status"] in ("PENDING", "CONFIRMED")
-                and today <= r["startTime"] < today + timedelta(days=1)
+                and today_start_utc <= r["startTime"] < today_end_utc
                 for r in rows
             )
         ),
@@ -94,8 +108,8 @@ async def get_doctor_statistics(doctor_id: str, user, db: AsyncConnection):
         * sum(
             (
                 r["status"] == "COMPLETED"
-                and r["startTime"].year == today.year
-                and (r["startTime"].month == today.month)
+                and (local_dt := to_clinic_time(r["startTime"])).year == clinic_today.year
+                and local_dt.month == clinic_today.month
                 for r in rows
             )
         ),

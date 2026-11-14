@@ -1,11 +1,17 @@
 """Authorized appointment queries and transactional lifecycle changes."""
 
 from collections.abc import Mapping
-from datetime import date, datetime
 
 from fastapi import HTTPException
 from sqlalchemy import select, update
 
+from app.core.clock import (
+    clinic_datetime_to_utc,
+    clinic_day_bounds_utc,
+    clinic_zone,
+    parse_date,
+    parse_datetime,
+)
 from app.infrastructure.database import tables, utcnow
 from app.features.payments.refunds import enqueue_refund
 from .service import CLEAR_HOLD, TRANSITIONS, fetch_record, appointment_detail, persist_side_effects
@@ -66,25 +72,34 @@ async def list_appointments(db, filters: Mapping[str, str], model, owner_id):
                 query = query.where(doctor_table.c.fees == int(query_filters["fees"]))
             except ValueError:
                 raise HTTPException(400, "Invalid fees") from None
-    try:
-        if query_filters.get("date"):
-            query = query.where(slot_table.c.date == date.fromisoformat(query_filters["date"][:10]))
-        if query_filters.get("startDate"):
-            query = query.where(
-                slot_table.c.startTime
-                >= datetime.fromisoformat(
-                    f"{query_filters['startDate']}T{query_filters.get('startTime', '00:00:00')}"
+    if query_filters.get("date"):
+        date_raw = query_filters["date"]
+        target_day = parse_date(date_raw[:10] if "T" in date_raw else date_raw)
+        query = query.where(slot_table.c.date == target_day)
+    if query_filters.get("startDate"):
+        start_raw = query_filters["startDate"]
+        if "T" in start_raw:
+            start_bound = parse_datetime(start_raw, default_tz=clinic_zone(), naive=True)
+        else:
+            start_time_raw = query_filters.get("startTime", "00:00:00")
+            start_bound = clinic_datetime_to_utc(start_raw, start_time_raw, naive=True)
+        query = query.where(slot_table.c.startTime >= start_bound)
+    if query_filters.get("endDate"):
+        end_raw = query_filters["endDate"]
+        if "T" in end_raw:
+            end_bound = parse_datetime(end_raw, default_tz=clinic_zone(), naive=True)
+            query = query.where(slot_table.c.endTime <= end_bound)
+        else:
+            end_time_raw = query_filters.get("endTime")
+            if not end_time_raw or end_time_raw in ("23:59", "23:59:59"):
+                _, end_exclusive = clinic_day_bounds_utc(end_raw, naive=True)
+                query = query.where(
+                    slot_table.c.startTime < end_exclusive,
+                    slot_table.c.endTime <= end_exclusive,
                 )
-            )
-        if query_filters.get("endDate"):
-            query = query.where(
-                slot_table.c.endTime
-                <= datetime.fromisoformat(
-                    f"{query_filters['endDate']}T{query_filters.get('endTime', '23:59:59')}"
-                )
-            )
-    except ValueError:
-        raise HTTPException(400, "Invalid appointment date filter") from None
+            else:
+                end_bound = clinic_datetime_to_utc(end_raw, end_time_raw, naive=True)
+                query = query.where(slot_table.c.endTime <= end_bound)
     rows = (
         await db.execute(
             query.order_by(slot_table.c.startTime.asc() if doctor_view else slot_table.c.startTime.desc())

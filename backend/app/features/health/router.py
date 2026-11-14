@@ -1,25 +1,43 @@
 """Process liveness and bounded database readiness probes."""
 
 import asyncio
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
+from app.core.clock import get_request_clock
 from app.core.config import get_settings
-from app.infrastructure.database import engine, utcnow
+from app.infrastructure.database import engine
 
 router = APIRouter(tags=["health"])
 
 
 @router.get("/health")
 @router.get("/api/health")
-async def liveness():
+async def liveness(request: Request):
     settings = get_settings()
+    req_clock = get_request_clock(request)
     return {
         "status": "ok",
         "service": "quick-clinic-backend",
         "gitCommit": settings.git_commit,
         "environment": settings.node_env,
-        "timestamp": utcnow().isoformat() + "Z",
+        "timestamp": req_clock.now_utc.isoformat().replace("+00:00", "Z"),
+        "clinicTimestamp": req_clock.now_clinic.isoformat(),
+        "clinicDate": req_clock.today_clinic.isoformat(),
+        "clinicTimezone": req_clock.clinic_timezone,
+    }
+
+
+@router.get("/api/clock")
+async def server_clock(request: Request):
+    """Authoritative server clock snapshot for frontend synchronization."""
+    req_clock = get_request_clock(request)
+    return {
+        "utc": req_clock.now_utc.isoformat().replace("+00:00", "Z"),
+        "clinicNow": req_clock.now_clinic.isoformat(),
+        "clinicDate": req_clock.today_clinic.isoformat(),
+        "clinicWeekday": req_clock.now_clinic.strftime("%A"),
+        "timezone": req_clock.clinic_timezone,
     }
 
 

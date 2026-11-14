@@ -2,10 +2,12 @@
 """Human approval handling for Quick-Clinic AI agents."""
 
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Awaitable, Callable
 
 from langgraph.types import interrupt
+
+from app.core.clock import now_utc
 
 
 class ApprovalError(Exception):
@@ -39,7 +41,7 @@ class ApprovalManager:
         if not request.approval_id or not request.payload_hash:
             raise ApprovalError("Invalid approval request")
 
-        if request.expires_at <= datetime.now(timezone.utc):
+        if request.expires_at <= now_utc():
             raise ApprovalError("Approval request has expired")
 
         # LangGraph saves state and pauses execution.
@@ -55,7 +57,7 @@ class ApprovalManager:
         # Resuming the graph does not itself grant approval.
         # The verifier must check the authenticated approver,
         # approved action/payload, expiry and durable DB record.
-        if request.expires_at <= datetime.now(timezone.utc):
+        if request.expires_at <= now_utc():
             raise ApprovalError("Approval request has expired")
 
         if not await verify(request):

@@ -3,10 +3,13 @@
 
 from functools import lru_cache
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.core.clock import get_request_clock
 from app.core.security import current_user
+from app.infrastructure.database import get_db
 
 from .service import AIAgentService
 
@@ -30,6 +33,7 @@ class ChatResponse(BaseModel):
 
 @lru_cache(maxsize=1)
 def get_agent_service() -> AIAgentService:
+    """Reuse the model without caching user-specific tools."""
     return AIAgentService(provider="google")
 
 
@@ -39,13 +43,20 @@ def get_agent_service() -> AIAgentService:
 )
 async def chat_with_agent(
     payload: ChatRequest,
+    request: Request,
     actor: dict = Depends(current_user),
+    db: AsyncConnection = Depends(get_db),
 ) -> ChatResponse:
+    """Run the authenticated Doctor or Patient AI assistant."""
+
     service = get_agent_service()
+    req_clock = get_request_clock(request)
 
     response = await service.chat(
         message=payload.message,
         actor=actor,
+        db=db,
+        now_ist=req_clock.now_clinic,
     )
 
     return ChatResponse(response=response)

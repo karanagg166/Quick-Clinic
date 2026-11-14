@@ -6,6 +6,9 @@ const nextConfig: NextConfig = {
     return [{ source: "/api/:path*", destination: `${backend}/api/:path*` }];
   },
   reactCompiler: true,
+  experimental: {
+    proxyTimeout: 120_000,
+  },
   images: {
     remotePatterns: [
       {

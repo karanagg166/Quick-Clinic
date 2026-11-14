@@ -3,6 +3,7 @@
 from fastapi import HTTPException
 from sqlalchemy import func, insert, select, update
 from sqlalchemy.ext.asyncio import AsyncConnection
+from app.core.clock import today_clinic
 from app.infrastructure.database import new_id, tables, utcnow
 
 MEDICAL_FIELDS = ("medicalHistory", "allergies", "currentMedications")
@@ -109,7 +110,7 @@ async def get_patient_stats(patient_id: str, user: dict, db: AsyncConnection):
             .where(
                 appointment.c.patientId == patient_id,
                 appointment.c.status.in_(["PENDING", "CONFIRMED"]),
-                slot.c.date >= utcnow().date(),
+                slot.c.date >= today_clinic(),
             )
         )
     ).scalar_one()

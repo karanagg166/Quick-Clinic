@@ -28,8 +28,11 @@ import {
 import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import {
+  addDaysToDateString,
   DEFAULT_CLINIC_TIMEZONE,
   formatAppointmentTime,
+  formatCalendarDate,
+  getTodayInClinicTimezone,
   isLegacySlot,
 } from "@/lib/dateUtils";
 
@@ -37,10 +40,7 @@ export default function DoctorTodayAppointmentsPage() {
   const doctorId = useUserStore((s) => s.doctorId);
   const user = useUserStore((s) => s.user);
 
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    const now = new Date();
-    return now.toISOString().split("T")[0];
-  });
+  const [selectedDate, setSelectedDate] = useState<string>(() => getTodayInClinicTimezone());
 
   const [appointments, setAppointments] = useState<DoctorAppointment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,17 +117,14 @@ export default function DoctorTodayAppointmentsPage() {
   };
 
   const handleDateChange = (daysOffset: number) => {
-    const current = new Date(selectedDate);
-    current.setDate(current.getDate() + daysOffset);
-    setSelectedDate(current.toISOString().split("T")[0]);
+    setSelectedDate((prev) => addDaysToDateString(prev, daysOffset));
   };
 
   const handleResetToToday = () => {
-    const today = new Date().toISOString().split("T")[0];
-    setSelectedDate(today);
+    setSelectedDate(getTodayInClinicTimezone());
   };
 
-  const isToday = selectedDate === new Date().toISOString().split("T")[0];
+  const isToday = selectedDate === getTodayInClinicTimezone();
 
   // Stats calculation
   const totalCount = appointments.length;
@@ -147,7 +144,7 @@ export default function DoctorTodayAppointmentsPage() {
     return matchesSearch && matchesStatus;
   });
 
-  const formattedDateTitle = new Date(selectedDate + "T00:00:00").toLocaleDateString("en-US", {
+  const formattedDateTitle = formatCalendarDate(selectedDate, {
     weekday: "long",
     month: "long",
     day: "numeric",
