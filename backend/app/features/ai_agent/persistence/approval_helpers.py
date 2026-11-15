@@ -11,7 +11,7 @@ from app.features.ai_agent.security.permissions import require_permission
 from app.infrastructure.database import tables
 
 
-APPROVAL_TTL_SECONDS = 60
+APPROVAL_TTL_SECONDS = 600
 EXECUTION_LEASE_SECONDS = 30
 
 # These mappings authorize proposals only.
