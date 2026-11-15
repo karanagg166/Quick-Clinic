@@ -1822,8 +1822,8 @@ requires-dist = [
     { name = "python-multipart", specifier = ">=0.0.20,<1" },
     { name = "python-socketio", specifier = ">=5.14,<6" },
     { name = "redis", specifier = ">=6.4,<8" },
-    { name = "search-sphere-ingest", git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-ingest&rev=c380a360afe10b2160e7f78a59be9b5c6ee124f7" },
-    { name = "search-sphere-rag", git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-rag&rev=c380a360afe10b2160e7f78a59be9b5c6ee124f7" },
+    { name = "search-sphere-ingest", git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-ingest&rev=f0f674ce9549139129f692b9f6812adbed64945a" },
+    { name = "search-sphere-rag", git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-rag&rev=f0f674ce9549139129f692b9f6812adbed64945a" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.44,<2.1" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.38,<1" },
 ]
@@ -1944,7 +1944,7 @@ wheels = [
 [[package]]
 name = "search-sphere-ingest"
 version = "0.3.0"
-source = { git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-ingest&rev=c380a360afe10b2160e7f78a59be9b5c6ee124f7#c380a360afe10b2160e7f78a59be9b5c6ee124f7" }
+source = { git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-ingest&rev=f0f674ce9549139129f692b9f6812adbed64945a#f0f674ce9549139129f692b9f6812adbed64945a" }
 dependencies = [
     { name = "pillow" },
     { name = "pydantic" },
@@ -1955,7 +1955,7 @@ dependencies = [
 [[package]]
 name = "search-sphere-rag"
 version = "0.1.0"
-source = { git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-rag&rev=c380a360afe10b2160e7f78a59be9b5c6ee124f7#c380a360afe10b2160e7f78a59be9b5c6ee124f7" }
+source = { git = "https://github.com/karanagg166/search-sphere.git?subdirectory=packages%2Fsearch-sphere-rag&rev=f0f674ce9549139129f692b9f6812adbed64945a#f0f674ce9549139129f692b9f6812adbed64945a" }
 dependencies = [
     { name = "httpx" },
     { name = "pydantic" },
