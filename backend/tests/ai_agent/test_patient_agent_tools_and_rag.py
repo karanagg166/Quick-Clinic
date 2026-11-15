@@ -112,15 +112,16 @@ async def _seed_patient_world(db):
     )
 
 
-async def _none_coro():
-    return None
+async def _mock_embed_coro(texts: list[str]):
+    return ("cohere", "embed-english-light-v3.0", [[0.0] * 384 for _ in texts])
+
 
 
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_patient_agent_rag_discovery_and_isolation(db, monkeypatch):
     await _seed_patient_world(db)
-    monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _none_coro())
+    monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _mock_embed_coro(texts))
     monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_embedding_provider", lambda: None)
     monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_reranker_provider", lambda: None)
 

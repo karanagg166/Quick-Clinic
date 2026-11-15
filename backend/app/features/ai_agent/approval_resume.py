@@ -1,6 +1,6 @@
 """Approval decision and LangGraph resume orchestration."""
 
-from contextlib import asynccontextmanager
+from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
 
@@ -29,14 +29,14 @@ from app.features.ai_agent.tools.patient_executor import execute_approved_patien
 @asynccontextmanager
 async def optional_checkpointer():
     conn_str = LangGraphPersistenceConfig.get_connection_string()
-    if conn_str.startswith(("postgresql://", "postgres://")):
-        try:
-            async with get_checkpoint() as cp:
-                yield cp
-            return
-        except Exception:
-            pass
-    yield None
+    async with AsyncExitStack() as stack:
+        cp = None
+        if conn_str.startswith(("postgresql://", "postgres://")):
+            try:
+                cp = await stack.enter_async_context(get_checkpoint())
+            except Exception:
+                cp = None
+        yield cp
 
 
 def _utc_iso(value: datetime | str | None) -> str | None:

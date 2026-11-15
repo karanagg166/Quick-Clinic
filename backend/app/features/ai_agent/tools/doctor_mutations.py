@@ -42,8 +42,17 @@ class CancelLeaveInput(BaseModel):
 
 
 class UpdateScheduleInput(BaseModel):
-    weekly_schedule: dict[str, Any] = Field(
-        description="Weekly schedule mapping day names (Monday..Sunday) to slot intervals or off."
+    weekly_schedule: dict[str, Any] | list[Any] | None = Field(
+        default=None,
+        description="Weekly working schedule as an object mapping day names to slot intervals (e.g. {'Monday': [{'start': '09:00', 'end': '13:00'}]}) or an array of day objects ({'day': 'Monday', 'slots': [...]}).",
+    )
+    day: str | None = Field(
+        default=None,
+        description="Specific day name if updating a single day (e.g. 'Monday', 'Tuesday').",
+    )
+    slots: list[Any] | None = Field(
+        default=None,
+        description="List of slot intervals for single-day update (e.g. [{'start': '09:00', 'end': '13:00'}]).",
     )
 
 
@@ -103,8 +112,13 @@ def build_doctor_mutating_tools() -> list[BaseTool]:
         return _blocked()
 
     @tool("update_weekly_schedule", args_schema=UpdateScheduleInput)
-    async def update_weekly_schedule(weekly_schedule: dict[str, Any]) -> dict[str, Any]:
-        """Update the doctor's weekly working schedule. Requires human approval."""
+    async def update_weekly_schedule(
+        weekly_schedule: dict[str, Any] | list[Any] | None = None,
+        day: str | None = None,
+        slots: list[Any] | None = None,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
+        """Update or configure the doctor's weekly working schedule. Requires human approval."""
         return _blocked()
 
     @tool("create_slot", args_schema=CreateSlotInput)
