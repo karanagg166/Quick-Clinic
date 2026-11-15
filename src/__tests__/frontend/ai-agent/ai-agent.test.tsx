@@ -216,4 +216,28 @@ describe("Quick-Clinic AI Agent Core Suite", () => {
 
     await waitFor(() => expect(screen.getAllByText(/Not Found/i).length).toBeGreaterThan(0));
   });
+
+  it("renders Execution Failed badge and error details when approved action fails", () => {
+    render(
+      <ApprovalCard
+        approval={{
+          approvalId: "appr_fail_1",
+          actionType: "CANCEL_APPOINTMENT",
+          riskLevel: "HIGH_HUMAN_APPROVAL",
+          status: "APPROVED",
+          executionStatus: "FAILED",
+          title: "Cancel Appointment",
+          summary: "Cancel appointment appt_missing.",
+          reason: "Schedule conflict",
+          parameters: { appointment_id: "appt_missing" },
+          idempotencyKey: "qc_agent_fail_1234567890",
+          expiresAt: new Date(Date.now() + 60 * 1000).toISOString(),
+          lastErrorCode: "APPOINTMENT_NOT_FOUND",
+        }}
+        onDecide={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText("Execution Failed")).toBeDefined();
+  });
 });

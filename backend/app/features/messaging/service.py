@@ -261,9 +261,12 @@ async def list_messages(relation_id: str, page: int, limit: int, order: str, use
     }
 
 
-async def send_rest_message(relation_id: str, body, user, db: AsyncConnection):
+async def send_rest_message(
+    relation_id: str, body, user, db: AsyncConnection, *, commit: bool = True
+):
     (message, duplicate) = await persist_message(db, relation_id, user, body)
-    await db.commit()
+    if commit:
+        await db.commit()
     if not duplicate:
         from app.infrastructure.realtime import sio, encode
 

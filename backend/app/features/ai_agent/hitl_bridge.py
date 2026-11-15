@@ -4,6 +4,7 @@ import json
 from datetime import timezone
 from typing import Any
 
+from fastapi import HTTPException
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.features.ai_agent.persistence.approvals import (
@@ -169,13 +170,14 @@ def build_hitl_callbacks(
                 if actor.get("role") == "PATIENT"
                 else execute_approved_doctor_action
             )
-            code, payload = await executor_fn(
-                db,
-                actor=actor,
-                action_type=action_type,
-                parameters=dict(claimed["parameters"]),
-                approval_id=claimed["id"],
-            )
+            async with db.begin_nested():
+                code, payload = await executor_fn(
+                    db,
+                    actor=actor,
+                    action_type=action_type,
+                    parameters=dict(claimed["parameters"]),
+                    approval_id=claimed["id"],
+                )
             await complete_execution(
                 db,
                 actor=actor,
@@ -199,6 +201,16 @@ def build_hitl_callbacks(
             )
             return {"status": "COMPLETED", "code": code, **payload}
         except Exception as exc:
+            err_code = (
+                f"HTTP_{exc.status_code}"
+                if isinstance(exc, HTTPException)
+                else type(exc).__name__
+            )[:64]
+            detail = (
+                exc.detail
+                if isinstance(exc, HTTPException) and isinstance(exc.detail, str)
+                else err_code
+            )
             await complete_execution(
                 db,
                 actor=actor,
@@ -206,7 +218,7 @@ def build_hitl_callbacks(
                 approval_id=claimed["id"],
                 success=False,
                 result_code="EXECUTION_FAILED",
-                error_code=type(exc).__name__,
+                error_code=err_code,
             )
             await record_tool_call(
                 db,
@@ -219,8 +231,13 @@ def build_hitl_callbacks(
                 action_type=action_type,
                 risk_level="MEDIUM_HUMAN_APPROVAL",
                 approval_id=claimed["id"],
-                error_code=type(exc).__name__,
+                error_code=err_code,
             )
-            raise
+            return {
+                "status": "FAILED",
+                "code": "EXECUTION_FAILED",
+                "errorCode": err_code,
+                "detail": detail,
+            }
 
     return approval_request_factory, approval_verifier, approved_tool_executor

@@ -132,7 +132,9 @@ export function applyApprovalOutcomeToThreads(
               ...tool,
               status:
                 decision === "APPROVED"
-                  ? ("completed" as const)
+                  ? approval.executionStatus === "FAILED"
+                    ? ("failed" as const)
+                    : ("completed" as const)
                   : ("rejected" as const),
               completedAt: approval.decidedAt,
             }

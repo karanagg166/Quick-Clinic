@@ -18,7 +18,17 @@ export type AgentActionType =
   | "REMOVE_SLOT"
   | "UPDATE_DOCTOR_PROFILE"
   | "UPDATE_APPOINTMENT"
-  | "SEND_PATIENT_MESSAGE";
+  | "CANCEL_APPOINTMENT"
+  | "SEND_PATIENT_MESSAGE"
+  | "UPDATE_PATIENT_ACCOUNT"
+  | "UPDATE_MEDICAL_PROFILE"
+  | "CANCEL_PATIENT_APPOINTMENT"
+  | "PROPOSE_BOOKING"
+  | "RENAME_DOCUMENT"
+  | "DELETE_DOCUMENT"
+  | "SEND_DOCTOR_MESSAGE"
+  | "MARK_NOTIFICATION_READ"
+  | "SUBMIT_DOCTOR_FEEDBACK";
 
 export type ActionRiskLevel =
   | "LOW_AUTONOMOUS"
@@ -63,7 +73,8 @@ export interface AgentApprovalRequest {
   riskLevel: ActionRiskLevel;
   status: ApprovalStatus;
   executionStatus?: ApprovalExecutionStatus;
-  executionResult?: Record<string, unknown>;
+  executionResult?: Record<string, unknown> | null;
+  lastErrorCode?: string | null;
   title: string;
   summary: string;
   reason: string;

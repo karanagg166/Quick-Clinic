@@ -139,6 +139,8 @@ async def get_thread(
 ) -> dict[str, Any]:
     row = await get_owned_thread(db, actor=actor, thread_id=thread_id)
     msgs = await list_thread_messages(db, thread_id=thread_id, limit=100)
+    approvals = await list_thread_approvals(db, actor=actor, thread_id=thread_id)
+    approval_by_id = {a["id"]: _format_approval_payload(a) for a in approvals}
     return {
         "threadId": row["id"],
         "title": row["title"],
@@ -153,6 +155,12 @@ async def get_thread(
                 "createdAt": m["createdAt"].isoformat(),
                 "status": "sent",
                 "citations": (m.get("messageMetadata") or {}).get("citations"),
+                "approvalRequest": approval_by_id.get(
+                    (m.get("messageMetadata") or {}).get("approvalId")
+                )
+                if isinstance(m.get("messageMetadata"), dict)
+                and m.get("messageMetadata", {}).get("approvalId")
+                else None,
             }
             for m in msgs
         ],

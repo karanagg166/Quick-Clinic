@@ -65,7 +65,18 @@ export function ApprovalCard({
 
   const isHighRisk = approval.riskLevel === "HIGH_CLINICAL_RESTRICTED";
 
+  const isFailed =
+    approval.status === "APPROVED" && approval.executionStatus === "FAILED";
+
   const statusBadge = (() => {
+    if (isFailed) {
+      return (
+        <Badge className="bg-rose-100 text-rose-800 border-rose-200 hover:bg-rose-100">
+          <XCircle className="w-3 h-3" />
+          Execution Failed
+        </Badge>
+      );
+    }
     if (approval.status === "APPROVED") {
       return (
         <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100">
@@ -112,7 +123,9 @@ export function ApprovalCard({
       data-testid={`approval-card-${approval.approvalId}`}
       className={cn(
         "rounded-xl border p-4 space-y-3 transition-colors",
-        approval.status === "APPROVED"
+        isFailed
+          ? "bg-rose-50/40 border-rose-200"
+          : approval.status === "APPROVED"
           ? "bg-emerald-50/40 border-emerald-200"
           : approval.status === "REJECTED"
           ? "bg-rose-50/40 border-rose-200"

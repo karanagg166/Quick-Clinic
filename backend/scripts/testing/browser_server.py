@@ -5,6 +5,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from uuid import uuid4
 
 from sqlalchemy import delete, insert, select, text
 from sqlalchemy.engine import make_url
@@ -24,6 +25,11 @@ async def prepare(raw):
             await db.execute(
                 delete(tables["MedicalDocument"]).where(
                     tables["MedicalDocument"].c.patientId == "browser-profile"
+                )
+            )
+            await db.execute(
+                delete(tables["AgentThread"]).where(
+                    tables["AgentThread"].c.ownerUserId.in_(["browser-patient", "browser-doctor"])
                 )
             )
             if not (
@@ -173,12 +179,12 @@ def _install_deterministic_ai_if_no_keys():
             if "glucose" in text_q or "lab" in text_q or "document" in text_q:
                 is_doc = any("Doctor AI Assistant" in str(m.content) for m in messages[:2])
                 if is_doc:
-                    tc = {"name": "query_patient_medical_documents", "args": {"patient_id": "browser-profile", "question": str(last.content)}, "id": "tc_1", "type": "tool_call"}
+                    tc = {"name": "query_patient_medical_documents", "args": {"patient_id": "browser-profile", "question": str(last.content)}, "id": f"tc_doc_{uuid4().hex[:8]}", "type": "tool_call"}
                 else:
-                    tc = {"name": "search_my_medical_documents", "args": {"query": str(last.content)}, "id": "tc_1", "type": "tool_call"}
+                    tc = {"name": "search_my_medical_documents", "args": {"query": str(last.content)}, "id": f"tc_pat_{uuid4().hex[:8]}", "type": "tool_call"}
                 return ChatResult(generations=[ChatGeneration(message=AIMessage(content="", tool_calls=[tc]))])
             if "leave" in text_q:
-                tc = {"name": "apply_leave", "args": {"start_date": "2026-12-20", "end_date": "2026-12-21", "reason": "Conference"}, "id": "tc_leave", "type": "tool_call"}
+                tc = {"name": "apply_leave", "args": {"start_date": "2026-12-20", "end_date": "2026-12-21", "reason": "Conference"}, "id": f"tc_leave_{uuid4().hex[:8]}", "type": "tool_call"}
                 return ChatResult(generations=[ChatGeneration(message=AIMessage(content="", tool_calls=[tc]))])
             return ChatResult(generations=[ChatGeneration(message=AIMessage(content="I can help with your clinic records and schedules."))])
 

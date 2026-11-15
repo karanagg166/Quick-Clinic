@@ -4,6 +4,7 @@ from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import UTC, datetime
 from typing import Any
 
+from fastapi import HTTPException
 from langchain_core.messages import AIMessage
 from langgraph.types import Command
 from sqlalchemy.ext.asyncio import AsyncConnection
@@ -61,6 +62,8 @@ def format_approval_payload(row: dict[str, Any]) -> dict[str, Any]:
         "riskLevel": row["riskLevel"],
         "status": row["status"],
         "executionStatus": row["executionStatus"],
+        "executionResult": row.get("executionResult"),
+        "lastErrorCode": row.get("lastErrorCode"),
         "title": row["title"],
         "summary": row["summary"],
         "reason": row["reason"],
@@ -125,6 +128,9 @@ async def decide_and_resume_approval(
             },
         }
 
+    if updated["executionStatus"] != "NOT_STARTED":
+        raise HTTPException(409, "Approval has already been executed or claimed")
+
     role = str(actor.get("role") or "DOCTOR")
     resumed_text = ""
     async with optional_checkpointer() as cp_from_env:
@@ -176,22 +182,48 @@ async def decide_and_resume_approval(
                 if role == "PATIENT"
                 else execute_approved_doctor_action
             )
-            code, _ = await executor_fn(
-                db,
-                actor=actor,
-                action_type=claimed["actionType"],
-                parameters=dict(claimed["parameters"]),
-                approval_id=claimed["id"],
-            )
-            await complete_execution(
-                db,
-                actor=actor,
-                thread_id=thread_id,
-                approval_id=claimed["id"],
-                success=True,
-                result_code=code,
-            )
-            resumed_text = f"Approved and executed: {updated['title']} ({code})."
+            try:
+                async with db.begin_nested():
+                    code, _ = await executor_fn(
+                        db,
+                        actor=actor,
+                        action_type=claimed["actionType"],
+                        parameters=dict(claimed["parameters"]),
+                        approval_id=claimed["id"],
+                    )
+                await complete_execution(
+                    db,
+                    actor=actor,
+                    thread_id=thread_id,
+                    approval_id=claimed["id"],
+                    success=True,
+                    result_code=code,
+                )
+                resumed_text = f"Approved and executed: {updated['title']} ({code})."
+            except Exception as exc:
+                err_code = (
+                    f"HTTP_{exc.status_code}"
+                    if isinstance(exc, HTTPException)
+                    else type(exc).__name__
+                )[:64]
+                await complete_execution(
+                    db,
+                    actor=actor,
+                    thread_id=thread_id,
+                    approval_id=claimed["id"],
+                    success=False,
+                    result_code="EXECUTION_FAILED",
+                    error_code=err_code,
+                )
+                detail = (
+                    exc.detail
+                    if isinstance(exc, HTTPException) and isinstance(exc.detail, str)
+                    else err_code
+                )
+                resumed_text = (
+                    f"Approval recorded for '{updated['title']}', "
+                    f"but execution failed ({err_code}): {detail}."
+                )
 
     final_approval = await get_approval(db, actor=actor, thread_id=thread_id, approval_id=approval_id)
     msg_row = await append_message(
