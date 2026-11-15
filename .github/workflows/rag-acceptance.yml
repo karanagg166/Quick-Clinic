@@ -1,0 +1,41 @@
+name: Quick-Clinic Hosted RAG Acceptance
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  hosted-rag:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: quickclinic_rag_test
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/quickclinic_rag_test
+      QC_TEST_DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/quickclinic_rag_test
+      JWT_SECRET: ci-isolated-rag-secret-at-least-32-characters
+      NODE_ENV: test
+      QC_REQUIRE_POSTGRES: "true"
+      COHERE_API_KEY: ${{ secrets.COHERE_API_KEY }}
+      GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+      - run: uv sync --locked
+      - name: Run hosted embedding and pgvector hybrid RAG acceptance
+        run: uv run pytest tests/ai_agent/test_hosted_embeddings_pgvector.py --run-live -v --junitxml=/tmp/quick-clinic-rag-acceptance.xml
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: rag-acceptance-results
+          path: /tmp/quick-clinic-rag-acceptance.xml

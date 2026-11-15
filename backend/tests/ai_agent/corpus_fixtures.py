@@ -1,7 +1,7 @@
 """Synthetic test document corpus covering realistic medical document conditions."""
 
 import io
-from PIL import Image, ImageDraw
+from PIL import Image
 import pymupdf
 
 
@@ -95,14 +95,41 @@ def make_image_pdf() -> bytes:
 
 def make_scanned_ocr_pdf() -> bytes:
     """6. Scanned image-only PDF page without digital text layer."""
-    img = Image.new("RGB", (500, 120), color="white")
-    draw = ImageDraw.Draw(img)
-    draw.text((20, 30), "SCANNED PATHOLOGY: Benign lymph node tissue.", fill="black")
-    buf = io.BytesIO()
-    img.save(buf, format="PNG")
+    src = pymupdf.open()
+    sp = src.new_page(width=700, height=220)
+    sp.insert_text(
+        (40, 90),
+        "SCANNED PATHOLOGY: Benign lymph node tissue.",
+        fontsize=24,
+    )
+    pix = sp.get_pixmap(dpi=200)
     doc = pymupdf.open()
-    p = doc.new_page(width=540, height=160)
-    p.insert_image(pymupdf.Rect(20, 20, 520, 140), stream=buf.getvalue())
+    p = doc.new_page(width=700, height=220)
+    p.insert_image(pymupdf.Rect(0, 0, 700, 220), stream=pix.tobytes("png"))
+    return doc.tobytes()
+
+
+def make_line_chart_pdf() -> bytes:
+    """7b. Clinical document with a geometric line chart."""
+    doc = pymupdf.open()
+    p = doc.new_page()
+    p.insert_text((72, 50), "HB1AC TREND LINE CHART")
+    points = [(80, 180), (140, 150), (200, 130), (260, 110)]
+    for i in range(len(points) - 1):
+        p.draw_line(points[i], points[i + 1], color=(0, 0.4, 0.8), width=2)
+    p.insert_text((72, 210), "HbA1c trend: Q1=7.4%, Q2=6.9%, Q3=6.5%, Q4=6.2%.")
+    return doc.tobytes()
+
+
+def make_pie_chart_pdf() -> bytes:
+    """7c. Clinical document with a geometric pie chart."""
+    doc = pymupdf.open()
+    p = doc.new_page()
+    p.insert_text((72, 50), "CALORIC MACRONUTRIENT PIE CHART")
+    p.draw_circle((160, 135), 45, color=(0.2, 0.5, 0.2), fill=(0.8, 0.95, 0.8))
+    p.draw_line((160, 135), (205, 135), color=(0, 0, 0))
+    p.draw_line((160, 135), (160, 90), color=(0, 0, 0))
+    p.insert_text((72, 210), "Distribution: Carbs 50%, Protein 25%, Fat 25%.")
     return doc.tobytes()
 
 

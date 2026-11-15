@@ -11,9 +11,11 @@ from .corpus_fixtures import (
     make_diagram_pdf,
     make_image_pdf,
     make_lab_report_pdf,
+    make_line_chart_pdf,
     make_multipage_table_pdf,
     make_multipage_text_pdf,
     make_partially_unreadable_pdf,
+    make_pie_chart_pdf,
     make_scanned_ocr_pdf,
     make_simple_text_pdf,
     make_text_and_tables_pdf,
@@ -158,6 +160,27 @@ async def test_images_charts_and_diagrams(db, monkeypatch):
     assert "BLOOD PRESSURE MONITORING LOG" in c7_text
     assert "135" in c7_text and "128" in c7_text and "122" in c7_text
 
+    # Condition 7b & 7c: Line chart and Pie chart PDFs
+    await _seed_corpus_doc(db, "doc_c7_line", "HbA1c Trend Line Chart")
+    res7b = await run_document_ingestion(db, document_id="doc_c7_line", data=make_line_chart_pdf())
+    assert res7b["status"] == "COMPLETED"
+    chunks7b = (
+        await db.execute(
+            select(tables["MedicalDocumentChunk"]).where(tables["MedicalDocumentChunk"].c.versionId == res7b["versionId"])
+        )
+    ).mappings().all()
+    assert "6.2%" in " ".join(c["content"] for c in chunks7b)
+
+    await _seed_corpus_doc(db, "doc_c7_pie", "Macronutrient Pie Chart")
+    res7c = await run_document_ingestion(db, document_id="doc_c7_pie", data=make_pie_chart_pdf())
+    assert res7c["status"] == "COMPLETED"
+    chunks7c = (
+        await db.execute(
+            select(tables["MedicalDocumentChunk"]).where(tables["MedicalDocumentChunk"].c.versionId == res7c["versionId"])
+        )
+    ).mappings().all()
+    assert "Carbs 50%" in " ".join(c["content"] for c in chunks7c)
+
     # Condition 8: Diagram PDF
     await _seed_corpus_doc(db, "doc_c8_diag", "Chest Pain Pathway")
     res8 = await run_document_ingestion(db, document_id="doc_c8_diag", data=make_diagram_pdf())
@@ -179,9 +202,28 @@ async def test_scanned_ocr_mixed_text_and_partial_unreadable(db, monkeypatch):
     monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _mock_embed_coro(texts))
 
     # Condition 6: Scanned OCR PDF
-    await _seed_corpus_doc(db, "doc_c6_ocr", "Scanned Pathology")
-    res6 = await run_document_ingestion(db, document_id="doc_c6_ocr", data=make_scanned_ocr_pdf())
-    assert res6["status"] in {"COMPLETED", "PARTIAL"}
+    # 6a. When OCR is unavailable, missing OCR must be explicitly reported as PARTIAL with issueCount >= 1
+    monkeypatch.setattr("app.features.documents.pipeline_runner._build_ocr_provider", lambda: None)
+    await _seed_corpus_doc(db, "doc_c6_no_ocr", "Scanned Pathology Without OCR")
+    res6_no_ocr = await run_document_ingestion(db, document_id="doc_c6_no_ocr", data=make_scanned_ocr_pdf())
+    assert res6_no_ocr["extractionStatus"] == "PARTIAL"
+    assert res6_no_ocr["issueCount"] >= 1
+
+    # 6b. When Tesseract OCR is available, verify actual recovered text from the image-only PDF
+    monkeypatch.undo()
+    monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _mock_embed_coro(texts))
+    import shutil
+    if shutil.which("tesseract"):
+        await _seed_corpus_doc(db, "doc_c6_ocr", "Scanned Pathology")
+        res6 = await run_document_ingestion(db, document_id="doc_c6_ocr", data=make_scanned_ocr_pdf())
+        assert res6["status"] == "COMPLETED"
+        chunks6 = (
+            await db.execute(
+                select(tables["MedicalDocumentChunk"]).where(tables["MedicalDocumentChunk"].c.versionId == res6["versionId"])
+            )
+        ).mappings().all()
+        c6_text = " ".join(c["content"] for c in chunks6).lower()
+        assert "benign" in c6_text and "lymph" in c6_text
 
     # Condition 9: Narrative + Tables
     await _seed_corpus_doc(db, "doc_c9_mixed", "Discharge Summary & Meds")

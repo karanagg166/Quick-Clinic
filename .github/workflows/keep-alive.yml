@@ -13,22 +13,11 @@ concurrency:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 3
     steps:
-      - name: Probe and wake Render backend
-        run: |
-          TARGET="${{ vars.QUICK_CLINIC_BACKEND_URL || 'https://quick-clinic-api.onrender.com' }}"
-          echo "Pinging backend at $TARGET to maintain 24/7 liveness..."
-          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$TARGET/api/health" || echo "000")
-          if [ "$HTTP_STATUS" != "200" ]; then
-            echo "Direct /api/health returned $HTTP_STATUS, trying fallback /health..."
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 60 "$TARGET/health" || echo "000")
-          fi
-          echo "Probe completed with status: $HTTP_STATUS"
-          if [ "$HTTP_STATUS" = "200" ]; then
-            echo "Backend is active and responding."
-            exit 0
-          else
-            echo "Backend wake-up probe dispatched (HTTP $HTTP_STATUS)."
-            exit 0
-          fi
+      - uses: actions/checkout@v4
+      - name: Probe Render backend health and readiness
+        env:
+          QUICK_CLINIC_BACKEND_URL: ${{ vars.QUICK_CLINIC_BACKEND_URL || 'https://quick-clinic-api.onrender.com' }}
+          KEEPALIVE_UNTIL: ${{ vars.KEEPALIVE_UNTIL || 'always' }}
+        run: python3 backend/scripts/deployment/keep_alive.py
