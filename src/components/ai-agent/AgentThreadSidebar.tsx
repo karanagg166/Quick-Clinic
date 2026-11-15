@@ -116,7 +116,7 @@ export function AgentThreadSidebar({
           </li>
           <li>
             <span className="font-medium text-amber-700">Approval:</span>{" "}
-            Mutating actions require sign-off (60s TTL).
+            Mutating actions require sign-off (10m TTL).
           </li>
           <li>
             <span className="font-medium text-rose-700">Clinical:</span>{" "}

@@ -216,3 +216,4 @@ async def test_pgvector_insertion_and_distance_query(db):
         ).mappings().first()
         assert raw_res is not None
         assert float(raw_res["distance"]) < 0.05
+

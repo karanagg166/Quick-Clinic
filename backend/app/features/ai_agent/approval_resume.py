@@ -31,7 +31,7 @@ async def optional_checkpointer():
     conn_str = LangGraphPersistenceConfig.get_connection_string()
     async with AsyncExitStack() as stack:
         cp = None
-        if conn_str.startswith(("postgresql://", "postgres://")):
+        if conn_str.startswith(("postgresql://", "postgres://", "postgresql+asyncpg://", "postgresql+psycopg://")):
             try:
                 cp = await stack.enter_async_context(get_checkpoint())
             except Exception:

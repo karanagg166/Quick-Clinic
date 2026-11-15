@@ -1,12 +1,15 @@
 """Search Sphere ingestion runner for Quick-Clinic medical documents."""
 
 import logging
+import shutil
 from datetime import timedelta
 from typing import Any
 
 from search_sphere_ingest import DocumentPipeline, PipelineConfig
+from search_sphere_ingest.errors import CapabilityUnavailable
 from search_sphere_ingest.models import NormalizedDocument
 from search_sphere_ingest.tables import merge_continuations
+from search_sphere_ingest.tesseract import TesseractOCRProvider
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncConnection
 from starlette.concurrency import run_in_threadpool
@@ -40,6 +43,15 @@ class _OfflineSafeTokenizer:
         return max(1, (len(text) + 3) // 4)
 
 
+def _build_ocr_provider() -> TesseractOCRProvider | None:
+    if not shutil.which("tesseract"):
+        return None
+    try:
+        return TesseractOCRProvider()
+    except CapabilityUnavailable:
+        return None
+
+
 def _build_pipeline() -> DocumentPipeline:
     config = PipelineConfig(
         max_file_bytes=MAX_FILE_BYTES,
@@ -49,7 +61,11 @@ def _build_pipeline() -> DocumentPipeline:
         overlap_sentences=1,
         use_opencv=False,
     )
-    return DocumentPipeline(config=config, tokenizer=_OfflineSafeTokenizer())
+    return DocumentPipeline(
+        config=config,
+        tokenizer=_OfflineSafeTokenizer(),
+        ocr=_build_ocr_provider(),
+    )
 
 
 def _remap_batch_offset(batch_norm: NormalizedDocument, offset: int) -> NormalizedDocument:
@@ -182,15 +198,22 @@ async def run_document_ingestion(
                     stage="published",
                     completedAt=now,
                     updatedAt=now,
-                    progress={"pages": version["pageCount"], "chunks": version["chunkCount"]},
+                    progress={
+                        "pages": version["pageCount"],
+                        "chunks": version["chunkCount"],
+                        "extractionStatus": version["extractionStatus"],
+                        "issues": version["issueCount"],
+                    },
                 )
             )
             return {
                 "jobId": job_id,
                 "versionId": version["id"],
                 "status": "COMPLETED",
+                "extractionStatus": version["extractionStatus"],
                 "indexStatus": "COMPLETED",
                 "chunkCount": version["chunkCount"],
+                "issueCount": version["issueCount"],
             }
 
         await db.execute(
