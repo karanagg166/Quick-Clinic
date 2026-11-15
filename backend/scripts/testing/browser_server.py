@@ -125,6 +125,7 @@ def _install_deterministic_ai_if_no_keys():
     from langchain_core.messages import AIMessage, ToolMessage
     from langchain_core.outputs import ChatGeneration, ChatResult
     from app.features.ai_agent import service as agent_service
+    from app.features.ai_agent.models import providers
     from app.features.ai_agent.rag import pipeline as rag_pipeline
     from app.features.documents import embeddings as doc_embeddings
 
@@ -142,6 +143,11 @@ def _install_deterministic_ai_if_no_keys():
             return self
 
         def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+            sys_text = str(getattr(messages[0], "content", "")) if messages else ""
+            if "medical document excerpts below" in sys_text:
+                return ChatResult(generations=[ChatGeneration(
+                    message=AIMessage(content="Based on authorized records: Serum Glucose: 94 mg/dL (Reference 70-99).")
+                )])
             last = messages[-1]
             if isinstance(last, ToolMessage):
                 try:
@@ -155,9 +161,9 @@ def _install_deterministic_ai_if_no_keys():
                 return ChatResult(generations=[ChatGeneration(message=AIMessage(content=ans))])
             text_q = str(getattr(last, "content", "")).lower()
             if "glucose" in text_q or "lab" in text_q or "document" in text_q:
-                is_doc = any("search_patient_medical_documents" in str(m.content) for m in messages[:2])
+                is_doc = any("Doctor AI Assistant" in str(m.content) for m in messages[:2])
                 if is_doc:
-                    tc = {"name": "search_patient_medical_documents", "args": {"patient_id": "browser-profile", "query": str(last.content)}, "id": "tc_1", "type": "tool_call"}
+                    tc = {"name": "query_patient_medical_documents", "args": {"patient_id": "browser-profile", "question": str(last.content)}, "id": "tc_1", "type": "tool_call"}
                 else:
                     tc = {"name": "search_my_medical_documents", "args": {"query": str(last.content)}, "id": "tc_1", "type": "tool_call"}
                 return ChatResult(generations=[ChatGeneration(message=AIMessage(content="", tool_calls=[tc]))])
@@ -170,6 +176,7 @@ def _install_deterministic_ai_if_no_keys():
             return self._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
 
     agent_service.get_model = lambda provider="google": _BrowserChatModel()
+    providers.get_model = lambda provider="google": _BrowserChatModel()
     rag_pipeline.get_model = lambda provider="google": _BrowserChatModel()
 
 

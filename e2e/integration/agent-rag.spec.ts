@@ -13,12 +13,18 @@ function makeSyntheticLabPdf(): Buffer {
 }
 
 async function loginAs(page: Page, email: string, expectedPath: RegExp) {
-  await page.goto('/auth/login', { waitUntil: 'domcontentloaded' });
+  await page.goto('/auth/login', { waitUntil: 'load' });
+  // Wait for React hydration before filling controlled inputs
+  await page.getByRole('button', { name: /Doctor/ }).click();
+  await expect(page.getByLabel('Email', { exact: true })).toHaveValue('doctor@gmail.com');
   await page.getByLabel('Email', { exact: true }).fill(email);
   await page.getByLabel('Password', { exact: true }).fill('browser-test-password');
   const res = page.waitForResponse(r => r.url().endsWith('/api/user/login') && r.request().method() === 'POST');
   await page.getByRole('button', { name: 'Login', exact: true }).click();
-  expect((await res).status()).toBe(200);
+  const loginResp = await res;
+  if (loginResp.status() !== 200) {
+    throw new Error(`Login failed ${loginResp.status()}: ${await loginResp.text()}`);
+  }
   await expect(page).toHaveURL(expectedPath);
 }
 
