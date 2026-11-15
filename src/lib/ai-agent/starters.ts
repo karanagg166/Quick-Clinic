@@ -58,7 +58,7 @@ export const DOCTOR_STARTER_PROMPTS: AgentStarterPrompt[] = [
     prompt: "Apply for leave next Friday due to a medical conference.",
     actionType: "APPLY_LEAVE",
     riskLevel: "MEDIUM_HUMAN_APPROVAL",
-    description: "Creates a 60-second approval card before modifying your leave.",
+    description: "Requires your approval before changing your leave.",
   },
   {
     id: "doctor-message-patient",

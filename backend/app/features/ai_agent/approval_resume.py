@@ -1,6 +1,7 @@
 """Approval decision and LangGraph resume orchestration."""
 
 from contextlib import asynccontextmanager
+from datetime import UTC, datetime
 from typing import Any
 
 from langchain_core.messages import AIMessage
@@ -38,6 +39,21 @@ async def optional_checkpointer():
     yield None
 
 
+def _utc_iso(value: datetime | str | None) -> str | None:
+    """Serialize UTC database timestamps with an explicit timezone offset.
+
+    Prisma stores UTC instants in timezone-naive PostgreSQL DateTime columns.
+    A bare ISO string is interpreted in the browser's local timezone, causing
+    approval cards to appear immediately expired outside UTC.
+    """
+    if value is None:
+        return None
+    parsed = datetime.fromisoformat(value.replace("Z", "+00:00")) if isinstance(value, str) else value
+    if parsed.tzinfo is None:
+        parsed = parsed.replace(tzinfo=UTC)
+    return parsed.astimezone(UTC).isoformat()
+
+
 def format_approval_payload(row: dict[str, Any]) -> dict[str, Any]:
     return {
         "approvalId": row["id"],
@@ -50,8 +66,8 @@ def format_approval_payload(row: dict[str, Any]) -> dict[str, Any]:
         "reason": row["reason"],
         "parameters": row["parameters"],
         "idempotencyKey": row["idempotencyKey"],
-        "expiresAt": row["expiresAt"].isoformat() if hasattr(row["expiresAt"], "isoformat") else str(row["expiresAt"]),
-        "decidedAt": row["decidedAt"].isoformat() if row.get("decidedAt") else None,
+        "expiresAt": _utc_iso(row["expiresAt"]),
+        "decidedAt": _utc_iso(row.get("decidedAt")),
         "decisionReason": row.get("decisionReason"),
         "decidedByUserId": row.get("approvedByUserId"),
     }
