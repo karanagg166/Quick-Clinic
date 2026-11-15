@@ -82,7 +82,7 @@ export function AgentChat({ role, userId, userName }: AgentChatProps) {
     role === "DOCTOR" ? "Clinical AI Copilot" : "Quick-Clinic Care Assistant";
   const portalSubtitle =
     role === "DOCTOR"
-      ? "Inspect schedules, query authorized patient documents, and stage actions with 60s HITL sign-off."
+      ? "Inspect schedules, query authorized patient documents, and stage actions for explicit approval."
       : "Explore doctor availability, stage slot holds with approval, and review your medical record metadata.";
   const canSend =
     !isSending &&
