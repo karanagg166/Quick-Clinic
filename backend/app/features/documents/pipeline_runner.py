@@ -236,7 +236,36 @@ async def run_document_ingestion(
             "indexStatus": "RETRYABLE",
             "chunkCount": version["chunkCount"],
         }
+    except ValueError as exc:
+        logger.warning("Deterministic ingestion rejection for %s: %s", document_id, exc)
+        now = utcnow()
+        await db.execute(
+            update(jobs)
+            .where(_job_filter())
+            .values(
+                status="FAILED",
+                stage="failed",
+                errorCode=type(exc).__name__,
+                retryable=False,
+                leaseToken=None,
+                leaseExpiresAt=None,
+                completedAt=now,
+                updatedAt=now,
+            )
+        )
+        await db.execute(
+            update(docs)
+            .where(docs.c.id == document_id)
+            .values(
+                processingStatus="FAILED",
+                processingError="Document extraction failed; please verify the file and re-upload.",
+                updatedAt=now,
+            )
+        )
+        return {"jobId": job_id, "status": "FAILED", "errorCode": type(exc).__name__}
     except Exception as exc:
+        if lease_token is not None:
+            raise
         logger.exception("Medical document ingestion failed for %s", document_id)
         now = utcnow()
         await db.execute(
@@ -247,6 +276,8 @@ async def run_document_ingestion(
                 stage="failed",
                 errorCode=type(exc).__name__,
                 retryable=True,
+                leaseToken=None,
+                leaseExpiresAt=None,
                 completedAt=now,
                 updatedAt=now,
             )

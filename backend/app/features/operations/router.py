@@ -41,6 +41,23 @@ async def reconcile_payment_state(request: Request, db=Depends(get_db)):
     return await reconcile(db)
 
 
+@router.get("/cron/recover-ingestion")
+@router.post("/cron/recover-ingestion")
+async def recover_ingestion_state(request: Request, db=Depends(get_db)):
+    authorize_cron(request)
+    from app.features.ai_agent.persistence.approval_execution import recover_stale_executions
+    from app.features.documents.ingestion_jobs import recover_pending_ingestion_jobs
+
+    stale_approvals = await recover_stale_executions(db)
+    await db.commit()
+    recovered_jobs = await recover_pending_ingestion_jobs(limit=5)
+    return {
+        "ok": True,
+        "recoveredIngestionJobs": recovered_jobs,
+        "recoveredStaleExecutions": stale_approvals,
+    }
+
+
 @router.post("/webhooks/razorpay")
 async def receive_razorpay_webhook(request: Request, db=Depends(get_db)):
     # Verification always precedes JSON parsing or database writes.

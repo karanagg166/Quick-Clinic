@@ -18,7 +18,8 @@ async def _run_background_ingestion(document_id: str, data: bytes) -> None:
     try:
         async with db_mod.engine.begin() as conn:
             job = await claim_next_ingestion_job(conn, document_id=document_id)
-            if job is not None:
+        if job is not None:
+            async with db_mod.engine.begin() as conn:
                 await process_claimed_job(conn, job, data=data)
     except Exception:
         pass

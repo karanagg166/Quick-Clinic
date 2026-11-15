@@ -14,7 +14,6 @@ from app.features.documents import service as documents_svc
 from app.features.documents.schemas import DocumentRename
 from app.features.messaging import service as messaging_svc
 from app.features.patients import service as patients_svc
-from app.infrastructure.database import tables
 
 
 async def execute_approved_patient_action(
@@ -48,8 +47,8 @@ async def execute_approved_patient_action(
     if action_type == "CANCEL_PATIENT_APPOINTMENT":
         patient = await booking_svc.require_patient_profile(db, actor)
         appt_id = str(parameters["appointment_id"])
-        appt = await appointments_svc.get_authorized_appointment(
-            db, actor, tables["Patient"], patient["id"], appt_id, write=True
+        appt, _ = await appointments_svc.get_authorized_appointment(
+            db, actor, "Patient", patient["id"], appt_id, write=True
         )
         res = await appointments_svc.change_status(db, appt, "CANCELLED")
         return "APPOINTMENT_CANCELLED", {"appointment": res.get("appointment", res)}
@@ -64,7 +63,7 @@ async def execute_approved_patient_action(
             "checkoutHandoff": {
                 "doctorId": doctor_id,
                 "slotId": slot_id,
-                "holdToken": hold.get("token"),
+                "holdToken": hold.get("holdToken"),
                 "expiresAt": hold.get("expiresAt"),
                 "checkoutUrl": f"/patient/doctors/{doctor_id}?slotId={slot_id}",
                 "note": "Proceed to the checkout UI to select payment method and confirm booking.",
@@ -85,8 +84,14 @@ async def execute_approved_patient_action(
     if action_type == "SEND_DOCTOR_MESSAGE":
         relation_id = str(parameters["relation_id"])
         content = str(parameters["content"])
-        res = await messaging_svc.send_rest_message(relation_id, {"content": content}, actor, db)
-        return "MESSAGE_SENT", {"message": res.get("message", res)}
+        sent, duplicate = await messaging_svc.send_rest_message(
+            relation_id,
+            {"text": content, "clientMessageId": f"agent_{approval_id}"},
+            actor,
+            db,
+            commit=False,
+        )
+        return "MESSAGE_SENT", {"message": sent.get("chat", sent), "duplicate": duplicate}
 
     if action_type == "MARK_NOTIFICATION_READ":
         notif_id = str(parameters["notification_id"])
@@ -95,14 +100,18 @@ async def execute_approved_patient_action(
 
     if action_type == "SUBMIT_DOCTOR_FEEDBACK":
         doctor_id = str(parameters["doctor_id"])
+        rating_val = parameters.get("rating")
+        comment_val = str(parameters["comment"]).strip() if parameters.get("comment") else ""
+        if rating_val is None and not comment_val:
+            raise HTTPException(400, "Either rating or comment is required")
         out: dict[str, Any] = {"doctorId": doctor_id}
-        if parameters.get("rating") is not None:
+        if rating_val is not None:
             out["rating"] = await reviews_svc.submit_rating(
-                doctor_id, {"rating": int(parameters["rating"])}, actor, db
+                doctor_id, {"rating": int(rating_val)}, actor, db
             )
-        if parameters.get("comment"):
+        if comment_val:
             out["comment"] = await reviews_svc.create_comment(
-                doctor_id, {"comment": str(parameters["comment"])}, actor, db
+                doctor_id, {"text": comment_val}, actor, db
             )
         return "FEEDBACK_SUBMITTED", out
 

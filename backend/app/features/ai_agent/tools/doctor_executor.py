@@ -9,7 +9,7 @@ import re
 from typing import Any
 
 from fastapi import HTTPException
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.features.booking.appointments import change_status, get_authorized_appointment
@@ -22,7 +22,7 @@ from app.features.scheduling.availability import (
 )
 from app.features.scheduling.leave import cancel_leave, upsert_leave
 from app.features.scheduling.service import upsert_schedule
-from app.infrastructure.database import tables
+from app.infrastructure.database import tables, utcnow
 
 DAYS_OF_WEEK = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
 DAY_MAP = {day.lower(): day for day in DAYS_OF_WEEK}
@@ -144,6 +144,73 @@ async def _owned_doctor_id(db: AsyncConnection, actor: dict[str, Any]) -> str:
     return str(row[0])
 
 
+async def _require_authorized_patient_messaging(
+    db: AsyncConnection,
+    *,
+    actor: dict[str, Any],
+    doctor_id: str,
+    patient_user_id: str,
+) -> None:
+    """Ensure the doctor already has a relation, eligible appointment, or active access grant."""
+
+    patients = tables["Patient"]
+    patient = (
+        await db.execute(select(patients.c.id).where(patients.c.userId == patient_user_id))
+    ).first()
+    if not patient:
+        raise HTTPException(404, "Patient not found")
+    patient_id = str(patient[0])
+
+    relations = tables["DoctorPatientRelation"]
+    existing_rel = (
+        await db.execute(
+            select(relations.c.id)
+            .where(
+                relations.c.doctorsUserId == actor["id"],
+                relations.c.patientsUserId == patient_user_id,
+            )
+            .limit(1)
+        )
+    ).first()
+    if existing_rel is not None:
+        return
+
+    appointments = tables["Appointment"]
+    eligible_appt = (
+        await db.execute(
+            select(appointments.c.id)
+            .where(
+                appointments.c.doctorId == doctor_id,
+                appointments.c.patientId == patient_id,
+                appointments.c.status.in_(["PENDING", "CONFIRMED", "COMPLETED"]),
+            )
+            .limit(1)
+        )
+    ).first()
+    if eligible_appt is not None:
+        return
+
+    grants = tables.get("MedicalAccessGrant")
+    if grants is not None:
+        now = utcnow()
+        active_grant = (
+            await db.execute(
+                select(grants.c.id)
+                .where(
+                    grants.c.doctorId == doctor_id,
+                    grants.c.patientId == patient_id,
+                    grants.c.revokedAt.is_(None),
+                    or_(grants.c.expiresAt.is_(None), grants.c.expiresAt > now),
+                )
+                .limit(1)
+            )
+        ).first()
+        if active_grant is not None:
+            return
+
+    raise HTTPException(403, "Doctor is not authorized to message this patient")
+
+
 def _iso_dt(value: str, *, end_of_day: bool = False) -> str:
     if "T" in value:
         return value
@@ -170,7 +237,7 @@ async def execute_approved_doctor_action(
             "reason": str(parameters["reason"]),
         }
         res = await upsert_leave(doctor_id, body, "POST", actor, db)
-        return "APPLY_LEAVE_OK", {"leaveId": res.get("leave", {}).get("id")}
+        return "APPLY_LEAVE_OK", {"leaveId": res.get("id") or res.get("leave", {}).get("id")}
 
     if action_type == "UPDATE_LEAVE":
         body = {
@@ -180,7 +247,9 @@ async def execute_approved_doctor_action(
             "reason": str(parameters["reason"]),
         }
         res = await upsert_leave(doctor_id, body, "PATCH", actor, db)
-        return "UPDATE_LEAVE_OK", {"leaveId": res.get("leave", {}).get("id")}
+        return "UPDATE_LEAVE_OK", {
+            "leaveId": res.get("leave", {}).get("id") or str(parameters["leave_id"])
+        }
 
     if action_type == "CANCEL_LEAVE":
         await cancel_leave(doctor_id, str(parameters["leave_id"]), actor, db)
@@ -223,6 +292,8 @@ async def execute_approved_doctor_action(
             body["fees"] = int(parameters["fees"])
         if parameters.get("doctor_bio") is not None:
             body["doctorBio"] = str(parameters["doctor_bio"])
+        if not body:
+            raise HTTPException(400, "At least one doctor profile field is required")
         await update_doctor_profile(doctor_id, body, actor, db)
         return "UPDATE_DOCTOR_PROFILE_OK", {"doctorId": doctor_id}
 
@@ -235,18 +306,23 @@ async def execute_approved_doctor_action(
 
     if action_type == "SEND_PATIENT_MESSAGE":
         patient_user_id = str(parameters["patient_user_id"])
+        await _require_authorized_patient_messaging(db, actor=actor, doctor_id=doctor_id, patient_user_id=patient_user_id)
         rel = await create_or_get_relation(
             {"doctorsUserId": actor["id"], "patientsUserId": patient_user_id},
             actor,
             db,
         )
         relation_id = rel["relation"]["id"]
-        sent = await send_rest_message(
+        sent, duplicate = await send_rest_message(
             relation_id,
             {"text": str(parameters["text"]), "clientMessageId": f"agent_{approval_id}"},
             actor,
             db,
+            commit=False,
         )
-        return "SEND_PATIENT_MESSAGE_OK", {"messageId": sent.get("message", {}).get("id")}
+        return "SEND_PATIENT_MESSAGE_OK", {
+            "messageId": sent.get("chat", {}).get("id"),
+            "duplicate": duplicate,
+        }
 
     raise HTTPException(403, f"Unsupported approved action: {action_type}")

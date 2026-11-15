@@ -239,7 +239,17 @@ export function useAgentChat({ role, userId }: UseAgentChatOptions): UseAgentCha
           )
         );
         if (decision === "APPROVED") {
-          showToast.success("Action approved and executed.");
+          if (result.approval.executionStatus === "FAILED") {
+            showToast.error(
+              `Approval recorded, but execution failed${
+                result.approval.lastErrorCode
+                  ? ` (${result.approval.lastErrorCode})`
+                  : ""
+              }.`
+            );
+          } else {
+            showToast.success("Action approved and executed.");
+          }
         } else {
           showToast.info("Action rejected.");
         }

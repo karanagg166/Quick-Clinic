@@ -1,12 +1,13 @@
 """Read-only patient account, doctor discovery, appointment, payment, and messaging tools."""
 
 import json
-from datetime import date, datetime
+from datetime import date, datetime, time
 from typing import Any
 
 from langchain_core.tools import BaseTool, tool
 from sqlalchemy.ext.asyncio import AsyncConnection
 
+from app.core.clock import clinic_zone, now_clinic
 from app.features.accounts import notifications as notifications_svc
 from app.features.accounts import service as accounts_svc
 from app.features.ai_agent.persistence.threads import list_thread_messages
@@ -20,7 +21,6 @@ from app.features.patients import service as patients_svc
 from app.features.payments import queries as payment_queries_svc
 from app.features.scheduling import availability as availability_svc
 from app.features.scheduling import service as scheduling_svc
-from app.infrastructure.database import tables
 
 
 def build_patient_account_tools(
@@ -81,7 +81,7 @@ def build_patient_account_tools(
         if min_experience is not None:
             filters["minExperience"] = str(min_experience)
         if name:
-            filters["search"] = name
+            filters["name"] = name
         res = await discovery_svc.search_doctors(filters, db)
         return json.dumps(res, default=str)
 
@@ -95,7 +95,7 @@ def build_patient_account_tools(
     async def get_doctor_available_slots(doctor_id: str, date_str: str = "") -> str:
         """Get available consultation slots for a doctor on a given date (YYYY-MM-DD, defaults to today)."""
         target = date.fromisoformat(date_str) if date_str else reference_date
-        slots = await availability_svc.daily_slots(db, doctor_id, target, generate=True)
+        slots, _ = await availability_svc.daily_slots(db, doctor_id, target, generate=True)
         available = [s for s in slots if s.get("status") == "AVAILABLE"]
         return json.dumps({"doctorId": doctor_id, "date": target.isoformat(), "slots": available}, default=str)
 
@@ -116,39 +116,48 @@ def build_patient_account_tools(
     async def get_my_appointments(status: str = "", limit: int = 20) -> str:
         """List your own appointments, optionally filtered by status."""
         pid = await _patient_id()
-        filters: dict[str, str] = {"limit": str(max(1, min(limit, 50)))}
+        filters: dict[str, str] = {}
         if status:
             filters["status"] = status.upper()
-        res = await appointments_svc.list_appointments(db, filters, tables["Patient"], pid)
-        return json.dumps(res, default=str)
+        res = await appointments_svc.list_appointments(db, filters, "Patient", pid)
+        return json.dumps(res[: max(1, min(limit, 50))], default=str)
 
     @tool
     async def get_appointment_details(appointment_id: str) -> str:
         """Get full details for one of your own appointments."""
         pid = await _patient_id()
-        appt = await appointments_svc.get_authorized_appointment(
-            db, actor, tables["Patient"], pid, appointment_id
+        _, detail = await appointments_svc.get_authorized_appointment(
+            db, actor, "Patient", pid, appointment_id
         )
-        detail = await booking_svc.appointment_detail(db, appt)
         return json.dumps({"appointment": detail}, default=str)
+
+    def _appointment_cutoff() -> datetime:
+        now = now_clinic()
+        if reference_date == now.date():
+            return now
+        return datetime.combine(reference_date, time.min, tzinfo=clinic_zone())
 
     @tool
     async def get_upcoming_appointments(limit: int = 10) -> str:
         """List your upcoming confirmed or pending appointments."""
         pid = await _patient_id()
-        res = await appointments_svc.list_appointments(
-            db, {"timeframe": "upcoming", "limit": str(max(1, min(limit, 30)))}, tables["Patient"], pid
+        cutoff = _appointment_cutoff()
+        rows = await appointments_svc.list_appointments(
+            db, {"startDate": cutoff.isoformat()}, "Patient", pid
         )
-        return json.dumps(res, default=str)
+        upcoming = [r for r in rows if r.get("status") in {"CONFIRMED", "PENDING"}]
+        upcoming.sort(key=lambda r: str(r.get("appointmentTime") or ""))
+        return json.dumps(upcoming[: max(1, min(limit, 30))], default=str)
 
     @tool
     async def get_past_appointments(limit: int = 10) -> str:
         """List your past appointments."""
         pid = await _patient_id()
-        res = await appointments_svc.list_appointments(
-            db, {"timeframe": "past", "limit": str(max(1, min(limit, 30)))}, tables["Patient"], pid
+        cutoff = _appointment_cutoff()
+        rows = await appointments_svc.list_appointments(
+            db, {"endDate": cutoff.isoformat()}, "Patient", pid
         )
-        return json.dumps(res, default=str)
+        return json.dumps(rows[: max(1, min(limit, 30))], default=str)
 
     @tool
     async def get_my_checkout_status(checkout_id: str) -> str:

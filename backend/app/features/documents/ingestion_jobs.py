@@ -26,8 +26,23 @@ async def enqueue_ingestion_job(
     *,
     document_id: str,
 ) -> dict[str, Any]:
-    """Persist a QUEUED ingestion job in the same transaction as upload."""
+    """Persist a QUEUED ingestion job in the same transaction as upload, deduplicating active jobs."""
     jobs = tables["MedicalIngestionJob"]
+    existing_stmt = (
+        select(jobs)
+        .where(
+            jobs.c.documentId == document_id,
+            jobs.c.status.in_(["QUEUED", "RETRYABLE", "RUNNING"]),
+        )
+        .order_by(jobs.c.generation.desc())
+        .limit(1)
+    )
+    if db.dialect.name == "postgresql":
+        existing_stmt = existing_stmt.with_for_update()
+    existing = (await db.execute(existing_stmt)).mappings().first()
+    if existing is not None:
+        return dict(existing)
+
     max_gen = (
         await db.execute(
             select(func.coalesce(func.max(jobs.c.generation), 0)).where(
@@ -191,6 +206,8 @@ async def process_claimed_job(
                         status="RETRYABLE",
                         stage="embedding_retry_scheduled",
                         retryable=True,
+                        leaseToken=None,
+                        leaseExpiresAt=None,
                         availableAt=now + timedelta(seconds=30),
                         updatedAt=now,
                     )
@@ -238,11 +255,23 @@ async def process_claimed_job(
                 stage="retry_scheduled" if retryable else "failed",
                 errorCode=type(exc).__name__,
                 retryable=retryable,
+                leaseToken=None,
+                leaseExpiresAt=None,
                 availableAt=now + backoff if retryable else now,
                 completedAt=None if retryable else now,
                 updatedAt=now,
             )
         )
+        if not retryable:
+            await db.execute(
+                update(docs)
+                .where(docs.c.id == doc_id)
+                .values(
+                    processingStatus="FAILED",
+                    processingError="Document ingestion failed after maximum retries.",
+                    updatedAt=now,
+                )
+            )
         return {"jobId": job["id"], "status": "RETRYABLE" if retryable else "FAILED"}
 
 

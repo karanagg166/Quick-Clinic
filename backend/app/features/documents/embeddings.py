@@ -164,12 +164,29 @@ async def index_version_chunks(
             # New embedding provider/model starts a new controlled index generation
             generation = 2
 
+    existing_vec_ids = set(
+        (
+            await db.execute(
+                select(emb_table.c.vectorId).where(
+                    emb_table.c.chunkId.in_([r["id"] for r in rows]),
+                    emb_table.c.status == "COMPLETED",
+                )
+            )
+        )
+        .scalars()
+        .all()
+    )
+
     now = utcnow()
+    inserted_count = 0
     for row, vec, text_input in zip(rows, vectors, texts, strict=True):
         input_hash = compute_content_sha256(text_input)
         vec_id = hashlib.sha256(
             f"{row['id']}:{provider_name}:{model_name}:{target_space.version}".encode("utf-8")
         ).hexdigest()[:32]
+        if vec_id in existing_vec_ids:
+            continue
+        existing_vec_ids.add(vec_id)
         await db.execute(
             emb_table.insert().values(
                 id=new_id(),
@@ -187,6 +204,7 @@ async def index_version_chunks(
                 createdAt=now,
             )
         )
+        inserted_count += 1
 
     await db.execute(
         update(versions_table)
@@ -194,7 +212,7 @@ async def index_version_chunks(
         .values(indexStatus="COMPLETED")
     )
     return {
-        "indexed": len(rows),
+        "indexed": inserted_count or len(rows),
         "status": "COMPLETED",
         "provider": provider_name,
         "model": model_name,
