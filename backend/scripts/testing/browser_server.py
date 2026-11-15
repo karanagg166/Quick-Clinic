@@ -124,15 +124,25 @@ def _install_deterministic_ai_if_no_keys():
     from langchain_core.language_models.chat_models import BaseChatModel
     from langchain_core.messages import AIMessage, ToolMessage
     from langchain_core.outputs import ChatGeneration, ChatResult
-    from app.features.ai_agent import service as agent_service
+    from contextlib import asynccontextmanager
+    from app.features.ai_agent import approval_resume, service as agent_service
     from app.features.ai_agent.models import providers
     from app.features.ai_agent.rag import pipeline as rag_pipeline
     from app.features.documents import embeddings as doc_embeddings
+    from langgraph.checkpoint.memory import MemorySaver
 
     async def _det_embed(texts: list[str]):
         return ("cohere", "embed-english-light-v3.0", [[0.01] * 384 for _ in texts])
 
     doc_embeddings.embed_texts = _det_embed
+    _shared_mem_cp = MemorySaver()
+
+    @asynccontextmanager
+    async def _test_checkpointer():
+        yield _shared_mem_cp
+
+    approval_resume.optional_checkpointer = _test_checkpointer
+    agent_service.optional_checkpointer = _test_checkpointer
 
     class _BrowserChatModel(BaseChatModel):
         @property
@@ -202,7 +212,13 @@ def main():
     )
     with TemporaryDirectory(prefix="quick-clinic-browser-") as directory:
         os.environ["DOCUMENT_STORAGE_DIR"] = str(Path(directory) / "documents")
-        asyncio.run(prepare(raw))
+        from app.features.ai_agent.persistence.checkpoints import initialize_checkpoint_schema
+
+        async def _boot():
+            await prepare(raw)
+            await initialize_checkpoint_schema()
+
+        asyncio.run(_boot())
         _install_deterministic_ai_if_no_keys()
         import uvicorn
         from app.main import app
