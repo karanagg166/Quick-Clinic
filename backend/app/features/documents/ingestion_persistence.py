@@ -98,7 +98,7 @@ async def persist_normalized_document(
                 tokenizerName=tokenizer_name,
                 extractionStatus=ext_status,
                 indexStatus="PENDING",
-                isPublished=ext_status in {"COMPLETED", "PARTIAL"},
+                isPublished=False,
                 pageCount=len(normalized.pages),
                 objectCount=len(normalized.objects),
                 chunkCount=len(chunks),
@@ -107,7 +107,7 @@ async def persist_normalized_document(
                 pipelineMetadata={"traceId": normalized.trace_id},
                 contentSha256=content_sha,
                 createdAt=now,
-                publishedAt=now if ext_status in {"COMPLETED", "PARTIAL"} else None,
+                publishedAt=None,
             )
             .returning(versions)
         )
@@ -270,10 +270,14 @@ async def persist_normalized_document(
                 )
 
     docs_table = tables["MedicalDocument"]
-    proc_status = "READY" if ext_status in {"COMPLETED", "PARTIAL"} else "FAILED"
+    proc_status = "PROCESSING" if ext_status in {"COMPLETED", "PARTIAL"} else "FAILED"
     await db.execute(
         update(docs_table)
         .where(docs_table.c.id == document_id)
-        .values(processingStatus=proc_status, processedAt=now, processingError=None, updatedAt=now)
+        .values(
+            processingStatus=proc_status,
+            processingError=None if proc_status == "PROCESSING" else "Document extraction failed",
+            updatedAt=now,
+        )
     )
     return dict(version_row)

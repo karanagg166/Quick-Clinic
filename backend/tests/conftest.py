@@ -57,7 +57,7 @@ def pytest_collection_modifyitems(config, items):
         if "test_postgres" in item.path.name:
             item.add_marker(pytest.mark.integration)
             item.add_marker(pytest.mark.postgres)
-        if "live" in parts and not config.getoption("--run-live"):
+        if ("live" in parts or item.get_closest_marker("live")) and not config.getoption("--run-live"):
             item.add_marker(pytest.mark.skip(reason="Read-only live probes require --run-live"))
 
 
@@ -102,6 +102,11 @@ def isolated_runtime(monkeypatch, tmp_path, request):
             host = urlsplit(os.environ.get(key, "")).hostname
             if host:
                 allowed.update(row[4][0] for row in socket.getaddrinfo(host, None))
+        for live_host in ("api.cohere.com", "generativelanguage.googleapis.com"):
+            try:
+                allowed.update(row[4][0] for row in socket.getaddrinfo(live_host, None))
+            except Exception:
+                pass
     original = socket.socket.connect
 
     def guarded_connect(sock, address):

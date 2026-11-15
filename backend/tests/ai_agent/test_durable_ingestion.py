@@ -24,6 +24,10 @@ async def _none_coro():
     return None
 
 
+async def _mock_embed_coro(texts: list[str]):
+    return ("cohere", "embed-english-light-v3.0", [[0.0] * 384 for _ in texts])
+
+
 @pytest.mark.integration
 @pytest.mark.asyncio
 async def test_durable_ingestion_job_recovers_from_storage(db, tmp_path, monkeypatch):
@@ -85,15 +89,56 @@ async def test_durable_ingestion_job_recovers_from_storage(db, tmp_path, monkeyp
         assert claimed["status"] == "RUNNING"
         assert claimed["attempts"] == 1
 
+        # First attempt: embeddings fail/retryable
         monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _none_coro())
         result = await process_claimed_job(db, claimed)
-        assert result["chunkCount"] >= 1
+        assert result["status"] == "RETRYABLE"
+        assert result["indexStatus"] == "RETRYABLE"
 
         job_row = (
             await db.execute(
                 select(tables["MedicalIngestionJob"]).where(tables["MedicalIngestionJob"].c.id == queued["id"])
             )
         ).mappings().first()
-        assert job_row["status"] == "COMPLETED"
+        assert job_row["status"] == "RETRYABLE"
+        assert job_row["stage"] == "embedding_retry_scheduled"
+
+        # Version must NOT be published while embedding is retryable
+        ver_row = (
+            await db.execute(
+                select(tables["MedicalDocumentVersion"]).where(tables["MedicalDocumentVersion"].c.id == job_row["versionId"])
+            )
+        ).mappings().first()
+        assert ver_row["isPublished"] is False
+        assert ver_row["indexStatus"] == "RETRYABLE"
+
+        # Retry stage: embeddings now succeed
+        monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _mock_embed_coro(texts))
+        retry_result = await process_claimed_job(db, dict(job_row))
+        assert retry_result["status"] == "COMPLETED"
+        assert retry_result["indexStatus"] == "COMPLETED"
+
+        job_row_done = (
+            await db.execute(
+                select(tables["MedicalIngestionJob"]).where(tables["MedicalIngestionJob"].c.id == queued["id"])
+            )
+        ).mappings().first()
+        assert job_row_done["status"] == "COMPLETED"
+        assert job_row_done["stage"] == "published"
+
+        ver_row_done = (
+            await db.execute(
+                select(tables["MedicalDocumentVersion"]).where(tables["MedicalDocumentVersion"].c.id == job_row["versionId"])
+            )
+        ).mappings().first()
+        assert ver_row_done["isPublished"] is True
+        assert ver_row_done["indexStatus"] == "COMPLETED"
+
+        doc_row = (
+            await db.execute(
+                select(tables["MedicalDocument"]).where(tables["MedicalDocument"].c.id == "doc_dur_1")
+            )
+        ).mappings().first()
+        assert doc_row["processingStatus"] == "READY"
     finally:
         get_settings.cache_clear()

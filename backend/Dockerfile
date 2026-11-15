@@ -2,6 +2,7 @@ FROM ghcr.io/astral-sh/uv:0.13.7 AS uv
 FROM python:3.13-slim AS base
 COPY --from=uv /uv /uvx /bin/
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends git && rm -rf /var/lib/apt/lists/*
 ENV UV_COMPILE_BYTECODE=1 UV_LINK_MODE=copy PATH="/app/.venv/bin:$PATH"
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-dev

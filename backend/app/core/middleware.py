@@ -54,9 +54,9 @@ async def request_guards(request: Request, call_next):
         or "/otp/" in request.url.path
     )
     if sensitive and request.method == "POST":
-        key = f"quickclinic:rate:{client}:{request.url.path}:{int(time.time() // 60)}"
         limit = 20
         if get_settings().redis_url:
+            key = f"quickclinic:rate:{client}:{request.url.path}:{int(time.time() // 60)}"
             from redis.asyncio import Redis
 
             try:
@@ -69,8 +69,9 @@ async def request_guards(request: Request, call_next):
                     {"error": "Authentication service temporarily unavailable"}, status_code=503
                 )
         else:
+            mem_key = f"quickclinic:rate:{client}:{request.url.path}"
             now = time.monotonic()
-            window = _rate_windows[key]
+            window = _rate_windows[mem_key]
             while window and window[0] <= now - 60:
                 window.popleft()
             window.append(now)

@@ -1,9 +1,12 @@
 """Search Sphere ingestion runner for Quick-Clinic medical documents."""
 
 import logging
+from datetime import timedelta
 from typing import Any
 
 from search_sphere_ingest import DocumentPipeline, PipelineConfig
+from search_sphere_ingest.models import NormalizedDocument
+from search_sphere_ingest.tables import merge_continuations
 from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncConnection
 from starlette.concurrency import run_in_threadpool
@@ -12,14 +15,13 @@ from app.infrastructure.database import tables, utcnow
 
 from .embeddings import index_version_chunks
 from .ingestion_persistence import create_ingestion_job, persist_normalized_document
+from .publishing import publish_document_version
 from .storage import MAX_FILE_BYTES
 
 logger = logging.getLogger(__name__)
 
 
 class _OfflineSafeTokenizer:
-    """Count tokens with tiktoken when cached, falling back offline without network calls."""
-
     name = "quick-clinic:cl100k_or_approx"
     _encoding: Any = None
     _checked = False
@@ -39,11 +41,9 @@ class _OfflineSafeTokenizer:
 
 
 def _build_pipeline() -> DocumentPipeline:
-    """Configure bounded extraction suitable for Render free-tier memory."""
-
     config = PipelineConfig(
         max_file_bytes=MAX_FILE_BYTES,
-        max_pages=40,
+        max_pages=35,
         target_tokens=320,
         max_tokens=480,
         overlap_sentences=1,
@@ -52,11 +52,84 @@ def _build_pipeline() -> DocumentPipeline:
     return DocumentPipeline(config=config, tokenizer=_OfflineSafeTokenizer())
 
 
-def _extract_and_chunk(data: bytes) -> tuple[Any, list[Any]]:
+def _remap_batch_offset(batch_norm: NormalizedDocument, offset: int) -> NormalizedDocument:
+    if offset == 0:
+        return batch_norm
+    for p in batch_norm.pages:
+        p.page_number += offset
+    for s in batch_norm.sections:
+        if s.source and hasattr(s.source, "page_number"):
+            s.source.page_number += offset
+    for o in batch_norm.objects:
+        if hasattr(o, "sources") and o.sources:
+            for src in o.sources:
+                if hasattr(src, "page_number"):
+                    src.page_number += offset
+        if hasattr(o, "row_pages") and o.row_pages:
+            o.row_pages = [rp + offset for rp in o.row_pages]
+        if hasattr(o, "cells") and o.cells:
+            for cell in o.cells:
+                if getattr(cell, "source", None) and hasattr(cell.source, "page_number"):
+                    cell.source.page_number += offset
+    for issue in batch_norm.issues:
+        if hasattr(issue, "page_number") and issue.page_number is not None:
+            issue.page_number += offset
+    return batch_norm
+
+
+def _slice_pdf(doc: Any, start: int, end: int) -> bytes:
+    import pymupdf
+
+    sub = pymupdf.open()
+    sub.insert_pdf(doc, from_page=start, to_page=end - 1)
+    return sub.tobytes()
+
+
+def _extract_and_chunk_bounded(data: bytes) -> tuple[Any, list[Any]]:
     pipeline = _build_pipeline()
-    normalized = pipeline.extract(data)
-    chunks = pipeline.chunk(normalized)
-    return normalized, chunks
+    if not data.startswith(b"%PDF-"):
+        norm = pipeline.extract(data)
+        return norm, pipeline.chunk(norm)
+
+    import pymupdf
+
+    doc = pymupdf.open("pdf", data)
+    page_count = len(doc)
+    if page_count > 200:
+        raise ValueError(f"PDF exceeds 200 pages limit (got {page_count})")
+    if page_count <= 30:
+        norm = pipeline.extract(data)
+        return norm, pipeline.chunk(norm)
+
+    batch_size = 25
+    all_pages: list[Any] = []
+    all_sections: list[Any] = []
+    all_objects: list[Any] = []
+    all_issues: list[Any] = []
+    base_norm: Any = None
+
+    for start in range(0, page_count, batch_size):
+        end = min(start + batch_size, page_count)
+        sub_bytes = _slice_pdf(doc, start, end)
+        batch_norm = pipeline.extract(sub_bytes)
+        if base_norm is None:
+            base_norm = batch_norm
+        batch_norm = _remap_batch_offset(batch_norm, start)
+        all_pages.extend(batch_norm.pages)
+        all_sections.extend(batch_norm.sections)
+        all_objects.extend(batch_norm.objects)
+        all_issues.extend(batch_norm.issues)
+
+    all_objects = merge_continuations(all_objects, all_pages, 0.7)
+    combined = base_norm.model_copy(
+        update={
+            "pages": all_pages,
+            "sections": all_sections,
+            "objects": all_objects,
+            "issues": all_issues,
+        }
+    )
+    return combined, pipeline.chunk(combined)
 
 
 async def run_document_ingestion(
@@ -64,40 +137,80 @@ async def run_document_ingestion(
     *,
     document_id: str,
     data: bytes,
+    job_id: str | None = None,
+    lease_token: str | None = None,
 ) -> dict[str, Any]:
     """Run durable Search Sphere extraction, chunking, and pgvector indexing."""
-
     jobs = tables["MedicalIngestionJob"]
     docs = tables["MedicalDocument"]
-    job = await create_ingestion_job(db, document_id=document_id)
+
+    if job_id is None:
+        job = await create_ingestion_job(db, document_id=document_id)
+        job_id = str(job["id"])
+
+    def _job_filter():
+        base = jobs.c.id == job_id
+        return (base & (jobs.c.leaseToken == lease_token)) if lease_token else base
 
     try:
-        normalized, chunks = await run_in_threadpool(_extract_and_chunk, data)
+        now = utcnow()
+        await db.execute(update(jobs).where(_job_filter()).values(stage="extracting", updatedAt=now))
+
+        normalized, chunks = await run_in_threadpool(_extract_and_chunk_bounded, data)
         version = await persist_normalized_document(
-            db,
-            document_id=document_id,
-            normalized=normalized,
-            chunks=chunks,
+            db, document_id=document_id, normalized=normalized, chunks=chunks
         )
-        index_result = await index_version_chunks(db, version_id=version["id"])
+
         now = utcnow()
         await db.execute(
             update(jobs)
-            .where(jobs.c.id == job["id"])
+            .where(_job_filter())
+            .values(versionId=version["id"], stage="embedding", updatedAt=now)
+        )
+
+        index_result = await index_version_chunks(db, version_id=version["id"])
+        now = utcnow()
+
+        if index_result["status"] == "COMPLETED":
+            await publish_document_version(db, document_id=document_id, version_id=version["id"])
+            await db.execute(
+                update(jobs)
+                .where(_job_filter())
+                .values(
+                    versionId=version["id"],
+                    status="COMPLETED",
+                    stage="published",
+                    completedAt=now,
+                    updatedAt=now,
+                    progress={"pages": version["pageCount"], "chunks": version["chunkCount"]},
+                )
+            )
+            return {
+                "jobId": job_id,
+                "versionId": version["id"],
+                "status": "COMPLETED",
+                "indexStatus": "COMPLETED",
+                "chunkCount": version["chunkCount"],
+            }
+
+        await db.execute(
+            update(jobs)
+            .where(_job_filter())
             .values(
                 versionId=version["id"],
-                status="COMPLETED",
-                stage="indexed" if index_result["status"] == "COMPLETED" else "extracted",
-                completedAt=now,
+                status="RETRYABLE",
+                stage="embedding_retry_scheduled",
+                retryable=True,
+                availableAt=now + timedelta(seconds=30),
                 updatedAt=now,
                 progress={"pages": version["pageCount"], "chunks": version["chunkCount"]},
             )
         )
         return {
-            "jobId": job["id"],
+            "jobId": job_id,
             "versionId": version["id"],
-            "status": version["extractionStatus"],
-            "indexStatus": index_result["status"],
+            "status": "RETRYABLE",
+            "indexStatus": "RETRYABLE",
             "chunkCount": version["chunkCount"],
         }
     except Exception as exc:
@@ -105,7 +218,7 @@ async def run_document_ingestion(
         now = utcnow()
         await db.execute(
             update(jobs)
-            .where(jobs.c.id == job["id"])
+            .where(_job_filter())
             .values(
                 status="FAILED",
                 stage="failed",
@@ -124,4 +237,4 @@ async def run_document_ingestion(
                 updatedAt=now,
             )
         )
-        return {"jobId": job["id"], "status": "FAILED", "errorCode": type(exc).__name__}
+        return {"jobId": job_id, "status": "FAILED", "errorCode": type(exc).__name__}

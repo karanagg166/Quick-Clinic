@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from fastapi import HTTPException
 from starlette.concurrency import run_in_threadpool
 from sqlalchemy import delete, func, insert, or_, select, update
-from app.infrastructure.database import new_id, tables, utcnow
+from app.infrastructure.database import new_id, tables
 from .schemas import DocumentFilters, DocumentRename, DocumentType, DocumentUpload
 from .storage import MAX_ACCOUNT_BYTES, MAX_ACCOUNT_DOCUMENTS, document_metadata, safe_filename, validate_file
 from . import files
@@ -158,8 +158,8 @@ async def upload_patient_document(
                         reportDate=metadata.reportDate,
                         hospitalOrDoctor=metadata.hospitalOrDoctor or None,
                         notes=metadata.notes or None,
-                        processingStatus="READY",
-                        processedAt=utcnow(),
+                        processingStatus="QUEUED",
+                        processedAt=None,
                     )
                     .returning(documents)
                 )

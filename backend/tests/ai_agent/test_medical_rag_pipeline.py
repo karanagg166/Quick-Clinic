@@ -111,8 +111,8 @@ async def test_search_sphere_ingestion_rag_citations_and_revocation(db, monkeypa
     await _seed_clinical_context(db)
     pdf_bytes = _make_lab_pdf("Complete Blood Count\nHemoglobin: 13.8 g/dL (Reference 13.0-17.0)")
 
-    # Disable external embedding/reranker calls in isolated test
-    monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _none_coro())
+    # Mock hosted embedding provider without network calls
+    monkeypatch.setattr("app.features.documents.embeddings.embed_texts", lambda texts: _mock_embed_coro(texts))
     monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_embedding_provider", lambda: None)
     monkeypatch.setattr("app.features.ai_agent.rag.retrieval.get_reranker_provider", lambda: None)
 
@@ -163,5 +163,6 @@ async def test_search_sphere_ingestion_rag_citations_and_revocation(db, monkeypa
     assert after_revoke["citations"] == []
 
 
-async def _none_coro():
-    return None
+async def _mock_embed_coro(texts: list[str]):
+    return ("cohere", "embed-english-light-v3.0", [[0.0] * 384 for _ in texts])
+

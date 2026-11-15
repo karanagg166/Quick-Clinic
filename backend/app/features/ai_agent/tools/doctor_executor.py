@@ -4,6 +4,8 @@ Every handler here runs ONLY after claim_execution() succeeds and uses ONLY
 the persisted, hashed parameters from AgentApproval.
 """
 
+import json
+import re
 from typing import Any
 
 from fastapi import HTTPException
@@ -21,6 +23,117 @@ from app.features.scheduling.availability import (
 from app.features.scheduling.leave import cancel_leave, upsert_leave
 from app.features.scheduling.service import upsert_schedule
 from app.infrastructure.database import tables
+
+DAYS_OF_WEEK = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
+DAY_MAP = {day.lower(): day for day in DAYS_OF_WEEK}
+for day in DAYS_OF_WEEK:
+    DAY_MAP[day[:3].lower()] = day
+
+
+def _normalize_time_str(val: Any) -> str:
+    s = str(val).strip()
+    am_pm_match = re.match(r"^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$", s, re.IGNORECASE)
+    if am_pm_match:
+        h, mn, mer = am_pm_match.groups()
+        hour = int(h)
+        minute = int(mn) if mn else 0
+        if mer.lower() == "pm" and hour < 12:
+            hour += 12
+        elif mer.lower() == "am" and hour == 12:
+            hour = 0
+        return f"{hour:02d}:{minute:02d}"
+
+    m = re.match(r"^(\d{1,2}):(\d{2})$", s)
+    if m:
+        h, mn = m.groups()
+        return f"{int(h):02d}:{mn}"
+    return s
+
+
+def _normalize_slots(raw_slots: Any) -> list[dict[str, Any]]:
+    if not raw_slots:
+        return []
+    if not isinstance(raw_slots, list):
+        raw_slots = [raw_slots]
+
+    normalized: list[dict[str, str]] = []
+    for item in raw_slots:
+        if isinstance(item, str):
+            parts = re.split(r"\s*[-–—to]+\s*", item.strip())
+            if len(parts) == 2:
+                start = _normalize_time_str(parts[0])
+                end = _normalize_time_str(parts[1])
+                normalized.append({"start": start, "end": end})
+        elif isinstance(item, dict):
+            start = item.get("start") or item.get("startTime") or item.get("from")
+            end = item.get("end") or item.get("endTime") or item.get("to")
+            if start and end:
+                normalized.append({
+                    "start": _normalize_time_str(start),
+                    "end": _normalize_time_str(end),
+                })
+
+    normalized.sort(key=lambda s: s["start"])
+    return [
+        {"slotNo": idx, "start": s["start"], "end": s["end"]}
+        for idx, s in enumerate(normalized, 1)
+    ]
+
+
+def normalize_weekly_schedule_payload(raw: Any, existing_schedule: Any = None) -> list[dict[str, Any]]:
+    """Convert arbitrary weekly schedule dictionary/list representations into canonical array."""
+    if isinstance(raw, dict):
+        if "weeklySchedule" in raw and isinstance(raw["weeklySchedule"], (list, dict)):
+            raw = raw["weeklySchedule"]
+        elif "weekly_schedule" in raw and isinstance(raw["weekly_schedule"], (list, dict)):
+            raw = raw["weekly_schedule"]
+        elif "schedule" in raw and isinstance(raw["schedule"], (list, dict)):
+            raw = raw["schedule"]
+
+    updates_by_day: dict[str, list[dict[str, Any]]] = {}
+    if isinstance(raw, dict):
+        if "day" in raw and "slots" in raw:
+            day_name = DAY_MAP.get(str(raw["day"]).lower())
+            if day_name:
+                updates_by_day[day_name] = _normalize_slots(raw["slots"])
+        else:
+            for k, v in raw.items():
+                day_name = DAY_MAP.get(str(k).lower())
+                if day_name:
+                    updates_by_day[day_name] = _normalize_slots(v)
+    elif isinstance(raw, list):
+        for item in raw:
+            if isinstance(item, dict):
+                day_name = DAY_MAP.get(str(item.get("day", "")).lower())
+                if day_name:
+                    updates_by_day[day_name] = _normalize_slots(item.get("slots", []))
+
+    existing_by_day: dict[str, list[dict[str, Any]]] = {}
+    if existing_schedule:
+        if isinstance(existing_schedule, str):
+            try:
+                existing_schedule = json.loads(existing_schedule)
+            except Exception:
+                existing_schedule = []
+        if isinstance(existing_schedule, dict) and "weeklySchedule" in existing_schedule:
+            existing_schedule = existing_schedule["weeklySchedule"]
+        if isinstance(existing_schedule, list):
+            for item in existing_schedule:
+                if isinstance(item, dict):
+                    day_name = DAY_MAP.get(str(item.get("day", "")).lower())
+                    if day_name:
+                        existing_by_day[day_name] = _normalize_slots(item.get("slots", []))
+
+    result = []
+    for day in DAYS_OF_WEEK:
+        if day in updates_by_day:
+            slots = updates_by_day[day]
+        elif day in existing_by_day:
+            slots = existing_by_day[day]
+        else:
+            slots = []
+        result.append({"day": day, "slots": slots})
+    return result
 
 
 async def _owned_doctor_id(db: AsyncConnection, actor: dict[str, Any]) -> str:
@@ -74,7 +187,14 @@ async def execute_approved_doctor_action(
         return "CANCEL_LEAVE_OK", {"leaveId": str(parameters["leave_id"])}
 
     if action_type == "UPDATE_SCHEDULE":
-        await upsert_schedule(doctor_id, {"weeklySchedule": dict(parameters["weekly_schedule"])}, actor, db)
+        schedules_table = tables["Schedule"]
+        sched_row = (
+            await db.execute(
+                select(schedules_table.c.weeklySchedule).where(schedules_table.c.doctorId == doctor_id)
+            )
+        ).scalar()
+        normalized = normalize_weekly_schedule_payload(parameters, sched_row)
+        await upsert_schedule(doctor_id, {"weeklySchedule": normalized}, actor, db)
         return "UPDATE_SCHEDULE_OK", {"doctorId": doctor_id}
 
     if action_type == "CREATE_SLOT":
