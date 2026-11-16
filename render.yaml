@@ -25,7 +25,7 @@ services:
       - key: CRON_SECRET
         sync: false
       - key: SUPABASE_URL
-        value: https://yrrcjcddrmkercetjfhl.supabase.co
+        value: https://atsicusbhiujthlshszg.supabase.co
       - key: SUPABASE_SECRET_KEY
         sync: false
       - key: SUPABASE_DOCUMENT_BUCKET
