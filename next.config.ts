@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'yrrcjcddrmkercetjfhl.supabase.co',
+        hostname: 'atsicusbhiujthlshszg.supabase.co',
         port: '',
         pathname: '/storage/v1/object/public/quick-clinic-avatars/**',
       },
