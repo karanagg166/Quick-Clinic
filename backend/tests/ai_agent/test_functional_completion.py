@@ -605,3 +605,67 @@ async def test_drawn_multipage_table_across_25_page_boundary_unicode_and_corrupt
     uni_text = " ".join(c["content"] for c in uni_chunks)
     assert "José García" in uni_text
     assert "450 pg/mL" in uni_text
+
+
+@pytest.mark.integration
+@pytest.mark.asyncio
+async def test_patient_propose_booking_hitl_approval_with_datetime_hold(db, monkeypatch):
+    """Regression: PROPOSE_BOOKING returns a hold with datetime expiresAt, which must serialize into AgentToolCall without breaking complete_execution."""
+    world = await _seed_clinic(db)
+    pat = world["pat"]
+    cp = MemorySaver()
+    model = _ScriptedToolModel(
+        [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "id": "tc_fc_hold",
+                        "name": "propose_appointment_booking",
+                        "args": {"doctor_id": "doc_fc", "slot_id": "slot_fc_1"},
+                    }
+                ],
+            ),
+            AIMessage(content="Slot hold created. Proceed to checkout to complete booking."),
+        ]
+    )
+    monkeypatch.setattr("app.features.ai_agent.service.get_model", lambda provider="google": model)
+    svc = AIAgentService(provider="google")
+
+    paused = await svc.chat_turn(
+        message="Propose booking slot_fc_1 with doc_fc",
+        actor=pat,
+        db=db,
+        thread_id="t_fc_book_hold",
+        checkpointer=cp,
+    )
+    approval_id = paused["approvalRequest"]["approvalId"]
+    assert paused["approvalRequest"]["actionType"] == "PROPOSE_BOOKING"
+
+    resumed = await svc.decide_and_resume(
+        db=db,
+        actor=pat,
+        thread_id="t_fc_book_hold",
+        approval_id=approval_id,
+        decision="APPROVED",
+        checkpointer=cp,
+    )
+    assert resumed["approval"]["status"] == "APPROVED"
+    assert resumed["approval"]["executionStatus"] == "COMPLETED"
+    assert resumed["approval"]["executionResult"] == {"code": "BOOKING_HOLD_CREATED"}
+    assert "checkout" in resumed["resumedMessage"]["content"].lower()
+
+    slot_row = (
+        await db.execute(select(tables["Slot"]).where(tables["Slot"].c.id == "slot_fc_1"))
+    ).mappings().one()
+    assert slot_row["status"] == "HELD"
+    assert slot_row["holdToken"] is not None
+
+    tc_row = (
+        await db.execute(
+            select(tables["AgentToolCall"]).where(tables["AgentToolCall"].c.approvalId == approval_id)
+        )
+    ).mappings().one()
+    assert tc_row["status"] == "COMPLETED"
+    assert isinstance(tc_row["resultJson"]["hold"]["expiresAt"], str)
+

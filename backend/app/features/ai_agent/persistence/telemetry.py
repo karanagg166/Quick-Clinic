@@ -15,6 +15,12 @@ def _sha256_json(payload: Any) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
+def _json_safe(payload: Any) -> Any:
+    if payload is None:
+        return None
+    return json.loads(json.dumps(payload, default=str))
+
+
 async def record_tool_call(
     db: AsyncConnection,
     *,
@@ -33,6 +39,8 @@ async def record_tool_call(
 ) -> dict[str, Any]:
     tool_calls = tables["AgentToolCall"]
     now = utcnow()
+    safe_input = _json_safe(input_json)
+    safe_result = _json_safe(result_json)
     existing = (
         await db.execute(
             select(tool_calls).where(
@@ -45,8 +53,8 @@ async def record_tool_call(
     values = {
         "actionType": action_type,
         "riskLevel": risk_level,
-        "resultJson": result_json,
-        "resultSha256": _sha256_json(result_json) if result_json is not None else None,
+        "resultJson": safe_result,
+        "resultSha256": _sha256_json(safe_result) if safe_result is not None else None,
         "status": status,
         "approvalId": approval_id,
         "errorCode": error_code,
@@ -73,8 +81,8 @@ async def record_tool_call(
                 turnId=turn_id,
                 toolCallId=tool_call_id,
                 toolName=tool_name,
-                inputJson=input_json,
-                inputSha256=_sha256_json(input_json),
+                inputJson=safe_input,
+                inputSha256=_sha256_json(safe_input),
                 startedAt=now,
                 **values,
             )
