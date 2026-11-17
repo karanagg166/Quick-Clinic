@@ -305,7 +305,18 @@ async def execute_approved_doctor_action(
         return "UPDATE_APPOINTMENT_OK", {"appointmentId": updated["id"], "status": updated["status"]}
 
     if action_type == "SEND_PATIENT_MESSAGE":
-        patient_user_id = str(parameters["patient_user_id"])
+        raw_patient_ref = str(parameters["patient_user_id"])
+        patients = tables["Patient"]
+        resolved_user_row = (
+            await db.execute(
+                select(patients.c.userId).where(
+                    or_(patients.c.userId == raw_patient_ref, patients.c.id == raw_patient_ref)
+                )
+            )
+        ).first()
+        if not resolved_user_row:
+            raise HTTPException(404, "Patient not found")
+        patient_user_id = str(resolved_user_row[0])
         await _require_authorized_patient_messaging(db, actor=actor, doctor_id=doctor_id, patient_user_id=patient_user_id)
         rel = await create_or_get_relation(
             {"doctorsUserId": actor["id"], "patientsUserId": patient_user_id},

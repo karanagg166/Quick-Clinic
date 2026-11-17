@@ -6,7 +6,7 @@ from datetime import timedelta
 from typing import Any
 
 from search_sphere_ingest import DocumentPipeline, PipelineConfig
-from search_sphere_ingest.errors import CapabilityUnavailable
+from search_sphere_ingest.errors import CapabilityUnavailable, IngestError
 from search_sphere_ingest.models import NormalizedDocument
 from search_sphere_ingest.tables import merge_continuations
 from search_sphere_ingest.tesseract import TesseractOCRProvider
@@ -109,7 +109,10 @@ def _extract_and_chunk_bounded(data: bytes) -> tuple[Any, list[Any]]:
 
     import pymupdf
 
-    doc = pymupdf.open("pdf", data)
+    try:
+        doc = pymupdf.open("pdf", data)
+    except Exception as exc:
+        raise IngestError("invalid_pdf") from exc
     page_count = len(doc)
     if page_count > 200:
         raise ValueError(f"PDF exceeds 200 pages limit (got {page_count})")
@@ -236,33 +239,39 @@ async def run_document_ingestion(
             "indexStatus": "RETRYABLE",
             "chunkCount": version["chunkCount"],
         }
-    except ValueError as exc:
-        logger.warning("Deterministic ingestion rejection for %s: %s", document_id, exc)
+    except (ValueError, IngestError) as exc:
+        is_retryable = bool(getattr(exc, "retryable", False))
+        if is_retryable and lease_token is not None:
+            raise
+        logger.warning("Ingestion error for %s (retryable=%s): %s", document_id, is_retryable, exc)
         now = utcnow()
+        err_code = str(getattr(exc, "code", None) or type(exc).__name__)[:64]
         await db.execute(
             update(jobs)
             .where(_job_filter())
             .values(
-                status="FAILED",
-                stage="failed",
-                errorCode=type(exc).__name__,
-                retryable=False,
+                status="RETRYABLE" if is_retryable else "FAILED",
+                stage="retry_scheduled" if is_retryable else "failed",
+                errorCode=err_code,
+                retryable=is_retryable,
                 leaseToken=None,
                 leaseExpiresAt=None,
-                completedAt=now,
+                availableAt=now + timedelta(seconds=30) if is_retryable else now,
+                completedAt=None if is_retryable else now,
                 updatedAt=now,
             )
         )
-        await db.execute(
-            update(docs)
-            .where(docs.c.id == document_id)
-            .values(
-                processingStatus="FAILED",
-                processingError="Document extraction failed; please verify the file and re-upload.",
-                updatedAt=now,
+        if not is_retryable:
+            await db.execute(
+                update(docs)
+                .where(docs.c.id == document_id)
+                .values(
+                    processingStatus="FAILED",
+                    processingError="Document extraction failed; please verify the file and re-upload.",
+                    updatedAt=now,
+                )
             )
-        )
-        return {"jobId": job_id, "status": "FAILED", "errorCode": type(exc).__name__}
+        return {"jobId": job_id, "status": "RETRYABLE" if is_retryable else "FAILED", "errorCode": err_code}
     except Exception as exc:
         if lease_token is not None:
             raise

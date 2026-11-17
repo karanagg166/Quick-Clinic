@@ -7,7 +7,7 @@ from typing import Any
 from langchain_core.tools import BaseTool, tool
 from sqlalchemy.ext.asyncio import AsyncConnection
 
-from app.core.clock import clinic_zone, now_clinic
+from app.core.clock import clinic_zone, now_clinic, resolve_clinic_date
 from app.features.accounts import notifications as notifications_svc
 from app.features.accounts import service as accounts_svc
 from app.features.ai_agent.persistence.threads import list_thread_messages
@@ -93,8 +93,12 @@ def build_patient_account_tools(
 
     @tool
     async def get_doctor_available_slots(doctor_id: str, date_str: str = "") -> str:
-        """Get available consultation slots for a doctor on a given date (YYYY-MM-DD, defaults to today)."""
-        target = date.fromisoformat(date_str) if date_str else reference_date
+        """Get available consultation slots for a doctor on a given date (YYYY-MM-DD or today/tomorrow, defaults to today)."""
+        target = (
+            resolve_clinic_date(date_str, reference_date=reference_date)
+            if date_str.strip()
+            else reference_date
+        )
         slots, _ = await availability_svc.daily_slots(db, doctor_id, target, generate=True)
         available = [s for s in slots if s.get("status") == "AVAILABLE"]
         return json.dumps({"doctorId": doctor_id, "date": target.isoformat(), "slots": available}, default=str)

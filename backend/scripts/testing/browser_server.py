@@ -32,6 +32,11 @@ async def prepare(raw):
                     tables["AgentThread"].c.ownerUserId.in_(["browser-patient", "browser-doctor"])
                 )
             )
+            await db.execute(
+                delete(tables["Leave"]).where(
+                    tables["Leave"].c.doctorId == "browser-doc-profile"
+                )
+            )
             if not (
                 await db.execute(select(tables["User"].c.id).where(tables["User"].c.id == "browser-patient"))
             ).first():

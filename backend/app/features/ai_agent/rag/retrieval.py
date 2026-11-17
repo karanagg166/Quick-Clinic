@@ -1,5 +1,6 @@
 """Shared authorized hybrid retrieval for Doctor and Patient AI agents."""
 
+import asyncio
 from typing import Any
 
 from fastapi import HTTPException
@@ -75,9 +76,10 @@ async def retrieve_authorized_chunks(
     embedding_provider = get_embedding_provider()
     reranker = get_reranker_provider()
 
+    db_lock = asyncio.Lock()
     engine = HybridRagEngine(
-        vector_retriever=QuickClinicVectorRetriever(db),
-        lexical_retriever=QuickClinicLexicalRetriever(db),
+        vector_retriever=QuickClinicVectorRetriever(db, lock=db_lock),
+        lexical_retriever=QuickClinicLexicalRetriever(db, lock=db_lock),
         embedding_provider=embedding_provider,
         reranker=reranker,
         default_top_k=top_k,

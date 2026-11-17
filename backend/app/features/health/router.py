@@ -1,6 +1,7 @@
 """Process liveness and bounded database readiness probes."""
 
 import asyncio
+import os
 from fastapi import APIRouter, Request
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
@@ -16,10 +17,15 @@ router = APIRouter(tags=["health"])
 async def liveness(request: Request):
     settings = get_settings()
     req_clock = get_request_clock(request)
+    git_commit = (
+        settings.git_commit
+        if settings.git_commit and settings.git_commit != "unknown"
+        else os.environ.get("RENDER_GIT_COMMIT", "unknown")
+    )
     return {
         "status": "ok",
         "service": "quick-clinic-backend",
-        "gitCommit": settings.git_commit,
+        "gitCommit": git_commit,
         "environment": settings.node_env,
         "timestamp": req_clock.now_utc.isoformat().replace("+00:00", "Z"),
         "clinicTimestamp": req_clock.now_clinic.isoformat(),

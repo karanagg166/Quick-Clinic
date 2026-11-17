@@ -17,6 +17,7 @@ from app.features.ai_agent.approval_resume import (
 )
 from app.features.ai_agent.graph.workflow import build_workflow
 from app.features.ai_agent.hitl_bridge import build_hitl_callbacks
+from app.features.ai_agent.models.fallback import get_fallback_model
 from app.features.ai_agent.models.providers import get_model
 from app.features.ai_agent.persistence.approvals import list_thread_approvals
 from app.features.ai_agent.persistence.telemetry import (
@@ -53,7 +54,8 @@ class AIAgentService:
 
     def __init__(self, provider: str = "google"):
         self.provider = provider
-        self.model = get_model(provider)
+        ordered = [provider, "groq", "cohere"]
+        self.model = get_fallback_model(ordered, model_factory=get_model)
 
     def _validate_actor(self, actor: dict[str, Any]) -> str:
         if (
@@ -130,24 +132,16 @@ class AIAgentService:
         )
 
         turn = await append_turn(db, thread_id=tid, original_query=message)
-        await append_message(db, thread_id=tid, turn_id=turn["id"], role="USER", content=message)
+        user_msg_row = await append_message(db, thread_id=tid, turn_id=turn["id"], role="USER", content=message)
 
-        lc_messages: list[Any] = [
-            SystemMessage(
-                content=build_system_prompt(
-                    DOCTOR_SYSTEM_PROMPT if role == "DOCTOR" else PATIENT_SYSTEM_PROMPT,
-                    current_ist,
-                )
-            )
-        ]
-        if memory:
-            lc_messages.append(SystemMessage(content=f"Conversation summary:\n{memory['summary']}"))
-        for item in history[-MAX_CONTEXT_MESSAGES:]:
-            if item["role"] == "USER":
-                lc_messages.append(HumanMessage(content=item["content"]))
-            elif item["role"] == "ASSISTANT":
-                lc_messages.append(AIMessage(content=item["content"]))
-        lc_messages.append(HumanMessage(content=message))
+        sys_msg = SystemMessage(
+            id="qc_system_prompt",
+            content=build_system_prompt(
+                DOCTOR_SYSTEM_PROMPT if role == "DOCTOR" else PATIENT_SYSTEM_PROMPT,
+                current_ist,
+            ),
+        )
+        new_user_msg = HumanMessage(id=f"qc_msg_{user_msg_row['id']}", content=message)
 
         started = time.monotonic()
         async with optional_checkpointer() as cp_from_env:
@@ -179,8 +173,36 @@ class AIAgentService:
                 graph = build_workflow(model=self.model, tools=tools, role=role, checkpointer=active_cp)
 
             config: dict[str, Any] = {"recursion_limit": 16}
+            has_existing_cp_messages = False
             if active_cp is not None:
                 config["configurable"] = {"thread_id": tid}
+                try:
+                    existing_state = await graph.aget_state(config)
+                    existing_msgs = (existing_state.values or {}).get("messages") if existing_state else None
+                    has_existing_cp_messages = bool(existing_msgs)
+                except Exception:
+                    has_existing_cp_messages = False
+
+            if has_existing_cp_messages:
+                lc_messages: list[Any] = [sys_msg]
+                if memory:
+                    lc_messages.append(
+                        SystemMessage(id="qc_memory_summary", content=f"Conversation summary:\n{memory['summary']}")
+                    )
+                lc_messages.append(new_user_msg)
+            else:
+                lc_messages = [sys_msg]
+                if memory:
+                    lc_messages.append(
+                        SystemMessage(id="qc_memory_summary", content=f"Conversation summary:\n{memory['summary']}")
+                    )
+                for item in history[-MAX_CONTEXT_MESSAGES:]:
+                    if item["role"] == "USER":
+                        lc_messages.append(HumanMessage(id=f"qc_msg_{item['id']}", content=item["content"]))
+                    elif item["role"] == "ASSISTANT":
+                        lc_messages.append(AIMessage(id=f"qc_msg_{item['id']}", content=item["content"]))
+                lc_messages.append(new_user_msg)
+
             result = await graph.ainvoke(
                 {"messages": lc_messages, "next_agent": "doctor" if role == "DOCTOR" else "patient"},
                 config=config,
