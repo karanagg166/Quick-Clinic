@@ -11,8 +11,8 @@ from pydantic.alias_generators import to_camel
 from app.core.clock import now_utc
 
 
-# Short duration for initial HITL testing.
-APPROVAL_TTL_SECONDS = 60
+# 10-minute human review window matching persistence/approval_helpers.py.
+APPROVAL_TTL_SECONDS = 600
 
 
 class AgentActionType(str, Enum):

@@ -1,5 +1,6 @@
 """PostgreSQL pgvector & tsvector retrieval adapters for search-sphere-rag."""
 
+import asyncio
 import math
 import re
 from collections.abc import Mapping, Sequence
@@ -56,8 +57,9 @@ def _row_to_candidate(row: Mapping[str, Any], *, score: float, rank: int) -> Ret
 class QuickClinicVectorRetriever:
     """Authorized pgvector dense retriever scoped in SQL before ranking."""
 
-    def __init__(self, db: AsyncConnection) -> None:
+    def __init__(self, db: AsyncConnection, *, lock: asyncio.Lock | None = None) -> None:
         self.db = db
+        self._lock = lock or asyncio.Lock()
 
     async def search_dense(
         self,
@@ -116,7 +118,8 @@ class QuickClinicVectorRetriever:
                 LIMIT :limit
                 """
             )
-            rows = (await self.db.execute(sql, params)).mappings().all()
+            async with self._lock:
+                rows = (await self.db.execute(sql, params)).mappings().all()
             return [_row_to_candidate(r, score=max(0.0, float(r["score"] or 0.0)), rank=i) for i, r in enumerate(rows, 1)]
 
         # SQLite fallback for isolated unit/feature tests
@@ -162,7 +165,8 @@ class QuickClinicVectorRetriever:
             stmt = stmt.where(docs_t.c.id.in_(document_ids))
         if document_type:
             stmt = stmt.where(docs_t.c.type == str(document_type))
-        rows = (await self.db.execute(stmt)).mappings().all()
+        async with self._lock:
+            rows = (await self.db.execute(stmt)).mappings().all()
         scored = [
             (_cosine_sim(query_vector, r["embedding"]), r)
             for r in rows
@@ -175,8 +179,9 @@ class QuickClinicVectorRetriever:
 class QuickClinicLexicalRetriever:
     """Authorized PostgreSQL tsvector / SQLite token lexical retriever."""
 
-    def __init__(self, db: AsyncConnection) -> None:
+    def __init__(self, db: AsyncConnection, *, lock: asyncio.Lock | None = None) -> None:
         self.db = db
+        self._lock = lock or asyncio.Lock()
 
     async def search_lexical(
         self,
@@ -220,7 +225,8 @@ class QuickClinicLexicalRetriever:
                 LIMIT :limit
                 """
             )
-            rows = (await self.db.execute(sql, params)).mappings().all()
+            async with self._lock:
+                rows = (await self.db.execute(sql, params)).mappings().all()
             if rows:
                 return [_row_to_candidate(r, score=float(r["score"] or 0.0), rank=i) for i, r in enumerate(rows, 1)]
 
@@ -261,7 +267,8 @@ class QuickClinicLexicalRetriever:
         if document_type:
             stmt = stmt.where(docs_t.c.type == str(document_type))
 
-        rows = (await self.db.execute(stmt)).mappings().all()
+        async with self._lock:
+            rows = (await self.db.execute(stmt)).mappings().all()
         q_tokens = _tokenize(query)
         scored: list[tuple[float, Mapping[str, Any]]] = []
         for r in rows:

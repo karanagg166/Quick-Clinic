@@ -1,6 +1,7 @@
 """Checkpoint-aware LangGraph workflow for Quick-Clinic."""
 
 from collections.abc import Awaitable, Callable, Sequence
+import json
 from typing import Any, Literal
 
 from langchain_core.language_models.chat_models import BaseChatModel
@@ -11,6 +12,7 @@ from langgraph.graph import END, START, StateGraph
 
 from app.features.ai_agent.security.approvals import (
     ApprovalManager,
+    ApprovalRejected,
     ApprovalRequest,
     ApprovalVerifier,
 )
@@ -30,7 +32,7 @@ ApprovedToolExecutor = Callable[[dict[str, Any]], Awaitable[Any]]
 
 
 def build_workflow(
-    model: BaseChatModel,
+    model: BaseChatModel | Any,
     tools: Sequence[BaseTool] | None = None,
     *,
     role: str = "DOCTOR",
@@ -79,14 +81,14 @@ def build_workflow(
         last = state["messages"][-1]
         if not isinstance(last, AIMessage) or not last.tool_calls:
             return "end"
-        if len(last.tool_calls) != 1:
-            return "blocked"
         if tool_calls_used(state) >= MAX_TOOL_CALLS_PER_TURN:
             return "limit"
-        name = last.tool_calls[0].get("name")
-        if name not in registered_names:
-            return "blocked"
-        if name in approval_required:
+        for call in last.tool_calls:
+            if call.get("name") not in registered_names:
+                return "blocked"
+        if any(call.get("name") in approval_required for call in last.tool_calls):
+            if len(last.tool_calls) != 1:
+                return "blocked"
             return "approval"
         return "tools"
 
@@ -109,8 +111,27 @@ def build_workflow(
             request = await approval_request_factory(call)
             if request.action != call["name"]:
                 raise PermissionError("Approval action mismatch")
-            await ApprovalManager.require_approval(request=request, verify=approval_verifier)
+            try:
+                await ApprovalManager.require_approval(request=request, verify=approval_verifier)
+            except ApprovalRejected:
+                # Close the tool_call_id cleanly in checkpoint state without executing the tool.
+                return {
+                    "messages": [
+                        ToolMessage(
+                            content="Action was rejected by the user and was not executed.",
+                            tool_call_id=str(call.get("id") or ""),
+                            name=str(call.get("name") or ""),
+                            status="error",
+                        )
+                    ]
+                }
             return {}
+
+        def route_after_approval(state: AgentState) -> Literal["execute", "rejected"]:
+            last = state["messages"][-1]
+            if isinstance(last, ToolMessage) and getattr(last, "status", None) == "error":
+                return "rejected"
+            return "execute"
 
         workflow.add_node("approval", approval_node)
         if approved_tool_executor is not None:
@@ -118,10 +139,11 @@ def build_workflow(
             async def approved_tool_node(state: AgentState) -> dict:
                 call = state["messages"][-1].tool_calls[0]
                 result = await approved_tool_executor(call)
+                content = result if isinstance(result, str) else json.dumps(result, default=str)
                 return {
                     "messages": [
                         ToolMessage(
-                            content=str(result),
+                            content=content,
                             tool_call_id=str(call.get("id") or ""),
                             name=str(call.get("name") or ""),
                         )
@@ -129,10 +151,18 @@ def build_workflow(
                 }
 
             workflow.add_node("approved_tool", approved_tool_node)
-            workflow.add_edge("approval", "approved_tool")
+            workflow.add_conditional_edges(
+                "approval",
+                route_after_approval,
+                {"execute": "approved_tool", "rejected": END},
+            )
             workflow.add_edge("approved_tool", "agent")
         else:
-            workflow.add_edge("approval", "tools")
+            workflow.add_conditional_edges(
+                "approval",
+                route_after_approval,
+                {"execute": "tools", "rejected": END},
+            )
         routes["approval"] = "approval"
 
     workflow.add_conditional_edges("agent", route_after_agent, routes)

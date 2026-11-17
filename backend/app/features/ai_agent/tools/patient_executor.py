@@ -78,7 +78,7 @@ async def execute_approved_patient_action(
 
     if action_type == "DELETE_DOCUMENT":
         doc_id = str(parameters["document_id"])
-        res = await documents_svc.delete_patient_document(db, actor, doc_id)
+        res = await documents_svc.delete_patient_document(db, actor, doc_id, commit=False)
         return "DOCUMENT_DELETED", res
 
     if action_type == "SEND_DOCTOR_MESSAGE":

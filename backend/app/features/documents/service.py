@@ -213,7 +213,7 @@ async def rename_patient_document(database, actor, document_id, payload: Documen
     return {"document": document_metadata(row)}
 
 
-async def delete_patient_document(database, actor, document_id):
+async def delete_patient_document(database, actor, document_id, *, commit: bool = True):
     document = await get_owned_document(database, actor, document_id)
     files.check_managed_file(document["storagePath"])
     await invalidate_document_evidence(database, document_id=document_id)
@@ -221,7 +221,8 @@ async def delete_patient_document(database, actor, document_id):
     await files.remove_file(document["storagePath"])
     await database.execute(delete(documents).where(documents.c.id == document_id))
     await record_access(database, actor, document_id, "MEDICAL_DOCUMENT_DELETE")
-    await database.commit()
+    if commit:
+        await database.commit()
     return {"success": True}
 
 

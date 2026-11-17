@@ -2,6 +2,7 @@
 
 from contextlib import AsyncExitStack, asynccontextmanager
 from datetime import UTC, datetime
+import logging
 from typing import Any
 
 from fastapi import HTTPException
@@ -21,10 +22,13 @@ from app.features.ai_agent.persistence.approvals import (
 from app.features.ai_agent.persistence.checkpoints import get_checkpoint
 from app.features.ai_agent.persistence.config import LangGraphPersistenceConfig
 from app.features.ai_agent.persistence.threads import append_message, append_turn, complete_turn
+from app.features.ai_agent.security.approvals import ApprovalExpired, ApprovalNotAuthorized
 from app.features.ai_agent.tools.doctor import build_doctor_tools
 from app.features.ai_agent.tools.doctor_executor import execute_approved_doctor_action
 from app.features.ai_agent.tools.patient import build_patient_tools
 from app.features.ai_agent.tools.patient_executor import execute_approved_patient_action
+
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
@@ -35,7 +39,8 @@ async def optional_checkpointer():
         if conn_str.startswith(("postgresql://", "postgres://", "postgresql+asyncpg://", "postgresql+psycopg://")):
             try:
                 cp = await stack.enter_async_context(get_checkpoint())
-            except Exception:
+            except Exception as exc:
+                logger.warning("LangGraph checkpointer unavailable (%s)", type(exc).__name__)
                 cp = None
         yield cp
 
@@ -108,7 +113,45 @@ async def decide_and_resume_approval(
         decision_reason=decision_reason,
     )
     approval_payload = format_approval_payload(updated)
+    role = str(actor.get("role") or "DOCTOR")
     if decision == "REJECTED":
+        async with optional_checkpointer() as cp_from_env:
+            active_cp = checkpointer or cp_from_env
+            if active_cp is not None:
+                try:
+                    ref_date = now_clinic().date()
+                    tools = (
+                        build_patient_tools(
+                            db=db, actor=actor, reference_date=ref_date, thread_id=thread_id, turn_id=None, include_mutations=True
+                        )
+                        if role == "PATIENT"
+                        else build_doctor_tools(
+                            db=db, actor=actor, reference_date=ref_date, thread_id=thread_id, turn_id=None, include_mutations=True
+                        )
+                    )
+                    rej_turn = await append_turn(db, thread_id=thread_id, original_query=f"REJECT:{approval_id}")
+                    factory, verifier, executor = build_hitl_callbacks(
+                        db, actor=actor, thread_id=thread_id, turn_id=rej_turn["id"]
+                    )
+                    graph = build_workflow(
+                        model=model,
+                        tools=tools,
+                        role=role,
+                        checkpointer=active_cp,
+                        approval_request_factory=factory,
+                        approval_verifier=verifier,
+                        approved_tool_executor=executor,
+                    )
+                    cfg = {"recursion_limit": 16, "configurable": {"thread_id": thread_id}}
+                    state = await graph.aget_state(cfg)
+                    if state and getattr(state, "next", ()):
+                        await graph.ainvoke(
+                            Command(resume={"approval_id": approval_id, "decision": "REJECTED"}),
+                            config=cfg,
+                        )
+                    await complete_turn(db, turn_id=rej_turn["id"], status="COMPLETED", response_text="REJECTED")
+                except Exception as exc:
+                    logger.warning("Failed to clear rejected interrupt in checkpoint (%s)", type(exc).__name__)
         msg_row = await append_message(
             db,
             thread_id=thread_id,
@@ -131,7 +174,6 @@ async def decide_and_resume_approval(
     if updated["executionStatus"] != "NOT_STARTED":
         raise HTTPException(409, "Approval has already been executed or claimed")
 
-    role = str(actor.get("role") or "DOCTOR")
     resumed_text = ""
     async with optional_checkpointer() as cp_from_env:
         active_cp = checkpointer or cp_from_env
@@ -159,10 +201,15 @@ async def decide_and_resume_approval(
                 approval_verifier=verifier,
                 approved_tool_executor=executor,
             )
-            result = await graph.ainvoke(
-                Command(resume={"approval_id": approval_id, "decision": "APPROVED"}),
-                config={"recursion_limit": 16, "configurable": {"thread_id": thread_id}},
-            )
+            try:
+                result = await graph.ainvoke(
+                    Command(resume={"approval_id": approval_id, "decision": "APPROVED"}),
+                    config={"recursion_limit": 16, "configurable": {"thread_id": thread_id}},
+                )
+            except ApprovalExpired as exc:
+                raise HTTPException(410, str(exc)) from exc
+            except ApprovalNotAuthorized as exc:
+                raise HTTPException(403, str(exc)) from exc
             last = result["messages"][-1]
             resumed_text = extract_ai_text(last) if isinstance(last, AIMessage) else str(last)
             await complete_turn(db, turn_id=turn["id"], status="COMPLETED", response_text=resumed_text)

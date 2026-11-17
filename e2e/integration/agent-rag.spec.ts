@@ -66,16 +66,18 @@ test('full PDF upload -> READY -> Patient RAG -> Doctor RAG -> HITL approval -> 
   await expect(page.getByText(/Serum Glucose:\s*94/i).first()).toBeVisible({ timeout: 30_000 });
   await expect(page.getByText(new RegExp(docTitle)).first()).toBeVisible();
 
-  // 4. Switch to authorized Doctor and verify Doctor Agent RAG + HITL approval
+  // 4. Switch to authorized Doctor and verify Doctor Agent RAG + citation route + HITL approval
   await context.clearCookies();
   await loginAs(page, 'doctor@example.test', /\/doctor$/);
   await page.goto('/doctor/assistant', { waitUntil: 'domcontentloaded' });
   await page.getByLabel('Message AI assistant').fill('What was Browser Patient serum glucose in the lab report?');
   await page.getByLabel('Send message').click();
   await expect(page.getByText(/Serum Glucose:\s*94/i).first()).toBeVisible({ timeout: 30_000 });
-  await expect(page.getByText(new RegExp(docTitle)).first()).toBeVisible();
+  const docCitationLink = page.getByRole('link', { name: new RegExp(docTitle) }).first();
+  await expect(docCitationLink).toBeVisible();
+  await expect(docCitationLink).toHaveAttribute('href', /\/doctor\/patients\/[^/]+\/medical-documents$/);
 
-  // 5. Verify 10-minute HITL approval persists across reload and rejects cleanly
+  // 5. Verify 10-minute HITL approval persists across reload, rejects cleanly, and approves cleanly
   await page.getByLabel('Message AI assistant').fill('Apply leave from 2026-12-20 to 2026-12-21 for Conference');
   await page.getByLabel('Send message').click();
   await expect(page.getByText(/Expires in (9|10)m/)).toBeVisible({ timeout: 30_000 });
@@ -83,6 +85,12 @@ test('full PDF upload -> READY -> Patient RAG -> Doctor RAG -> HITL approval -> 
   await expect(page.getByText(/Expires in (8|9|10)m/)).toBeVisible({ timeout: 30_000 });
   await page.getByRole('button', { name: /Reject/i }).click();
   await expect(page.getByText(/Rejected/i).first()).toBeVisible({ timeout: 20_000 });
+
+  await page.getByLabel('Message AI assistant').fill('Apply leave from 2026-12-20 to 2026-12-21 for Conference');
+  await page.getByLabel('Send message').click();
+  await expect(page.getByRole('button', { name: /Approve & Continue/i })).toBeVisible({ timeout: 30_000 });
+  await page.getByRole('button', { name: /Approve & Continue/i }).click();
+  await expect(page.getByText(/Approved/i).first()).toBeVisible({ timeout: 20_000 });
 
   // 6. Switch back to patient, delete document, and verify retrieval no longer finds it
   await context.clearCookies();

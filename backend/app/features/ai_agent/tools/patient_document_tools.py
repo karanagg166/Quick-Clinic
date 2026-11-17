@@ -64,10 +64,25 @@ def build_patient_document_tools(
             and latest_ver["isPublished"] is True
             and latest_ver["indexStatus"] == "COMPLETED"
         )
+        issues_t = tables["MedicalExtractionIssue"]
+        issue_rows = (
+            (
+                await db.execute(
+                    select(issues_t.c.code, issues_t.c.stage, issues_t.c.pageNumber, issues_t.c.retryable)
+                    .where(issues_t.c.versionId == latest_ver["id"])
+                    .limit(20)
+                )
+            )
+            .mappings()
+            .all()
+            if latest_ver is not None
+            else []
+        )
         return json.dumps(
             {
                 "documentId": document_id,
                 "processingStatus": doc["processingStatus"],
+                "processingError": doc.get("processingError"),
                 "ragReady": rag_ready,
                 "job": dict(latest_job) if latest_job else None,
                 "version": {
@@ -76,9 +91,11 @@ def build_patient_document_tools(
                     "indexStatus": latest_ver["indexStatus"],
                     "isPublished": latest_ver["isPublished"],
                     "chunkCount": latest_ver["chunkCount"],
+                    "issueCount": latest_ver["issueCount"],
                 }
                 if latest_ver
                 else None,
+                "issues": [dict(r) for r in issue_rows],
             },
             default=str,
         )

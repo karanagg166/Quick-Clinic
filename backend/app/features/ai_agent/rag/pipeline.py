@@ -2,7 +2,7 @@
 
 from typing import Any
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from search_sphere_rag import ConversationTurn, classify_query_intent, rewrite_query
 from sqlalchemy.ext.asyncio import AsyncConnection
 
@@ -11,6 +11,16 @@ from app.features.ai_agent.models.providers import get_model
 from app.infrastructure.database import new_id, tables, utcnow
 
 from .retrieval import retrieve_authorized_chunks
+
+
+def _extract_ai_text(msg: Any) -> str:
+    content = getattr(msg, "content", "")
+    if isinstance(content, str):
+        return content.strip()
+    if isinstance(content, list):
+        parts = [p.get("text", "") if isinstance(p, dict) else str(p) for p in content]
+        return "\n".join(p for p in parts if p).strip()
+    return str(content).strip()
 
 
 def _to_turns(history_messages: list[dict[str, Any]] | None) -> list[ConversationTurn]:
@@ -44,7 +54,7 @@ def _build_citations(hits: list[dict[str, Any]], *, role: str) -> list[dict[str,
         title = hit.get("documentTitle") or "Medical Document"
         page = hit.get("startPage") or 1
         href = (
-            f"/doctor/patients/{hit.get('patientId') or ''}"
+            f"/doctor/patients/{hit.get('patientId') or ''}/medical-documents"
             if role == "DOCTOR"
             else "/patient/medical-documents"
         )
@@ -167,6 +177,9 @@ async def answer_medical_question(
             "citations": [],
             "chunks": [],
             "retrievalRunId": evidence["retrievalRunId"],
+            "provider": None,
+            "model": None,
+            "generationMode": "no_evidence",
         }
 
     evidence_blocks = [
@@ -176,28 +189,42 @@ async def answer_medical_question(
 
     settings = get_settings()
     answer_text = ""
-    if settings.google_api_key or settings.groq_api_key or settings.cohere_api_key:
-        provider = (
-            "google"
-            if settings.google_api_key
-            else "groq"
-            if settings.groq_api_key
-            else "cohere"
+    used_provider: str | None = None
+    used_model: str | None = None
+    generation_mode = "fallback_snippets"
+
+    configured_providers = [
+        name
+        for name, key in (
+            ("google", settings.google_api_key),
+            ("groq", settings.groq_api_key),
+            ("cohere", settings.cohere_api_key),
         )
-        try:
-            model = get_model(provider)
-            role_label = "doctor's" if actor.get("role") == "DOCTOR" else "patient's"
-            prompt = (
-                f"Answer the {role_label} question using ONLY the numbered medical document "
-                "excerpts below. Cite sources inline as [1], [2], etc. Never invent values "
-                "or present uncertain chart estimates as verified facts.\n\n"
-                + "\n\n".join(evidence_blocks)
-            )
-            msg = await model.ainvoke([SystemMessage(content=prompt), HumanMessage(content=question)])
-            content = getattr(msg, "content", "")
-            answer_text = content if isinstance(content, str) else str(content)
-        except Exception:
-            answer_text = ""
+        if key
+    ]
+    if configured_providers:
+        role_label = "doctor's" if actor.get("role") == "DOCTOR" else "patient's"
+        prompt = (
+            f"Answer the {role_label} question using ONLY the numbered medical document "
+            "excerpts below. Cite sources inline as [1], [2], etc. If the excerpts do not "
+            "contain the requested fact, state clearly that the provided documents do not "
+            "contain that information. Never invent values or present uncertain chart "
+            "estimates as verified facts.\n\n"
+            + "\n\n".join(evidence_blocks)
+        )
+        for provider in configured_providers:
+            try:
+                model = get_model(provider)
+                msg = await model.ainvoke([SystemMessage(content=prompt), HumanMessage(content=question)])
+                candidate = _extract_ai_text(msg) if isinstance(msg, AIMessage) else str(getattr(msg, "content", msg)).strip()
+                if candidate:
+                    answer_text = candidate
+                    used_provider = provider
+                    used_model = str(getattr(model, "model", provider))
+                    generation_mode = "llm"
+                    break
+            except Exception:
+                continue
 
     if not answer_text:
         top_snippets = "\n".join(
@@ -213,6 +240,9 @@ async def answer_medical_question(
         "citations": citations,
         "chunks": evidence["chunks"],
         "retrievalRunId": evidence["retrievalRunId"],
+        "provider": used_provider,
+        "model": used_model,
+        "generationMode": generation_mode,
     }
 
 
