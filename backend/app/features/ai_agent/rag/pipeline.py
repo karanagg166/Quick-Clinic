@@ -4,6 +4,7 @@ from typing import Any
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from search_sphere_rag import ConversationTurn, classify_query_intent, rewrite_query
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.core.config import get_settings
@@ -166,17 +167,37 @@ async def answer_medical_question(
     citations = evidence["citations"]
 
     if not hits:
+        docs_table = tables.get("MedicalDocument")
+        pending_count = 0
+        if docs_table is not None:
+            pending_count = int(
+                (
+                    await db.execute(
+                        select(func.count())
+                        .select_from(docs_table)
+                        .where(
+                            docs_table.c.patientId == evidence["patientId"],
+                            docs_table.c.processingStatus.in_(["QUEUED", "PROCESSING"]),
+                        )
+                    )
+                ).scalar_one()
+            )
+        answer_msg = (
+            f"No indexed medical evidence is available yet because {pending_count} document(s) "
+            "are still queued or processing. Check document status and ask again once READY."
+            if pending_count > 0
+            else "No matching extracted evidence was found in the authorized medical "
+            "documents. Ensure the document has finished processing."
+        )
         return {
             "type": "MEDICAL_RAG_ANSWER",
             "patientId": evidence["patientId"],
             "rewrittenQuery": evidence["rewritten_query"] if evidence["was_rewritten"] else None,
-            "answer": (
-                "No matching extracted evidence was found in the authorized medical "
-                "documents. Ensure the document has finished processing."
-            ),
+            "answer": answer_msg,
             "citations": [],
             "chunks": [],
             "retrievalRunId": evidence["retrievalRunId"],
+            "pendingDocumentCount": pending_count,
             "provider": None,
             "model": None,
             "generationMode": "no_evidence",
