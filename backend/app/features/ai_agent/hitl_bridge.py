@@ -178,28 +178,6 @@ def build_hitl_callbacks(
                     parameters=dict(claimed["parameters"]),
                     approval_id=claimed["id"],
                 )
-            await complete_execution(
-                db,
-                actor=actor,
-                thread_id=thread_id,
-                approval_id=claimed["id"],
-                success=True,
-                result_code=code,
-            )
-            await record_tool_call(
-                db,
-                thread_id=thread_id,
-                turn_id=turn_id,
-                tool_call_id=tool_call_id,
-                tool_name=tool_name,
-                input_json=dict(claimed["parameters"]),
-                status="COMPLETED",
-                action_type=action_type,
-                risk_level="MEDIUM_HUMAN_APPROVAL",
-                approval_id=claimed["id"],
-                result_json=payload,
-            )
-            return {"status": "COMPLETED", "code": code, **payload}
         except Exception as exc:
             err_code = (
                 f"HTTP_{exc.status_code}"
@@ -239,5 +217,28 @@ def build_hitl_callbacks(
                 "errorCode": err_code,
                 "detail": detail,
             }
+
+        await complete_execution(
+            db,
+            actor=actor,
+            thread_id=thread_id,
+            approval_id=claimed["id"],
+            success=True,
+            result_code=code,
+        )
+        await record_tool_call(
+            db,
+            thread_id=thread_id,
+            turn_id=turn_id,
+            tool_call_id=tool_call_id,
+            tool_name=tool_name,
+            input_json=dict(claimed["parameters"]),
+            status="COMPLETED",
+            action_type=action_type,
+            risk_level="MEDIUM_HUMAN_APPROVAL",
+            approval_id=claimed["id"],
+            result_json=payload,
+        )
+        return {"status": "COMPLETED", "code": code, **payload}
 
     return approval_request_factory, approval_verifier, approved_tool_executor
