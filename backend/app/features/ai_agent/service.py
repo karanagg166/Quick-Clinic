@@ -260,7 +260,10 @@ class AIAgentService:
         await persist_message_citations(db, message_id=msg_row["id"], citations=citations)
         await complete_turn(db, turn_id=turn["id"], status="COMPLETED", response_text=answer)
 
-        if len(history) + 2 >= 30 and (len(history) + 2) % 10 == 0:
+        should_summarize = (len(history) + 2 >= 30 and (len(history) + 2) % 10 == 0) or (
+            int(turn["turnIndex"]) >= 15 and int(turn["turnIndex"]) % 5 == 0
+        )
+        if should_summarize:
             covered = [m["id"] for m in history[-20:]] + [msg_row["id"]]
             await create_memory_snapshot(
                 db,

@@ -7,7 +7,7 @@ from typing import Any
 
 from search_sphere_ingest import DocumentPipeline, PipelineConfig
 from search_sphere_ingest.errors import CapabilityUnavailable, IngestError
-from search_sphere_ingest.models import NormalizedDocument
+from search_sphere_ingest.models import NormalizedDocument, Status
 from search_sphere_ingest.tables import merge_continuations
 from search_sphere_ingest.tesseract import TesseractOCRProvider
 from sqlalchemy import update
@@ -140,12 +140,18 @@ def _extract_and_chunk_bounded(data: bytes) -> tuple[Any, list[Any]]:
         all_issues.extend(batch_norm.issues)
 
     all_objects = merge_continuations(all_objects, all_pages, 0.7)
+    combined_status = (
+        Status.PARTIAL
+        if all_issues or any(p.status != Status.COMPLETED for p in all_pages)
+        else Status.COMPLETED
+    )
     combined = base_norm.model_copy(
         update={
             "pages": all_pages,
             "sections": all_sections,
             "objects": all_objects,
             "issues": all_issues,
+            "status": combined_status,
         }
     )
     return combined, pipeline.chunk(combined)
