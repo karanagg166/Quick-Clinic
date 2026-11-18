@@ -128,7 +128,8 @@ def main() -> int:
         return 0
     h_url = health_url(base_url)
     r_url = ready_url(base_url)
-    max_attempts = 4
+    # Render free-tier containers can take ~60-90s to cold-boot from sleep.
+    max_attempts = 8
     for attempt in range(1, max_attempts + 1):
         h_status, h_headers, h_body = _fetch_json(h_url, timeout=30)
         if h_status == 200:

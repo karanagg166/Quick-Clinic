@@ -112,3 +112,24 @@ def test_keep_alive_main_fails_on_404_and_recovers_from_cold_start(monkeypatch):
     monkeypatch.setattr(monitor, "_fetch_json", cold_start_then_ready)
     assert monitor.main() == 0
     assert len(calls) == 3
+
+
+def test_keep_alive_main_recovers_after_extended_render_cold_boot(monkeypatch):
+    monkeypatch.setenv("QUICK_CLINIC_BACKEND_URL", "https://quick-clinic-api-u91s.onrender.com")
+    monkeypatch.setenv("KEEPALIVE_UNTIL", "always")
+    monkeypatch.setattr(monitor.time, "sleep", lambda _secs: None)
+
+    calls: list[str] = []
+    # 5 consecutive 502 waking responses (~75-90s cold boot) then healthy + ready
+    responses = [(502, {}, None)] * 5 + [
+        (200, {}, {"status": "ok", "service": "quick-clinic-backend"}),
+        (200, {}, {"status": "ready", "database": "connected"}),
+    ]
+
+    def slow_wake(url: str, timeout: int = 30):
+        calls.append(url)
+        return responses.pop(0)
+
+    monkeypatch.setattr(monitor, "_fetch_json", slow_wake)
+    assert monitor.main() == 0
+    assert len(calls) == 7
